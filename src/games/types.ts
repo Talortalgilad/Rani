@@ -1,0 +1,27 @@
+import type { SoundApi } from '../sound';
+
+export interface RoundResult {
+  won: boolean;
+  stars: 0 | 1 | 2 | 3;
+  score: number;
+}
+
+export interface GameContext {
+  container: HTMLElement;
+  onExit(): void;
+  onRoundEnd(result: RoundResult): void;
+  sound: SoundApi;
+  save<T>(key: string, value: T): void;
+  load<T>(key: string, fallback: T): T;
+}
+
+export interface GameModule {
+  id: string;
+  title: string;
+  icon: string;
+  color: string;
+  mount(ctx: GameContext): void;
+  pause(): void;
+  resume(): void;
+  unmount(): void;
+}
