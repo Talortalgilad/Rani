@@ -4,9 +4,9 @@ import { renderHome } from './ui/home';
 import { renderGate } from './ui/gate';
 import { renderParent } from './ui/parent';
 import { games } from './games/registry';
-import { sound } from './sound';
+import { sound, unlockAudio } from './sound';
 import { clearPass, consumeParent, grantPass, hasFreshSession, startRound } from './access';
-import { gameStore, update } from './storage';
+import { gameStore, getState, update } from './storage';
 import type { GameModule } from './games/types';
 
 const app = document.getElementById('app')!;
@@ -49,6 +49,8 @@ function mountGame(gameId: string): void {
       else go({ name: 'gate', gameId: game.id });
     },
     sound,
+    addStars: (n) => update((s) => (s.stars += n)),
+    getSettings: () => getState().settings,
     ...store,
   });
 }
@@ -76,6 +78,11 @@ onRoute((route: Route) => {
       break;
   }
 });
+
+// iOS only lets audio start inside a user gesture
+for (const ev of ['pointerdown', 'touchend', 'keydown']) {
+  document.addEventListener(ev, unlockAudio, { capture: true, passive: true });
+}
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) activeGame?.pause();

@@ -30,6 +30,7 @@ export function renderHome(root: HTMLElement): () => void {
   muteBtn.addEventListener('click', () => {
     sound.setMuted(!sound.isMuted());
     paintMute();
+    sound.play('bonus');
   });
 
   const stars = document.createElement('div');

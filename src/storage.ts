@@ -15,6 +15,8 @@ export interface AppState {
     tts: boolean;
     sound: boolean;
     dailyLimitMin: number | null;
+    /** Brick breaker ball speed; wired to the parent area in stage 5. */
+    ballSpeed: 'slow' | 'normal' | 'fast';
   };
   math: {
     currentLevel: number;
@@ -39,6 +41,7 @@ function defaults(): AppState {
       tts: true,
       sound: true,
       dailyLimitMin: null,
+      ballSpeed: 'normal',
     },
     math: { currentLevel: 1, recent: [], answeredAtLevel: 0, log: [] },
     games: {},

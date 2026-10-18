@@ -1,4 +1,4 @@
-import { COLORS } from './levels';
+import { BRICKS, type BrickKind } from './levels';
 
 /** The world is always 1000 units wide; its height follows the screen aspect ratio. */
 export const W = 1000;
@@ -6,7 +6,7 @@ export const STEP = 1 / 120;
 
 export const PADDLE_W = W * 0.25;
 export const PADDLE_H = 30;
-export const BALL_R = 16;
+export const BALL_R = 22;
 export const BASE_SPEED = 620;
 export const MAX_SPEED = 1100;
 export const SPEED_UP = 1.02;
@@ -14,24 +14,44 @@ export const MAX_BOUNCE = (60 * Math.PI) / 180;
 /** The ball never travels flatter than ~15° off the horizontal. */
 export const MIN_VERT = Math.sin((15 * Math.PI) / 180);
 export const LIVES = 3;
+export const MAX_LIVES = 5;
+
+export const EFFECT_TIME = 10;
+export const WIDE_FACTOR = 1.5;
+export const SLOW_FACTOR = 0.6;
+export const BONUS_R = 36;
+/** Bonuses drift down slowly so a 7-year-old can catch them. */
+export const BONUS_FALL = 230;
 
 const BRICK_H = 54;
 const GAP = 8;
 const MARGIN = 40;
-const TOP = 70;
+const TOP = 130;
 
-export interface Brick { x: number; y: number; w: number; h: number; color: string; alive: boolean }
+export type BonusType = 'wide' | 'multi' | 'slow' | 'life';
+export type BallSpeed = 'slow' | 'normal' | 'fast';
+export const SPEED_SCALE: Record<BallSpeed, number> = { slow: 0.8, normal: 1, fast: 1.25 };
+
+export interface Brick { x: number; y: number; w: number; h: number; color: string; kind: BrickKind; hp: number; alive: boolean }
 export interface Ball { x: number; y: number; vx: number; vy: number }
-export type EngineEvent = 'brick' | 'paddle' | 'wall' | 'net' | 'launch' | 'lifeLost' | 'win' | 'lose';
+export interface Bonus { x: number; y: number; type: BonusType }
+export type GameEvent =
+  | { type: 'brick'; x: number; y: number; color: string; kind: BrickKind }
+  | { type: 'crack'; x: number; y: number }
+  | { type: 'bonus'; bonus: BonusType; x: number; y: number }
+  | { type: 'paddle' | 'wall' | 'net' | 'launch' | 'lifeLost' | 'win' | 'lose' };
 export type State = 'ready' | 'playing' | 'won' | 'lost';
 
 export interface Snapshot {
   mask: string;
+  hp: number[];
   lives: number;
   livesLost: number;
   score: number;
   netAvailable: boolean;
 }
+
+export interface EngineOpts { safetyNet?: boolean; speedScale?: number; rand?: () => number }
 
 export function buildBricks(layout: string[]): Brick[] {
   const cols = Math.max(...layout.map((r) => r.length));
@@ -39,9 +59,12 @@ export function buildBricks(layout: string[]): Brick[] {
   const bricks: Brick[] = [];
   layout.forEach((row, r) =>
     [...row].forEach((ch, c) => {
-      const color = COLORS[ch];
-      if (!color) return;
-      bricks.push({ x: MARGIN + c * (w + GAP), y: TOP + r * (BRICK_H + GAP), w, h: BRICK_H, color, alive: true });
+      const spec = BRICKS[ch];
+      if (!spec) return;
+      bricks.push({
+        x: MARGIN + c * (w + GAP), y: TOP + r * (BRICK_H + GAP), w, h: BRICK_H,
+        color: spec.color, kind: spec.kind, hp: spec.kind === 'strong' ? 2 : 1, alive: true,
+      });
     }),
   );
   return bricks;
@@ -56,23 +79,36 @@ export function starsFor(won: boolean, livesLost: number): 0 | 1 | 2 | 3 {
 export class Engine {
   bricks: Brick[];
   balls: Ball[] = [];
+  bonuses: Bonus[] = [];
   paddle = { x: W / 2, w: PADDLE_W, h: PADDLE_H, y: 0, target: W / 2 };
+  effects = { wide: 0, slow: 0 };
   lives = LIVES;
   livesLost = 0;
   score = 0;
-  speed = BASE_SPEED;
+  speed: number;
   state: State = 'ready';
   netAvailable: boolean;
-  events: EngineEvent[] = [];
+  events: GameEvent[] = [];
+  readonly baseSpeed: number;
+  readonly maxSpeed: number;
+  private rand: () => number;
 
-  constructor(layout: string[], public h: number, safetyNet = true) {
+  constructor(layout: string[], public h: number, opts: EngineOpts = {}) {
     this.bricks = buildBricks(layout);
-    this.netAvailable = safetyNet;
+    this.netAvailable = opts.safetyNet ?? true;
+    this.rand = opts.rand ?? Math.random;
+    const scale = opts.speedScale ?? 1;
+    this.baseSpeed = BASE_SPEED * scale;
+    this.maxSpeed = MAX_SPEED * scale;
+    this.speed = this.baseSpeed;
     this.setHeight(h);
     this.resetBall();
   }
 
   get netY(): number { return this.h - 60; }
+
+  /** Current ball speed including the turtle effect. */
+  private get v(): number { return this.speed * (this.effects.slow > 0 ? SLOW_FACTOR : 1); }
 
   setHeight(h: number): void {
     this.h = h;
@@ -89,7 +125,7 @@ export class Engine {
   }
 
   private resetBall(): void {
-    this.speed = BASE_SPEED;
+    this.speed = this.baseSpeed;
     this.balls = [{ x: this.paddle.x, y: this.paddle.y - BALL_R, vx: 0, vy: 0 }];
     this.state = 'ready';
   }
@@ -99,10 +135,10 @@ export class Engine {
     const deg = 8 + rand() * 12;
     const theta = ((rand() < 0.5 ? -1 : 1) * deg * Math.PI) / 180;
     const b = this.balls[0];
-    b.vx = this.speed * Math.sin(theta);
-    b.vy = -this.speed * Math.cos(theta);
+    b.vx = this.v * Math.sin(theta);
+    b.vy = -this.v * Math.cos(theta);
     this.state = 'playing';
-    this.events.push('launch');
+    this.events.push({ type: 'launch' });
   }
 
   remaining(): number {
@@ -112,6 +148,7 @@ export class Engine {
   snapshot(): Snapshot {
     return {
       mask: this.bricks.map((b) => (b.alive ? '1' : '0')).join(''),
+      hp: this.bricks.map((b) => b.hp),
       lives: this.lives,
       livesLost: this.livesLost,
       score: this.score,
@@ -119,14 +156,42 @@ export class Engine {
     };
   }
 
-  /** Restores progress; the ball always comes back stuck to the paddle. */
+  /** Restores progress; the ball always comes back stuck to the paddle and bonuses are gone. */
   restore(s: Snapshot): void {
-    this.bricks.forEach((b, i) => (b.alive = s.mask[i] !== '0'));
+    this.bricks.forEach((b, i) => {
+      b.alive = s.mask[i] !== '0';
+      b.hp = s.hp?.[i] ?? b.hp;
+    });
     this.lives = s.lives;
     this.livesLost = s.livesLost;
     this.score = s.score;
     this.netAvailable = s.netAvailable;
     this.resetBall();
+  }
+
+  applyBonus(type: BonusType): void {
+    if (type === 'wide') {
+      this.effects.wide = EFFECT_TIME;
+      this.paddle.w = PADDLE_W * WIDE_FACTOR;
+      this.clampPaddle();
+    } else if (type === 'slow') {
+      this.effects.slow = EFFECT_TIME;
+      this.balls.forEach((b) => this.rescale(b));
+    } else if (type === 'life') {
+      this.lives = Math.min(MAX_LIVES, this.lives + 1);
+    } else if (this.balls.length > 0) {
+      const src = this.balls[0];
+      for (let i = 0; this.balls.length < 3; i++) {
+        const a = (i % 2 === 0 ? 1 : -1) * 0.45;
+        const nb = {
+          x: src.x, y: src.y,
+          vx: src.vx * Math.cos(a) - src.vy * Math.sin(a),
+          vy: src.vx * Math.sin(a) + src.vy * Math.cos(a),
+        };
+        this.balls.push(nb);
+        this.fixAngle(nb);
+      }
+    }
   }
 
   step(dt: number): void {
@@ -141,22 +206,58 @@ export class Engine {
     }
     if (this.state !== 'playing') return;
 
+    this.tickEffects(dt);
     for (const ball of this.balls.slice()) this.moveBall(ball, dt);
+    this.moveBonuses(dt);
     this.balls = this.balls.filter((b) => b.y - BALL_R <= this.h);
-    if (this.balls.length === 0) this.loseLife();
-    else if (this.remaining() === 0) {
+    if (this.remaining() === 0) {
       this.state = 'won';
-      this.events.push('win');
+      this.events.push({ type: 'win' });
+    } else if (this.balls.length === 0) this.loseLife();
+  }
+
+  private tickEffects(dt: number): void {
+    if (this.effects.wide > 0) {
+      this.effects.wide = Math.max(0, this.effects.wide - dt);
+      if (this.effects.wide === 0) this.paddle.w = PADDLE_W;
     }
+    if (this.effects.slow > 0) {
+      this.effects.slow = Math.max(0, this.effects.slow - dt);
+      if (this.effects.slow === 0) this.balls.forEach((b) => this.rescale(b));
+    }
+  }
+
+  private moveBonuses(dt: number): void {
+    const p = this.paddle;
+    this.bonuses = this.bonuses.filter((b) => {
+      b.y += BONUS_FALL * dt;
+      const touching = b.y + BONUS_R >= p.y && b.y - BONUS_R <= p.y + p.h && Math.abs(b.x - p.x) <= p.w / 2 + BONUS_R * 0.5;
+      if (touching) {
+        this.applyBonus(b.type);
+        this.events.push({ type: 'bonus', bonus: b.type, x: b.x, y: b.y });
+        return false;
+      }
+      return b.y - BONUS_R <= this.h;
+    });
+  }
+
+  private pickBonus(): BonusType {
+    const table: [BonusType, number][] = [['wide', 3], ['multi', 3], ['slow', 2], ['life', this.lives < MAX_LIVES ? 1 : 0]];
+    let r = this.rand() * table.reduce((s, [, w]) => s + w, 0);
+    for (const [t, w] of table) if ((r -= w) < 0) return t;
+    return 'wide';
   }
 
   private loseLife(): void {
     this.lives--;
     this.livesLost++;
-    this.events.push('lifeLost');
+    this.events.push({ type: 'lifeLost' });
+    this.effects = { wide: 0, slow: 0 };
+    this.paddle.w = PADDLE_W;
+    this.bonuses = [];
     if (this.lives <= 0) {
       this.state = 'lost';
-      this.events.push('lose');
+      this.events.push({ type: 'lose' });
     } else this.resetBall();
   }
 
@@ -165,7 +266,7 @@ export class Engine {
     const dist = Math.hypot(b.vx, b.vy) * dt;
     const n = Math.max(1, Math.ceil(dist / (BALL_R * 0.5)));
     const sub = dt / n;
-    for (let i = 0; i < n && this.state === 'playing'; i++) {
+    for (let i = 0; i < n; i++) {
       b.x += b.vx * sub;
       b.y += b.vy * sub;
       this.walls(b);
@@ -181,7 +282,7 @@ export class Engine {
     if (b.x < BALL_R) { b.x = BALL_R; b.vx = Math.abs(b.vx); hit = true; }
     else if (b.x > W - BALL_R) { b.x = W - BALL_R; b.vx = -Math.abs(b.vx); hit = true; }
     if (b.y < BALL_R) { b.y = BALL_R; b.vy = Math.abs(b.vy); hit = true; }
-    if (hit) { this.fixAngle(b); this.events.push('wall'); }
+    if (hit) { this.fixAngle(b); this.events.push({ type: 'wall' }); }
   }
 
   private paddleHit(b: Ball): void {
@@ -193,9 +294,9 @@ export class Engine {
     const t = Math.max(-1, Math.min(1, (b.x - p.x) / (p.w / 2)));
     const theta = t * MAX_BOUNCE;
     b.y = p.y - BALL_R;
-    b.vx = this.speed * Math.sin(theta);
-    b.vy = -this.speed * Math.cos(theta);
-    this.events.push('paddle');
+    b.vx = this.v * Math.sin(theta);
+    b.vy = -this.v * Math.cos(theta);
+    this.events.push({ type: 'paddle' });
   }
 
   private brickHit(b: Ball): void {
@@ -226,12 +327,21 @@ export class Engine {
       const dot = b.vx * nx + b.vy * ny;
       if (dot < 0) { b.vx -= 2 * dot * nx; b.vy -= 2 * dot * ny; }
 
-      br.alive = false;
-      this.score += 10;
-      this.speed = Math.min(MAX_SPEED, this.speed * SPEED_UP);
+      const mx = br.x + br.w / 2;
+      const my = br.y + br.h / 2;
+      if (br.hp > 1) {
+        br.hp--;
+        this.score += 5;
+        this.events.push({ type: 'crack', x: mx, y: my });
+      } else {
+        br.alive = false;
+        this.score += 10;
+        this.speed = Math.min(this.maxSpeed, this.speed * SPEED_UP);
+        if (br.kind === 'surprise') this.bonuses.push({ x: mx, y: my, type: this.pickBonus() });
+        this.events.push({ type: 'brick', x: mx, y: my, color: br.color, kind: br.kind });
+      }
       this.rescale(b);
       this.fixAngle(b);
-      this.events.push('brick');
       return; // one brick per sub-step
     }
   }
@@ -243,21 +353,21 @@ export class Engine {
     b.vy = -Math.abs(b.vy);
     this.netAvailable = false;
     this.fixAngle(b);
-    this.events.push('net');
+    this.events.push({ type: 'net' });
   }
 
   private rescale(b: Ball): void {
     const m = Math.hypot(b.vx, b.vy) || 1;
-    b.vx = (b.vx / m) * this.speed;
-    b.vy = (b.vy / m) * this.speed;
+    b.vx = (b.vx / m) * this.v;
+    b.vy = (b.vy / m) * this.v;
   }
 
   private fixAngle(b: Ball): void {
     this.rescale(b);
-    const minVy = this.speed * MIN_VERT;
+    const minVy = this.v * MIN_VERT;
     if (Math.abs(b.vy) < minVy) {
       b.vy = (b.vy < 0 ? -1 : 1) * minVy;
-      b.vx = (b.vx < 0 ? -1 : 1) * Math.sqrt(this.speed * this.speed - minVy * minVy);
+      b.vx = (b.vx < 0 ? -1 : 1) * Math.sqrt(this.v * this.v - minVy * minVy);
     }
   }
 }

@@ -1,4 +1,5 @@
 import type { SoundApi } from '../sound';
+import type { AppState } from '../storage';
 
 export interface RoundResult {
   won: boolean;
@@ -15,6 +16,9 @@ export interface GameContext {
   /** Ask the host to start another round; it may show the math gate first. Call `start` only when allowed. */
   requestRound(start: () => void): void;
   sound: SoundApi;
+  /** Adds stars straight to the shared counter on the home screen. */
+  addStars(n: number): void;
+  getSettings(): AppState['settings'];
   save<T>(key: string, value: T): void;
   load<T>(key: string, fallback: T): T;
 }
