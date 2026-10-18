@@ -82,6 +82,25 @@ const art: Record<string, string> = {
     [[30, 44, 18, '#ffb3d9'], [70, 44, 18, '#a6d8ff'], [50, 24, 20, '#ffb3d9'], [50, 48, 22, '#d6c0ff'], [36, 26, 13, '#a6d8ff'], [64, 26, 13, '#ffd3ea']]
       .map(([x, y, r, c]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" stroke-width="3.5"/>`).join('') +
     eye(42, 46, 6) + eye(58, 46, 6) + smile(50, 56, 6),
+
+  macaron:
+    `<ellipse cx="50" cy="36" rx="36" ry="20" fill="#ffa6c9"/>` +
+    `<path d="M16 50 Q50 60 84 50 L82 62 Q50 72 18 62Z" fill="#fff4d6"/>` +
+    `<ellipse cx="50" cy="72" rx="34" ry="16" fill="#ffa6c9"/>` +
+    `<path d="M20 38 Q50 22 80 38" fill="none" stroke="#ffd0e6" stroke-width="4"/>` + eye(40, 40, 6) + eye(60, 40, 6) + smile(50, 46, 6),
+
+  jellybeans:
+    `<ellipse cx="32" cy="38" rx="22" ry="14" fill="#ff5d73" transform="rotate(-30 32 38)"/>` +
+    `<ellipse cx="68" cy="44" rx="22" ry="14" fill="#7ddc5a" transform="rotate(25 68 44)"/>` +
+    `<ellipse cx="48" cy="76" rx="22" ry="14" fill="#ffd23f" transform="rotate(-8 48 76)"/>` +
+    `<path d="M20 34 Q26 26 34 26" fill="none" stroke="#ffb3be" stroke-width="4"/><path d="M58 38 Q66 32 74 34" fill="none" stroke="#c8f5b4" stroke-width="4"/>` +
+    eye(44, 74, 5) + eye(58, 74, 5),
+
+  strawberry:
+    `<path d="M50 90 C20 70 10 44 22 30 C34 18 44 26 50 26 C56 26 66 18 78 30 C90 44 80 70 50 90Z" fill="#ff4d5a"/>` +
+    `<path d="M50 28 C42 18 30 18 26 26 C36 30 44 30 50 28Z M50 28 C58 18 70 18 74 26 C64 30 56 30 50 28Z M50 28 L50 14" fill="#7ddc5a" stroke-width="3.5"/>` +
+    [[34, 46], [66, 46], [42, 64], [58, 64], [50, 78]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.2" ry="3.2" fill="#ffd23f" stroke="none"/>`).join('') +
+    eye(40, 44, 6) + eye(60, 44, 6) + smile(50, 56, 7),
 };
 
 const back = `<svg viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">

@@ -114,9 +114,13 @@ export class MemoryGame {
   }
 }
 
-/** Finishing is always at least one star; mistakes never cost it. `groups` = number of pairs (or triples). */
-export function starsFor(attempts: number, groups: number): 1 | 2 | 3 {
-  if (attempts <= groups * 1.5) return 3;
-  if (attempts <= groups * 2.2) return 2;
+/**
+ * Finishing is always at least one star; mistakes never cost it. `groups` = number of pairs (or triples).
+ * Pairs: 3 stars up to 1.5 attempts per pair, 2 up to 2.2. Triples (harder): 3 up to 2 per triple, 2 up to 3.
+ */
+export function starsFor(attempts: number, groups: number, group: 2 | 3 = 2): 1 | 2 | 3 {
+  const [three, two] = group === 3 ? [2, 3] : [1.5, 2.2];
+  if (attempts <= groups * three) return 3;
+  if (attempts <= groups * two) return 2;
   return 1;
 }

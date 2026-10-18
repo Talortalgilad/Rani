@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { composeLevel, maxNumberFor } from './compose';
 import { DECKS, DECK_IDS, LETTERS, artDrawing } from './decks';
 import { lettersArt } from './decks/letters';
+import { playLevel } from './bots';
 import { MemoryGame, starsFor, type Card, type Special } from './engine';
 import { cardWidth, fits, GAP, MIN_CARD } from './layout';
 import { LEVELS, WORLDS, groupsOf } from './levels';
@@ -80,6 +81,26 @@ describe.each(LEVELS)('level $id board', (level) => {
   }
 });
 
+describe('decks are never mixed', () => {
+  it.each(LEVELS)('level $id: every plain picture comes from its own world', (level) => {
+    for (let seed = 1; seed <= 30; seed++) {
+      for (const mathMax of [5, 20]) {
+        const cards = composeLevel(level, mathMax, rng(seed + level.id * 100));
+        const plain = cards.filter((c) => !c.face);
+        expect(plain.length).toBeGreaterThan(0);
+        plain.forEach((c) => expect(c.art.startsWith(`${level.deck}:`)).toBe(true));
+      }
+    }
+  });
+  it('every world is big enough to fill its biggest board on its own', () => {
+    for (const level of LEVELS) {
+      const own = DECKS[level.deck].keys.length;
+      const needed = groupsOf(level) - (level.specials?.length ?? 0) - (level.edu ? 6 : 0);
+      expect(own).toBeGreaterThanOrEqual(needed);
+    }
+  });
+});
+
 describe('learning pairs', () => {
   it('number ↔ quantity: both cards per number, within the maths range, and the range follows the level', () => {
     const l = LEVELS.find((x) => x.edu === 'numqty')!;
@@ -121,12 +142,12 @@ describe('learning pairs', () => {
 });
 
 describe('art', () => {
-  it('every world has 12 distinct pictures and its own card back; no emoji anywhere', () => {
+  it('every world has 15 distinct pictures and its own card back; no emoji anywhere', () => {
     const backs = new Set<string>();
     for (const id of DECK_IDS) {
       const d = DECKS[id];
-      expect(d.keys).toHaveLength(12);
-      expect(new Set(Object.values(d.art)).size).toBe(12);
+      expect(d.keys).toHaveLength(15);
+      expect(new Set(Object.values(d.art)).size).toBe(15);
       backs.add(d.back);
       expect(Object.values(d.art).join('') + d.back).not.toMatch(/\p{Extended_Pictographic}/u);
     }
@@ -135,64 +156,16 @@ describe('art', () => {
   });
 });
 
-/** Plays a level the way the UI does, including the shuffle and the peek. */
-function play(cards: Card[], group: 2 | 3, strategy: 'memory' | 'random', rand: () => number) {
-  const g = new MemoryGame(cards, group);
-  let seen = new Set<number>();
-  const afterMatch = (r: ReturnType<MemoryGame['flip']>) => {
-    if (r.kind === 'match' && r.special === 'shuffle') {
-      g.shuffleRemaining(rand);
-      seen = new Set(); // positions changed: whatever was remembered is stale
-    }
-  };
-  let moves = 0;
-  while (!g.done && moves++ < 50000) {
-    if (strategy === 'random') {
-      const r = g.flip(Math.floor(rand() * cards.length));
-      afterMatch(r);
-      if (g.resolving) g.unflip();
-      continue;
-    }
-    const byArt = new Map<string, number[]>();
-    seen.forEach((i) => {
-      if (!g.matched[i]) byArt.set(g.cards[i].art, [...(byArt.get(g.cards[i].art) ?? []), i]);
-    });
-    const full = [...byArt.values()].find((v) => v.length === group);
-    if (full) {
-      let last;
-      for (const i of full) last = g.flip(i);
-      afterMatch(last!);
-      continue;
-    }
-    const unseen = g.cards.map((_, i) => i).filter((i) => !seen.has(i) && !g.matched[i]);
-    const first = unseen[0];
-    let r = g.flip(first);
-    seen.add(first);
-    const twins = [...seen].filter((i) => i !== first && g.cards[i].art === g.cards[first].art && !g.matched[i]);
-    if (twins.length >= group - 1) {
-      for (const i of twins.slice(0, group - 1)) r = g.flip(i);
-    } else {
-      for (let k = 1; g.open.length < group && unseen[k] !== undefined; k++) {
-        seen.add(unseen[k]);
-        r = g.flip(unseen[k]);
-      }
-    }
-    afterMatch(r);
-    if (g.resolving) g.unflip();
-  }
-  return g;
-}
-
 describe.each(LEVELS)('level $id can be finished', (level) => {
   it('by a bot with perfect memory, and by one that guesses (with shuffle and triples handled)', () => {
-    for (const strategy of ['memory', 'random'] as const) {
+    for (const strategy of ['memory', 'limited', 'random'] as const) {
       for (let seed = 1; seed <= 5; seed++) {
         const r = rng(seed + level.id * 31);
-        const g = play(composeLevel(level, 10, r), level.group, strategy, r);
+        const g = playLevel(composeLevel(level, 10, r), level.group, strategy, r);
         expect(g.done).toBe(true);
         expect(g.matched.every(Boolean)).toBe(true);
-        expect(starsFor(g.attempts, groupsOf(level))).toBeGreaterThanOrEqual(1);
-        if (strategy === 'memory') expect(g.attempts).toBeLessThanOrEqual(groupsOf(level) * 4);
+        expect(starsFor(g.attempts, groupsOf(level), level.group)).toBeGreaterThanOrEqual(1);
+        if (strategy === 'memory') expect(g.attempts).toBeLessThanOrEqual(groupsOf(level) * 3);
       }
     }
   });

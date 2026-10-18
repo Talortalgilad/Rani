@@ -73,6 +73,28 @@ const art: Record<string, string> = {
     `<rect x="34" y="32" width="32" height="36" rx="8" fill="#fff"/>` +
     `<circle cx="50" cy="50" r="9" fill="#ffd23f"/><circle cx="50" cy="50" r="3.5" fill="${INK}" stroke="none"/>` +
     `<path d="M50 32 L50 18" fill="none" stroke-width="4"/><circle cx="50" cy="14" r="5" fill="#ff5d73"/></g>`,
+
+  jupiter:
+    `<clipPath id="jp"><circle cx="50" cy="50" r="38"/></clipPath>` +
+    `<circle cx="50" cy="50" r="38" fill="#ffd9b0"/>` +
+    `<g clip-path="url(#jp)" stroke="none"><rect x="0" y="20" width="100" height="12" fill="#e8a070"/><rect x="0" y="44" width="100" height="10" fill="#d98a5a"/><rect x="0" y="66" width="100" height="12" fill="#e8a070"/></g>` +
+    `<ellipse cx="68" cy="62" rx="9" ry="6" fill="#e5484d" stroke-width="3"/>` +
+    `<circle cx="50" cy="50" r="38" fill="none"/>` + eye(36, 40, 7) + eye(56, 38, 7) + smile(46, 54, 7),
+
+  telescope:
+    `<path d="M50 56 L28 94 M50 56 L72 94 M50 56 L50 94" fill="none" stroke-width="5"/>` +
+    `<g transform="rotate(-28 50 46)">` +
+    `<rect x="8" y="36" width="56" height="22" rx="4" fill="#4a90e2"/>` +
+    `<rect x="60" y="30" width="30" height="34" rx="5" fill="#a9b4c9"/>` +
+    `<path d="M26 36 V58 M44 36 V58" fill="none" stroke-width="3.5"/>` +
+    `<ellipse cx="90" cy="47" rx="3" ry="14" fill="#bfe6ff" stroke-width="3"/></g>`,
+
+  galaxy:
+    `<circle cx="50" cy="50" r="42" fill="#3b2f8a" stroke-width="4"/>` +
+    `<path d="M50 50 C50 40 62 38 66 48 C70 62 50 72 36 62 C20 50 28 26 50 22 C72 20 86 40 80 62" fill="none" stroke="#b58cff" stroke-width="9" stroke-linecap="round"/>` +
+    `<path d="M50 50 C44 58 54 66 62 60" fill="none" stroke="#ff9fd0" stroke-width="6" stroke-linecap="round"/>` +
+    `<circle cx="50" cy="50" r="9" fill="#ffd23f" stroke-width="3.5"/>` +
+    [[22, 30, 2.4], [80, 24, 2], [18, 70, 2], [76, 82, 2.4], [86, 54, 1.8]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="none"/>`).join(''),
 };
 
 const back = `<svg viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">

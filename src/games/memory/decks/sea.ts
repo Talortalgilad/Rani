@@ -83,6 +83,27 @@ const art: Record<string, string> = {
     `<path d="M50 14 L56 4 L60 14 L68 8 L66 20Z" fill="#ff9a3c"/>` +
     `<circle cx="58" cy="26" r="15" fill="#ffb627"/>` + eye(60, 24, 6) +
     `<path d="M46 52 L38 54 M50 62 L42 66" fill="none" stroke-width="3.5"/>`,
+
+  dolphin:
+    `<g transform="translate(0 6) scale(.9)">` +
+    `<path d="M44 28 L60 6 L66 30Z" fill="#4a90e2"/>` +
+    `<path d="M70 66 L92 80 L80 56Z" fill="#4a90e2"/>` +
+    `<path d="M10 56 C10 34 38 22 64 26 C80 28 86 38 90 32 L98 24 C100 44 92 60 72 68 C50 80 22 78 10 56Z" fill="#6aa9e8"/>` +
+    `<path d="M16 62 C34 78 66 74 84 62 C70 80 34 84 16 62Z" fill="#dff0ff" stroke="none"/>` +
+    `<ellipse cx="9" cy="58" rx="8" ry="4.5" fill="#6aa9e8"/>` + eye(32, 46, 7) + smile(26, 62, 8) + `</g>`,
+
+  sailboat:
+    `<path d="M50 8 L50 66" fill="none" stroke-width="5"/>` +
+    `<path d="M48 12 L48 62 L14 62Z" fill="#fff"/><path d="M54 24 L54 62 L84 62Z" fill="#ffd23f"/>` +
+    `<path d="M50 8 L64 12 L50 17Z" fill="#e5484d" stroke-width="3"/>` +
+    `<path d="M8 66 H92 L78 90 H22Z" fill="#e5484d"/>` +
+    `<circle cx="36" cy="77" r="4" fill="#bfe6ff" stroke-width="3"/><circle cx="50" cy="77" r="4" fill="#bfe6ff" stroke-width="3"/><circle cx="64" cy="77" r="4" fill="#bfe6ff" stroke-width="3"/>`,
+
+  anchor:
+    thick('M50 24 V86', '#8aa0b8', 9) + thick('M30 40 H70', '#8aa0b8', 9) +
+    thick('M16 58 C20 92 80 92 84 58', '#8aa0b8', 9) +
+    `<path d="M10 60 L16 50 L24 62Z" fill="#8aa0b8"/><path d="M90 60 L84 50 L76 62Z" fill="#8aa0b8"/>` +
+    `<circle cx="50" cy="16" r="9" fill="#fff" stroke-width="5"/>`,
 };
 
 const back = `<svg viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">

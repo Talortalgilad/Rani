@@ -203,7 +203,7 @@ export function mountBoard(
       later(() => res.indices.forEach((j) => els[j].classList.add('gone')), FLIP_MS + 800);
       if (game.done) {
         finishing = true;
-        later(() => deps.onFinish({ stars: starsFor(game.attempts, groupsOf(level)), attempts: game.attempts, bestStreak: game.bestStreak }), FLIP_MS + 1500);
+        later(() => deps.onFinish({ stars: starsFor(game.attempts, groupsOf(level), level.group), attempts: game.attempts, bestStreak: game.bestStreak }), FLIP_MS + 1500);
       } else if (res.special === 'peek') later(peek, FLIP_MS + 900);
       else if (res.special === 'shuffle') later(shuffleCards, FLIP_MS + 900);
       hold(FLIP_MS + 900);

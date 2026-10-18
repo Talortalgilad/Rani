@@ -1,4 +1,4 @@
-import { DECK_IDS, LETTERS, deckKeys } from './decks';
+import { LETTERS, deckKeys } from './decks';
 import { shuffle, type Card, type Face, type Rand, type Special } from './engine';
 import { groupsOf, type Level } from './levels';
 
@@ -10,11 +10,11 @@ export function maxNumberFor(mathMax: number): number {
   return Math.max(5, Math.min(20, mathMax));
 }
 
-/** "deck:picture" keys for `n` picture groups: the world's deck first, topped up from the others for big boards. */
+/** "deck:picture" keys for `n` picture groups, always from the level's own world deck. */
 function pictureKeys(deck: Level['deck'], n: number, rand: Rand, exclude: Set<string>): string[] {
-  const own = shuffle(deckKeys(deck), rand);
-  const others = shuffle(DECK_IDS.filter((d) => d !== deck).flatMap(deckKeys), rand);
-  return [...own, ...others].filter((k) => !exclude.has(k)).slice(0, n);
+  const keys = shuffle(deckKeys(deck), rand).filter((k) => !exclude.has(k));
+  if (keys.length < n) throw new Error(`deck ${deck} has ${keys.length} pictures, level needs ${n}`);
+  return keys.slice(0, n);
 }
 
 /** Builds the shuffled cards of one level: special groups, learning pairs, then pictures. */

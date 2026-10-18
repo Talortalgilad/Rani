@@ -17,7 +17,7 @@ const counts = (cards: { art: string }[]) => {
 
 describe('board building', () => {
   it.each([2, 3] as const)('every picture appears exactly %i times and the size divides evenly', (group) => {
-    for (const pairs of [3, 6, 8, 12]) {
+    for (const pairs of [3, 6, 8, 12, 15]) {
       const cards = buildCards(keys, pairs, group, rng(pairs));
       expect(cards).toHaveLength(pairs * group);
       expect(cards.length % group).toBe(0);
@@ -35,7 +35,7 @@ describe('board building', () => {
     expect([...shuffle([1, 2, 3, 4, 5], rng(3))].sort()).toEqual([1, 2, 3, 4, 5]);
   });
   it('refuses a board the deck cannot fill, or one that does not divide', () => {
-    expect(() => buildCards(keys, 13, 2)).toThrow();
+    expect(() => buildCards(keys, keys.length + 1, 2)).toThrow();
     expect(() => new MemoryGame([{ id: 0, art: 'a' }, { id: 1, art: 'a' }, { id: 2, art: 'b' }], 2)).toThrow();
   });
 });
@@ -122,9 +122,9 @@ describe('stars', () => {
 });
 
 describe('farm deck art', () => {
-  it('has 12 distinct pictures drawn in code, no emoji', () => {
-    expect(DECKS.farm.keys).toHaveLength(12);
-    expect(new Set(Object.values(DECKS.farm.art)).size).toBe(12);
+  it('has 15 distinct pictures drawn in code, no emoji', () => {
+    expect(DECKS.farm.keys).toHaveLength(15);
+    expect(new Set(Object.values(DECKS.farm.art)).size).toBe(15);
     const all = Object.values(DECKS.farm.art).join('') + DECKS.farm.back;
     expect(all).not.toMatch(/\p{Extended_Pictographic}/u);
     expect(DECKS.farm.back.startsWith('<svg')).toBe(true);

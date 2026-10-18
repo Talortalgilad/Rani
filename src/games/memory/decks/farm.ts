@@ -1,4 +1,4 @@
-import { INK, eye, nostrils, svg, type Deck } from './svg';
+import { INK, eye, nostrils, svg, thick, type Deck } from './svg';
 
 const art: Record<string, string> = {
   cow:
@@ -103,6 +103,31 @@ const art: Record<string, string> = {
     `<circle cx="50" cy="38" r="9" fill="#ffe9a8"/>` +
     `<rect x="31" y="58" width="38" height="32" fill="#fff"/>` +
     `<path d="M31 58 L69 90 M69 58 L31 90" fill="none" stroke-width="3.5"/>`,
+
+  tractor:
+    `<rect x="18" y="22" width="9" height="22" fill="#3a2f4b"/>` +
+    `<path d="M8 44 H58 V68 H8Z" fill="#3fb56b"/>` +
+    `<path d="M56 24 H88 V68 H56Z" fill="#e5484d"/>` +
+    `<rect x="62" y="30" width="20" height="20" rx="3" fill="#bfe6ff" stroke-width="3.5"/>` +
+    `<circle cx="72" cy="72" r="21" fill="#3a2f4b"/><circle cx="72" cy="72" r="9" fill="#ffd23f" stroke-width="3.5"/>` +
+    `<circle cx="24" cy="78" r="13" fill="#3a2f4b"/><circle cx="24" cy="78" r="5.5" fill="#ffd23f" stroke-width="3"/>` +
+    `<circle cx="9" cy="54" r="4" fill="#ffd23f" stroke-width="3"/>`,
+
+  sunflower:
+    thick('M50 56 C50 74 46 84 50 98', '#3fb56b', 6) +
+    `<path d="M50 82 C34 72 22 78 20 86 C32 92 44 90 50 82Z" fill="#7ddc5a" stroke-width="3.5"/>` +
+    Array.from({ length: 12 }, (_, i) => `<ellipse cx="50" cy="14" rx="7" ry="13" fill="#ffd23f" transform="rotate(${i * 30} 50 38)" stroke-width="3.5"/>`).join('') +
+    `<circle cx="50" cy="38" r="17" fill="#8a5a3c"/>` + eye(44, 36, 4.5) + eye(57, 36, 4.5) + `<path d="M44 46 Q50 51 56 46" fill="none" stroke="#f2d2b0" stroke-width="3"/>`,
+
+  rooster:
+    `<g transform="translate(-5 4) scale(.92)">` +
+    `<path d="M70 56 C94 40 96 14 86 6 C82 22 74 30 66 40Z" fill="#e5484d"/>` +
+    `<path d="M72 62 C98 56 100 34 94 28 C86 42 80 48 70 54Z" fill="#ff9a3c"/>` +
+    `<path d="M70 70 C94 74 98 56 98 48 C88 58 80 60 68 62Z" fill="#3fb56b"/>` +
+    `<path d="M34 24 C28 8 42 4 46 16 C48 2 62 4 58 20 C66 12 74 24 62 30Z" fill="#e5484d"/>` +
+    `<circle cx="48" cy="56" r="32" fill="#e8a24a"/>` +
+    `<ellipse cx="46" cy="78" rx="6" ry="9" fill="#e5484d"/>` +
+    `<path d="M32 56 L12 62 L32 70Z" fill="#ffb627"/>` + eye(40, 46, 8) + eye(60, 46, 8) + `</g>`,
 };
 
 /** Grass-green card back with a flower, as in the farm world. */
