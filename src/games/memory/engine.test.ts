@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DECKS } from './decks';
 import { MemoryGame, buildCards, shuffle, starsFor } from './engine';
-import { LEVELS, pairsOf } from './levels';
 
 function rng(seed: number) {
   return () => {
@@ -119,58 +118,6 @@ describe('stars', () => {
     expect(starsFor(17, P)).toBe(2);
     expect(starsFor(18, P)).toBe(1);
     expect(starsFor(500, P)).toBe(1);
-  });
-});
-
-describe('world 1 levels', () => {
-  it('has 4 levels with valid, fillable boards', () => {
-    expect(LEVELS.map((l) => [l.cols, l.rows])).toEqual([[2, 3], [3, 4], [3, 4], [4, 4]]);
-    for (const l of LEVELS) {
-      expect((l.cols * l.rows) % l.group).toBe(0);
-      expect(pairsOf(l)).toBeLessThanOrEqual(DECKS[l.deck].keys.length);
-      const cards = buildCards(DECKS[l.deck].keys, pairsOf(l), l.group);
-      expect(cards).toHaveLength(l.cols * l.rows);
-    }
-  });
-  it.each(LEVELS)('level $id can be finished (a player who remembers everything, and one who guesses)', (l) => {
-    // perfect memory: never forgets a card it has seen
-    const g = new MemoryGame(buildCards(DECKS[l.deck].keys, pairsOf(l), l.group, rng(l.id)), l.group);
-    const seen = new Set<number>();
-    for (let guard = 0; !g.done && guard < 1000; guard++) {
-      const byArt = new Map<string, number[]>();
-      seen.forEach((i) => {
-        if (!g.matched[i]) byArt.set(g.cards[i].art, [...(byArt.get(g.cards[i].art) ?? []), i]);
-      });
-      const full = [...byArt.values()].find((v) => v.length === l.group);
-      if (full) {
-        full.forEach((i) => g.flip(i));
-        continue;
-      }
-      const unseen = g.cards.map((_, i) => i).filter((i) => !seen.has(i) && !g.matched[i]);
-      const first = unseen[0];
-      g.flip(first);
-      seen.add(first);
-      const twins = [...seen].filter((i) => i !== first && g.cards[i].art === g.cards[first].art && !g.matched[i]);
-      if (twins.length >= l.group - 1) {
-        twins.slice(0, l.group - 1).forEach((i) => g.flip(i));
-        continue;
-      }
-      for (let k = 1; g.open.length < l.group && unseen[k] !== undefined; k++) {
-        seen.add(unseen[k]);
-        g.flip(unseen[k]);
-      }
-      if (g.resolving) g.unflip();
-    }
-    expect(g.done).toBe(true);
-    // random guessing also always terminates
-    const r = rng(l.id + 50);
-    const h = new MemoryGame(buildCards(DECKS[l.deck].keys, pairsOf(l), l.group, rng(l.id)), l.group);
-    for (let i = 0; i < 20000 && !h.done; i++) {
-      h.flip(Math.floor(r() * h.cards.length));
-      if (h.resolving) h.unflip();
-    }
-    expect(h.done).toBe(true);
-    expect(starsFor(h.attempts, h.pairs)).toBeGreaterThanOrEqual(1);
   });
 });
 

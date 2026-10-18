@@ -56,13 +56,16 @@ const art: Record<string, string> = {
     eye(38, 57, 8) + eye(62, 57, 8),
 
   goat:
-    `<path d="M34 30 C26 16 34 6 44 8" fill="none" stroke-width="12"/><path d="M34 30 C26 16 34 6 44 8" fill="none" stroke="#f4e6c4" stroke-width="5"/>` +
-    `<path d="M66 30 C74 16 66 6 56 8" fill="none" stroke-width="12"/><path d="M66 30 C74 16 66 6 56 8" fill="none" stroke="#f4e6c4" stroke-width="5"/>` +
-    `<ellipse cx="16" cy="46" rx="12" ry="6" fill="#f1eadf" transform="rotate(20 16 46)"/>` +
-    `<ellipse cx="84" cy="46" rx="12" ry="6" fill="#f1eadf" transform="rotate(-20 84 46)"/>` +
-    `<path d="M43 84 L50 99 L57 84Z" fill="#f1eadf"/>` +
-    `<path d="M28 32 C30 24 70 24 72 32 C77 52 69 72 61 82 C55 89 45 89 39 82 C31 72 23 52 28 32Z" fill="#f1eadf"/>` +
-    `<ellipse cx="50" cy="73" rx="13" ry="10" fill="#ffd9d0"/>` + nostrils(45, 55, 73, 2, 3) + eye(38, 50) + eye(62, 50),
+    `<g transform="translate(10 7) scale(.8)">` +
+    `<path d="M38 34 C20 30 16 10 30 2" fill="none" stroke-width="15"/><path d="M38 34 C20 30 16 10 30 2" fill="none" stroke="#f2e3c3" stroke-width="8"/>` +
+    `<path d="M62 34 C80 30 84 10 70 2" fill="none" stroke-width="15"/><path d="M62 34 C80 30 84 10 70 2" fill="none" stroke="#f2e3c3" stroke-width="8"/>` +
+    `<path d="M26 22 L34 24 M24 14 L32 17 M74 22 L66 24 M76 14 L68 17" fill="none" stroke-width="3"/>` +
+    `<ellipse cx="14" cy="50" rx="13" ry="6" fill="#a8743f" transform="rotate(25 14 50)"/>` +
+    `<ellipse cx="86" cy="50" rx="13" ry="6" fill="#a8743f" transform="rotate(-25 86 50)"/>` +
+    `<path d="M26 36 C28 28 72 28 74 36 C78 56 70 74 62 82 C56 88 44 88 38 82 C30 74 22 56 26 36Z" fill="#c99a68"/>` +
+    `<ellipse cx="50" cy="72" rx="14" ry="11" fill="#f1dfc8"/>` + nostrils(45, 55, 72, 2, 3) +
+    `<path d="M32 78 C32 98 42 106 50 108 C58 106 68 98 68 78 Q50 88 32 78Z" fill="#fff"/>` +
+    `<path d="M42 92 L50 104 L58 92" fill="none" stroke-width="3"/>` + eye(38, 52) + eye(62, 52) + `</g>`,
 
   dog:
     `<ellipse cx="17" cy="50" rx="12" ry="22" fill="#8a5a3c" transform="rotate(12 17 50)"/>` +
