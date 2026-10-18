@@ -8,6 +8,8 @@ export interface RoundResult {
 
 export interface GameContext {
   container: HTMLElement;
+  /** True when the host restored this game after a reload without the gate; the game should come back paused. */
+  resuming: boolean;
   onExit(): void;
   onRoundEnd(result: RoundResult): void;
   /** Ask the host to start another round; it may show the math gate first. Call `start` only when allowed. */

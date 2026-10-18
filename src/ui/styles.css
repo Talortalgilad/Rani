@@ -92,8 +92,9 @@ html, body {
   border-radius: var(--radius);
   background: #8e5cf0;
   color: #fff;
-  font: 800 24px inherit;
   font-family: inherit;
+  font-weight: 800;
+  font-size: 24px;
 }
 
 .placeholder {
@@ -168,3 +169,24 @@ html, body {
 @keyframes shake { 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
 .q-text.long { font-size: 46px; white-space: nowrap; letter-spacing: 0; }
 .dot.gone::after { content: '✕'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 14px; color: #8a7da0; }
+
+/* ---- brick breaker ---- */
+.screen.game { padding: 0; height: 100%; min-height: 0; overflow: hidden; }
+.bb { position: relative; height: 100%; display: flex; flex-direction: column; touch-action: none; }
+.bb-hud { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left)); }
+.bb-hearts { font-size: 30px; letter-spacing: 2px; }
+.bb-info { display: flex; flex-direction: column; align-items: center; font-weight: 800; font-size: 20px; line-height: 1.2; }
+.bb-canvas { flex: 1; width: 100%; min-height: 0; display: block; touch-action: none; }
+.bb-overlay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(58, 47, 75, 0.45); }
+.bb-overlay[hidden] { display: none; }
+.bb-card { background: var(--bg); border-radius: 36px; padding: 32px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; width: min(86%, 380px); box-shadow: 0 12px 40px rgba(0,0,0,.25); animation: pop .35s; }
+.btn.alt { background: #fff; color: var(--ink); box-shadow: 0 4px 12px rgba(58,47,75,.15); }
+.bb-card .btn { width: 100%; white-space: nowrap; }
+.bb-card .btn.big { font-size: 30px; padding: 0 16px; }
+.bb-stars { font-size: 64px; display: flex; gap: 6px; }
+.bb-stars span { filter: grayscale(1) opacity(.3); }
+.bb-stars span.on { filter: none; animation: pop .5s backwards; }
+.bb-stars span:nth-child(2) { animation-delay: .15s; } .bb-stars span:nth-child(3) { animation-delay: .3s; }
+.bb-score-big { font-size: 40px; font-weight: 800; }
+.bb-almost { font-size: 34px; font-weight: 800; text-align: center; }

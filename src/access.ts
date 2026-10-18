@@ -34,3 +34,13 @@ export function consumeParent(): boolean {
   parentOk = false;
   return ok;
 }
+
+/** A paused round saved by a game (key `session`, with `savedAt`) may be resumed without the gate for 10 minutes. */
+export const SESSION_TTL_MS = 10 * 60 * 1000;
+
+export function hasFreshSession(gameId: string): boolean {
+  const s = (getState().games[gameId] as { session?: { savedAt?: unknown } | null } | undefined)?.session;
+  if (!s || typeof s.savedAt !== 'number') return false;
+  const age = Date.now() - s.savedAt;
+  return age >= 0 && age < SESSION_TTL_MS;
+}

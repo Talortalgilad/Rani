@@ -5,7 +5,7 @@ import { renderGate } from './ui/gate';
 import { renderParent } from './ui/parent';
 import { games } from './games/registry';
 import { sound } from './sound';
-import { clearPass, consumeParent, grantPass, startRound } from './access';
+import { clearPass, consumeParent, grantPass, hasFreshSession, startRound } from './access';
 import { gameStore, update } from './storage';
 import type { GameModule } from './games/types';
 
@@ -25,7 +25,12 @@ function mountGame(gameId: string): void {
   const game = games.find((g) => g.id === gameId);
   if (!game) return go({ name: 'home' }, { replace: true });
   // No route reaches a game without a round granted by the gate.
-  if (!startRound(gameId)) return go({ name: 'gate', gameId }, { replace: true });
+  // The one exception: a round paused less than 10 minutes ago resumes (paused) after a reload.
+  let resuming = false;
+  if (!startRound(gameId)) {
+    if (!hasFreshSession(gameId)) return go({ name: 'gate', gameId }, { replace: true });
+    resuming = true;
+  }
   app.innerHTML = '';
   const container = document.createElement('div');
   container.className = 'screen game';
@@ -34,6 +39,7 @@ function mountGame(gameId: string): void {
   activeGame = game;
   game.mount({
     container,
+    resuming,
     onExit: () => go({ name: 'home' }),
     onRoundEnd: (r) => {
       if (r.stars > 0) update((s) => (s.stars += r.stars));
