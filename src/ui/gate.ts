@@ -1,6 +1,6 @@
 import { activeLevel, recordAnswer } from '../math/adaptive';
 import { createGenerator, type Question } from '../math/generator';
-import { getState } from '../storage';
+import { gameStore, getState } from '../storage';
 import { sound } from '../sound';
 import { speak, stopSpeaking } from '../speech';
 import { go } from '../router';
@@ -12,6 +12,7 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
   const total = getState().settings.gateQuestions;
   let solved = 0;
   let dead = false;
+  let passed = false;
   const timers: number[] = [];
   const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(() => !dead && fn(), ms));
 
@@ -119,14 +120,17 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
     stopSpeaking();
     sound.play('win');
     body.innerHTML = `<div class="intro"><div class="intro-emoji bounce">🎉</div><h2>יאללה משחקים!</h2></div>`;
-    later(onPass, 1300);
+    later(() => {
+      passed = true;
+      onPass();
+    }, 1300);
   }
 
   intro();
-  // gameId is unused visually; kept so the gate is bound to the chosen game.
-  void gameId;
 
   return () => {
+    // Left the gate without playing: forget the round that was queued behind it.
+    if (!passed) gameStore(gameId).save('queued', null);
     dead = true;
     timers.forEach(clearTimeout);
     stopSpeaking();

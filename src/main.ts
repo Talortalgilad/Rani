@@ -1,8 +1,16 @@
+import '@fontsource/rubik/latin-400.css';
+import '@fontsource/rubik/latin-600.css';
+import '@fontsource/rubik/latin-800.css';
+import '@fontsource/rubik/hebrew-400.css';
+import '@fontsource/rubik/hebrew-600.css';
+import '@fontsource/rubik/hebrew-800.css';
 import './ui/styles.css';
 import { onRoute, go, type Route } from './router';
 import { renderHome } from './ui/home';
 import { renderGate } from './ui/gate';
 import { renderParent } from './ui/parent';
+import { showTimeUp } from './ui/timeup';
+import { isTimeUp, trackUsage } from './usage';
 import { games } from './games/registry';
 import { sound, unlockAudio } from './sound';
 import { clearPass, consumeParent, grantPass, hasFreshSession, startRound } from './access';
@@ -55,8 +63,15 @@ function mountGame(gameId: string): void {
   });
 }
 
+let current: Route = { name: 'home' };
+
 onRoute((route: Route) => {
   teardown();
+  current = route;
+  if ((route.name === 'gate' || route.name === 'game') && isTimeUp()) {
+    showTimeUp();
+    return go({ name: 'home' }, { replace: true });
+  }
   switch (route.name) {
     case 'home':
       clearPass();
@@ -88,3 +103,13 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) activeGame?.pause();
 });
 
+
+// Daily limit: count play time in the gate and games; when it runs out, wait for a calm moment.
+trackUsage({
+  active: () => current.name === 'gate' || current.name === 'game',
+  canInterrupt: () => current.name !== 'game' || (activeGame?.canInterrupt?.() ?? true),
+  onTimeUp: () => {
+    activeGame?.pause();
+    showTimeUp();
+  },
+});

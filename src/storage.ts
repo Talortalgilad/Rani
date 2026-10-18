@@ -25,7 +25,7 @@ export interface AppState {
     log: { date: string; type: QuestionType; correct: boolean; attempts: number }[];
   };
   games: Record<string, unknown>;
-  usage: { date: string; minutes: number };
+  usage: { date: string; minutes: number; extraMin: number };
 }
 
 function defaults(): AppState {
@@ -45,7 +45,7 @@ function defaults(): AppState {
     },
     math: { currentLevel: 1, recent: [], answeredAtLevel: 0, log: [] },
     games: {},
-    usage: { date: '', minutes: 0 },
+    usage: { date: '', minutes: 0, extraMin: 0 },
   };
 }
 
@@ -105,4 +105,14 @@ export function gameStore(gameId: string) {
       return ns && key in ns ? (ns[key] as T) : fallback;
     },
   };
+}
+
+/** Wipes stars, game progress and maths history. Settings, profile and today's play time are kept. */
+export function resetProgress(): void {
+  const s = getState();
+  const fresh = defaults();
+  s.stars = 0;
+  s.math = fresh.math;
+  s.games = {};
+  saveState();
 }

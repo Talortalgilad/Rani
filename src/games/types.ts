@@ -29,6 +29,8 @@ export interface GameModule {
   icon: string;
   color: string;
   mount(ctx: GameContext): void;
+  /** True when a friendly full-screen message can appear without cutting off a move (ball stuck, round over, paused, menus). */
+  canInterrupt?(): boolean;
   pause(): void;
   resume(): void;
   unmount(): void;

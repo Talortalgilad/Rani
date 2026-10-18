@@ -210,3 +210,48 @@ html, body {
 .bb-stars span:nth-child(2) { animation-delay: .15s; } .bb-stars span:nth-child(3) { animation-delay: .3s; }
 .bb-score-big { font-size: 40px; font-weight: 800; }
 .bb-almost { font-size: 34px; font-weight: 800; text-align: center; }
+
+/* ---- parent area ---- */
+.screen.parent { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; height: 100%; min-height: 0; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+.parent h1 { margin: 0; font-size: 30px; }
+.p-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.p-head .btn { min-height: 56px; font-size: 20px; padding: 0 20px; }
+.p-card { background: #fff; border-radius: 24px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 14px rgba(58,47,75,.08); }
+.p-card h2 { margin: 0; font-size: 22px; }
+.p-card.danger { border: 2px dashed #ffc9a0; }
+.p-sub { font-size: 16px; font-weight: 600; opacity: .75; margin-top: 4px; }
+.p-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip-btn { min-height: 52px; min-width: 52px; padding: 0 16px; border-radius: 16px; border: 2px solid #e4dcf2; background: #faf7ff; font: 600 18px 'Rubik', system-ui, sans-serif; color: var(--ink); }
+.chip-btn.on { background: #8e5cf0; border-color: #8e5cf0; color: #fff; }
+.chip-btn.avatar { font-size: 28px; }
+.p-stepper { display: flex; align-items: center; gap: 18px; align-self: flex-start; }
+.p-stepper b { font-size: 34px; min-width: 40px; text-align: center; }
+.p-input { font: 600 22px 'Rubik', system-ui, sans-serif; padding: 12px 16px; border: 2px solid #e4dcf2; border-radius: 16px; width: 100%; user-select: text; -webkit-user-select: text; }
+.p-quiz { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 8vh; }
+.p-quiz .p-input { max-width: 240px; text-align: center; font-size: 36px; }
+.p-q { font-size: 64px; font-weight: 800; }
+.p-emoji { font-size: 64px; }
+.shake { animation: shake .4s; }
+.p-flash { background: #e5f7ec; color: #23724a; border-radius: 16px; padding: 12px 16px; font-weight: 600; }
+.p-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.p-kpis div { background: #faf7ff; border-radius: 16px; padding: 12px 6px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.p-kpis b { font-size: 32px; }
+.p-kpis span { font-size: 13px; font-weight: 600; opacity: .8; }
+.p-stat { display: grid; grid-template-columns: 96px 1fr 48px 36px; align-items: center; gap: 8px; font-size: 15px; }
+.p-stat-name { font-weight: 600; }
+.p-bar { height: 12px; border-radius: 6px; background: #eee8f7; overflow: hidden; direction: ltr; }
+.p-bar i { display: block; height: 100%; background: var(--ok); border-radius: 6px; }
+.p-bar i.low { background: var(--oops); }
+.p-stat-pct { font-weight: 800; text-align: end; }
+.p-stat-n { opacity: .55; text-align: end; }
+.p-row { display: flex; gap: 12px; }
+.p-row .btn { flex: 1; min-height: 56px; font-size: 20px; padding: 0 12px; }
+.danger-btn { background: #e8590c; }
+#plus15, #reset { min-height: 56px; font-size: 20px; align-self: flex-start; }
+
+/* ---- daily limit reached ---- */
+.timeup { position: fixed; inset: 0; z-index: 100; background: linear-gradient(#2e2a57, #5a4aa8); display: grid; place-items: center; padding: 24px; animation: slide-in .4s; }
+.timeup-card { color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.timeup-card h2 { font-size: 34px; line-height: 1.4; margin: 0; }
+.timeup-emoji { font-size: 110px; }
+.timeup .btn { background: #fff; color: var(--ink); }

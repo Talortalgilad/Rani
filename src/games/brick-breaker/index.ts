@@ -383,6 +383,7 @@ const brickBreaker: GameModule = {
     }
   },
 
+  canInterrupt: () => inSelect || paused || ended || engine.state !== 'playing',
   pause: pauseGame,
   resume: resumeGame,
 
