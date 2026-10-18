@@ -6,19 +6,20 @@
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173/Rani/
+npm run dev      # http://localhost:5173/
 npm test         # בדיקות יחידה (Vitest)
 npm run build    # בנייה ל-dist/
 npm run preview  # בדיקה של הבנייה, כולל Service Worker
 ```
 
-הכתובת הבסיסית היא `/Rani/` (ב-`vite.config.ts`), כי זו הכתובת ב-GitHub Pages. אם שם הריפו ישתנה, צריך לשנות שם את `base`.
+האפליקציה יושבת בשורש הדומיין (`base: '/'` ב-`vite.config.ts`).
 
-## פריסה ל-GitHub Pages
+## פריסה ל-Vercel
 
-1. **Settings ← Pages ← Source: GitHub Actions.**
-2. מיזוג ל-`main` (ראו למטה). כל push ל-`main` בונה ומפרסם דרך `.github/workflows/deploy.yml`.
-3. הכתובת: https://talortalgilad.github.io/Rani/
+1. ב-Vercel: **Add New ← Project**, ובוחרים את הריפו `Rani`.
+2. Framework Preset: **Vite**. Build Command: `npm run build`. Output Directory: `dist`. (זה ברירת המחדל, אין צורך לשנות.)
+3. **Production Branch**: `main` (ב-Settings ← Git). כל push אליו מפרסם גרסה חדשה. ענפים אחרים מקבלים כתובת תצוגה מקדימה.
+4. `vercel.json` מגדיר `Cache-Control: no-cache` ל-`sw.js` ול-`manifest.webmanifest`, כדי שהאפליקציה המותקנת תבדוק עדכונים בכל פתיחה. ה-Service Worker מוגדר `autoUpdate`, ולכן גרסה חדשה נטענת בעצמה, והיא פעילה בפתיחה הבאה של האפליקציה.
 
 ## התקנה על הטלפון
 

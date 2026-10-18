@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// GitHub Pages serves the project at https://<user>.github.io/Rani/
-const base = '/Rani/';
+// Vercel serves the app from the domain root
+const base = '/';
 
 export default defineConfig({
   base,
