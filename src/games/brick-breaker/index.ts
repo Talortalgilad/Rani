@@ -16,7 +16,12 @@ const brickBreaker: GameModule = {
     home.className = 'btn';
     home.textContent = '🏠 בית';
     home.addEventListener('click', () => ctx.onExit());
-    root.appendChild(home);
+    const again = document.createElement('button');
+    again.className = 'btn';
+    again.id = 'again';
+    again.textContent = '🔁 שוב';
+    again.addEventListener('click', () => ctx.requestRound(() => {}));
+    root.append(again, home);
     ctx.container.appendChild(root);
   },
   pause() {},

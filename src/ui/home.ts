@@ -2,6 +2,7 @@ import { games, comingSoon } from '../games/registry';
 import { getState } from '../storage';
 import { sound } from '../sound';
 import { go } from '../router';
+import { allowParent } from '../access';
 
 const LONG_PRESS_MS = 3000;
 
@@ -79,7 +80,10 @@ export function renderHome(root: HTMLElement): () => void {
   const title = header.querySelector('.title') as HTMLElement;
   title.addEventListener('pointerdown', () => {
     cancel();
-    timer = window.setTimeout(() => go({ name: 'parent' }), LONG_PRESS_MS);
+    timer = window.setTimeout(() => {
+      allowParent();
+      go({ name: 'parent' });
+    }, LONG_PRESS_MS);
   });
   for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) {
     title.addEventListener(ev, cancel);

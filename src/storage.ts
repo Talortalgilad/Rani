@@ -19,6 +19,7 @@ export interface AppState {
   math: {
     currentLevel: number;
     recent: boolean[];
+    answeredAtLevel: number;
     log: { date: string; type: QuestionType; correct: boolean; attempts: number }[];
   };
   games: Record<string, unknown>;
@@ -39,7 +40,7 @@ function defaults(): AppState {
       sound: true,
       dailyLimitMin: null,
     },
-    math: { currentLevel: 1, recent: [], log: [] },
+    math: { currentLevel: 1, recent: [], answeredAtLevel: 0, log: [] },
     games: {},
     usage: { date: '', minutes: 0 },
   };

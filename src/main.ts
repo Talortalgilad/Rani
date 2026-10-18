@@ -5,6 +5,7 @@ import { renderGate } from './ui/gate';
 import { renderParent } from './ui/parent';
 import { games } from './games/registry';
 import { sound } from './sound';
+import { clearPass, consumeParent, grantPass, startRound } from './access';
 import { gameStore, update } from './storage';
 import type { GameModule } from './games/types';
 
@@ -22,7 +23,9 @@ function teardown(): void {
 
 function mountGame(gameId: string): void {
   const game = games.find((g) => g.id === gameId);
-  if (!game) return go({ name: 'home' });
+  if (!game) return go({ name: 'home' }, { replace: true });
+  // No route reaches a game without a round granted by the gate.
+  if (!startRound(gameId)) return go({ name: 'gate', gameId }, { replace: true });
   app.innerHTML = '';
   const container = document.createElement('div');
   container.className = 'screen game';
@@ -35,6 +38,10 @@ function mountGame(gameId: string): void {
     onRoundEnd: (r) => {
       if (r.stars > 0) update((s) => (s.stars += r.stars));
     },
+    requestRound: (start) => {
+      if (startRound(game.id)) start();
+      else go({ name: 'gate', gameId: game.id });
+    },
     sound,
     ...store,
   });
@@ -44,15 +51,21 @@ onRoute((route: Route) => {
   teardown();
   switch (route.name) {
     case 'home':
+      clearPass();
       cleanup = renderHome(app);
       break;
     case 'gate':
-      cleanup = renderGate(app, route.gameId);
+      if (!games.some((g) => g.id === route.gameId)) return go({ name: 'home' }, { replace: true });
+      cleanup = renderGate(app, route.gameId, () => {
+        grantPass(route.gameId);
+        go({ name: 'game', gameId: route.gameId }, { replace: true });
+      });
       break;
     case 'game':
       mountGame(route.gameId);
       break;
     case 'parent':
+      if (!consumeParent()) return go({ name: 'home' }, { replace: true });
       cleanup = renderParent(app);
       break;
   }
@@ -62,4 +75,3 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) activeGame?.pause();
 });
 
-go({ name: 'home' });
