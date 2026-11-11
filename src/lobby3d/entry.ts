@@ -4,7 +4,7 @@ import { sound } from '../sound';
 import { getState } from '../storage';
 import { renderHome } from '../ui/home';
 import './lobby.css';
-import { sessionTier, setTier } from './quality';
+import { pinnedTier, sessionTier, setTier } from './quality';
 
 const LAST_KEY = 'rani-lobby-last';
 const SHOWN_KEY = 'rani-jar-shown';
@@ -80,7 +80,7 @@ export function renderHomeAuto(root: HTMLElement): () => void {
       const l = await mod.startLobby({
         islands: specs,
         startIndex: lastGameIndex(),
-        autoDowngrade: pref === 'auto',
+        autoDowngrade: pref === 'auto' && !pinnedTier(),
         onFront: (i) => chrome?.front(i),
         onEnter: (i) => {
           if (!games[i]) return;
@@ -93,6 +93,8 @@ export function renderHomeAuto(root: HTMLElement): () => void {
         onJarShown: writeShown,
         onStarLand: (n) => sound.play('pop', 660 + (n % 10) * 55),
         onJarTap: () => sound.play('bonus'),
+        onTick: (n) => sound.play('tick', 820 + (n % 5) * 70),
+        onSettle: () => sound.play('settle'),
       });
       if (dead) {
         l.dispose();

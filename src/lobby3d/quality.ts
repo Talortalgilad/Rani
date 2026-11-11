@@ -33,6 +33,38 @@ function isLowEnd(): boolean {
 
 export const lowerTier = (t: Tier): Tier => ORDER[Math.min(ORDER.indexOf(t) + 1, ORDER.length - 1)];
 
+/**
+ * Measuring on a device: add `#fps` to the address (or `#fps:high`, `#fps:medium`, `#fps:2d` to pin a tier and stop
+ * the automatic fall-back). It sticks for the rest of the session even when the address changes.
+ */
+const FPS_KEY = 'rani-fps';
+const fpsMatch = /fps(?:[:=](high|medium|2d))?/.exec(typeof location === 'undefined' ? '' : location.hash);
+if (fpsMatch) {
+  try {
+    sessionStorage.setItem(FPS_KEY, fpsMatch[1] ?? '');
+  } catch {
+    /* ignore */
+  }
+}
+const stored = (() => {
+  try {
+    return sessionStorage.getItem(FPS_KEY);
+  } catch {
+    return null;
+  }
+})();
+export const fpsEnabled = (): boolean => fpsMatch !== null || stored !== null;
+const pinned = (fpsMatch ? fpsMatch[1] : stored) as Tier | undefined | null;
+export const pinnedTier = (): Tier | null => (pinned ? pinned : null);
+
+/** Numbers the 3D stage publishes for the FPS display. */
+export interface RenderStats { calls: number; triangles: number; jsMs: number }
+let probe: (() => RenderStats) | null = null;
+export const setStatsProbe = (fn: (() => RenderStats) | null): void => {
+  probe = fn;
+};
+export const getStats = (): RenderStats | null => probe?.() ?? null;
+
 /** The session's current tier. It only ever goes down. */
 let current: Tier = '2d';
 let lastPref: GraphicsPref | null = null;
@@ -41,7 +73,7 @@ export const getTier = (): Tier => current;
 export function sessionTier(pref: GraphicsPref): Tier {
   if (lastPref !== pref) {
     lastPref = pref;
-    current = initialTier(pref);
+    current = pinned && initialTier(pref) !== '2d' ? pinned : initialTier(pref);
   }
   return current;
 }

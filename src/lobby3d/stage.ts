@@ -1,5 +1,5 @@
 import * as T from './lib';
-import { getTier, lowerTier, QualityMonitor, setTier, type Tier } from './quality';
+import { getTier, lowerTier, QualityMonitor, setStatsProbe, setTier, type Tier } from './quality';
 
 /** What a screen gives the stage: its own scene, camera and per-frame update. */
 export interface StageScene {
@@ -113,14 +113,18 @@ export async function showScene(
     r.domElement.style.height = '100%';
     scene.resize(w, h);
   };
+  let jsMs = 0;
   const frame = (t: number) => {
     raf = requestAnimationFrame(frame);
     const dt = Math.min((t - last) / 1000, 0.05);
     last = t;
     monitor.sample(dt);
+    const t0 = performance.now();
     scene.update(dt, t / 1000);
     r.render(scene.scene, scene.camera);
+    jsMs = jsMs * 0.9 + (performance.now() - t0) * 0.1; // CPU time of one frame, without the GPU's share
   };
+  setStatsProbe(() => ({ calls: r.info.render.calls, triangles: r.info.render.triangles, jsMs }));
   const start = () => {
     if (disposed || raf) return;
     last = performance.now();
@@ -158,6 +162,7 @@ export async function showScene(
       document.removeEventListener('visibilitychange', onVis);
       r.domElement.removeEventListener('webglcontextlost', onLost);
       scene.dispose();
+      setStatsProbe(null);
       host.style.display = 'none';
       host.style.opacity = '0';
       if (active?.handle === handle) active = null;

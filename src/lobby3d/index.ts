@@ -27,6 +27,10 @@ export interface LobbyOpts {
   /** A star landed in the jar (one small sound each). */
   onStarLand(n: number): void;
   onJarTap(): void;
+  /** An island passed the middle (called at most every 60 ms), with a running count for rising pitch. */
+  onTick?(n: number): void;
+  /** The ring came to rest after moving. */
+  onSettle?(): void;
 }
 
 export interface LobbyHandle {
@@ -127,6 +131,9 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts, minis: (LobbyIslandHandle
 
   const carousel = new Carousel(islands.length, reduced, clamp(o.startIndex, 0, islands.length - 1));
   let lastFront = -1;
+  let wasMoving = false;
+  let lastTick = 0;
+  let tickN = 0;
 
   const zoom = new Spring(reduced ? 0 : 0.6, 130, 16); // starts a little close and eases back (coming home)
   zoom.target = 0;
@@ -155,7 +162,7 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts, minis: (LobbyIslandHandle
   let lastX = 0;
   let lastT = 0;
   let vel = 0;
-  const TURN_PER_SCREEN = Math.PI * 1.1;
+  const TURN_PER_SCREEN = Math.PI; // dragging across the whole screen turns the ring about two islands
   const onDown = (e: PointerEvent) => {
     if (entering !== null) return;
     try {
@@ -223,8 +230,18 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts, minis: (LobbyIslandHandle
     zoom.step(dt);
     const front = carousel.nearest;
     if (front !== lastFront) {
+      if (lastFront >= 0 && performance.now() - lastTick > 60) {
+        lastTick = performance.now();
+        o.onTick?.(tickN++);
+      }
       lastFront = front;
       o.onFront(front);
+    }
+    if (!carousel.settled) wasMoving = true;
+    else if (wasMoving) {
+      wasMoving = false;
+      tickN = 0;
+      if (!reduced && entering === null) o.onSettle?.();
     }
     const t = reduced ? 0 : time;
     islands.forEach((isl, i) => {

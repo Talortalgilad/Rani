@@ -44,6 +44,19 @@ describe('carousel', () => {
     settle(c);
     expect(c.nearest).toBe(0);
   });
+  it('a long fast drag carries on as far as it went instead of stopping after one island', () => {
+    const c = new Carousel(6);
+    c.dragStart();
+    c.dragBy(-c.step * 1.7, -3.2); // already 1.7 islands along, still moving
+    c.release(-3.2);
+    settle(c);
+    expect(c.nearest).toBe(2);
+    c.dragStart();
+    c.dragBy(c.step * 2.6, 3.2);
+    c.release(3.2);
+    settle(c);
+    expect(c.nearest).toBe(5); // 2 - 3 = -1 -> wraps to 5
+  });
   it('wraps around: flicking left from the last island lands on the first', () => {
     const c = new Carousel(4, false, 3);
     c.dragStart();
@@ -319,5 +332,50 @@ describe('game miniatures', () => {
       });
     }
     h.dispose();
+  });
+});
+
+import { SETTLE } from './carousel';
+
+describe('carousel feel (spring tuning)', () => {
+  /** Simulates a one-island move at 240 Hz and reports overshoot and time to rest. */
+  const sim = (distance: number) => {
+    const s = new Spring(0, SETTLE.stiffness, SETTLE.damping);
+    s.target = distance;
+    let peak = 0;
+    let rest = -1;
+    for (let i = 1; i <= 240 * 3; i++) {
+      s.step(1 / 240);
+      peak = Math.max(peak, s.value);
+      if (rest < 0 && Math.abs(s.value - distance) < 0.01 && Math.abs(s.velocity) < 0.05) rest = i / 240;
+    }
+    return { overshoot: (peak - distance) / distance, rest };
+  };
+  it('moving one island: a soft bounce (about 4%, never above 6%) and at rest within 0.7 s', () => {
+    const r = sim(Math.PI / 2);
+    expect(r.overshoot).toBeGreaterThan(0.01); // it does bounce a little
+    expect(r.overshoot).toBeLessThan(0.06);
+    expect(r.rest).toBeGreaterThan(0);
+    expect(r.rest).toBeLessThan(0.7);
+  });
+  it('a short snap-back settles a little faster, with the same bounce', () => {
+    const short = sim((Math.PI / 2) * 0.3);
+    expect(short.rest).toBeLessThan(0.65);
+    expect(short.overshoot).toBeLessThan(0.06);
+  });
+  it('is critically-ish damped: the damping ratio is between 0.6 and 0.8', () => {
+    expect(SETTLE.damping / (2 * Math.sqrt(SETTLE.stiffness))).toBeGreaterThan(0.6);
+    expect(SETTLE.damping / (2 * Math.sqrt(SETTLE.stiffness))).toBeLessThan(0.8);
+  });
+  it('the carousel reports when it is at rest, so the lobby can play the settle sound once', () => {
+    const c = new Carousel(4);
+    expect(c.settled).toBe(true);
+    c.dragStart();
+    expect(c.settled).toBe(false);
+    c.dragBy(-0.5, -1);
+    c.release(-1);
+    expect(c.settled).toBe(false);
+    for (let i = 0; i < 400; i++) c.update(1 / 60);
+    expect(c.settled).toBe(true);
   });
 });

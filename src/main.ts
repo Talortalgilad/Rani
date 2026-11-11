@@ -7,6 +7,7 @@ import '@fontsource/rubik/hebrew-800.css';
 import './ui/styles.css';
 import { onRoute, go, type Route } from './router';
 import { renderHomeAuto } from './lobby3d/entry';
+import { fpsEnabled } from './lobby3d/quality';
 import { renderGate } from './ui/gate';
 import { renderParent } from './ui/parent';
 import { showTimeUp } from './ui/timeup';
@@ -113,3 +114,6 @@ trackUsage({
     showTimeUp();
   },
 });
+
+// `#fps` in the address shows a small frame-rate display (for measuring on a phone); nothing loads otherwise
+if (fpsEnabled()) void import('./lobby3d/fps').then((m) => m.startFpsOverlay());

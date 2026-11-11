@@ -4,6 +4,12 @@ import { clamp, Spring } from './motion';
 export type TapResult = 'enter' | 'rotate';
 
 const FLING = 2.2; // rad/s: a quicker flick than this skips to the next island
+/**
+ * Spring feel, picked by simulating a one-island move: about 4% overshoot (a soft bounce a 7-year-old can see,
+ * never a wobble) and at rest within 0.65 s. Damping ratio ≈ 0.69.
+ */
+export const SETTLE = { stiffness: 150, damping: 17 };
+const THROW = 0.14; // seconds of the finger's speed carried into the settle
 const mod = (n: number, m: number) => ((n % m) + m) % m;
 
 /**
@@ -15,18 +21,22 @@ export class Carousel {
   readonly rot: Spring;
   /** Leaning toward the direction of movement while dragging (radians, small). */
   lean = 0;
-  private leanSpring = new Spring(0, 70, 9);
+  private leanSpring = new Spring(0, 80, 11);
   private dragging = false;
   private startRot = 0;
 
   constructor(readonly count: number, private reduced = false, startFront = 0) {
     this.step = (Math.PI * 2) / count;
-    this.rot = new Spring(-startFront * this.step, 90, 12);
+    this.rot = new Spring(-startFront * this.step, SETTLE.stiffness, SETTLE.damping);
   }
 
   /** Index of the island in the middle (or the one the carousel is heading for). */
   get front(): number {
     return mod(Math.round(-this.rot.target / this.step), this.count);
+  }
+  /** True when the ring is not moving (and nobody is dragging it). */
+  get settled(): boolean {
+    return !this.dragging && this.rot.settled;
   }
   /** The island nearest the middle right now. */
   get nearest(): number {
@@ -52,7 +62,9 @@ export class Carousel {
     this.dragging = false;
     this.leanSpring.target = 0;
     const base = Math.round(-this.startRot / this.step);
-    const k = Math.abs(velocity) > FLING ? base + (velocity < 0 ? 1 : -1) : Math.round(-(this.rot.value + velocity * 0.12) / this.step);
+    const thrown = Math.round(-(this.rot.value + velocity * THROW) / this.step);
+    // a quick flick always moves at least one island; a long drag carries on as far as it was thrown
+    const k = Math.abs(velocity) > FLING ? (velocity < 0 ? Math.max(thrown, base + 1) : Math.min(thrown, base - 1)) : thrown;
     this.goToK(k);
   }
 
