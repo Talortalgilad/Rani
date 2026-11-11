@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // Vercel serves the app from the domain root
 const base = '/';
@@ -7,6 +8,8 @@ const base = '/';
 export default defineConfig({
   base,
   plugins: [
+    // `ANALYZE=1 npm run build` writes dist/stats.json (and stats.html) with the size of every module
+    ...(process.env.ANALYZE ? [visualizer({ filename: 'dist/stats.json', template: 'raw-data', gzipSize: true }), visualizer({ filename: 'dist/stats.html', template: 'treemap', gzipSize: true })] : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/apple-touch-icon.png'],

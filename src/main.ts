@@ -6,7 +6,8 @@ import '@fontsource/rubik/hebrew-600.css';
 import '@fontsource/rubik/hebrew-800.css';
 import './ui/styles.css';
 import { onRoute, go, type Route } from './router';
-import { renderHome } from './ui/home';
+import { renderHomeAuto } from './lobby3d/entry';
+import { fpsEnabled } from './lobby3d/quality';
 import { renderGate } from './ui/gate';
 import { renderParent } from './ui/parent';
 import { showTimeUp } from './ui/timeup';
@@ -75,7 +76,7 @@ onRoute((route: Route) => {
   switch (route.name) {
     case 'home':
       clearPass();
-      cleanup = renderHome(app);
+      cleanup = renderHomeAuto(app);
       break;
     case 'gate':
       if (!games.some((g) => g.id === route.gameId)) return go({ name: 'home' }, { replace: true });
@@ -113,3 +114,6 @@ trackUsage({
     showTimeUp();
   },
 });
+
+// `#fps` in the address shows a small frame-rate display (for measuring on a phone); nothing loads otherwise
+if (fpsEnabled()) void import('./lobby3d/fps').then((m) => m.startFpsOverlay());

@@ -3,10 +3,12 @@ import { getState, update } from './storage';
 export type SoundName =
   | 'pop' | 'crack' | 'correct' | 'oops' | 'win' | 'bonus' | 'life'
   // memory game: card flip, two-note bell (pitch in Hz), and one winning melody per world
-  | 'flip' | 'bell' | 'melody1' | 'melody2' | 'melody3' | 'melody4';
+  | 'flip' | 'bell' | 'melody1' | 'melody2' | 'melody3' | 'melody4'
+  // 3D lobby: a tiny tick as an island passes the middle (pitch in Hz), and a soft thud when the ring comes to rest
+  | 'tick' | 'settle';
 
 export interface SoundApi {
-  /** `pitch` (Hz) applies to 'pop' and 'bell'. */
+  /** `pitch` (Hz) applies to 'pop', 'bell' and 'tick'. */
   play(name: SoundName, pitch?: number): void;
   isMuted(): boolean;
   setMuted(muted: boolean): void;
@@ -87,6 +89,15 @@ export const sound: SoundApi = {
         case 'melody2': melody([440, 523.25, 659.25, 587.33, 659.25, 880]); break; // sea: rolling
         case 'melody3': melody([392, 493.88, 587.33, 739.99, 987.77, 1174.66]); break; // space: rising, shimmering
         case 'melody4': melody([783.99, 880, 1046.5, 880, 1046.5, 1318.5]); break; // sweets: skipping
+        case 'tick': {
+          const f = pitch ?? 900;
+          tone(f, 0, 0.045, 'sine', 0.13, f * 0.8);
+          break;
+        }
+        case 'settle':
+          tone(330, 0, 0.13, 'sine', 0.2, 190);
+          tone(660, 0, 0.04, 'triangle', 0.05);
+          break;
         case 'crack': tone(240, 0, 0.09, 'square', 0.1, 140); break;
         case 'correct': notes([523.25, 659.25, 783.99], 0.09, 0.2, 'triangle', 0.3); break;
         case 'oops': notes([330, 262], 0.14, 0.24, 'sine', 0.14); break;

@@ -109,6 +109,8 @@ export function renderParent(root: HTMLElement): () => void {
         <h2>משחק</h2>
         <div class="p-sub">מהירות הכדור (שובר שורות)</div>
         ${chips('ballSpeed', [['איטי', 'slow'], ['רגיל', 'normal'], ['מהיר', 'fast']], se.ballSpeed)}
+        <div class="p-sub">מסך הבית</div>
+        ${chips('lobby', [['אוטומטי', 'auto'], ['לובי תלת-ממדי', '3d'], ['רגיל', '2d']], se.lobby)}
       </section>
 
       <section class="p-card">

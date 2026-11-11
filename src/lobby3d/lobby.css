@@ -1,0 +1,27 @@
+/* 3D lobby. Loaded with the (light) entry; the canvas itself is created only when the 3D code arrives. */
+#lobby-root { position: fixed; inset: 0; z-index: 0; display: none; }
+#lobby-root .three-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+/* once the lobby is showing, touches pass through the page to the canvas wherever a control is not */
+body.lobby3d-on #app { position: relative; z-index: 1; pointer-events: none; }
+body.lobby3d-on #app > .screen.lobby-screen { background: transparent; pointer-events: none; }
+.lobby-screen .title, .lobby-screen .icon-btn, .lobby-screen .stars, .lobby-screen .sr-only button { pointer-events: auto; }
+.lobby-screen .title { color: #fff; text-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
+.lobby-screen .avatar { position: relative; pointer-events: auto; transform-origin: 70% 85%; }
+/* the little cloud the avatar sits on */
+.lobby-screen .avatar::before { content: ''; position: absolute; z-index: -1; left: 50%; bottom: -14px; width: 84px; height: 36px; transform: translateX(-50%);
+  background: radial-gradient(circle at 24% 58%, #fff 13px, transparent 14px), radial-gradient(circle at 50% 38%, #fff 17px, transparent 18px), radial-gradient(circle at 78% 60%, #fff 12px, transparent 13px), linear-gradient(#fff, #fff) 50% 100% / 64% 15px no-repeat;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .14)); opacity: .96; pointer-events: none; }
+.lobby-screen .avatar.wave { animation: lobby-wave .9s ease-in-out; }
+@keyframes lobby-wave { 0%,100% { transform: rotate(0); } 15% { transform: rotate(-18deg); } 35% { transform: rotate(16deg); } 55% { transform: rotate(-14deg); } 75% { transform: rotate(10deg); } }
+.lobby-stars { position: fixed; inset-inline-start: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); }
+
+.lobby-name { position: fixed; top: calc(112px + env(safe-area-inset-top)); inset-inline: 0; text-align: center; color: #fff; font-size: 32px; font-weight: 800; text-shadow: 0 2px 10px rgba(0, 0, 0, .4); display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.lobby-name small { font-size: 16px; font-weight: 600; opacity: .95; }
+
+.lobby-dots { position: fixed; inset-inline: 0; bottom: calc(34px + env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 10px; }
+.lobby-dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, .5); transition: transform .2s, background .2s; }
+.lobby-dots i.on { background: #fff; transform: scale(1.35); box-shadow: 0 0 8px rgba(0, 0, 0, .25); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@media (prefers-reduced-motion: reduce) { .lobby-dots i { transition: none; } .lobby-screen .avatar.wave { animation: none; } }
