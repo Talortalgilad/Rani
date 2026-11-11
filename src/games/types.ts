@@ -1,3 +1,4 @@
+import type { Object3D } from 'three'; // type only: nothing of Three.js ends up in the regular app
 import type { SoundApi } from '../sound';
 import type { AppState } from '../storage';
 
@@ -34,4 +35,24 @@ export interface GameModule {
   pause(): void;
   resume(): void;
   unmount(): void;
+  /**
+   * Optional: the game's own living miniature for the 3D lobby. Without it the lobby builds a basic island
+   * (a hill in the game's colour with its icon on a board), so a new game never breaks the lobby.
+   */
+  lobbyIsland?: (ctx: LobbyIslandCtx) => LobbyIslandHandle | Promise<LobbyIslandHandle>;
+}
+
+export interface LobbyIslandCtx {
+  shadows: boolean;
+  /** Less motion was asked for: keep the miniature still. */
+  reduced: boolean;
+}
+
+/** A game's miniature for the lobby: the object to stand on its island, and how to animate and free it. */
+export interface LobbyIslandHandle {
+  object: Object3D;
+  update(dt: number, time: number): void;
+  /** Reaction to a tap that does not open the game. */
+  tap?(): void;
+  dispose(): void;
 }

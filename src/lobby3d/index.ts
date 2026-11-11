@@ -1,9 +1,11 @@
+import type { LobbyIslandHandle } from '../games/types';
 import { Carousel } from './carousel';
+import { buildJar } from './jar';
 import { buildGameIsland, buildLockedIsland, type Island, type IslandSpec } from './islands';
 import { clamp, Spring, squashStretch } from './motion';
 import { pickIndex } from './pick';
 import type { Tier } from './quality';
-import { isNight, skyFor } from './sky';
+import { Birds, isNight, skyFor } from './sky';
 import { Materials, makeCloud } from './shapes';
 import * as T from './lib';
 import { disposeTree, setSky, showScene, type SceneEnv, type SceneHandle, type StageScene } from './stage';
@@ -18,12 +20,19 @@ export interface LobbyOpts {
   /** The centre island was tapped and the zoom finished: time to open the gate. */
   onEnter(index: number): void;
   onFallback(): void;
+  /** Stars earned in total, and how many the jar has shown so far (the difference falls in). */
+  stars: number;
+  shownStars: number;
+  onJarShown(n: number): void;
+  /** A star landed in the jar (one small sound each). */
+  onStarLand(n: number): void;
+  onJarTap(): void;
 }
 
 export interface LobbyHandle {
   fadeIn(ms: number): void;
   dispose(): void;
-  readonly info: { front: number; rotation: number; entering: number | null };
+  readonly info: { front: number; rotation: number; entering: number | null; jarStars: number; birds: number };
   tapIsland(i: number): void;
 }
 
@@ -37,8 +46,18 @@ export async function startLobby(o: LobbyOpts): Promise<LobbyHandle> {
   let handle: SceneHandle;
   let api!: LobbyHandle;
   handle = await showScene(
-    (env) => {
-      const built = createLobbyScene(env, o);
+    async (env) => {
+      // each game's own miniature, if it has one; a failure only costs that game its fancy island
+      const minis = await Promise.all(
+        o.islands.map((spec) =>
+          spec.lobbyIsland
+            ? Promise.resolve()
+                .then(() => spec.lobbyIsland!({ shadows: env.tier === 'high', reduced: env.reduced }))
+                .catch(() => null)
+            : null,
+        ),
+      );
+      const built = createLobbyScene(env, o, minis);
       api = built.api;
       return built.scene;
     },
@@ -54,7 +73,7 @@ export async function startLobby(o: LobbyOpts): Promise<LobbyHandle> {
   };
 }
 
-function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api: LobbyHandle } {
+function createLobbyScene(env: SceneEnv, o: LobbyOpts, minis: (LobbyIslandHandle | null)[]): { scene: StageScene; api: LobbyHandle } {
   const mats = new Materials();
   const scene = new T.Scene();
   const camera = new T.PerspectiveCamera(FOV, env.width / env.height, 0.1, 80);
@@ -94,11 +113,18 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api
   scene.add(ring);
   let locked = 0;
   const islands: Island[] = o.islands.map((spec, i) => {
-    const isl = spec.kind === 'locked' ? buildLockedIsland(mats, locked++) : buildGameIsland(spec, mats, tier === 'high');
+    const isl = spec.kind === 'locked' ? buildLockedIsland(mats, locked++) : buildGameIsland(spec, mats, tier === 'high', minis[i]);
     isl.group.userData.index = i;
     ring.add(isl.group);
     return isl;
   });
+  // ---- birds now and then, and the star jar pinned to the corner of the screen
+  const birds = new Birds(tier === 'high' && !reduced);
+  scene.add(birds.group);
+  const jar = buildJar(mats, o.stars, o.shownStars, reduced, { onShown: o.onJarShown, onLand: o.onStarLand });
+  jar.group.userData.index = -1;
+  camera.add(jar.group);
+
   const carousel = new Carousel(islands.length, reduced, clamp(o.startIndex, 0, islands.length - 1));
   let lastFront = -1;
 
@@ -115,6 +141,11 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api
     const half = Math.tan((FOV / 2) * (Math.PI / 180));
     camDist = Math.max(2.5 / (half * Math.min(aspect, 1.3)), 7.2);
     camera.updateProjectionMatrix();
+    const d = 6;
+    const halfH = half * d;
+    const halfW = halfH * aspect;
+    jar.group.position.set(halfW * 0.62, -halfH * 0.68, -d);
+    jar.group.scale.setScalar(clamp(Math.min(halfW, halfH) * 0.25, 0.45, 1.2));
   }
   layout();
 
@@ -154,7 +185,12 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api
     down = null;
     if (moved < 10 && quick) {
       carousel.release(0);
-      const i = pickIndex(camera, canvas, e.clientX, e.clientY, islands.map((x) => x.group));
+      const i = pickIndex(camera, canvas, e.clientX, e.clientY, [...islands.map((x) => x.group), jar.group]);
+      if (i === -1) {
+        jar.hop();
+        o.onJarTap();
+        return;
+      }
       if (i !== null) {
         tapIsland(i);
         return;
@@ -207,6 +243,8 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api
     drift.forEach((c, i) => {
       if (!reduced) c.position.x = ((((time * (0.15 + i * 0.05) + i * 6 + 9) % 18) + 18) % 18) - 9;
     });
+    jar.update(dt);
+    birds.update(dt, time);
     if (starMesh && !reduced) starMesh.rotation.z = Math.sin(time * 0.05) * 0.02;
     const zz = zoom.value;
     camera.position.set(0, camDist * 0.3 - zz * 0.8, camDist - zz * (camDist - 4.2));
@@ -226,6 +264,7 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api
       tier = t;
       sun.castShadow = t === 'high';
       drift.forEach((c, i) => (c.visible = !isNight(now) && (t === 'high' || i === 0)));
+      birds.setTier(t);
     },
     dispose() {
       window.clearTimeout(enterTimer);
@@ -234,6 +273,8 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointercancel', onUp);
       islands.forEach((i) => i.dispose());
+      jar.dispose();
+      birds.dispose();
       sun.dispose(); // frees the shadow map
       hemi.dispose();
       disposeTree(scene);
@@ -244,7 +285,7 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts): { scene: StageScene; api
     fadeIn: () => {},
     dispose: () => {},
     get info() {
-      return { front: carousel.nearest, rotation: carousel.rot.value, entering };
+      return { front: carousel.nearest, rotation: carousel.rot.value, entering, jarStars: jar.count(), birds: birds.flying };
     },
     tapIsland,
   };

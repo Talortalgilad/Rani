@@ -1,4 +1,3 @@
-import { allowParent } from '../access';
 import { comingSoon, games } from '../games/registry';
 import { go } from '../router';
 import { sound } from '../sound';
@@ -8,8 +7,8 @@ import './lobby.css';
 import { sessionTier, setTier } from './quality';
 
 const LAST_KEY = 'rani-lobby-last';
+const SHOWN_KEY = 'rani-jar-shown';
 const FADE_MS = 300;
-const LONG_PRESS_MS = 3000;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
@@ -22,6 +21,22 @@ function lastGameIndex(): number {
     return 0;
   }
 }
+/** How many stars the jar has already shown. The first time ever, all of them (nothing falls in). */
+function readShown(total: number): number {
+  try {
+    const v = localStorage.getItem(SHOWN_KEY);
+    return v === null ? total : Math.min(Number(v) || 0, total);
+  } catch {
+    return total;
+  }
+}
+const writeShown = (n: number) => {
+  try {
+    localStorage.setItem(SHOWN_KEY, String(n));
+  } catch {
+    /* ignore */
+  }
+};
 const rememberGame = (id: string) => {
   try {
     localStorage.setItem(LAST_KEY, id);
@@ -42,14 +57,11 @@ export function renderHomeAuto(root: HTMLElement): () => void {
   let cleanup2d: (() => void) | null = renderHome(root);
   let dead = false;
   let lobby: { dispose(): void } | null = null;
-  let chromeCancel: (() => void) | null = null;
 
   const fallback = () => {
     if (dead) return;
     lobby?.dispose();
     lobby = null;
-    chromeCancel?.();
-    chromeCancel = null;
     document.body.classList.remove('lobby3d-on');
     setTier('2d');
     cleanup2d?.();
@@ -61,7 +73,7 @@ export function renderHomeAuto(root: HTMLElement): () => void {
       const mod = await import('./index');
       if (dead) return;
       const specs = [
-        ...games.map((g) => ({ kind: 'game' as const, title: g.title, icon: g.icon, color: g.color })),
+        ...games.map((g) => ({ kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
         ...comingSoon.map((c) => ({ kind: 'locked' as const, title: c.title, color: c.color })),
       ];
       let chrome: Chrome | null = null;
@@ -76,29 +88,34 @@ export function renderHomeAuto(root: HTMLElement): () => void {
           go({ name: 'gate', gameId: games[i].id });
         },
         onFallback: fallback,
+        stars: getState().stars,
+        shownStars: readShown(getState().stars),
+        onJarShown: writeShown,
+        onStarLand: (n) => sound.play('pop', 660 + (n % 10) * 55),
+        onJarTap: () => sound.play('bonus'),
       });
       if (dead) {
         l.dispose();
         return;
       }
       lobby = l;
-      // swap: the regular home fades out while the canvas fades in, then the lobby's own controls take over
-      const old = root.querySelector<HTMLElement>('.screen');
+      // The cards fade out while the canvas fades in. The title, avatar, mute button and star count are never
+      // rebuilt: they are the very same elements as on the regular home, so a long press on the title that is
+      // already under way carries on through the swap.
+      const screen = root.querySelector<HTMLElement>('.screen.home');
+      const grid = screen?.querySelector<HTMLElement>('.grid') ?? null;
       const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
       const ms = reduced ? 0 : FADE_MS;
-      if (old && ms) {
-        old.style.transition = `opacity ${ms}ms ease`;
-        old.style.opacity = '0';
+      if (grid && ms) {
+        grid.style.transition = `opacity ${ms}ms ease`;
+        grid.style.opacity = '0';
       }
       l.fadeIn(ms);
       window.setTimeout(() => {
-        if (dead || lobby !== l) return;
-        cleanup2d?.();
-        cleanup2d = null;
-        chrome = buildChrome(root, l.info.front);
-        chromeCancel = chrome.cancel;
+        if (dead || lobby !== l || !screen) return;
+        grid?.remove();
+        chrome = upgradeScreen(screen, l.info.front);
         document.body.classList.add('lobby3d-on');
-        chrome.front(l.info.front);
       }, ms);
     } catch {
       fallback();
@@ -108,43 +125,28 @@ export function renderHomeAuto(root: HTMLElement): () => void {
   return () => {
     dead = true;
     lobby?.dispose();
-    chromeCancel?.();
     cleanup2d?.();
     document.body.classList.remove('lobby3d-on');
   };
 }
 
-interface Chrome { front(i: number): void; cancel(): void }
+interface Chrome { front(i: number): void }
 
-/** Real DOM over the canvas: title (long press for parents), mute, star count, name of the front island, dots. */
-function buildChrome(root: HTMLElement, startFront: number): Chrome {
-  const st = getState();
-  root.innerHTML = '';
-  const screen = document.createElement('div');
-  screen.className = 'screen home lobby-screen';
+/**
+ * Turns the regular home screen into the lobby's by adding to it: the name of the front island, the dots and the
+ * hidden buttons. What was already there (title, avatar, mute, star count) stays exactly as it is.
+ */
+function upgradeScreen(screen: HTMLElement, startFront: number): Chrome {
+  screen.classList.add('lobby-screen');
+  screen.querySelector('.stars')?.classList.add('lobby-stars');
 
-  const header = document.createElement('header');
-  header.className = 'home-header';
-  header.innerHTML = `
-    <div class="avatar" aria-hidden="true">${st.profile.avatar}</div>
-    <h1 class="title">המשחקים של ${esc(st.profile.name)}</h1>`;
-
-  const mute = document.createElement('button');
-  mute.className = 'icon-btn mute';
-  const paint = () => {
-    mute.textContent = sound.isMuted() ? '🔇' : '🔊';
-    mute.setAttribute('aria-label', sound.isMuted() ? 'הפעלת צליל' : 'השתקה');
-  };
-  paint();
-  mute.addEventListener('click', () => {
-    sound.setMuted(!sound.isMuted());
-    paint();
-    sound.play('bonus');
+  // the avatar sits on a little cloud (drawn in CSS) and waves when tapped
+  const avatar = screen.querySelector<HTMLElement>('.avatar');
+  avatar?.addEventListener('click', () => {
+    avatar.classList.remove('wave');
+    void avatar.offsetWidth;
+    avatar.classList.add('wave');
   });
-
-  const stars = document.createElement('div');
-  stars.className = 'stars lobby-stars';
-  stars.textContent = `⭐ ${st.stars}`;
 
   const name = document.createElement('div');
   name.className = 'lobby-name';
@@ -175,28 +177,7 @@ function buildChrome(root: HTMLElement, startFront: number): Chrome {
     b.setAttribute('aria-disabled', 'true');
     nav.appendChild(b);
   }
-
-  screen.append(mute, header, name, stars, dots, nav);
-  root.appendChild(screen);
-
-  // Parent area: hold the title for 3 seconds, exactly as on the regular home.
-  let timer: number | undefined;
-  const cancel = () => {
-    if (timer !== undefined) {
-      window.clearTimeout(timer);
-      timer = undefined;
-    }
-  };
-  const title = header.querySelector('.title') as HTMLElement;
-  title.addEventListener('pointerdown', () => {
-    cancel();
-    timer = window.setTimeout(() => {
-      allowParent();
-      go({ name: 'parent' });
-    }, LONG_PRESS_MS);
-  });
-  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) title.addEventListener(ev, cancel);
-  title.addEventListener('contextmenu', (e) => e.preventDefault());
+  screen.append(name, dots, nav);
 
   const front = (i: number) => {
     dots.querySelectorAll('i').forEach((d, k) => d.classList.toggle('on', k === i));
@@ -208,5 +189,5 @@ function buildChrome(root: HTMLElement, startFront: number): Chrome {
     }
   };
   front(startFront);
-  return { front, cancel };
+  return { front };
 }

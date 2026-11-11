@@ -103,3 +103,18 @@ export function makeCloud(mats: Materials, scale = 1): T.Group {
   g.scale.setScalar(scale);
   return g;
 }
+
+export const JAR_CAPACITY = 100;
+
+/**
+ * Slots inside the star jar, filled from the bottom: 9 per layer (centre + 8 around it), each layer turned a little.
+ * Pure maths, so the packing can be tested without WebGL.
+ */
+export function jarSlots(n: number, radius = 0.36, layerH = 0.09): { x: number; y: number; z: number }[] {
+  return Array.from({ length: n }, (_, i) => {
+    const layer = Math.floor(i / 9);
+    const k = i % 9;
+    const a = ((k - 1) / 8) * Math.PI * 2 + layer * 0.5;
+    return k === 0 ? { x: 0, y: layer * layerH, z: 0 } : { x: Math.cos(a) * radius, y: layer * layerH, z: Math.sin(a) * radius };
+  });
+}

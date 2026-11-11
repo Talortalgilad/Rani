@@ -1,6 +1,7 @@
 import * as T from './lib';
 import { Materials, PALETTE, makeCloud, makeLock, roundedBox } from './shapes';
 import { Spring } from './motion';
+import type { GameModule, LobbyIslandHandle } from '../games/types';
 
 export interface IslandSpec {
   kind: 'game' | 'locked';
@@ -8,6 +9,8 @@ export interface IslandSpec {
   /** Emoji or an <svg> string, as in GameModule.icon. */
   icon?: string;
   color: string;
+  /** The game's own miniature, if it brings one. */
+  lobbyIsland?: GameModule['lobbyIsland'];
 }
 
 export interface Island {
@@ -16,7 +19,7 @@ export interface Island {
   /** 0..1 progress of the hop (squash & stretch is applied by the lobby). */
   jump: { t: number };
   update(dt: number, time: number, reduced: boolean): void;
-  /** Little reaction to a tap that does not open the game (the locked island's clouds and padlock). */
+  /** Little reaction to a tap that does not open the game (sparks, or the locked island's clouds and padlock). */
   tap(reduced: boolean): void;
   dispose(): void;
 }
@@ -66,7 +69,8 @@ function base(mats: Materials, hill: string, shadows: boolean): T.Group {
  * The island every game gets for free: a hill in the game's own colour, with its icon on a board floating above.
  * A game that has nothing better can never break the lobby; stage 2 lets a game bring its own miniature.
  */
-export function buildGameIsland(spec: IslandSpec, mats: Materials, shadows: boolean): Island {
+export function buildGameIsland(spec: IslandSpec, mats: Materials, shadows: boolean, mini?: LobbyIslandHandle | null): Island {
+  if (mini) return buildLiveIsland(mini, mats, shadows);
   const group = base(mats, spec.color, shadows);
   const board = new T.Group();
   const back = new T.Mesh(roundedBox(1.5, 1.5, 0.14, 0.22), mats.get('#fffaf2', { rough: 0.5 }));
@@ -99,6 +103,18 @@ export function buildGameIsland(spec: IslandSpec, mats: Materials, shadows: bool
       disposed = true;
       owned.forEach((x) => x.dispose());
     },
+  };
+}
+
+/** An island carrying the game's own living miniature. */
+function buildLiveIsland(mini: LobbyIslandHandle, mats: Materials, shadows: boolean): Island {
+  const group = base(mats, PALETTE.grass, shadows);
+  group.add(mini.object);
+  return {
+    group, kind: 'game', jump: { t: 1 },
+    update: (dt, t) => mini.update(dt, t),
+    tap: () => mini.tap?.(),
+    dispose: () => mini.dispose(),
   };
 }
 

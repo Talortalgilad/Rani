@@ -1,3 +1,6 @@
+import * as T from './lib';
+import type { Tier } from './quality';
+
 /** Sky colours by time of day: bright morning, blue noon, orange-pink evening, calm indigo night. */
 
 export interface Sky { top: string; bottom: string; light: string; intensity: number }
@@ -37,3 +40,77 @@ export const isNight = (date: Date): boolean => {
   const h = date.getHours() + date.getMinutes() / 60;
   return h < 5.5 || h >= 20.5;
 };
+
+/**
+ * A few small birds that cross the sky now and then (high quality only, never with reduced motion).
+ * `rand` is injectable so the timing can be tested.
+ */
+export class Birds {
+  readonly group = new T.Group();
+  private birds: { g: T.Group; wings: T.Mesh[]; x: number; v: number; y: number; phase: number }[] = [];
+  private wait: number;
+  private mat = new T.MeshBasicMaterial({ color: '#3a2f4b', side: 2, fog: false });
+  private geo = new T.PlaneGeometry(0.34, 0.12);
+
+  constructor(private enabled: boolean, private rand: () => number = Math.random) {
+    this.wait = 5 + this.rand() * 6;
+  }
+
+  setTier(tier: Tier): void {
+    this.enabled = this.enabled && tier === 'high';
+    if (!this.enabled) this.clear();
+  }
+
+  get flying(): number {
+    return this.birds.length;
+  }
+
+  private clear(): void {
+    this.birds.forEach((b) => this.group.remove(b.g));
+    this.birds = [];
+  }
+
+  private spawn(): void {
+    const n = 1 + Math.floor(this.rand() * 3);
+    const dir = this.rand() < 0.5 ? 1 : -1;
+    const y = 3 + this.rand() * 2.5;
+    for (let i = 0; i < n; i++) {
+      const g = new T.Group();
+      const wings = [-1, 1].map((side) => {
+        const w = new T.Mesh(this.geo, this.mat);
+        w.position.x = side * 0.17;
+        g.add(w);
+        return w;
+      });
+      this.group.add(g);
+      this.birds.push({ g, wings, x: -dir * (11 + i * 1.1), v: dir * (1.3 + this.rand() * 0.4), y: y + i * 0.3 + this.rand() * 0.4, phase: this.rand() * 6 });
+    }
+  }
+
+  update(dt: number, time: number): void {
+    if (!this.enabled) return;
+    this.wait -= dt;
+    if (this.wait <= 0 && this.birds.length === 0) {
+      this.spawn();
+      this.wait = 10 + this.rand() * 10;
+    }
+    for (const b of this.birds) {
+      b.x += b.v * dt;
+      b.g.position.set(b.x, b.y + Math.sin(time * 1.5 + b.phase) * 0.12, -9);
+      const flap = Math.sin(time * 11 + b.phase) * 0.6;
+      b.wings[0].rotation.z = flap;
+      b.wings[1].rotation.z = -flap;
+    }
+    const gone = this.birds.filter((b) => Math.abs(b.x) > 12.5 && Math.sign(b.x) === Math.sign(b.v));
+    if (gone.length) {
+      gone.forEach((b) => this.group.remove(b.g));
+      this.birds = this.birds.filter((b) => !gone.includes(b));
+    }
+  }
+
+  dispose(): void {
+    this.clear();
+    this.mat.dispose();
+    this.geo.dispose();
+  }
+}

@@ -206,3 +206,118 @@ describe('islands', () => {
     mats.dispose();
   });
 });
+
+import { buildJar } from './jar';
+import { JAR_CAPACITY, jarSlots } from './shapes';
+import { Birds } from './sky';
+import { games } from '../games/registry';
+import { createLobbyIsland as brickIsland } from '../games/brick-breaker/lobby-island';
+import { createLobbyIsland as memoryIsland } from '../games/memory/lobby-island';
+
+describe('star jar', () => {
+  it('holds 100 stars in layers: distinct slots, inside the glass, filled from the bottom', () => {
+    const slots = jarSlots(JAR_CAPACITY);
+    expect(JAR_CAPACITY).toBe(100);
+    expect(new Set(slots.map((s) => `${s.x.toFixed(3)},${s.y.toFixed(3)},${s.z.toFixed(3)}`)).size).toBe(100);
+    slots.forEach((s) => expect(Math.hypot(s.x, s.z)).toBeLessThanOrEqual(0.37));
+    for (let i = 1; i < slots.length; i++) expect(slots[i].y).toBeGreaterThanOrEqual(slots[i - 1].y);
+    expect(slots[99].y + 0.12).toBeLessThan(1.2); // below the rim of the 1.3-high jar
+  });
+  const run = (total: number, shown: number, reduced = false) => {
+    const mats = new Materials();
+    const lands: number[] = [];
+    const shownCalls: number[] = [];
+    const jar = buildJar(mats, total, shown, reduced, { onLand: (n) => lands.push(n), onShown: (n) => shownCalls.push(n) });
+    for (let i = 0; i < 60 * 30; i++) jar.update(1 / 60);
+    return { jar, lands, shownCalls, mats };
+  };
+  it('new stars fall in one by one, each landing makes a sound, and the count ends at the total', () => {
+    const { jar, lands, shownCalls } = run(12, 5);
+    expect(lands).toEqual([6, 7, 8, 9, 10, 11, 12]);
+    expect(jar.count()).toBe(12);
+    expect(shownCalls[shownCalls.length - 1]).toBe(12);
+  });
+  it('with nothing new, nothing falls', () => {
+    const { lands, jar } = run(9, 9);
+    expect(lands).toEqual([]);
+    expect(jar.count()).toBe(9);
+  });
+  it('it fills up to 100 and then stays full, however many stars there are', () => {
+    const { lands, jar } = run(250, 97);
+    expect(lands).toEqual([98, 99, 100]);
+    expect(jar.count()).toBe(100);
+  });
+  it('with reduced motion the stars just appear, and the jar will not hop', () => {
+    const { lands, jar } = run(10, 4, true);
+    expect(lands).toEqual([]);
+    expect(jar.count()).toBe(10);
+    jar.hop();
+    jar.update(0.1);
+  });
+  it('tapping makes the stars hop, then settle', () => {
+    const { jar } = run(20, 20);
+    jar.hop();
+    for (let i = 0; i < 120; i++) jar.update(1 / 60);
+    jar.dispose();
+  });
+});
+
+describe('birds', () => {
+  it('never appear when disabled (medium quality or reduced motion)', () => {
+    const b = new Birds(false, () => 0.1);
+    for (let i = 0; i < 60 * 60; i++) b.update(1 / 60, i / 60);
+    expect(b.flying).toBe(0);
+  });
+  it('cross the sky now and then, and leave it again', () => {
+    const b = new Birds(true, () => 0.5);
+    let seen = 0;
+    let flights = 0;
+    let was = 0;
+    for (let i = 0; i < 60 * 90; i++) {
+      b.update(1 / 60, i / 60);
+      seen = Math.max(seen, b.flying);
+      if (b.flying > 0 && was === 0) flights++;
+      was = b.flying;
+    }
+    expect(seen).toBeGreaterThanOrEqual(1);
+    expect(flights).toBeGreaterThanOrEqual(3); // every 10-20 seconds
+    expect(flights).toBeLessThanOrEqual(8);
+  });
+  it('drops to none when the quality is lowered', () => {
+    const b = new Birds(true, () => 0);
+    for (let i = 0; i < 60 * 12; i++) b.update(1 / 60, i / 60);
+    expect(b.flying).toBeGreaterThan(0);
+    b.setTier('medium');
+    expect(b.flying).toBe(0);
+  });
+});
+
+describe('game miniatures', () => {
+  it('both games bring one, and a game without one is fine (it gets the basic island)', () => {
+    expect(games.find((g) => g.id === 'brick-breaker')!.lobbyIsland).toBeTypeOf('function');
+    expect(games.find((g) => g.id === 'memory')!.lobbyIsland).toBeTypeOf('function');
+  });
+  it.each([
+    ['brick breaker', brickIsland],
+    ['memory', memoryIsland],
+  ])('%s: builds, animates for a minute, reacts to a tap and frees everything', (_n, make) => {
+    for (const reduced of [false, true]) {
+      const h = make({ shadows: true, reduced });
+      expect(h.object.children.length).toBeGreaterThan(3);
+      for (let i = 0; i < 60 * 60; i++) h.update(1 / 60, i / 60);
+      h.tap?.();
+      h.update(0.016, 61);
+      h.dispose();
+    }
+  });
+  it('the brick breaker wall stays whole and the ball stays over the island', () => {
+    const h = brickIsland({ shadows: false, reduced: false });
+    for (let i = 0; i < 60 * 40; i++) {
+      h.update(1 / 60, i / 60);
+      h.object.traverse((o) => {
+        if (o.position.length() > 4) throw new Error('something flew away');
+      });
+    }
+    h.dispose();
+  });
+});
