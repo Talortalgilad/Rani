@@ -8,6 +8,14 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import type { LevelData, LevelStats } from '../src/games/traffic/engine/level';
 import { paramsFor } from '../src/games/traffic/engine/generator';
 import { difficultyScore } from '../src/games/traffic/engine/solver';
+import { sameDirectionClusters, type Item } from '../src/games/traffic/engine/packing';
+
+/** A little stricter than the test (0.15), so that rounding can never push a level over the line. */
+const clusterOk = (l: LevelData): boolean => {
+  const cls = (h: number): number => ({ 0: 0, 90: 1, 45: 2, 135: 3 } as Record<number, number>)[h % 180];
+  const items: Item[] = l.vehicles.map((v) => ({ type: v.type, cls: cls(v.heading), x: v.x, z: v.z }));
+  return sameDirectionClusters(items, 0.17).every((c) => c.length <= 3);
+};
 
 interface Cand { seed: number; data: LevelData; stats: LevelStats }
 const picked: LevelData[] = [];
@@ -17,7 +25,7 @@ for (let L = 1; L <= 30; L++) {
   const p = paramsFor(L);
   const all: Cand[] = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
   for (const c of all) c.stats.score = difficultyScore(c.stats.vehicles, c.stats); // the formula may have changed since the candidate was made
-  const ok = all.filter((c) => c.stats.exact && c.stats.density >= p.minDensity && c.stats.angled + 1e-9 >= (L >= 10 ? 0.3 : 0) && (!p.hard || c.stats.traps >= 3));
+  const ok = all.filter((c) => c.stats.exact && c.stats.density >= p.minDensity && c.stats.angled + 1e-9 >= (L >= 10 ? 0.3 : 0) && clusterOk(c.data) && (!p.hard || c.stats.traps >= 3));
   if (!ok.length) {
     missing.push(L);
     continue;

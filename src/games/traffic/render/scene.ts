@@ -7,6 +7,7 @@ import { corners, rad } from '../engine/geometry';
 import { SIZES, type ColorId, type VehicleDef } from '../engine/state';
 import { Timeline, easeInOutCubic, easeOutBack, easeOutQuad } from './animations';
 import { buildWorld, type WorldKind } from './dioramas';
+import { frameCamera, type SafeArea } from './framing';
 import { Fx } from './fx';
 import { COLOR_HEX, COLOR_SHAPE, shapePoints } from './palette';
 import { BLACK_HEX, makeVehicle, PASSENGER_SCALE, passengerGeometry, plasticMaterial, roofY, stickerGeometry, vehicleGeometry } from './toykit';
@@ -149,7 +150,7 @@ export interface TrafficScene extends StageScene {
   restore(state: { vehicles: { id: number; status: string; slot: number | null; color: ColorId; filled: number }[]; boarded: number }): void;
 }
 
-export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclude<Tier, '2d'>): TrafficScene {
+export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclude<Tier, '2d'>, getSafe?: () => SafeArea): TrafficScene {
   const { renderer } = env;
   const reduced = env.reduced;
   const scene = new T.Scene();
@@ -373,16 +374,12 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     camera.aspect = aspect;
     camera.fov = 30;
     camera.updateProjectionMatrix();
-    // the lot (with its kerb) fills the width with a 4% margin; the distance follows from that and from the field of view
-    const half = Math.tan((camera.fov / 2) * (Math.PI / 180));
+    // the whole lot and the station are visible between the title and the helper buttons; the lot fills the width when the height allows
+    const safe = getSafe?.() ?? { top: 100, bottom: height - 120 };
+    const fr = frameCamera({ width, height, fov: camera.fov, elevation: CAMERA_ELEVATION, lot: level.lot, stationZ: STATION_Z, stationHalfW: (pads * pitch) / 2 + 0.3, safe, marginX: 0.02 });
     const el = (CAMERA_ELEVATION * Math.PI) / 180;
-    const needW = Math.max(level.lot.halfW * 2 + 1.2, pads * pitch + 0.8) * 1.04;
-    const byWidth = needW / (2 * half * aspect);
-    // on a wide screen the height decides: lot, station and queue must fit above the helper buttons
-    const needH = (level.lot.halfH * 2 + 13) * Math.sin(el);
-    const byHeight = needH / (2 * half);
-    const dist = Math.max(byWidth, byHeight, 14);
-    const tz = (STATION_Z - 9.6 + level.lot.halfH + 0.8) / 2;
+    const dist = fr.dist;
+    const tz = fr.tz;
     camera.position.set(0, Math.sin(el) * dist, tz + Math.cos(el) * dist);
     camera.lookAt(0, 0, tz);
     if (focus.id !== null) {

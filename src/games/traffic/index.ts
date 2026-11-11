@@ -46,7 +46,13 @@ async function start(key: string, resume?: SaveData): Promise<void> {
   let scene: Awaited<ReturnType<typeof createTrafficScene>> | null = null;
   try {
     handle = await showScene(
-      (env) => (scene = createTrafficScene(env, { vehicles: level.vehicles, queue: level.queue, lot: level.lot, world: level.world }, env.tier === 'high' ? 'high' : 'medium')),
+      (env) =>
+        (scene = createTrafficScene(env, { vehicles: level.vehicles, queue: level.queue, lot: level.lot, world: level.world }, env.tier === 'high' ? 'high' : 'medium', () => {
+          // the picture may use the rows between the title and the helper buttons
+          const top = Math.max(...['.tr-title', '.tr-count', '.tr-home'].map((q) => hud?.root.querySelector(q)?.getBoundingClientRect().bottom ?? 0), 90) + 6;
+          const boosters = hud?.root.querySelector('.tr-boosters')?.getBoundingClientRect().top ?? window.innerHeight - 110;
+          return { top, bottom: boosters - 14 };
+        })),
       { autoDowngrade: true, minTier: 'medium', onFallback: () => hud?.message('המשחק הזה צריך גרפיקה תלת־ממדית') },
     );
   } catch {
