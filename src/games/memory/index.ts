@@ -1,5 +1,8 @@
 import type { GameContext, GameModule } from '../types';
 import { DECKS } from './decks';
+import { composeLevel } from './compose';
+import { levelConfig } from '../../math/levels';
+import { activeLevel } from '../../math/adaptive';
 import { INK, svg } from './decks/svg';
 import { LEVELS } from './levels';
 import { mountBoard, type Board } from './ui/board';
@@ -56,8 +59,10 @@ function begin(id: number): void {
 function play(id: number): void {
   clearBoard();
   const level = LEVELS.find((l) => l.id === id)!;
-  board = mountBoard(root!, level, {
+  const cards = composeLevel(level, levelConfig(activeLevel()).max);
+  board = mountBoard(root!, level, cards, {
     sound: ctx!.sound,
+    onStar: () => ctx!.addStars(1),
     onBack: showMap,
     onFinish: (r) => finish(id, r),
   });
@@ -74,7 +79,8 @@ function finish(id: number, r: RoundSummary): void {
   ctx!.save('progress', p);
   ctx!.save('best', Object.values(p.levels).reduce((s, l) => s + l.stars, 0));
   ctx!.onRoundEnd({ won: true, stars: r.stars, score: r.attempts });
-  ctx!.sound.play('pop', 1047);
+  const worldTune = (['melody1', 'melody2', 'melody3', 'melody4'] as const)[(LEVELS.find((l) => l.id === id)?.world ?? 1) - 1];
+  ctx!.sound.play(worldTune);
 
   const overlay = document.createElement('div');
   overlay.className = 'mm-overlay';

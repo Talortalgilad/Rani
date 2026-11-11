@@ -25,3 +25,30 @@ export interface Deck {
   /** border colour of the card front */
   frame: string;
 }
+
+/** Thick outlined stroke (a body part, a tentacle, a stem). */
+export const thick = (d: string, color: string, w: number): string =>
+  `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w + 9}"/><path d="${d}" fill="none" stroke="${color}" stroke-width="${w}"/>`;
+
+/** Five-point star path. */
+export function star5(cx: number, cy: number, R: number, r: number): string {
+  const pts = Array.from({ length: 10 }, (_, i) => {
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    const rad = i % 2 === 0 ? R : r;
+    return `${(cx + Math.cos(a) * rad).toFixed(1)} ${(cy + Math.sin(a) * rad).toFixed(1)}`;
+  });
+  return `M${pts.join(' L')}Z`;
+}
+
+/** n evenly spaced rays/spikes around a circle, drawn as small triangles. */
+export function spikes(cx: number, cy: number, r1: number, r2: number, n: number, fill: string): string {
+  return Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * Math.PI * 2;
+    const b = 0.16;
+    const p = (rad: number, ang: number) => `${(cx + Math.cos(ang) * rad).toFixed(1)} ${(cy + Math.sin(ang) * rad).toFixed(1)}`;
+    return `<path d="M${p(r1, a - b)} L${p(r2, a)} L${p(r1, a + b)}Z" fill="${fill}"/>`;
+  }).join('');
+}
+
+export const smile = (x: number, y: number, w = 12): string =>
+  `<path d="M${x - w} ${y} Q${x} ${y + w * 0.9} ${x + w} ${y}" fill="none" stroke-width="3.5"/>`;

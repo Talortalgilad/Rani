@@ -1,4 +1,4 @@
-import { INK, eye, nostrils, svg, type Deck } from './svg';
+import { INK, eye, nostrils, svg, thick, type Deck } from './svg';
 
 const art: Record<string, string> = {
   cow:
@@ -56,13 +56,16 @@ const art: Record<string, string> = {
     eye(38, 57, 8) + eye(62, 57, 8),
 
   goat:
-    `<path d="M34 30 C26 16 34 6 44 8" fill="none" stroke-width="12"/><path d="M34 30 C26 16 34 6 44 8" fill="none" stroke="#f4e6c4" stroke-width="5"/>` +
-    `<path d="M66 30 C74 16 66 6 56 8" fill="none" stroke-width="12"/><path d="M66 30 C74 16 66 6 56 8" fill="none" stroke="#f4e6c4" stroke-width="5"/>` +
-    `<ellipse cx="16" cy="46" rx="12" ry="6" fill="#f1eadf" transform="rotate(20 16 46)"/>` +
-    `<ellipse cx="84" cy="46" rx="12" ry="6" fill="#f1eadf" transform="rotate(-20 84 46)"/>` +
-    `<path d="M43 84 L50 99 L57 84Z" fill="#f1eadf"/>` +
-    `<path d="M28 32 C30 24 70 24 72 32 C77 52 69 72 61 82 C55 89 45 89 39 82 C31 72 23 52 28 32Z" fill="#f1eadf"/>` +
-    `<ellipse cx="50" cy="73" rx="13" ry="10" fill="#ffd9d0"/>` + nostrils(45, 55, 73, 2, 3) + eye(38, 50) + eye(62, 50),
+    `<g transform="translate(10 7) scale(.8)">` +
+    `<path d="M38 34 C20 30 16 10 30 2" fill="none" stroke-width="15"/><path d="M38 34 C20 30 16 10 30 2" fill="none" stroke="#f2e3c3" stroke-width="8"/>` +
+    `<path d="M62 34 C80 30 84 10 70 2" fill="none" stroke-width="15"/><path d="M62 34 C80 30 84 10 70 2" fill="none" stroke="#f2e3c3" stroke-width="8"/>` +
+    `<path d="M26 22 L34 24 M24 14 L32 17 M74 22 L66 24 M76 14 L68 17" fill="none" stroke-width="3"/>` +
+    `<ellipse cx="14" cy="50" rx="13" ry="6" fill="#a8743f" transform="rotate(25 14 50)"/>` +
+    `<ellipse cx="86" cy="50" rx="13" ry="6" fill="#a8743f" transform="rotate(-25 86 50)"/>` +
+    `<path d="M26 36 C28 28 72 28 74 36 C78 56 70 74 62 82 C56 88 44 88 38 82 C30 74 22 56 26 36Z" fill="#c99a68"/>` +
+    `<ellipse cx="50" cy="72" rx="14" ry="11" fill="#f1dfc8"/>` + nostrils(45, 55, 72, 2, 3) +
+    `<path d="M32 78 C32 98 42 106 50 108 C58 106 68 98 68 78 Q50 88 32 78Z" fill="#fff"/>` +
+    `<path d="M42 92 L50 104 L58 92" fill="none" stroke-width="3"/>` + eye(38, 52) + eye(62, 52) + `</g>`,
 
   dog:
     `<ellipse cx="17" cy="50" rx="12" ry="22" fill="#8a5a3c" transform="rotate(12 17 50)"/>` +
@@ -100,6 +103,31 @@ const art: Record<string, string> = {
     `<circle cx="50" cy="38" r="9" fill="#ffe9a8"/>` +
     `<rect x="31" y="58" width="38" height="32" fill="#fff"/>` +
     `<path d="M31 58 L69 90 M69 58 L31 90" fill="none" stroke-width="3.5"/>`,
+
+  tractor:
+    `<rect x="18" y="22" width="9" height="22" fill="#3a2f4b"/>` +
+    `<path d="M8 44 H58 V68 H8Z" fill="#3fb56b"/>` +
+    `<path d="M56 24 H88 V68 H56Z" fill="#e5484d"/>` +
+    `<rect x="62" y="30" width="20" height="20" rx="3" fill="#bfe6ff" stroke-width="3.5"/>` +
+    `<circle cx="72" cy="72" r="21" fill="#3a2f4b"/><circle cx="72" cy="72" r="9" fill="#ffd23f" stroke-width="3.5"/>` +
+    `<circle cx="24" cy="78" r="13" fill="#3a2f4b"/><circle cx="24" cy="78" r="5.5" fill="#ffd23f" stroke-width="3"/>` +
+    `<circle cx="9" cy="54" r="4" fill="#ffd23f" stroke-width="3"/>`,
+
+  sunflower:
+    thick('M50 56 C50 74 46 84 50 98', '#3fb56b', 6) +
+    `<path d="M50 82 C34 72 22 78 20 86 C32 92 44 90 50 82Z" fill="#7ddc5a" stroke-width="3.5"/>` +
+    Array.from({ length: 12 }, (_, i) => `<ellipse cx="50" cy="14" rx="7" ry="13" fill="#ffd23f" transform="rotate(${i * 30} 50 38)" stroke-width="3.5"/>`).join('') +
+    `<circle cx="50" cy="38" r="17" fill="#8a5a3c"/>` + eye(44, 36, 4.5) + eye(57, 36, 4.5) + `<path d="M44 46 Q50 51 56 46" fill="none" stroke="#f2d2b0" stroke-width="3"/>`,
+
+  rooster:
+    `<g transform="translate(-5 4) scale(.92)">` +
+    `<path d="M70 56 C94 40 96 14 86 6 C82 22 74 30 66 40Z" fill="#e5484d"/>` +
+    `<path d="M72 62 C98 56 100 34 94 28 C86 42 80 48 70 54Z" fill="#ff9a3c"/>` +
+    `<path d="M70 70 C94 74 98 56 98 48 C88 58 80 60 68 62Z" fill="#3fb56b"/>` +
+    `<path d="M34 24 C28 8 42 4 46 16 C48 2 62 4 58 20 C66 12 74 24 62 30Z" fill="#e5484d"/>` +
+    `<circle cx="48" cy="56" r="32" fill="#e8a24a"/>` +
+    `<ellipse cx="46" cy="78" rx="6" ry="9" fill="#e5484d"/>` +
+    `<path d="M32 56 L12 62 L32 70Z" fill="#ffb627"/>` + eye(40, 46, 8) + eye(60, 46, 8) + `</g>`,
 };
 
 /** Grass-green card back with a flower, as in the farm world. */

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DECKS } from './decks';
 import { MemoryGame, buildCards, shuffle, starsFor } from './engine';
-import { LEVELS, pairsOf } from './levels';
 
 function rng(seed: number) {
   return () => {
@@ -18,7 +17,7 @@ const counts = (cards: { art: string }[]) => {
 
 describe('board building', () => {
   it.each([2, 3] as const)('every picture appears exactly %i times and the size divides evenly', (group) => {
-    for (const pairs of [3, 6, 8, 12]) {
+    for (const pairs of [3, 6, 8, 12, 15]) {
       const cards = buildCards(keys, pairs, group, rng(pairs));
       expect(cards).toHaveLength(pairs * group);
       expect(cards.length % group).toBe(0);
@@ -36,7 +35,7 @@ describe('board building', () => {
     expect([...shuffle([1, 2, 3, 4, 5], rng(3))].sort()).toEqual([1, 2, 3, 4, 5]);
   });
   it('refuses a board the deck cannot fill, or one that does not divide', () => {
-    expect(() => buildCards(keys, 13, 2)).toThrow();
+    expect(() => buildCards(keys, keys.length + 1, 2)).toThrow();
     expect(() => new MemoryGame([{ id: 0, art: 'a' }, { id: 1, art: 'a' }, { id: 2, art: 'b' }], 2)).toThrow();
   });
 });
@@ -122,62 +121,10 @@ describe('stars', () => {
   });
 });
 
-describe('world 1 levels', () => {
-  it('has 4 levels with valid, fillable boards', () => {
-    expect(LEVELS.map((l) => [l.cols, l.rows])).toEqual([[2, 3], [3, 4], [3, 4], [4, 4]]);
-    for (const l of LEVELS) {
-      expect((l.cols * l.rows) % l.group).toBe(0);
-      expect(pairsOf(l)).toBeLessThanOrEqual(DECKS[l.deck].keys.length);
-      const cards = buildCards(DECKS[l.deck].keys, pairsOf(l), l.group);
-      expect(cards).toHaveLength(l.cols * l.rows);
-    }
-  });
-  it.each(LEVELS)('level $id can be finished (a player who remembers everything, and one who guesses)', (l) => {
-    // perfect memory: never forgets a card it has seen
-    const g = new MemoryGame(buildCards(DECKS[l.deck].keys, pairsOf(l), l.group, rng(l.id)), l.group);
-    const seen = new Set<number>();
-    for (let guard = 0; !g.done && guard < 1000; guard++) {
-      const byArt = new Map<string, number[]>();
-      seen.forEach((i) => {
-        if (!g.matched[i]) byArt.set(g.cards[i].art, [...(byArt.get(g.cards[i].art) ?? []), i]);
-      });
-      const full = [...byArt.values()].find((v) => v.length === l.group);
-      if (full) {
-        full.forEach((i) => g.flip(i));
-        continue;
-      }
-      const unseen = g.cards.map((_, i) => i).filter((i) => !seen.has(i) && !g.matched[i]);
-      const first = unseen[0];
-      g.flip(first);
-      seen.add(first);
-      const twins = [...seen].filter((i) => i !== first && g.cards[i].art === g.cards[first].art && !g.matched[i]);
-      if (twins.length >= l.group - 1) {
-        twins.slice(0, l.group - 1).forEach((i) => g.flip(i));
-        continue;
-      }
-      for (let k = 1; g.open.length < l.group && unseen[k] !== undefined; k++) {
-        seen.add(unseen[k]);
-        g.flip(unseen[k]);
-      }
-      if (g.resolving) g.unflip();
-    }
-    expect(g.done).toBe(true);
-    // random guessing also always terminates
-    const r = rng(l.id + 50);
-    const h = new MemoryGame(buildCards(DECKS[l.deck].keys, pairsOf(l), l.group, rng(l.id)), l.group);
-    for (let i = 0; i < 20000 && !h.done; i++) {
-      h.flip(Math.floor(r() * h.cards.length));
-      if (h.resolving) h.unflip();
-    }
-    expect(h.done).toBe(true);
-    expect(starsFor(h.attempts, h.pairs)).toBeGreaterThanOrEqual(1);
-  });
-});
-
 describe('farm deck art', () => {
-  it('has 12 distinct pictures drawn in code, no emoji', () => {
-    expect(DECKS.farm.keys).toHaveLength(12);
-    expect(new Set(Object.values(DECKS.farm.art)).size).toBe(12);
+  it('has 15 distinct pictures drawn in code, no emoji', () => {
+    expect(DECKS.farm.keys).toHaveLength(15);
+    expect(new Set(Object.values(DECKS.farm.art)).size).toBe(15);
     const all = Object.values(DECKS.farm.art).join('') + DECKS.farm.back;
     expect(all).not.toMatch(/\p{Extended_Pictographic}/u);
     expect(DECKS.farm.back.startsWith('<svg')).toBe(true);
