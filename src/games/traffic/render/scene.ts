@@ -49,18 +49,32 @@ interface PassengerView {
   gone: boolean;
 }
 
-const rbox = (w: number, h: number, d: number, r: number) => new T.RoundedBoxGeometry(w, h, d, 1, r);
+const rbox = (w: number, h: number, d: number, r: number, seg = 1) => new T.RoundedBoxGeometry(w, h, d, seg, r);
 
 function blobTexture(): T.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
   const g = c.getContext('2d')!;
-  const grad = g.createRadialGradient(64, 64, 6, 64, 64, 62);
-  grad.addColorStop(0, 'rgba(60,35,10,0.62)');
-  grad.addColorStop(0.55, 'rgba(60,35,10,0.34)');
-  grad.addColorStop(1, 'rgba(60,35,10,0)');
+  const grad = g.createRadialGradient(64, 64, 4, 64, 64, 62);
+  grad.addColorStop(0, 'rgba(55,30,8,0.8)');
+  grad.addColorStop(0.5, 'rgba(55,30,8,0.5)');
+  grad.addColorStop(1, 'rgba(55,30,8,0)');
   g.fillStyle = grad;
   g.fillRect(0, 0, 128, 128);
+  return new T.CanvasTexture(c);
+}
+
+/** A soft dark rounded rectangle: the contact shadow of a vehicle (its core is about 72% of the square). */
+function rectShadowTexture(): T.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d')!;
+  g.shadowColor = 'rgba(45,24,6,0.95)';
+  g.shadowBlur = 16;
+  g.fillStyle = 'rgba(45,24,6,0.88)';
+  g.beginPath();
+  g.roundRect(18, 18, 92, 92, 22);
+  g.fill();
   return new T.CanvasTexture(c);
 }
 
@@ -154,7 +168,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
 
   const hemi = new T.HemisphereLight('#fff1d2', '#d9b878', 0.42);
   const sun = new T.DirectionalLight('#fff4de', 3.3);
-  sun.position.set(-7, 28, -2); // high and a little from behind: bright roofs, darker sides
+  sun.position.set(-10, 20, -3); // high and a little from behind: bright roofs, darker sides
   sun.target.position.set(0, 0, -4);
   sun.castShadow = tier === 'high';
   sun.shadow.mapSize.set(1024, 1024);
@@ -162,6 +176,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 0.03;
   sun.shadow.radius = 4;
+  sun.shadow.intensity = 0.8; // soft, not black: the sand stays warm in the shade
   scene.add(hemi, sun, sun.target);
 
   const own: { dispose(): void }[] = [];
@@ -176,7 +191,14 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   ground.position.z = 7; // the sand stops at the shore; the sea starts beyond
   ground.receiveShadow = true;
   scene.add(ground);
-  const pad = new T.Mesh(keep(rbox(level.lot.halfW * 2 + 0.9, 0.08, level.lot.halfH * 2 + 0.9, 0.4)), keep(new T.MeshStandardMaterial({ color: '#ecc070', roughness: 0.9 })));
+  // the parking pad: lighter than the sand, rounded corners, and a fine darker line around it
+  const padW = level.lot.halfW * 2 + 0.9;
+  const padD = level.lot.halfH * 2 + 0.9;
+  const edge = new T.Mesh(keep(rbox(padW + 0.3, 0.06, padD + 0.3, 0.85, 4)), keep(new T.MeshStandardMaterial({ color: '#c58f3c', roughness: 0.9 })));
+  edge.position.y = 0.0;
+  edge.receiveShadow = true;
+  scene.add(edge);
+  const pad = new T.Mesh(keep(rbox(padW, 0.1, padD, 0.75, 4)), keep(new T.MeshStandardMaterial({ color: '#f6dba0', roughness: 0.9 })));
   pad.position.y = 0.0;
   pad.receiveShadow = true;
   scene.add(pad);
@@ -275,7 +297,8 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   const blobMat = keep(new T.MeshBasicMaterial({ map: blob, transparent: true, depthWrite: false }));
   const blobGeo = keep(new T.PlaneGeometry(1, 1));
   blobGeo.rotateX(-Math.PI / 2);
-  const vShadow = new T.InstancedMesh(blobGeo, blobMat, level.vehicles.length);
+  const rectMat = keep(new T.MeshBasicMaterial({ map: keep(rectShadowTexture()), transparent: true, depthWrite: false }));
+  const vShadow = new T.InstancedMesh(blobGeo, rectMat, level.vehicles.length);
   vShadow.frustumCulled = false;
   vShadow.renderOrder = 1;
   scene.add(vShadow);
@@ -288,7 +311,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   const SLOTS = SEE_AHEAD + 10;
   const slotOwner: number[] = Array(SLOTS).fill(-1);
   const pMesh = new T.InstancedMesh(pGeo, pMat, Math.min(SLOTS, nPass));
-  pMesh.castShadow = sun.castShadow;
+  pMesh.castShadow = false; // the contact shadow is enough for them, and the shadow pass stays cheap
   pMesh.frustumCulled = false;
   scene.add(pMesh);
   const stickMat = keep(new T.MeshStandardMaterial({ color: '#ffffff', roughness: 0.4, envMapIntensity: 0.5 }));
@@ -607,9 +630,9 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
         } else v.mesh.position.set(0, 0, 0);
         const visible = v.root.visible;
         const size = SIZES[v.def.type];
-        dummy.position.set(v.root.position.x, 0.015, v.root.position.z);
+        dummy.position.set(v.root.position.x, 0.062, v.root.position.z); // just above the pad and the platform
         dummy.rotation.set(0, v.root.rotation.y, 0);
-        dummy.scale.set(visible ? size.len * 1.18 * v.root.scale.x : 0, 1, visible ? size.wid * 1.5 * v.root.scale.z : 0);
+        dummy.scale.set(visible ? size.len * 1.42 * v.root.scale.x : 0, 1, visible ? size.wid * 1.42 * v.root.scale.z : 0);
         dummy.updateMatrix();
         vShadow.setMatrixAt(k, dummy.matrix);
         k++;
@@ -676,7 +699,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
         p.stick.mesh.setMatrixAt(p.stick.idx, dummy.matrix);
         dummy.position.set(x, 0.012, z);
         dummy.rotation.set(0, 0, 0);
-        dummy.scale.set(1.1 * sc * (p.flight ? 0.6 : 1), 1, 1.1 * sc * (p.flight ? 0.6 : 1));
+        dummy.scale.set(1.25 * sc * (p.flight ? 0.6 : 1), 1, 1.25 * sc * (p.flight ? 0.6 : 1));
         dummy.updateMatrix();
         pShadow.setMatrixAt(p.inst, dummy.matrix);
       }
@@ -695,6 +718,10 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     setTier(t) {
       sun.castShadow = t === 'high';
       renderer.shadowMap.enabled = t === 'high';
+      scene.traverse((o) => {
+        const m = (o as T.Mesh).material as T.Material | undefined;
+        if (m) m.needsUpdate = true; // shaders change when shadows switch on or off
+      });
     },
 
     dispose() {

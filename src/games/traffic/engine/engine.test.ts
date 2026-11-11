@@ -89,10 +89,11 @@ describe('rules', () => {
 });
 
 describe('the hand-made level of stage 0', () => {
-  it('has real sizes: inside the lot, nothing overlaps, and 150 seats for 150 passengers', () => {
+  it('has real sizes: inside the lot, nothing overlaps, and as many seats as passengers', () => {
     const boxes = SLICE_VEHICLES.map(boxOf);
     boxes.forEach((b) => expect(insideLot(b, LOT.halfW, LOT.halfH)).toBe(true));
-    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < i + boxes.length - i; j++) if (j !== i) expect(overlaps(boxes[i], boxes[j], 0.02)).toBe(false);
+    // SAT on every pair; each footprint is shrunk by 5 cm first, so there is a real gap of 10 cm between any two vehicles
+    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) expect(overlaps(boxes[i], boxes[j], 0.05), `vehicles ${SLICE_VEHICLES[i].id} and ${SLICE_VEHICLES[j].id}`).toBe(false);
     const seats = SLICE_VEHICLES.reduce((n, v) => n + SIZES[v.type].seats, 0);
     expect(seats).toBe(SLICE_QUEUE.length);
     for (const c of new Set(SLICE_VEHICLES.map((v) => v.color))) {

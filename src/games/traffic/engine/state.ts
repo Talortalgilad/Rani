@@ -5,9 +5,9 @@ export type ColorId = 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 
 
 /** Length and width in cells, and seats. */
 export const SIZES: Record<VType, { len: number; wid: number; seats: number }> = {
-  car: { len: 2, wid: 1, seats: 4 },
-  van: { len: 3, wid: 1, seats: 6 },
-  bus: { len: 4, wid: 1.1, seats: 10 },
+  car: { len: 2, wid: 1.18, seats: 4 },
+  van: { len: 3, wid: 1.18, seats: 6 },
+  bus: { len: 4, wid: 1.28, seats: 10 },
 };
 
 export interface VehicleDef {

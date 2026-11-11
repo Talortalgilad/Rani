@@ -8,15 +8,13 @@ import { COLOR_HEX, COLOR_SHAPE, shapePoints, type StickerShape } from './palett
  * about 40 draw calls and not 800. Geometry is cached per type and colour and shared by all vehicles of that kind.
  */
 
-const GLASS = '#4a6c9f';
-const GLASS_FRONT = '#6f9bd0';
+const PANE = '#8fe3ff';
 const TYRE = '#1d1e25';
 const RIM = '#d8dbe4';
 const DARK = '#2a2733';
 const LIGHT = '#fff6cf';
 const TAIL = '#e5333a';
 
-const shade = (hex: string, k: number): string => '#' + new T.Color(hex).multiplyScalar(k).getHexString();
 
 /** A geometry with a vertex colour on every vertex, converted so that all parts can be merged. */
 function part(g: T.BufferGeometry, hex: string): T.BufferGeometry {
@@ -52,11 +50,11 @@ function box(w: number, h: number, d: number, x: number, y: number, z: number, h
 
 /** A big wheel that sticks out a little from the body. */
 function wheel(x: number, z: number, r: number, w: number): T.BufferGeometry[] {
-  const tyre = new T.CylinderGeometry(r, r, w, 10);
+  const tyre = new T.CylinderGeometry(r, r, w, 16);
   tyre.rotateX(Math.PI / 2);
   tyre.translate(x, r, z);
   const side = Math.sign(z) || 1;
-  const rim = new T.CircleGeometry(r * 0.55, 8);
+  const rim = new T.CircleGeometry(r * 0.55, 12);
   if (side < 0) rim.rotateY(Math.PI);
   rim.translate(x, r, z + side * (w / 2 + 0.003));
   return [part(tyre, TYRE), part(rim, RIM)];
@@ -109,56 +107,57 @@ function buildVehicle(type: VType, bodyHex: string): T.BufferGeometry {
   const parts: T.BufferGeometry[] = [];
   const base = baseOf(s);
   const bodyTop = base + bodyH;
-  const trim = shade(bodyHex, 0.7);
   const r = bodyH * 0.45;
 
-  // body (soft, big corner radius) with a darker skirt, and a dark strip underneath
+  // body in the full colour from the wheels up to the windows, on a thin dark strip
   parts.push(box(L * 0.92, 0.08, W * 0.8, 0, base + 0.02, 0, DARK));
   parts.push(rbox(L, bodyH, W, r, 0, base + bodyH / 2, 0, bodyHex, 2));
-  parts.push(rbox(L * 1.004, bodyH * 0.34, W * 1.008, r * 0.7, 0, base + bodyH * 0.17, 0, trim));
 
-  // cabin: glass that wraps all four sides, pillars, and a puffy roof that overhangs it
+  // cabin: ONE rounded shell in the body colour, narrower than the body, whose top is the roof (nothing overhangs)
   const cabLen = type === 'car' ? L * 0.56 : type === 'van' ? L * 0.9 : L * 0.96;
   const cabX = type === 'car' ? -L * 0.07 : type === 'van' ? -L * 0.03 : 0;
-  const cabW = W * (type === 'car' ? 0.9 : 0.94);
-  parts.push(rbox(cabLen, cabH + 0.06, cabW, 0.1, cabX, bodyTop + cabH / 2 + 0.02, 0, GLASS));
-  const windows = type === 'car' ? 2 : type === 'van' ? 3 : 6;
-  for (let i = 1; i < windows; i++) {
-    const px = cabX - cabLen / 2 + (cabLen * i) / windows;
-    parts.push(box(0.07, cabH, cabW + 0.025, px, bodyTop + cabH / 2 + 0.01, 0, bodyHex));
+  const cabW = W * 0.9;
+  const shellBottom = bodyTop - 0.28;
+  const roofTop = bodyTop + cabH + ROOF_CAP;
+  parts.push(rbox(cabLen, roofTop - shellBottom, cabW, 0.15, cabX, (roofTop + shellBottom) / 2, 0, bodyHex, 2));
+
+  // separate window panes in bright glossy cyan; what is left of the shell between them are the pillars
+  const n = type === 'car' ? 2 : type === 'van' ? 3 : 6;
+  const pillar = 0.09;
+  const margin = 0.14;
+  const paneLen = (cabLen - margin * 2 - pillar * (n - 1)) / n;
+  const paneH = cabH - 0.04;
+  const paneY = bodyTop + 0.03 + paneH / 2;
+  for (let i = 0; i < n; i++) {
+    const px = cabX - cabLen / 2 + margin + paneLen / 2 + i * (paneLen + pillar);
+    for (const side of [1, -1]) parts.push(box(paneLen, paneH, 0.03, px, paneY, side * (cabW / 2 - 0.003), PANE));
   }
-  // the big windscreen leans back; the rear window is smaller
-  const wsH = cabH * 1.08;
-  parts.push(box(0.05, wsH, cabW * 0.94, cabX + cabLen / 2 + 0.015, bodyTop + cabH * 0.5 + 0.01, 0, GLASS_FRONT, 0.32));
-  parts.push(box(0.05, cabH * 0.9, cabW * 0.86, cabX - cabLen / 2 - 0.01, bodyTop + cabH * 0.5, 0, GLASS, -0.12));
-  // the roof is a thick, well-rounded cushion that just overhangs the glass
-  parts.push(rbox(cabLen * 0.98 + 0.04, 0.26, cabW + 0.04, 0.13, cabX - 0.01, bodyTop + cabH + ROOF_CAP - 0.13, 0, bodyHex, 2));
+  parts.push(box(0.03, paneH, cabW * 0.82, cabX + cabLen / 2 - 0.003, paneY, 0, PANE)); // windscreen
+  parts.push(box(0.03, paneH * 0.9, cabW * 0.7, cabX - cabLen / 2 + 0.003, paneY - 0.01, 0, PANE)); // rear window
 
-  // big wheels, poking out of the sides
-  const axles = type === 'car' ? [L * 0.3, -L * 0.3] : type === 'van' ? [L * 0.31, -L * 0.3] : [L * 0.33, -L * 0.27, -L * 0.39];
-  const ww = 0.17;
-  for (const ax of axles) for (const side of [1, -1]) parts.push(...wheel(ax, side * (W / 2 + 0.01), wheelR, ww));
+  // wheels: 16 sides, one big wheel at the back of a bus, none doubled
+  const axles: [number, number][] =
+    type === 'car' ? [[L * 0.3, wheelR], [-L * 0.3, wheelR]]
+    : type === 'van' ? [[L * 0.31, wheelR], [-L * 0.3, wheelR]]
+    : [[L * 0.3, wheelR], [-L * 0.27, wheelR * 1.18]];
+  for (const [ax, wr] of axles) for (const side of [1, -1]) parts.push(...wheel(ax, side * (W / 2), wr, 0.17));
 
-  // headlights (round), tail lights, grille, bumper
+  // headlights (round), tail lights, grille
   for (const side of [1, -1]) {
     const hl = new T.CylinderGeometry(0.085, 0.085, 0.05, 8);
     hl.rotateZ(Math.PI / 2);
-    hl.translate(L / 2 + 0.005, base + bodyH * 0.55, side * W * 0.3);
+    hl.translate(L / 2 - 0.004, base + bodyH * 0.55, side * W * 0.3);
     parts.push(part(hl, LIGHT));
-    parts.push(box(0.05, 0.11, 0.2, -L / 2, base + bodyH * 0.55, side * W * 0.3, TAIL));
+    parts.push(box(0.05, 0.11, 0.2, -L / 2 + 0.02, base + bodyH * 0.55, side * W * 0.3, TAIL));
   }
-  parts.push(box(0.05, 0.13, W * 0.34, L / 2 + 0.003, base + bodyH * 0.28, 0, DARK));
-  if (type === 'bus') {
-    for (const side of [1, -1]) parts.push(box(0.06, 0.2, 0.05, L / 2 - 0.16, bodyTop + 0.22, side * (W / 2 + 0.07), DARK));
-    parts.push(box(L * 0.97, 0.06, W * 1.012, 0, base + bodyH * 0.55, 0, shade(bodyHex, 1.2)));
-  }
-  if (type === 'van') parts.push(box(L * 0.97, 0.05, W * 1.012, 0, base + bodyH * 0.55, 0, shade(bodyHex, 1.2)));
+  parts.push(box(0.05, 0.13, W * 0.34, L / 2 - 0.005, base + bodyH * 0.28, 0, DARK));
+  if (type === 'bus') for (const side of [1, -1]) parts.push(box(0.06, 0.2, 0.05, L / 2 - 0.2, bodyTop + 0.22, side * (W / 2 + 0.05), DARK));
 
   // the arrow on the roof (60% of the old size, puffy). A hidden "?" vehicle has none until it is uncovered.
   if (bodyHex !== BLACK_HEX) {
     const arrowLen = (type === 'car' ? L * 0.42 : type === 'van' ? L * 0.44 : L * 0.34) * 0.6;
     const a = arrow(arrowLen, cabW * 0.95 * 0.6, roofY(type) - 0.01);
-    a.translate(cabX - 0.015, 0, 0);
+    a.translate(cabX, 0, 0);
     parts.push(a);
   }
 
