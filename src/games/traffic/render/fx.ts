@@ -9,8 +9,8 @@ export class Fx {
 
   constructor(tier: 'high' | 'medium') {
     const n = tier === 'high' ? 1 : 0.5;
-    this.dust = new Particles(Math.round(90 * n), new T.SphereGeometry(1, 7, 6), new T.MeshBasicMaterial({ color: '#ffffff' }));
-    this.sparks = new Particles(Math.round(360 * n), new T.SphereGeometry(1, 6, 5), new T.MeshBasicMaterial({ color: '#ffffff' }));
+    this.dust = new Particles(Math.round(48 * n), new T.SphereGeometry(1, 5, 4), new T.MeshBasicMaterial({ color: '#ffffff' }));
+    this.sparks = new Particles(Math.round(150 * n), new T.SphereGeometry(1, 4, 3), new T.MeshBasicMaterial({ color: '#ffffff' }));
     this.group.add(this.dust.mesh, this.sparks.mesh);
   }
 

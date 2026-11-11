@@ -9,13 +9,15 @@ import { Timeline, easeInOutCubic, easeOutBack, easeOutQuad } from './animations
 import { buildBeach } from './dioramas';
 import { Fx } from './fx';
 import { COLOR_HEX, COLOR_SHAPE, shapePoints } from './palette';
-import { BLACK_HEX, makeVehicle, passengerGeometry, plasticMaterial, roofY, stickerGeometry, vehicleGeometry } from './toykit';
+import { BLACK_HEX, makeVehicle, PASSENGER_SCALE, passengerGeometry, plasticMaterial, roofY, stickerGeometry, vehicleGeometry } from './toykit';
 
 export const STATION_Z = -8.15;
 export const SLOT_DX = 1.42;
 export const slotX = (i: number): number => -4.97 + i * SLOT_DX;
-const SPACING = 0.52;
-const SEE_AHEAD = 36; // passengers farther back than this wait out of sight, inside the cabana
+const SPACING = 0.46;
+/** Camera angle above the floor. */
+export const CAMERA_ELEVATION = 48;
+const SEE_AHEAD = 30; // passengers farther back than this wait out of sight, inside the cabana
 
 interface Lot { halfW: number; halfH: number }
 export interface LevelView { vehicles: VehicleDef[]; queue: ColorId[]; lot: Lot }
@@ -36,7 +38,8 @@ interface VehicleView {
 
 interface PassengerView {
   color: ColorId;
-  inst: number; // instance index in the passenger mesh
+  inst: number; // the passenger's number in the queue (its shadow instance); the figure itself uses a ring slot
+  on?: boolean;
   stick: { mesh: T.InstancedMesh; idx: number };
   s: number;
   target: number;
@@ -46,7 +49,7 @@ interface PassengerView {
   gone: boolean;
 }
 
-const rbox = (w: number, h: number, d: number, r: number) => new T.RoundedBoxGeometry(w, h, d, 3, r);
+const rbox = (w: number, h: number, d: number, r: number) => new T.RoundedBoxGeometry(w, h, d, 1, r);
 
 function blobTexture(): T.CanvasTexture {
   const c = document.createElement('canvas');
@@ -140,18 +143,18 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   let height = env.height;
 
   // ---- rendering: filmic tone mapping and a warm studio environment for the reflections on the plastic
-  renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.92;
+  renderer.toneMapping = T.NeutralToneMapping; // keeps the colours as saturated as they are painted
+  renderer.toneMappingExposure = 0.95;
   const pmrem = new T.PMREMGenerator(renderer);
   const envTexture = pmrem.fromScene(new T.RoomEnvironment(), 0.04).texture;
   pmrem.dispose();
   scene.environment = envTexture;
-  scene.environmentIntensity = 0.62;
+  scene.environmentIntensity = 0.5;
   setSky('#58c8f0', '#eacd8c');
 
-  const hemi = new T.HemisphereLight('#fff1d2', '#d9b878', 0.8);
-  const sun = new T.DirectionalLight('#fff4de', 2.2);
-  sun.position.set(-9, 22, 9);
+  const hemi = new T.HemisphereLight('#fff1d2', '#d9b878', 0.42);
+  const sun = new T.DirectionalLight('#fff4de', 3.3);
+  sun.position.set(-7, 28, -2); // high and a little from behind: bright roofs, darker sides
   sun.target.position.set(0, 0, -4);
   sun.castShadow = tier === 'high';
   sun.shadow.mapSize.set(1024, 1024);
@@ -168,16 +171,16 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   };
 
   // ---- ground: sand, the parking pad, the station platform
-  const ground = new T.Mesh(keep(new T.PlaneGeometry(90, 52)), keep(new T.MeshStandardMaterial({ color: '#e3ad52', roughness: 0.95 })));
+  const ground = new T.Mesh(keep(new T.PlaneGeometry(90, 58)), keep(new T.MeshStandardMaterial({ color: '#e6b660', roughness: 0.95 })));
   ground.rotation.x = -Math.PI / 2;
-  ground.position.z = 9; // the sand stops at the shore; the sea starts beyond
+  ground.position.z = 7; // the sand stops at the shore; the sea starts beyond
   ground.receiveShadow = true;
   scene.add(ground);
-  const pad = new T.Mesh(keep(rbox(level.lot.halfW * 2 + 0.9, 0.08, level.lot.halfH * 2 + 0.9, 0.4)), keep(new T.MeshStandardMaterial({ color: '#e9b862', roughness: 0.9 })));
+  const pad = new T.Mesh(keep(rbox(level.lot.halfW * 2 + 0.9, 0.08, level.lot.halfH * 2 + 0.9, 0.4)), keep(new T.MeshStandardMaterial({ color: '#ecc070', roughness: 0.9 })));
   pad.position.y = 0.0;
   pad.receiveShadow = true;
   scene.add(pad);
-  const platform = new T.Mesh(keep(rbox(12.2, 0.1, 3.3, 0.45)), keep(new T.MeshStandardMaterial({ color: '#cf9a45', roughness: 0.9 })));
+  const platform = new T.Mesh(keep(rbox(12.2, 0.1, 3.3, 0.45)), keep(new T.MeshStandardMaterial({ color: '#d4a350', roughness: 0.9 })));
   platform.position.set(0, 0.0, STATION_Z - 0.05);
   platform.receiveShadow = true;
   scene.add(platform);
@@ -281,7 +284,10 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   const nPass = level.queue.length;
   const pGeo = keep(passengerGeometry());
   const pMat = keep(new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, envMapIntensity: 0.7 }));
-  const pMesh = new T.InstancedMesh(pGeo, pMat, nPass);
+  // only the passengers you can see get a figure: a ring of slots, so the triangle count stays small
+  const SLOTS = SEE_AHEAD + 10;
+  const slotOwner: number[] = Array(SLOTS).fill(-1);
+  const pMesh = new T.InstancedMesh(pGeo, pMat, Math.min(SLOTS, nPass));
   pMesh.castShadow = sun.castShadow;
   pMesh.frustumCulled = false;
   scene.add(pMesh);
@@ -289,7 +295,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   const colorsUsed = [...new Set(level.queue)];
   const stickMeshes = new Map<ColorId, T.InstancedMesh>();
   for (const c of colorsUsed) {
-    const m = new T.InstancedMesh(keep(stickerGeometry(COLOR_SHAPE[c], 0.2)), stickMat, level.queue.filter((x) => x === c).length);
+    const m = new T.InstancedMesh(keep(stickerGeometry(COLOR_SHAPE[c])), stickMat, level.queue.filter((x) => x === c).length);
     m.frustumCulled = false;
     scene.add(m);
     stickMeshes.set(c, m);
@@ -302,12 +308,17 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   const tmpColor = new T.Color();
   const stickCount = new Map<ColorId, number>();
   const passengers: PassengerView[] = level.queue.map((color, i) => {
-    pMesh.setColorAt(i, tmpColor.set(COLOR_HEX[color]));
     const idx = stickCount.get(color) ?? 0;
     stickCount.set(color, idx + 1);
     return { color, inst: i, stick: { mesh: stickMeshes.get(color)!, idx }, s: i * SPACING, target: i * SPACING, delay: 0, hop: 0, flight: null, gone: false };
   });
-  if (pMesh.instanceColor) pMesh.instanceColor.needsUpdate = true;
+  pMesh.setColorAt(0, tmpColor.set('#ffffff'));
+  {
+    const hide = new T.Object3D();
+    hide.scale.setScalar(0);
+    hide.updateMatrix();
+    for (let i = 0; i < pMesh.count; i++) pMesh.setMatrixAt(i, hide.matrix); // unused slots stay invisible
+  }
   const waiting: PassengerView[] = [...passengers];
 
   // ---- fx, timeline, interaction
@@ -329,7 +340,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     const half = Math.tan((camera.fov / 2) * (Math.PI / 180));
     const needW = level.lot.halfW * 2 * 1.08;
     const dist = Math.max(needW / (2 * half * aspect), 30);
-    const el = (55 * Math.PI) / 180;
+    const el = (CAMERA_ELEVATION * Math.PI) / 180;
     const tz = -5.4;
     camera.position.set(0, Math.sin(el) * dist, tz + Math.cos(el) * dist);
     camera.lookAt(0, 0, tz);
@@ -606,6 +617,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       vShadow.instanceMatrix.needsUpdate = true;
 
       // passengers
+      let colorDirty = false;
       for (const p of passengers) {
         let x = 0, y = 0, z = 0, yaw = 0, sc = 1, tilt = 0;
         if (p.gone) sc = 0;
@@ -644,19 +656,32 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
         dummy.rotation.set(0, yaw, tilt);
         dummy.scale.setScalar(sc);
         dummy.updateMatrix();
-        pMesh.setMatrixAt(p.inst, dummy.matrix);
+        const slot = p.inst % pMesh.count;
+        if (sc > 0) {
+          if (slotOwner[slot] !== p.inst) {
+            slotOwner[slot] = p.inst;
+            pMesh.setColorAt(slot, tmpColor.set(COLOR_HEX[p.color]));
+            colorDirty = true;
+          }
+          pMesh.setMatrixAt(slot, dummy.matrix);
+          p.on = true;
+        } else if (p.on) {
+          p.on = false;
+          if (slotOwner[slot] === p.inst) pMesh.setMatrixAt(slot, dummy.matrix); // scale 0: hide the freed slot
+        }
         // sticker on top of the head, and the contact shadow
-        dummy.position.set(x, y + 0.985 * sc, z);
+        dummy.position.set(x, y + 0.985 * PASSENGER_SCALE * sc, z);
         dummy.rotation.set(0, yaw, 0);
         dummy.updateMatrix();
         p.stick.mesh.setMatrixAt(p.stick.idx, dummy.matrix);
         dummy.position.set(x, 0.012, z);
         dummy.rotation.set(0, 0, 0);
-        dummy.scale.set(0.8 * sc * (p.flight ? 0.6 : 1), 1, 0.8 * sc * (p.flight ? 0.6 : 1));
+        dummy.scale.set(1.1 * sc * (p.flight ? 0.6 : 1), 1, 1.1 * sc * (p.flight ? 0.6 : 1));
         dummy.updateMatrix();
         pShadow.setMatrixAt(p.inst, dummy.matrix);
       }
       pMesh.instanceMatrix.needsUpdate = true;
+      if (colorDirty && pMesh.instanceColor) pMesh.instanceColor.needsUpdate = true;
       pShadow.instanceMatrix.needsUpdate = true;
       stickMeshes.forEach((m) => (m.instanceMatrix.needsUpdate = true));
     },

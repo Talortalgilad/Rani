@@ -104,19 +104,19 @@ function starfish(x: number, z: number): T.BufferGeometry {
 
 function cabana(x: number, z: number): T.BufferGeometry[] {
   const out: T.BufferGeometry[] = [];
-  const hut = new T.RoundedBoxGeometry(2.4, 1.7, 1.9, 3, 0.12);
+  const hut = new T.RoundedBoxGeometry(2.4, 1.7, 1.9, 1, 0.12);
   out.push(at(colored(hut, '#1f8a96'), x, 0.85, z));
-  const door = new T.RoundedBoxGeometry(0.9, 1.2, 0.2, 2, 0.05);
+  const door = new T.RoundedBoxGeometry(0.9, 1.2, 0.2, 1, 0.05);
   out.push(at(colored(door, '#2b2833'), x - 0.35, 0.65, z + 0.93));
-  const win = new T.RoundedBoxGeometry(0.7, 0.55, 0.2, 2, 0.05);
+  const win = new T.RoundedBoxGeometry(0.7, 0.55, 0.2, 1, 0.05);
   out.push(at(colored(win, '#f2e6c2'), x + 0.62, 1.0, z + 0.93));
   // striped awning: slanted slats, yellow and white
   for (let i = 0; i < 8; i++) {
-    const slat = new T.RoundedBoxGeometry(0.32, 0.1, 2.2, 2, 0.04);
+    const slat = new T.RoundedBoxGeometry(0.32, 0.1, 2.2, 1, 0.04);
     slat.rotateX(0.28);
     out.push(at(colored(slat, i % 2 ? '#ffffff' : '#ffd84a'), x - 1.12 + i * 0.32, 1.92, z + 0.55));
   }
-  const roofBack = new T.RoundedBoxGeometry(2.7, 0.14, 1.2, 2, 0.05);
+  const roofBack = new T.RoundedBoxGeometry(2.7, 0.14, 1.2, 1, 0.05);
   out.push(at(colored(roofBack, '#ffd84a'), x, 1.78, z - 0.5));
   return out;
 }
@@ -193,7 +193,7 @@ export function buildBeach(): Diorama {
   seaTexture ??= makeSea();
   const sea = new T.Mesh(new T.PlaneGeometry(40, 10), new T.MeshStandardMaterial({ map: seaTexture, roughness: 0.4, envMapIntensity: 0.6 }));
   sea.rotation.x = -Math.PI / 2;
-  sea.position.set(0, 0, -20.2);
+  sea.position.set(0, 0, -26.5);
   group.add(sea);
 
   // the queue: from the head (left) straight along the fence, round the corner, and up toward the cabana
