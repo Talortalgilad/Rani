@@ -17,6 +17,8 @@ export interface SceneEnv {
   height: number;
   reduced: boolean;
   canvas: HTMLCanvasElement;
+  /** The one shared renderer, for screens that need to set tone mapping (they must put it back when disposed). */
+  renderer: T.WebGLRenderer;
 }
 
 export interface SceneHandle {
@@ -78,7 +80,7 @@ export function setSky(top: string, bottom: string): void {
  */
 export async function showScene(
   factory: (env: SceneEnv) => StageScene | Promise<StageScene>,
-  opts: { autoDowngrade: boolean; onFallback(): void },
+  opts: { autoDowngrade: boolean; onFallback(): void; /** A screen with no regular version (a 3D-only game) never falls below this tier. */ minTier?: Tier },
 ): Promise<SceneHandle> {
   active?.handle.dispose();
   const tier = getTier();
@@ -87,7 +89,7 @@ export async function showScene(
   host.style.display = 'block';
   host.style.transition = 'none';
   host.style.opacity = '0';
-  const env: SceneEnv = { tier, width: window.innerWidth, height: window.innerHeight, reduced: reducedMotion(), canvas: r.domElement };
+  const env: SceneEnv = { tier, width: window.innerWidth, height: window.innerHeight, reduced: reducedMotion(), canvas: r.domElement, renderer: r };
   const scene = await factory(env);
 
   let raf = 0;
@@ -96,6 +98,7 @@ export async function showScene(
   const monitor = new QualityMonitor(() => {
     if (!opts.autoDowngrade) return;
     const next = lowerTier(getTier());
+    if (next === '2d' && opts.minTier) return; // nowhere to fall back to: stay on the lowest 3D tier
     setTier(next);
     if (next === '2d') {
       opts.onFallback();

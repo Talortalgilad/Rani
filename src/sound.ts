@@ -5,7 +5,9 @@ export type SoundName =
   // memory game: card flip, two-note bell (pitch in Hz), and one winning melody per world
   | 'flip' | 'bell' | 'melody1' | 'melody2' | 'melody3' | 'melody4'
   // 3D lobby: a tiny tick as an island passes the middle (pitch in Hz), and a soft thud when the ring comes to rest
-  | 'tick' | 'settle';
+  | 'tick' | 'settle'
+  // Traffic Jam: engine starting, the "bonk" of a blocked vehicle, braking, the honk of a full one, a firework
+  | 'engine' | 'bonk' | 'brake' | 'honk' | 'firework';
 
 export interface SoundApi {
   /** `pitch` (Hz) applies to 'pop', 'bell' and 'tick'. */
@@ -97,6 +99,28 @@ export const sound: SoundApi = {
         case 'settle':
           tone(330, 0, 0.13, 'sine', 0.2, 190);
           tone(660, 0, 0.04, 'triangle', 0.05);
+          break;
+        case 'engine':
+          tone(75, 0, 0.4, 'sawtooth', 0.07, 150);
+          tone(110, 0.05, 0.3, 'triangle', 0.05, 200);
+          break;
+        case 'bonk':
+          tone(170, 0, 0.14, 'square', 0.17, 70);
+          tone(340, 0, 0.06, 'triangle', 0.09);
+          break;
+        case 'brake':
+          tone(520, 0, 0.22, 'sawtooth', 0.035, 190);
+          tone(160, 0.08, 0.16, 'sine', 0.12, 90);
+          break;
+        case 'honk':
+          tone(392, 0, 0.13, 'square', 0.1);
+          tone(494, 0, 0.13, 'square', 0.08);
+          tone(392, 0.17, 0.2, 'square', 0.1);
+          tone(494, 0.17, 0.2, 'square', 0.08);
+          break;
+        case 'firework':
+          tone(900, 0, 0.28, 'sawtooth', 0.06, 160);
+          tone(1500, 0.06, 0.25, 'sine', 0.06, 700);
           break;
         case 'crack': tone(240, 0, 0.09, 'square', 0.1, 140); break;
         case 'correct': notes([523.25, 659.25, 783.99], 0.09, 0.2, 'triangle', 0.3); break;
