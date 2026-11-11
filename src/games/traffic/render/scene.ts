@@ -6,21 +6,18 @@ import type { Tier } from '../../../lobby3d/quality';
 import { corners, rad } from '../engine/geometry';
 import { SIZES, type ColorId, type VehicleDef } from '../engine/state';
 import { Timeline, easeInOutCubic, easeOutBack, easeOutQuad } from './animations';
-import { buildBeach } from './dioramas';
+import { buildWorld, type WorldKind } from './dioramas';
 import { Fx } from './fx';
 import { COLOR_HEX, COLOR_SHAPE, shapePoints } from './palette';
 import { BLACK_HEX, makeVehicle, PASSENGER_SCALE, passengerGeometry, plasticMaterial, roofY, stickerGeometry, vehicleGeometry } from './toykit';
 
-export const STATION_Z = -8.15;
-export const SLOT_DX = 1.42;
-export const slotX = (i: number): number => -4.97 + i * SLOT_DX;
 const SPACING = 0.46;
 /** Camera angle above the floor. */
 export const CAMERA_ELEVATION = 48;
 const SEE_AHEAD = 30; // passengers farther back than this wait out of sight, inside the cabana
 
 interface Lot { halfW: number; halfH: number }
-export interface LevelView { vehicles: VehicleDef[]; queue: ColorId[]; lot: Lot }
+export interface LevelView { vehicles: VehicleDef[]; queue: ColorId[]; lot: Lot; world: WorldKind }
 
 interface VehicleView {
   def: VehicleDef;
@@ -146,6 +143,10 @@ export interface TrafficScene extends StageScene {
   vehiclePosition(id: number): T.Vector3;
   /** for screenshots and measuring */
   focusOn(id: number | null, zoom?: number): void;
+  /** where a vehicle is on the screen (CSS pixels): for the pointing hand of the tutorial */
+  screenPos(id: number): { x: number; y: number };
+  /** puts the scene into the state of a game that was saved in the middle (nothing is on the road) */
+  restore(state: { vehicles: { id: number; status: string; slot: number | null; color: ColorId; filled: number }[]; boarded: number }): void;
 }
 
 export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclude<Tier, '2d'>): TrafficScene {
@@ -156,6 +157,16 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   let width = env.width;
   let height = env.height;
 
+  // ---- the layout depends on the lot: the station sits right above it, and its width follows the width on screen
+  const fitHalf = Math.max(level.lot.halfW + 0.6, 3.7);
+  const pads = fitHalf >= 5.7 ? 8 : 5;
+  const pitch = Math.min(1.42, (fitHalf * 2 * 0.95) / pads);
+  const kPitch = pitch / 1.42;
+  const slotX = (i: number): number => (i - (pads - 1) / 2) * pitch;
+  const STATION_Z = -(level.lot.halfH + 1.75);
+  const dzN = STATION_Z + 8.15; // the diorama is drawn for a station at -8.15
+  const queueHalf = Math.max(3.3, fitHalf * 0.82);
+
   // ---- rendering: filmic tone mapping and a warm studio environment for the reflections on the plastic
   renderer.toneMapping = T.NeutralToneMapping; // keeps the colours as saturated as they are painted
   renderer.toneMappingExposure = 0.95;
@@ -164,9 +175,12 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   pmrem.dispose();
   scene.environment = envTexture;
   scene.environmentIntensity = 0.5;
-  setSky('#58c8f0', '#eacd8c');
+  const diorama = buildWorld(level.world, queueHalf);
+  diorama.group.position.z = dzN;
+  const theme = diorama.theme;
+  setSky(theme.skyTop, theme.skyBottom);
 
-  const hemi = new T.HemisphereLight('#fff1d2', '#d9b878', 0.42);
+  const hemi = new T.HemisphereLight('#fff1d2', theme.ground, 0.42);
   const sun = new T.DirectionalLight('#fff4de', 3.3);
   sun.position.set(-10, 20, -3); // high and a little from behind: bright roofs, darker sides
   sun.target.position.set(0, 0, -4);
@@ -186,23 +200,24 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   };
 
   // ---- ground: sand, the parking pad, the station platform
-  const ground = new T.Mesh(keep(new T.PlaneGeometry(90, 58)), keep(new T.MeshStandardMaterial({ color: '#e6b660', roughness: 0.95 })));
+  const northZ = theme.groundNorth + dzN;
+  const ground = new T.Mesh(keep(new T.PlaneGeometry(120, 36 - northZ)), keep(new T.MeshStandardMaterial({ color: theme.ground, roughness: 0.95 })));
   ground.rotation.x = -Math.PI / 2;
-  ground.position.z = 7; // the sand stops at the shore; the sea starts beyond
+  ground.position.z = (northZ + 36) / 2; // the ground stops at the shore or the road; what lies beyond is part of the diorama
   ground.receiveShadow = true;
   scene.add(ground);
   // the parking pad: lighter than the sand, rounded corners, and a fine darker line around it
   const padW = level.lot.halfW * 2 + 0.9;
   const padD = level.lot.halfH * 2 + 0.9;
-  const edge = new T.Mesh(keep(rbox(padW + 0.3, 0.06, padD + 0.3, 0.85, 4)), keep(new T.MeshStandardMaterial({ color: '#c58f3c', roughness: 0.9 })));
+  const edge = new T.Mesh(keep(rbox(padW + 0.3, 0.06, padD + 0.3, 0.85, 4)), keep(new T.MeshStandardMaterial({ color: theme.padEdge, roughness: 0.9 })));
   edge.position.y = 0.0;
   edge.receiveShadow = true;
   scene.add(edge);
-  const pad = new T.Mesh(keep(rbox(padW, 0.1, padD, 0.75, 4)), keep(new T.MeshStandardMaterial({ color: '#f6dba0', roughness: 0.9 })));
+  const pad = new T.Mesh(keep(rbox(padW, 0.1, padD, 0.75, 4)), keep(new T.MeshStandardMaterial({ color: theme.pad, roughness: 0.9 })));
   pad.position.y = 0.0;
   pad.receiveShadow = true;
   scene.add(pad);
-  const platform = new T.Mesh(keep(rbox(12.2, 0.1, 3.3, 0.45)), keep(new T.MeshStandardMaterial({ color: '#d4a350', roughness: 0.9 })));
+  const platform = new T.Mesh(keep(rbox(pads * pitch + 0.6, 0.1, 3.3, 0.45)), keep(new T.MeshStandardMaterial({ color: theme.platform, roughness: 0.9 })));
   platform.position.set(0, 0.0, STATION_Z - 0.05);
   platform.receiveShadow = true;
   scene.add(platform);
@@ -236,15 +251,15 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     g.lineTo(94, 128);
     g.stroke();
   }));
-  const padGeo = keep(rbox(1.2, 0.08, 2.25, 0.2));
-  for (let i = 0; i < 8; i++) {
+  const padGeo = keep(rbox(pitch - 0.22, 0.08, 2.25, 0.2));
+  for (let i = 0; i < pads; i++) {
     const kind = i === 0 ? 'vip' : i <= 4 ? 'p' : 'locked';
-    const color = kind === 'vip' ? '#8a6620' : kind === 'p' ? '#b98531' : '#c4954a';
+    const color = kind === 'vip' ? theme.padVip : kind === 'p' ? theme.padP : theme.padLocked;
     const m = new T.Mesh(padGeo, keep(new T.MeshStandardMaterial({ color, roughness: 0.85 })));
     m.position.set(slotX(i), 0.02, STATION_Z);
     m.receiveShadow = true;
     scene.add(m);
-    const glyph = new T.Mesh(keep(new T.PlaneGeometry(0.95, 1.9)), keep(new T.MeshBasicMaterial({ map: kind === 'vip' ? texVip : kind === 'p' ? texP : texPlus, transparent: true })));
+    const glyph = new T.Mesh(keep(new T.PlaneGeometry(Math.min(0.95, pitch - 0.4), 1.9)), keep(new T.MeshBasicMaterial({ map: kind === 'vip' ? texVip : kind === 'p' ? texP : texPlus, transparent: true })));
     glyph.rotation.x = -Math.PI / 2;
     glyph.position.set(slotX(i), 0.07, STATION_Z);
     scene.add(glyph);
@@ -255,11 +270,10 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     }
   }
 
-  // ---- the diorama (beach)
-  const diorama = buildBeach();
   scene.add(diorama.group);
 
   // ---- vehicles
+  const lowDetail = level.vehicles.length > 28;
   const views = new Map<number, VehicleView>();
   const qTexture = keep(glyphTexture((g) => {
     g.fillStyle = '#ffffff';
@@ -272,7 +286,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   const qMat = keep(new T.MeshBasicMaterial({ map: qTexture, transparent: true }));
   for (const def of level.vehicles) {
     const root = new T.Group();
-    const mesh = makeVehicle(def.type, def.hidden ? null : def.color);
+    const mesh = makeVehicle(def.type, def.hidden ? null : def.color, lowDetail);
     mesh.userData.index = def.id;
     mesh.castShadow = sun.castShadow;
     root.add(mesh);
@@ -359,12 +373,16 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     camera.aspect = aspect;
     camera.fov = 30;
     camera.updateProjectionMatrix();
-    // the lot fills the width with a 4% margin; the distance follows from that and from the field of view
+    // the lot (with its kerb) fills the width with a 4% margin; the distance follows from that and from the field of view
     const half = Math.tan((camera.fov / 2) * (Math.PI / 180));
-    const needW = level.lot.halfW * 2 * 1.08;
-    const dist = Math.max(needW / (2 * half * aspect), 30);
     const el = (CAMERA_ELEVATION * Math.PI) / 180;
-    const tz = -5.4;
+    const needW = Math.max(level.lot.halfW * 2 + 1.2, pads * pitch + 0.8) * 1.04;
+    const byWidth = needW / (2 * half * aspect);
+    // on a wide screen the height decides: lot, station and queue must fit above the helper buttons
+    const needH = (level.lot.halfH * 2 + 13) * Math.sin(el);
+    const byHeight = needH / (2 * half);
+    const dist = Math.max(byWidth, byHeight, 14);
+    const tz = (STATION_Z - 9.6 + level.lot.halfH + 0.8) / 2;
     camera.position.set(0, Math.sin(el) * dist, tz + Math.cos(el) * dist);
     camera.lookAt(0, 0, tz);
     if (focus.id !== null) {
@@ -393,7 +411,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   canvas.addEventListener('pointerup', onUp);
 
   // ---- helpers for motion
-  const stationScale = (t: VehicleDef['type']) => (t === 'car' ? 0.98 : t === 'van' ? 0.7 : 0.53);
+  const stationScale = (t: VehicleDef['type']) => (t === 'car' ? 0.98 : t === 'van' ? 0.7 : 0.53) * kPitch;
 
   function exitCurve(v: VehicleView, slot: number): T.CatmullRomCurve3 {
     const def = v.def;
@@ -520,8 +538,8 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       const hex = COLOR_HEX[color];
       timeline.tween(reduced ? 0.01 : 0.55, (t) => {
         v.root.rotation.y = -rad(v.def.heading) + easeOutQuad(t) * Math.PI * 2;
-        if (t > 0.5 && v.mesh.geometry !== vehicleGeometry(v.def.type, hex)) {
-          v.mesh.geometry = vehicleGeometry(v.def.type, hex);
+        if (t > 0.5 && v.mesh.geometry !== vehicleGeometry(v.def.type, hex, lowDetail)) {
+          v.mesh.geometry = vehicleGeometry(v.def.type, hex, lowDetail);
           if (v.q) v.q.visible = false;
           fx.sparkle(v.root.position.x, 0.9, v.root.position.z, 8);
         }
@@ -592,7 +610,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     celebrate() {
       if (reduced) return;
       for (let i = 0; i < 9; i++) {
-        timeline.after(i * 0.42, () => fx.firework((Math.random() - 0.5) * 12, 6 + Math.random() * 3, -13 - Math.random() * 3));
+        timeline.after(i * 0.42, () => fx.firework((Math.random() - 0.5) * fitHalf * 1.8, 6 + Math.random() * 3, STATION_Z - 5 - Math.random() * 3));
       }
     },
 
@@ -601,6 +619,34 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     },
 
     vehiclePosition: (id) => views.get(id)!.root.position.clone(),
+
+    screenPos(id) {
+      const p = views.get(id)!.root.position.clone();
+      p.y = 0.7;
+      p.project(camera);
+      return { x: ((p.x + 1) / 2) * width, y: ((1 - p.y) / 2) * height };
+    },
+
+    restore(st) {
+      for (const sv of st.vehicles) {
+        const v = views.get(sv.id)!;
+        if (sv.status === 'gone') v.root.visible = false;
+        else if (sv.status === 'station' && sv.slot !== null) {
+          v.slot = sv.slot;
+          v.root.position.set(slotX(sv.slot + 1), 0, STATION_Z);
+          v.root.rotation.y = -rad(270);
+          v.root.scale.setScalar(stationScale(v.def.type));
+          api.setSeatsLeft(sv.id, sv.color, SIZES[v.def.type].seats - sv.filled);
+        }
+      }
+      for (let i = 0; i < st.boarded && waiting.length; i++) {
+        const p = waiting.shift()!;
+        p.gone = true;
+      }
+      waiting.forEach((p, i) => {
+        p.s = p.target = i * SPACING;
+      });
+    },
 
     focusOn(id, zoom = 3.4) {
       focus = { id, zoom };
@@ -743,7 +789,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     },
   };
 
-  const pathCurve = diorama.queuePath;
+  const pathCurve = new T.CatmullRomCurve3(diorama.queuePoints.map((p) => new T.Vector3(p.x, 0, p.z + dzN)), false, 'catmullrom', 0.4);
   const pathLen = pathCurve.getLength();
   function curveAt(s: number, out: T.Vector3): T.Vector3 {
     return pathCurve.getPointAt(Math.min(1, Math.max(0, s / pathLen)), out);

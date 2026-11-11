@@ -1,6 +1,16 @@
 import type { GameContext, GameModule } from '../types';
 import { getTier, initialTier, setTier } from '../../lobby3d/quality';
+import type { LevelData } from './engine/level';
+import type { SaveData } from './engine/state';
 import { buildHud, type Hud } from './ui/hud';
+
+interface Progress {
+  /** best stars per level key */
+  stars: Record<string, number>;
+  /** the level to start with */
+  current: string;
+}
+interface Session { savedAt: number; key: string; data: SaveData }
 
 let ctx: GameContext | null = null;
 let hud: Hud | null = null;
@@ -8,7 +18,9 @@ let handle: { dispose(): void; fadeIn(ms: number): void } | null = null;
 let ctl: { destroy(): void } | null = null;
 let token = 0;
 
-async function start(): Promise<void> {
+const progress = (): Progress => ctx!.load<Progress>('progress', { stars: {}, current: 't1' });
+
+async function start(key: string, resume?: SaveData): Promise<void> {
   const my = ++token;
   handle?.dispose();
   ctl?.destroy();
@@ -16,19 +28,25 @@ async function start(): Promise<void> {
   ctl = null;
   ctx!.container.innerHTML = '';
   document.body.classList.add('traffic-on');
-  const [{ showScene }, { createTrafficScene }, { Controller }, { SLICE_LEVEL, SLICE_QUEUE }] = await Promise.all([
+  const [{ showScene }, { createTrafficScene }, { Controller }, { ALL_LEVELS, levelByKey, nextLevel }] = await Promise.all([
     import('../../lobby3d/stage'),
     import('./render/scene'),
     import('./controller'),
-    import('./levels/beach-slice'),
+    import('./levels'),
   ]);
   if (my !== token) return;
+  const level: LevelData = levelByKey(key) ?? ALL_LEVELS[0];
   if (getTier() === '2d') setTier(initialTier('auto') === '2d' ? '2d' : initialTier('auto'));
-  hud = buildHud(ctx!.container, { level: SLICE_LEVEL, hard: true, total: SLICE_QUEUE.length, onHome: () => ctx!.onExit() });
+  hud = buildHud(ctx!.container, {
+    title: level.kind === 'tutorial' ? `הדרכה ${level.number}` : `שלב ${level.number}`,
+    hard: level.hard,
+    total: level.queue.length,
+    onHome: () => exitHome(),
+  });
   let scene: Awaited<ReturnType<typeof createTrafficScene>> | null = null;
   try {
     handle = await showScene(
-      (env) => (scene = createTrafficScene(env, Controller.view, env.tier === 'high' ? 'high' : 'medium')),
+      (env) => (scene = createTrafficScene(env, { vehicles: level.vehicles, queue: level.queue, lot: level.lot, world: level.world }, env.tier === 'high' ? 'high' : 'medium')),
       { autoDowngrade: true, minTier: 'medium', onFallback: () => hud?.message('המשחק הזה צריך גרפיקה תלת־ממדית') },
     );
   } catch {
@@ -36,11 +54,49 @@ async function start(): Promise<void> {
     return;
   }
   if (my !== token || !scene) return;
-  const c = new Controller(ctx!, scene, hud);
-  c.restart = () => void start();
+  const c = new Controller(
+    ctx!,
+    scene,
+    hud,
+    level,
+    {
+      onWin(stars, moves) {
+        const p = progress();
+        const prev = p.stars[level.key] ?? 0;
+        p.stars[level.key] = Math.max(prev, stars);
+        const nxt = nextLevel(level.key);
+        p.current = nxt ? nxt.key : level.key;
+        ctx!.save('progress', p);
+        const gained = Math.max(0, stars - prev);
+        ctx!.onRoundEnd({ won: true, stars: gained as 0 | 1 | 2 | 3, score: moves });
+        return { next: !!nxt, newStars: gained };
+      },
+      save: (data) => ctx!.save<Session>('session', { savedAt: Date.now(), key: level.key, data }),
+      clearSave: () => ctx!.save('session', null),
+      restart: () => void start(level.key),
+      replay: () => begin(level.key),
+      next: () => {
+        const nxt = nextLevel(level.key);
+        if (nxt) begin(nxt.key);
+      },
+      home: () => exitHome(),
+    },
+    resume,
+  );
   ctl = c;
-  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__traffic = { scene, state: c.state, ctl: c };
+  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__traffic = { scene, state: c.state, ctl: c, load: (k: string) => void start(k) };
   handle.fadeIn(ctx!.resuming ? 0 : 250);
+}
+
+/** Start a level after the first one: asks the host, which may show the gate (the first level after entering is free). */
+function begin(key: string): void {
+  ctx!.save('session', null);
+  ctx!.requestRound(() => void start(key));
+}
+
+function exitHome(): void {
+  ctx!.save('session', null);
+  ctx!.onExit();
 }
 
 const icon = `<svg viewBox="0 0 100 100" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -53,10 +109,19 @@ const mod: GameModule = {
   title: 'פקק בתחנה',
   icon,
   color: '#ff8a1f',
-  mount(c) {
+  mount(c: GameContext) {
     ctx = c;
-    void start();
+    const p = progress();
+    if (c.resuming) {
+      const s = c.load<Session | null>('session', null);
+      if (s && Date.now() - s.savedAt < 10 * 60 * 1000) {
+        void start(s.key, s.data);
+        return;
+      }
+    } else c.save('session', null);
+    void start(p.current);
   },
+  /** Nothing runs on a clock here, so any moment is fine. */
   canInterrupt: () => true,
   pause() {},
   resume() {},

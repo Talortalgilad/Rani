@@ -7,7 +7,9 @@
     "dev": "vite --host",
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "levels:gen": "vite-node scripts/gen-candidates.ts",
+    "levels:pick": "vite-node scripts/pick-levels.ts"
   },
   "devDependencies": {
     "@types/three": "^0.187.0",

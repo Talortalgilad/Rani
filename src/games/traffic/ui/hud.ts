@@ -17,17 +17,23 @@ export interface Hud {
   overlay(html: string): HTMLElement;
   clearOverlay(): void;
   message(text: string | null): void;
+  /** the tutorial sentence under the title (null hides it) */
+  caption(text: string | null): void;
+  /** the pointing hand, at a point on the screen (null hides it) */
+  hand(at: { x: number; y: number } | null): void;
   root: HTMLElement;
 }
 
 /** Title, passenger count, helper buttons (no action yet in stage 0) and the pop-up messages. */
-export function buildHud(container: HTMLElement, o: { level: number; hard?: boolean; total: number; onHome(): void }): Hud {
+export function buildHud(container: HTMLElement, o: { title: string; hard?: boolean; total: number; onHome(): void }): Hud {
   const root = document.createElement('div');
   root.className = 'tr';
   root.innerHTML = `
-    <div class="tr-title">${o.hard ? '<span class="tr-hard">קשה מאוד!</span>' : ''}<b>שלב ${o.level}</b></div>
+    <div class="tr-title">${o.hard ? '<span class="tr-hard">קשה מאוד!</span>' : ''}<b>${o.title}</b></div>
     <div class="tr-count"><i></i><span id="tr-n">0/${o.total}</span></div>
     <button class="tr-home" aria-label="בית">🏠</button>
+    <div class="tr-caption" id="tr-caption" hidden></div>
+    <div class="tr-hand" id="tr-hand" hidden>👆</div>
     <div class="tr-praise" id="tr-praise"></div>
     <div class="tr-boosters">
       <button class="tr-boost" aria-label="ביטול">${ICONS.undo}<span class="tr-badge">3</span></button>
@@ -49,6 +55,8 @@ export function buildHud(container: HTMLElement, o: { level: number; hard?: bool
   const n = root.querySelector('#tr-n') as HTMLElement;
   const pr = root.querySelector('#tr-praise') as HTMLElement;
   const msg = root.querySelector('#tr-msg') as HTMLElement;
+  const cap = root.querySelector('#tr-caption') as HTMLElement;
+  const hand = root.querySelector('#tr-hand') as HTMLElement;
   let ov: HTMLElement | null = null;
   return {
     root,
@@ -70,6 +78,17 @@ export function buildHud(container: HTMLElement, o: { level: number; hard?: bool
     clearOverlay() {
       ov?.remove();
       ov = null;
+    },
+    caption(text) {
+      cap.hidden = !text;
+      cap.textContent = text ?? '';
+    },
+    hand(at) {
+      hand.hidden = !at;
+      if (at) {
+        hand.style.left = `${at.x}px`;
+        hand.style.top = `${at.y}px`;
+      }
     },
     message(text) {
       msg.hidden = text === null;

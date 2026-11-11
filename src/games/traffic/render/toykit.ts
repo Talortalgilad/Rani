@@ -49,8 +49,8 @@ function box(w: number, h: number, d: number, x: number, y: number, z: number, h
 }
 
 /** A big wheel that sticks out a little from the body. */
-function wheel(x: number, z: number, r: number, w: number): T.BufferGeometry[] {
-  const tyre = new T.CylinderGeometry(r, r, w, 16);
+function wheel(x: number, z: number, r: number, w: number, sides = 16): T.BufferGeometry[] {
+  const tyre = new T.CylinderGeometry(r, r, w, sides);
   tyre.rotateX(Math.PI / 2);
   tyre.translate(x, r, z);
   const side = Math.sign(z) || 1;
@@ -101,7 +101,8 @@ const ROOF_CAP = 0.12;
 /** Height of the top of the roof: where the arrow lies. */
 export const roofY = (t: VType): number => baseOf(SPECS[t]) + SPECS[t].bodyH + SPECS[t].cabH + ROOF_CAP;
 
-function buildVehicle(type: VType, bodyHex: string): T.BufferGeometry {
+function buildVehicle(type: VType, bodyHex: string, low: boolean): T.BufferGeometry {
+  const seg = low ? 1 : 2; // a crowded lot (many vehicles) uses lighter vehicles: the triangle budget is for the whole scene
   const s = SPECS[type];
   const { len: L, wid: W, bodyH, cabH, wheelR } = s;
   const parts: T.BufferGeometry[] = [];
@@ -111,7 +112,7 @@ function buildVehicle(type: VType, bodyHex: string): T.BufferGeometry {
 
   // body in the full colour from the wheels up to the windows, on a thin dark strip
   parts.push(box(L * 0.92, 0.08, W * 0.8, 0, base + 0.02, 0, DARK));
-  parts.push(rbox(L, bodyH, W, r, 0, base + bodyH / 2, 0, bodyHex, 2));
+  parts.push(rbox(L, bodyH, W, r, 0, base + bodyH / 2, 0, bodyHex, seg));
 
   // cabin: ONE rounded shell in the body colour, narrower than the body, whose top is the roof (nothing overhangs)
   const cabLen = type === 'car' ? L * 0.56 : type === 'van' ? L * 0.9 : L * 0.96;
@@ -119,7 +120,7 @@ function buildVehicle(type: VType, bodyHex: string): T.BufferGeometry {
   const cabW = W * 0.9;
   const shellBottom = bodyTop - 0.28;
   const roofTop = bodyTop + cabH + ROOF_CAP;
-  parts.push(rbox(cabLen, roofTop - shellBottom, cabW, 0.15, cabX, (roofTop + shellBottom) / 2, 0, bodyHex, 2));
+  parts.push(rbox(cabLen, roofTop - shellBottom, cabW, 0.15, cabX, (roofTop + shellBottom) / 2, 0, bodyHex, seg));
 
   // separate window panes in bright glossy cyan; what is left of the shell between them are the pillars
   const n = type === 'car' ? 2 : type === 'van' ? 3 : 6;
@@ -140,7 +141,7 @@ function buildVehicle(type: VType, bodyHex: string): T.BufferGeometry {
     type === 'car' ? [[L * 0.3, wheelR], [-L * 0.3, wheelR]]
     : type === 'van' ? [[L * 0.31, wheelR], [-L * 0.3, wheelR]]
     : [[L * 0.3, wheelR], [-L * 0.27, wheelR * 1.18]];
-  for (const [ax, wr] of axles) for (const side of [1, -1]) parts.push(...wheel(ax, side * (W / 2), wr, 0.17));
+  for (const [ax, wr] of axles) for (const side of [1, -1]) parts.push(...wheel(ax, side * (W / 2), wr, 0.17, low ? 12 : 16));
 
   // headlights (round), tail lights, grille
   for (const side of [1, -1]) {
@@ -168,11 +169,11 @@ function buildVehicle(type: VType, bodyHex: string): T.BufferGeometry {
 }
 
 const cache = new Map<string, T.BufferGeometry>();
-export function vehicleGeometry(type: VType, hex: string): T.BufferGeometry {
-  const key = `${type}|${hex}`;
+export function vehicleGeometry(type: VType, hex: string, low = false): T.BufferGeometry {
+  const key = `${type}|${hex}|${low ? 'low' : 'full'}`;
   let g = cache.get(key);
   if (!g) {
-    g = buildVehicle(type, hex);
+    g = buildVehicle(type, hex, low);
     cache.set(key, g);
   }
   return g;
@@ -188,8 +189,8 @@ export function plasticMaterial(): T.MeshStandardMaterial {
 export const BLACK_HEX = '#17151f';
 
 /** A vehicle mesh (one draw call). `color` null = a "?" vehicle: black plastic. */
-export function makeVehicle(type: VType, color: ColorId | null): T.Mesh {
-  const mesh = new T.Mesh(vehicleGeometry(type, color ? COLOR_HEX[color] : BLACK_HEX), plasticMaterial());
+export function makeVehicle(type: VType, color: ColorId | null, low = false): T.Mesh {
+  const mesh = new T.Mesh(vehicleGeometry(type, color ? COLOR_HEX[color] : BLACK_HEX, low), plasticMaterial());
   mesh.castShadow = true;
   return mesh;
 }

@@ -32,6 +32,8 @@ export interface Vehicle extends VehicleDef {
   revealed: boolean;
   /** the vehicle whose leaving uncovers this "?" */
   revealedBy: number | null;
+  /** when it was sent to the station (0, 1, 2...): the one that was sent first gets the passenger first */
+  order: number;
 }
 
 export type TapResult =
@@ -43,21 +45,48 @@ export type TapResult =
 export type Status = 'playing' | 'won' | 'stuck';
 
 export const REGULAR_SLOTS = 4;
+export const MAX_SLOTS = 7;
+/** `slot` of a vehicle that sits in the VIP place. */
+export const VIP_SLOT = -1;
+
+export interface SaveData {
+  veh: { id: number; status: VStatus; slot: number | null; filled: number; revealed: boolean; order: number }[];
+  slots: (number | null)[];
+  vip: number | null;
+  queue: ColorId[];
+  boarded: number;
+  moves: number;
+  sent: number;
+}
+
+interface Snapshot {
+  veh: { status: VStatus; slot: number | null; filled: number; revealed: boolean; order: number }[];
+  slots: (number | null)[];
+  vip: number | null;
+  queue: ColorId[];
+  boarded: number;
+  moves: number;
+  sent: number;
+}
 
 export const boxOf = (v: VehicleDef): Obb => ({ x: v.x, z: v.z, hl: SIZES[v.type].len / 2, hw: SIZES[v.type].wid / 2, heading: v.heading });
 
 /** The rules of the game, with no graphics: tap, exit, blocked, boarding, win and "stuck". */
 export class TrafficState {
   vehicles: Vehicle[];
-  /** vehicle id per station slot; null = free. The first slot is the VIP place (kept for stage 2). */
+  /** vehicle id per regular station slot; null = free. More slots can be opened with `addSlot` (up to 7). */
   slots: (number | null)[] = Array(REGULAR_SLOTS).fill(null);
+  /** the vehicle in the VIP place, if any */
+  vip: number | null = null;
+  private sent = 0;
+  private history: Snapshot[] = [];
   queue: ColorId[];
   readonly total: number;
   boarded = 0;
   moves = 0;
 
   constructor(defs: VehicleDef[], queue: ColorId[]) {
-    this.vehicles = defs.map((d) => ({ ...d, status: 'parked', slot: null, filled: 0, revealed: !d.hidden, revealedBy: null }));
+    this.vehicles = defs.map((d) => ({ ...d, status: 'parked', slot: null, filled: 0, revealed: !d.hidden, revealedBy: null, order: 0 }));
     this.queue = [...queue];
     this.total = queue.length;
     for (const v of this.vehicles.filter((x) => x.hidden)) {
@@ -94,8 +123,10 @@ export class TrafficState {
     if (hit) return { kind: 'blocked', id, by: hit.id, distance: hit.distance }; // a blocked tap is not a move
     const slot = this.slots.findIndex((s) => s === null);
     if (slot < 0) return { kind: 'full' };
+    this.history.push(this.snapshot());
     v.status = 'driving';
     v.slot = slot;
+    v.order = this.sent++;
     this.slots[slot] = id;
     this.moves++;
     // leaving the lot uncovers the "?" cars that were behind it
@@ -123,11 +154,12 @@ export class TrafficState {
   nextBoarding(): { vehicle: Vehicle; color: ColorId } | null {
     const color = this.queue[0];
     if (!color) return null;
-    const v = this.vehicles.find((x) => x.status === 'station' && this.shownColorOrReal(x) === color && x.filled < SIZES[x.type].seats);
+    let v: Vehicle | null = null;
+    for (const x of this.vehicles) {
+      if (x.status !== 'station' || x.color !== color || x.filled >= SIZES[x.type].seats) continue;
+      if (!v || x.order < v.order) v = x; // the one that was sent first
+    }
     return v ? { vehicle: v, color } : null;
-  }
-  private shownColorOrReal(v: Vehicle): ColorId {
-    return v.color;
   }
 
   /** The head passenger boards. Returns the vehicle and whether it is now full. */
@@ -145,7 +177,100 @@ export class TrafficState {
   depart(id: number): void {
     const v = this.get(id);
     v.status = 'gone';
-    if (v.slot !== null) this.slots[v.slot] = null;
+    if (v.slot === VIP_SLOT) this.vip = null;
+    else if (v.slot !== null) this.slots[v.slot] = null;
+  }
+
+  // ---- helpers (stage 2 puts buttons on them; the rules live here)
+
+  private snapshot(): Snapshot {
+    return {
+      veh: this.vehicles.map((v) => ({ status: v.status, slot: v.slot, filled: v.filled, revealed: v.revealed, order: v.order })),
+      slots: [...this.slots],
+      vip: this.vip,
+      queue: [...this.queue],
+      boarded: this.boarded,
+      moves: this.moves,
+      sent: this.sent,
+    };
+  }
+
+  /** The state of a game in the middle, for the 10-minute resume. Only meaningful when nothing is on the road. */
+  serialize(): SaveData {
+    return {
+      veh: this.vehicles.map((v) => ({ id: v.id, status: v.status === 'driving' ? 'parked' : v.status, slot: v.status === 'driving' ? null : v.slot, filled: v.filled, revealed: v.revealed, order: v.order })),
+      slots: this.slots.map((s) => (s !== null && this.get(s).status === 'driving' ? null : s)),
+      vip: this.vip,
+      queue: [...this.queue],
+      boarded: this.boarded,
+      moves: this.moves,
+      sent: this.sent,
+    };
+  }
+
+  /** Puts a saved game back. Returns false when it does not belong to this level. */
+  load(d: SaveData): boolean {
+    if (d.veh.length !== this.vehicles.length || d.boarded + d.queue.length !== this.total) return false;
+    for (const sv of d.veh) {
+      const v = this.vehicles.find((x) => x.id === sv.id);
+      if (!v) return false;
+      Object.assign(v, { status: sv.status, slot: sv.slot, filled: sv.filled, revealed: sv.revealed, order: sv.order });
+    }
+    this.slots = [...d.slots];
+    this.vip = d.vip;
+    this.queue = [...d.queue];
+    this.boarded = d.boarded;
+    this.moves = d.moves;
+    this.sent = d.sent;
+    this.history = [];
+    return true;
+  }
+
+  /** Can the last move be taken back? Only when nothing is on the road. */
+  canUndo(): boolean {
+    return this.history.length > 0 && !this.vehicles.some((v) => v.status === 'driving');
+  }
+
+  /** Take back the last tap together with everything that followed it (boarding, departures). */
+  undo(): boolean {
+    if (!this.canUndo()) return false;
+    const s = this.history.pop()!;
+    this.vehicles.forEach((v, i) => Object.assign(v, s.veh[i]));
+    this.slots = s.slots;
+    this.vip = s.vip;
+    this.queue = s.queue;
+    this.boarded = s.boarded;
+    this.moves = s.moves;
+    this.sent = s.sent;
+    return true;
+  }
+
+  /** "Extra place": one more regular slot for this level. */
+  addSlot(): boolean {
+    if (this.slots.length >= MAX_SLOTS) return false;
+    this.slots.push(null);
+    return true;
+  }
+
+  /** "VIP": any parked vehicle flies straight to the VIP place, whatever is in front of it. */
+  sendToVip(id: number): boolean {
+    const v = this.get(id);
+    if (v.status !== 'parked' || this.vip !== null || this.status !== 'playing') return false;
+    this.history.push(this.snapshot());
+    v.status = 'driving';
+    v.slot = VIP_SLOT;
+    v.order = this.sent++;
+    this.vip = id;
+    return true;
+  }
+
+  /** "Shuffle": the passengers that have not boarded yet are put in a new order (given by the caller's random numbers). */
+  shuffleQueue(rand: () => number): void {
+    const q = this.queue;
+    for (let i = q.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [q[i], q[j]] = [q[j], q[i]];
+    }
   }
 
   seatsLeft(v: Vehicle): number {
