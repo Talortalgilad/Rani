@@ -6,7 +6,7 @@ import '@fontsource/rubik/hebrew-600.css';
 import '@fontsource/rubik/hebrew-800.css';
 import './ui/styles.css';
 import { onRoute, go, type Route } from './router';
-import { renderHome } from './ui/home';
+import { renderHomeAuto } from './ui/home3d';
 import { renderGate } from './ui/gate';
 import { renderParent } from './ui/parent';
 import { showTimeUp } from './ui/timeup';
@@ -75,7 +75,7 @@ onRoute((route: Route) => {
   switch (route.name) {
     case 'home':
       clearPass();
-      cleanup = renderHome(app);
+      cleanup = renderHomeAuto(app);
       break;
     case 'gate':
       if (!games.some((g) => g.id === route.gameId)) return go({ name: 'home' }, { replace: true });

@@ -17,6 +17,8 @@ export interface AppState {
     dailyLimitMin: number | null;
     /** Brick breaker ball speed; wired to the parent area in stage 5. */
     ballSpeed: 'slow' | 'normal' | 'fast';
+    /** 3D home and games: automatic (falls back when slow), forced 3D, or the regular 2D screens. */
+    graphics: 'auto' | '3d' | '2d';
   };
   math: {
     currentLevel: number;
@@ -42,6 +44,7 @@ function defaults(): AppState {
       sound: true,
       dailyLimitMin: null,
       ballSpeed: 'normal',
+      graphics: 'auto',
     },
     math: { currentLevel: 1, recent: [], answeredAtLevel: 0, log: [] },
     games: {},

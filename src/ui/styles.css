@@ -255,3 +255,15 @@ html, body {
 .timeup-card h2 { font-size: 34px; line-height: 1.4; margin: 0; }
 .timeup-emoji { font-size: 110px; }
 .timeup .btn { background: #fff; color: var(--ink); }
+
+/* ---- 3D home ---- */
+#three-root { position: fixed; inset: 0; z-index: 0; display: none; }
+#three-root .three-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+/* the page sits above the 3D canvas but lets touches fall through wherever a screen is not solid */
+#app { position: relative; z-index: 1; pointer-events: none; }
+#app > .screen { pointer-events: auto; }
+#app > .screen.home3d { background: transparent; pointer-events: none; }
+.home3d .title, .home3d .icon-btn, .home3d .stars, .home3d .sr-only button { pointer-events: auto; }
+.home3d .title { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.35); }
+.home3d .stars3d { position: fixed; inset-inline-start: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

@@ -20,18 +20,7 @@ export function renderHome(root: HTMLElement): () => void {
     <h1 class="title">המשחקים של ${escapeHtml(st.profile.name)}</h1>
   `;
 
-  const muteBtn = document.createElement('button');
-  muteBtn.className = 'icon-btn mute';
-  const paintMute = () => {
-    muteBtn.textContent = sound.isMuted() ? '🔇' : '🔊';
-    muteBtn.setAttribute('aria-label', sound.isMuted() ? 'הפעלת צליל' : 'השתקה');
-  };
-  paintMute();
-  muteBtn.addEventListener('click', () => {
-    sound.setMuted(!sound.isMuted());
-    paintMute();
-    sound.play('bonus');
-  });
+  const muteBtn = makeMuteButton();
 
   const stars = document.createElement('div');
   stars.className = 'stars';
@@ -71,6 +60,29 @@ export function renderHome(root: HTMLElement): () => void {
   root.appendChild(screen);
 
   // Parent area: hold the title for 3 seconds. No visible button.
+  const cancel = bindParentLongPress(header.querySelector('.title') as HTMLElement);
+
+  return cancel;
+}
+
+export function makeMuteButton(): HTMLButtonElement {
+  const muteBtn = document.createElement('button');
+  muteBtn.className = 'icon-btn mute';
+  const paintMute = () => {
+    muteBtn.textContent = sound.isMuted() ? '🔇' : '🔊';
+    muteBtn.setAttribute('aria-label', sound.isMuted() ? 'הפעלת צליל' : 'השתקה');
+  };
+  paintMute();
+  muteBtn.addEventListener('click', () => {
+    sound.setMuted(!sound.isMuted());
+    paintMute();
+    sound.play('bonus');
+  });
+  return muteBtn;
+}
+
+/** Hold the title for 3 seconds to reach the parent area. Returns a function that cancels a press in progress. */
+export function bindParentLongPress(title: HTMLElement): () => void {
   let timer: number | undefined;
   const cancel = () => {
     if (timer !== undefined) {
@@ -78,7 +90,6 @@ export function renderHome(root: HTMLElement): () => void {
       timer = undefined;
     }
   };
-  const title = header.querySelector('.title') as HTMLElement;
   title.addEventListener('pointerdown', () => {
     cancel();
     timer = window.setTimeout(() => {
@@ -86,14 +97,11 @@ export function renderHome(root: HTMLElement): () => void {
       go({ name: 'parent' });
     }, LONG_PRESS_MS);
   });
-  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) {
-    title.addEventListener(ev, cancel);
-  }
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) title.addEventListener(ev, cancel);
   title.addEventListener('contextmenu', (e) => e.preventDefault());
-
   return cancel;
 }
 
-function escapeHtml(s: string): string {
+export function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 }
