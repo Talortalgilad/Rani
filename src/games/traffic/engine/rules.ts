@@ -1,7 +1,7 @@
 import { densityOf, angledShare } from './analyze';
 import type { LevelData } from './level';
 import { firstContact, largestHole } from './geometry';
-import { MAX_HOLE, paramsFor, quarterOf, worldOf } from './generator';
+import { MAX_HOLE, minDensityFor, paramsFor, quarterOf, worldOf } from './generator';
 import { sameDirectionClusters, type Item } from './packing';
 import { boxOf } from './solver-types';
 
@@ -18,7 +18,7 @@ export function levelRuleProblems(l: LevelData, near = 0.15): string[] {
   const vs = l.vehicles;
   const big = vs.filter((v) => v.type !== 'car');
   const d = densityOf(l);
-  if (d < (l.hard ? 0.7 : 0.65)) out.push(`density ${d.toFixed(3)}`);
+  if (d < minDensityFor(n)) out.push(`density ${d.toFixed(3)}`);
   if (n >= 10 && angledShare(vs) < 0.3) out.push('angled share under 30%');
   if (n >= 10 && big.length && big.filter((v) => v.heading % 90 !== 0).length / big.length < 0.25) out.push('big vehicles at 45 degrees under 25%');
   if (n >= 6 && big.length / vs.length < 0.35) out.push('vans and buses under 35%');

@@ -56,3 +56,13 @@ body.traffic-on #app > .screen.game { background: transparent; padding: 0; point
 
 .tr-card .btn.dim { opacity: .7; }
 .tr-toast { z-index: 8; }
+
+/* narrow phones (360px): the title, the passenger counter and the home button must not overlap */
+@media (max-width: 400px) {
+  .tr-title b { font-size: 36px; -webkit-text-stroke-width: 6px; }
+  .tr-count { font-size: 17px; padding: 4px 10px 4px 8px; gap: 6px; inset-inline-start: 8px; }
+  .tr-count i { width: 13px; height: 20px; }
+  .tr-count i::before { width: 11px; height: 11px; top: -6px; left: 1px; }
+  .tr-stars-chip { inset-inline-start: 8px; font-size: 16px; }
+  .tr-home { inset-inline-end: 8px; width: 50px; height: 50px; }
+}

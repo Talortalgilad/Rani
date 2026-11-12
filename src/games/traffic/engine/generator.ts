@@ -64,6 +64,12 @@ export interface GenParams {
   fires: number;
 }
 
+/** 65% (70% in the very hard levels); 66% in every level that has a special vehicle (from level 30 there always is one). */
+export function minDensityFor(level: number): number {
+  if (level >= FIRST_BELT) return 0.66;
+  return isHard(level) ? 0.7 : 0.65;
+}
+
 export function paramsFor(level: number): GenParams {
   const hard = isHard(level);
   const t = (level - 1) / 29;
@@ -77,7 +83,7 @@ export function paramsFor(level: number): GenParams {
     angled: level < 10 ? 0 : 0.32 + 0.06 * Math.min(1, t),
     window: hard ? 4 : level < 4 ? 1 : level < 15 ? 2 : 3,
     maxFree: level < 3 ? Math.ceil(vehicles * 0.5) : level < 4 ? Math.ceil(vehicles * 0.3) : Math.max(2, Math.round(vehicles * (hard ? 0.2 : 0.12))),
-    minDensity: hard ? 0.7 : 0.65,
+    minDensity: minDensityFor(level),
     hidden: level < 8 ? 0 : Math.min(8, Math.round(1 + ((level - 8) * 4) / 22) + (hard ? 1 : 0)),
     belts: level < FIRST_BELT ? 0 : 1 + (level >= 55 ? 1 : 0) + (level >= 85 ? 1 : 0),
     rotators: level < FIRST_ROTATOR ? 0 : Math.min(5, 1 + Math.floor((level - FIRST_ROTATOR) / 12)) + (hard && level > FIRST_ROTATOR ? 1 : 0),
