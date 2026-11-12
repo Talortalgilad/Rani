@@ -49,7 +49,7 @@ for (let L = 1; L <= 100; L++) {
 }
 for (let L = 1; L <= 100; L++) if (chosen.has(L)) picked.push({ ...chosen.get(L)!.data, stats: chosen.get(L)!.stats });
 if (missing.length) console.log('no usable candidate for levels', missing.join(','));
-writeFileSync('src/games/traffic/levels/levels.json', JSON.stringify(picked));
+if (process.env.ONLY_DOCS) { picked.length = 0; picked.push(...JSON.parse(readFileSync('src/games/traffic/levels/levels.json', 'utf8'))); } else writeFileSync('src/games/traffic/levels/levels.json', JSON.stringify(picked));
 
 mkdirSync('docs/traffic/stage2b', { recursive: true });
 const rows = picked.map((l) => {
@@ -71,7 +71,7 @@ const withWorld = picked.map((l, i) => rows[i].replace(/^\| (\S+(?: ⚠️)?) \|
 void withWorld;
 const special = (l: LevelData) => {
   const t = (x: string) => l.vehicles.filter((v) => v.type === x).length;
-  const parts = [(l.belts?.length ?? 0) ? `מסוע ×${l.belts!.length}` : '', t('rotator') ? `מסתובב ×${t('rotator')}` : '', t('fire') ? `כבאית ×${t('fire')}` : ''].filter(Boolean);
+  const parts = [(l.belts?.length ?? 0) ? `מסוע ×${l.belts!.length}` : '', l.vehicles.some((v) => v.rotator) ? `מסתובב ×${l.vehicles.filter((v) => v.rotator).length}` : '', t('fire') ? `כבאית ×${t('fire')}` : ''].filter(Boolean);
   return parts.join(', ') || '-';
 };
 const tableRows = picked.map((l, i) => {
