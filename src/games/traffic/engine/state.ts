@@ -147,6 +147,17 @@ export class TrafficState {
     return v.hidden && !v.revealed ? null : v.color;
   }
 
+  /** Can the vehicle drive out right now (a vehicle that turns: in any of its four directions)? */
+  canLeave(id: number): boolean {
+    const v = this.get(id);
+    if (v.status !== 'parked') return false;
+    const others = this.others(id);
+    for (let k = 0; k < (v.rotator ? 4 : 1); k++) {
+      if (!firstContact({ ...ownBox(v), heading: (v.heading + 90 * k) % 360 }, others)) return true;
+    }
+    return false;
+  }
+
   tap(id: number): TapResult {
     const v = this.get(id);
     if (v.status !== 'parked' || this.status !== 'playing') return { kind: 'ignored' };

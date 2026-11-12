@@ -135,6 +135,8 @@ function badgeTexture(color: ColorId, n: number): T.CanvasTexture {
 
 export interface TrafficScene extends StageScene {
   onTapVehicle: ((id: number, long: boolean) => void) | null;
+  /** can this vehicle drive out right now? Used to pick between two vehicles a tap lands between */
+  canLeave: ((id: number) => boolean) | null;
   timeline: Timeline;
   fx: Fx;
   /** reduced motion: everything jumps to its end */
@@ -604,7 +606,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   };
   const pick = (e: PointerEvent): number | null => {
     const rect = canvas.getBoundingClientRect();
-    return nearestVehicle(hitShapes(), e.clientX - rect.left, e.clientY - rect.top);
+    return nearestVehicle(hitShapes(), e.clientX - rect.left, e.clientY - rect.top, undefined, api.canLeave ?? undefined);
   };
   let held: { id: number | null; timer: number; fired: boolean } | null = null;
   const onDown = (e: PointerEvent) => {
@@ -704,6 +706,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     scene,
     camera,
     onTapVehicle: null,
+    canLeave: null,
     timeline,
     fx,
     reduced,
@@ -712,9 +715,14 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     startExit(id, slot, arrived) {
       const v = views.get(id)!;
       v.squash.value = 0;
-      // squash 90 ms, then away
-      timeline.tween(reduced ? 0.01 : 0.09, (t) => v.root.scale.set(1, 1 - 0.1 * Math.sin(t * Math.PI), 1), () => {
+      // the chosen vehicle pops for a moment (squash and a small hop, 140 ms) so it is clear which one was chosen, then away
+      timeline.tween(reduced ? 0.01 : 0.14, (t) => {
+        const k = Math.sin(t * Math.PI);
+        v.root.scale.set(1 + 0.07 * k, 1 - 0.2 * k * (t < 0.5 ? 1 : -0.6), 1 + 0.07 * k);
+        v.root.position.y = 0.16 * k * k;
+      }, () => {
         v.root.scale.set(1, 1, 1);
+        v.root.position.y = 0;
         const curve = exitCurve(v, slot);
         drive(v, curve, {
           vmax: 8.5, brake: 14, scaleTo: stationScale(v.def.type), dust: true,

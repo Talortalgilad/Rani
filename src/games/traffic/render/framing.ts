@@ -145,21 +145,29 @@ export function distanceToHull(hull: P[], x: number, y: number): number {
 }
 
 /**
- * The vehicle a tap means: the one it is on, and when it is on none (or on several), the one whose outline is nearest, as long as
- * that is within `tol` pixels. Null when nothing is close enough.
+ * The vehicle a tap means. A tap squarely on one vehicle is that vehicle. Otherwise the candidates are the vehicles whose outline is
+ * within `tol` pixels (nearly all taps near several vehicles are like this): if only some of them can drive out (`free`), the
+ * nearest of those is chosen; if all or none can, the nearest of all. Null when nothing is close enough.
  */
-export function nearestVehicle(shapes: HitShape[], x: number, y: number, tol = HIT_TOLERANCE): number | null {
-  let best: { id: number; d: number; c: number } | null = null;
+export function nearestVehicle(shapes: HitShape[], x: number, y: number, tol = HIT_TOLERANCE, free?: (id: number) => boolean): number | null {
+  const cands: { id: number; d: number; c: number }[] = [];
   for (const s of shapes) {
     const hull = convexHull(s.pts);
     const d = distanceToHull(hull, x, y);
     if (d > tol) continue;
     const cx = hull.reduce((a, p) => a + p.x, 0) / hull.length;
     const cy = hull.reduce((a, p) => a + p.y, 0) / hull.length;
-    const c = Math.hypot(x - cx, y - cy);
-    if (!best || d < best.d - 1e-6 || (Math.abs(d - best.d) < 1e-6 && c < best.c)) best = { id: s.id, d, c };
+    cands.push({ id: s.id, d, c: Math.hypot(x - cx, y - cy) });
   }
-  return best ? best.id : null;
+  if (!cands.length) return null;
+  const nearest = (list: typeof cands) => list.reduce((best, k) => (k.d < best.d - 1e-6 || (Math.abs(k.d - best.d) < 1e-6 && k.c < best.c) ? k : best)).id;
+  const on = cands.filter((k) => k.d === 0);
+  if (on.length === 1) return on[0].id;
+  if (free && cands.length > 1) {
+    const ok = cands.filter((k) => free(k.id));
+    if (ok.length > 0 && ok.length < cands.length) return nearest(ok);
+  }
+  return nearest(cands);
 }
 
 /** Width (CSS pixels) of the outline of a vehicle on the screen. */

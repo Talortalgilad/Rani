@@ -53,6 +53,7 @@ export class Controller {
     }
     this.refreshBoosters();
     scene.onTapVehicle = (id, long) => this.tap(id, long);
+    scene.canLeave = (id) => this.state.canLeave(id);
     window.addEventListener('resize', this.onResize);
     this.showHint();
     if (resume) this.wait(300, () => this.pump());

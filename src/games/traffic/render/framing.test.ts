@@ -76,8 +76,9 @@ describe('a finger can hit every vehicle', () => {
       const x = cx;
       const y = top - 8;
       const d = shapes.map((o) => ({ id: o.id, d: distanceToHull(convexHull(o.pts), x, y) })).sort((a, b) => a.d - b.d);
-      const expected = d[0].d <= HIT_TOLERANCE ? d[0].id : null;
-      expect(nearestVehicle(shapes, x, y), `vehicle ${s.id}`).toBe(expected);
+      const got = nearestVehicle(shapes, x, y);
+      if (d[0].d > HIT_TOLERANCE) expect(got, `vehicle ${s.id}`).toBeNull();
+      else expect(d.filter((k) => k.d <= d[0].d + 1e-6).map((k) => k.id), `vehicle ${s.id}`).toContain(got);
       // a point in the middle of the outline always chooses a vehicle whose outline holds it
       const inside = nearestVehicle(shapes, cx, cy);
       expect(inside).not.toBeNull();
@@ -88,6 +89,24 @@ describe('a finger can hit every vehicle', () => {
   it('a tap farther than 12 points from everything chooses nothing', () => {
     const l = ALL_LEVELS.find((x) => x.key === '12')!;
     expect(nearestVehicle(shapesOf(l, 360, 640).shapes, -200, -200)).toBeNull();
+  });
+});
+
+describe('a tap between two vehicles', () => {
+  const rect = (id: number, x0: number, x1: number): HitShape => ({ id, pts: [{ x: x0, y: 0 }, { x: x1, y: 0 }, { x: x1, y: 40 }, { x: x0, y: 40 }] });
+  // 1 is 0..40 wide, 2 is 50..90: a tap at x=43 is 3 points from 1 and 7 from 2
+  const shapes = [rect(1, 0, 40), rect(2, 50, 90)];
+  it('picks the one whose way out is clear', () => {
+    expect(nearestVehicle(shapes, 43, 20, HIT_TOLERANCE, (id) => id === 2)).toBe(2);
+    expect(nearestVehicle(shapes, 43, 20, HIT_TOLERANCE, (id) => id === 1)).toBe(1);
+  });
+  it('picks the nearest when both or neither can drive out', () => {
+    expect(nearestVehicle(shapes, 43, 20, HIT_TOLERANCE, () => true)).toBe(1);
+    expect(nearestVehicle(shapes, 43, 20, HIT_TOLERANCE, () => false)).toBe(1);
+    expect(nearestVehicle(shapes, 47, 20, HIT_TOLERANCE, () => true)).toBe(2);
+  });
+  it('a tap squarely on one vehicle is that vehicle', () => {
+    expect(nearestVehicle(shapes, 20, 20, HIT_TOLERANCE, (id) => id === 2)).toBe(1);
   });
 });
 
