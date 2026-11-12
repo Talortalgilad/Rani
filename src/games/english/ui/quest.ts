@@ -18,7 +18,7 @@ import { matchTask } from '../tasks/match';
 import { sentenceTask } from '../tasks/sentence';
 import { songTask } from '../tasks/song';
 import { tapTask } from '../tasks/tap';
-import { whereTask } from '../tasks/where';
+import { whereTask, whereText } from '../tasks/where';
 import { el, type TaskEnv, type TaskHandle } from '../tasks/common';
 import { mixed } from './text';
 
@@ -68,7 +68,10 @@ export function instruction(s: Step): { text: string; html: string } {
     case 'color': return { text: `Color the ${s.object} ${s.color}!`, html: `Color the <b>${s.object}</b> <b>${s.color}</b>!` };
     case 'count': return { text: `How many ${pluralOf(s.right)}? Tap the number!`, html: `How many <b>${pluralOf(s.right)}</b>?` };
     case 'bigsmall': return { text: `Tap the ${s.which} ${labelOf(s.right)}!`, html: `Tap the <b>${s.which}</b> ${labelOf(s.right)}!` };
-    case 'where': return { text: `Put the ${labelOf(s.item)} ${s.prep} the ${labelOf(s.ref)}!`, html: `Put the <b>${labelOf(s.item)}</b> <b>${s.prep}</b> the <b>${labelOf(s.ref)}</b>!` };
+    case 'where': {
+      const text = whereText(s.item, s.prep, s.ref);
+      return { text, html: text.replace(new RegExp(`\\b(${s.prep}|${labelOf(s.ref)}|Jump|Go)\\b`, 'g'), '<b>$1</b>') };
+    }
     case 'sentence': return { text: 'Make the sentence!', html: 'Make the sentence!' };
     case 'song': return { text: 'Let’s sing!', html: 'Let’s sing!' };
   }

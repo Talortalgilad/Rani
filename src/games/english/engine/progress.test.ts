@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INTERVALS, dayNumber, dueWords, emptyMap, finishStation, isKnown, markSeen, review, stationOpen, worldOpen, type Words } from './progress';
+import { INTERVALS, addPlay, markKnown, minutesInWeek, unmarkKnown, dayNumber, dueWords, emptyMap, finishStation, isKnown, markSeen, review, stationOpen, worldOpen, type Words } from './progress';
 
 const T = 20000;
 
@@ -72,5 +72,24 @@ describe('the map', () => {
     m = finishStation(m, 1, 0, 1);
     expect(m.stars['1-0']).toBe(3);
     expect(m.done[1]).toBe(1);
+  });
+});
+
+describe('what a parent can set, and the play log', () => {
+  it('a word marked as known is known, seen (no card) and comes back later; unmarked it is new again', () => {
+    const w = markKnown({}, 'ball', 100);
+    expect(isKnown(w.ball)).toBe(true);
+    expect(w.ball.seen).toBe(true);
+    expect(w.ball.due).toBe(107);
+    expect(unmarkKnown(w, 'ball').ball).toBeUndefined();
+  });
+  it('the log adds the minutes of a day, sums a week and forgets what is older than a month', () => {
+    let l = addPlay({}, 100, 4);
+    l = addPlay(l, 100, 3);
+    l = addPlay(l, 95, 10);
+    expect(l[100]).toBe(7);
+    expect(minutesInWeek(l, 100)).toBe(17);
+    expect(minutesInWeek(l, 110)).toBe(0);
+    expect(addPlay(l, 140, 1)[100]).toBeUndefined();
   });
 });

@@ -74,3 +74,24 @@ export function finishStation(map: MapProgress, world: number, station: number, 
   const done = { ...map.done, [world]: Math.max(map.done[world] ?? 0, station + 1) };
   return { ...map, done, stars: { ...map.stars, [key]: Math.max(map.stars[key] ?? 0, stars) } };
 }
+
+/** A parent says the word is already known: it counts as known and comes back later as a light review, not as a new word. */
+export function markKnown(words: Words, id: string, today: number): Words {
+  const cur = words[id] ?? fresh();
+  return { ...words, [id]: { ...cur, seen: true, known: true, level: Math.max(cur.level, KNOWN_LEVEL), due: today + INTERVALS[KNOWN_LEVEL - 1] } };
+}
+/** Takes the mark back: the word is new again. */
+export function unmarkKnown(words: Words, id: string): Words {
+  const { [id]: _gone, ...rest } = words;
+  void _gone;
+  return rest;
+}
+
+/** Minutes played per day (the last 30 days are kept): { dayNumber: minutes }. */
+export type PlayLog = Record<number, number>;
+export function addPlay(log: PlayLog, today: number, minutes: number): PlayLog {
+  const next: PlayLog = { ...log, [today]: (log[today] ?? 0) + minutes };
+  for (const d of Object.keys(next)) if (Number(d) < today - 29) delete next[Number(d)];
+  return next;
+}
+export const minutesInWeek = (log: PlayLog, today: number): number => Object.entries(log).filter(([d]) => Number(d) > today - 7).reduce((a, [, m]) => a + m, 0);

@@ -12,8 +12,10 @@ export type Step =
   | { kind: 'color'; object: string; color: string; score: string[] }
   | { kind: 'count'; right: string; n: number; score: string[] }
   | { kind: 'bigsmall'; right: string; which: 'big' | 'small'; score: string[] }
-  | { kind: 'where'; item: string; ref: string; prep: 'on' | 'in' | 'under'; score: string[] }
+  | { kind: 'where'; item: string; ref: string; prep: 'on' | 'in' | 'under' | 'over'; score: string[] }
   | { kind: 'sentence'; words: string[]; picture: string; missing: number; score: string[] }
   | { kind: 'song'; world: number; score: string[] };
 
 export type Kind = Step['kind'];
+
+export const songTaskStep = (world: number): Step => ({ kind: 'song', world, score: [] });

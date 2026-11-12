@@ -13,8 +13,13 @@ export function kindsForWorld(world: number): Kind[] {
   if (world >= 5) k.push('count');
   if (world >= 6) k.push('sentence');
   if (world >= 11) k.push('where', 'bigsmall');
-  return k;
+  // the words of the dance party are actions and the weather cannot be put in a box or counted: those worlds keep to tapping, circling, listening and matching
+  const not: Kind[] = world === 8 ? ['put', 'find', 'count'] : world === 9 ? ['put', 'count'] : [];
+  return k.filter((x) => !not.includes(x));
 }
+
+/** What can be done with each obstacle of the ninja park. */
+export const OBSTACLES: Record<string, ('on' | 'in' | 'under' | 'over')[]> = { crate: ['on', 'over'], mat: ['on'], bridge: ['under', 'over'], tunnel: ['in'], rope: ['over', 'under'] };
 
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
@@ -42,6 +47,8 @@ export interface PlanInput {
   words: Words;
   today: number;
   seed: number;
+  /** the words that Rani likes (parents choose): the new words of a world start with them */
+  likes?: string[];
 }
 
 /** The colours introduced by a station of world 4 (three at a time, with a card each). */
@@ -55,7 +62,8 @@ const metColors = (world: number, station: number): string[] => (world > 4 ? COL
  */
 export function planStation(o: PlanInput): Step[] {
   const r = mulberry32(o.seed * 7919 + o.world * 131 + o.station);
-  const ws = wordsOfWorld(o.world).map((w) => w.id);
+  const likes = o.likes ?? [];
+  const ws = wordsOfWorld(o.world).map((w) => w.id).sort((a, b) => Number(likes.includes(b)) - Number(likes.includes(a)));
   const fresh = o.station < 3 ? ws.slice(o.station * 3, o.station * 3 + 3) : [];
   const steps: Step[] = [];
   for (const id of fresh) if (!o.words[id]?.seen) steps.push({ kind: 'card', word: id, score: [] });
@@ -122,9 +130,12 @@ export function planStation(o: PlanInput): Step[] {
       case 'bigsmall':
         steps.push({ kind, right: target, which: r() < 0.5 ? 'big' : 'small', score: [target] });
         break;
-      case 'where':
-        steps.push({ kind, item: target, ref: 'box', prep: pick(r, ['on', 'in', 'under'] as const), score: [target] });
+      case 'where': {
+        // the ninja course (world 11): the ninja is dragged on, over, under or into an obstacle
+        const ref = pick(r, Object.keys(OBSTACLES));
+        steps.push({ kind, item: 'ninja', ref, prep: pick(r, OBSTACLES[ref]), score: [ref] });
         break;
+      }
       case 'sentence': {
         const s = pick(r, sentencesFor(o.world));
         steps.push({ kind, words: s.words, picture: s.picture, missing: s.words.length - 1, score: [] });

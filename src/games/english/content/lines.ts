@@ -27,6 +27,16 @@ export const he = {
   home: 'בית',
   shelf: 'המדף',
   shelfTitle: 'מדף הסקווישים',
+  buddyPick: 'חבר שלי',
+  buddyNow: 'החבר שלי',
+  accessories: 'אביזרים של צ׳יזי',
+  accessoryLocked: (world: number) => `עולם ${world}`,
+  accessoryNote: 'האביזרים מוצגים על צ׳יזי',
+  newAccessory: (a: string) => `קיבלת אביזר חדש: ${a}!`,
+  wordbook: 'ספר המילים',
+  songs: 'שירים',
+  wordsKnown: 'מילים שאני יודעת',
+  wordsLearning: 'מילים שאני לומדת',
   verb: (en: string, he: string) => `${en}, זה ${he}!`,
 };
 

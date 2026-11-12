@@ -8,13 +8,13 @@ import type { SoundApi } from '../../../sound';
 const worldStars = (map: MapProgress, n: number): number => Array.from({ length: STATIONS_PER_WORLD }, (_, s) => map.stars[`${n}-${s}`] ?? 0).reduce((a, b) => a + b, 0);
 
 /** The map of the worlds: a winding path, a world on each bend. A world opens when the one before it is finished. */
-export function showMap(root: HTMLElement, o: { name: string; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onHome(): void }): () => void {
+export function showMap(root: HTMLElement, o: { name: string; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onBook(): void; onHome(): void }): () => void {
   const open = WORLDS.map((w) => w.ready && worldOpen(o.map, w.n));
   const current = WORLDS.findIndex((w, i) => open[i] && (o.map.done[w.n] ?? 0) < STATIONS_PER_WORLD);
   root.innerHTML = `
     <div class="en-screen en-map">
       <div class="en-sky"></div>
-      <header class="q-top"><button class="q-home" id="mh" type="button" aria-label="${he.home}">🏠</button><h1 class="map-title">${mixed(he.islandTitle(o.name))}</h1><button class="q-say" id="msh" type="button" aria-label="${he.shelfTitle}">🧸</button></header>
+      <header class="q-top"><button class="q-home" id="mh" type="button" aria-label="${he.home}">🏠</button><h1 class="map-title">${mixed(he.islandTitle(o.name))}</h1><span class="q-pair"><button class="q-say" id="mbk" type="button" aria-label="${he.wordbook}">📖</button><button class="q-say" id="msh" type="button" aria-label="${he.shelfTitle}">🧸</button></span></header>
       <div class="map-scroll" id="scroll">
         <div class="map-path">
           ${WORLDS.map((w, i) => {
@@ -23,7 +23,7 @@ export function showMap(root: HTMLElement, o: { name: string; map: MapProgress; 
             const stars = worldStars(o.map, w.n);
             return `<button class="map-world ${open[i] ? 'open' : 'locked'} ${done ? 'done' : ''} ${i === current ? 'current' : ''}" data-n="${w.n}" style="margin-inline-start:${x}%;--c:${w.color}" type="button" ${open[i] ? '' : 'aria-disabled="true"'}>
               <span class="mw-ball">${open[i] ? w.emoji : '🔒'}</span>
-              <span class="mw-name"><b>${w.name}</b><small>${w.ready ? w.he : 'בקרוב'}</small></span>
+              <span class="mw-name"><b>${w.name}</b><small>${w.he}</small></span>
               ${open[i] ? `<span class="mw-stars">${done ? '✅ ' : ''}${stars ? `⭐ ${stars}` : ''}</span>` : ''}
             </button>`;
           }).join('')}
@@ -34,6 +34,7 @@ export function showMap(root: HTMLElement, o: { name: string; map: MapProgress; 
   const c = mountCheesy(root.querySelector<HTMLElement>('#ch')!, 'happy', () => o.sound.play('pop', 520));
   root.querySelector('#mh')!.addEventListener('click', o.onHome);
   root.querySelector('#msh')!.addEventListener('click', o.onShelf);
+  root.querySelector('#mbk')!.addEventListener('click', o.onBook);
   root.querySelectorAll<HTMLButtonElement>('.map-world').forEach((b) =>
     b.addEventListener('click', () => {
       const n = Number(b.dataset.n);

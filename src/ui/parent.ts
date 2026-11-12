@@ -3,6 +3,7 @@ import { IOS_PICTURE, currentInstallMode, onInstallChange, promptInstall } from 
 import { activeLevel } from '../math/adaptive';
 import { TYPE_LABEL, computeStats } from '../math/stats';
 import { addExtraMinutes, allowedMinutes, playedMinutes } from '../usage';
+import { bindEnglishParent, englishParentHtml } from '../games/english/ui/parentSection';
 import { getState, resetProgress, update, type AppState, type QuestionType } from '../storage';
 
 const AVATARS = ['🦄', '🐱', '🐶', '🐰', '🦊', '🐼'];
@@ -149,6 +150,8 @@ export function renderParent(root: HTMLElement): () => void {
 
       ${statsHtml()}
 
+      ${englishParentHtml()}
+
       <section class="p-card danger">
         <h2>איפוס התקדמות</h2>
         ${
@@ -234,6 +237,7 @@ export function renderParent(root: HTMLElement): () => void {
       flash = 'ההתקדמות אופסה ✓';
       settings();
     });
+    bindEnglishParent(root, settings);
     root.querySelector('#done')!.addEventListener('click', () => go({ name: 'home' }));
   }
 
