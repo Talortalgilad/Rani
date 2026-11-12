@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { replay, densityOf, angledShare } from '../engine/analyze';
 import { sameDirectionClusters, type Item } from '../engine/packing';
-import { isHard, paramsFor } from '../engine/generator';
+import { isHard, minDensityFor, paramsFor } from '../engine/generator';
 import { overlaps } from '../engine/geometry';
 import { quarterOf } from '../engine/generator';
 import { Solver } from '../engine/solver';
@@ -30,7 +30,7 @@ describe('the 100 levels', () => {
       });
       it('is dense enough, and the numbers saved with it are true', () => {
         const d = densityOf(l);
-        expect(d).toBeGreaterThanOrEqual(l.hard ? 0.7 : 0.65);
+        expect(d).toBeGreaterThanOrEqual(minDensityFor(l.number) - 0.0005);
         expect(Math.abs(d - l.stats!.density)).toBeLessThan(0.001);
         expect(l.vehicles.length).toBe(l.stats!.vehicles);
         expect(l.queue.length).toBe(l.vehicles.reduce((n, v) => n + SIZES[v.type].seats, 0));
@@ -51,7 +51,7 @@ describe('the 100 levels', () => {
       });
       it('mixes the directions: no more than 3 neighbours lie the same way', () => {
         const cls = (h: number): number => ({ 0: 0, 90: 1, 45: 2, 135: 3 } as Record<number, number>)[h % 180];
-        const items: Item[] = l.vehicles.map((v) => ({ type: v.type, cls: cls(v.heading), x: v.x, z: v.z }));
+        const items: Item[] = l.vehicles.map((v) => ({ type: v.type, cls: cls(v.heading), x: v.x, z: v.z, rot: v.rotator }));
         const groups = sameDirectionClusters(items, 0.15);
         expect(Math.max(...groups.map((g) => g.length))).toBeLessThanOrEqual(3);
         // and all four directions are in use from level 10, horizontal and vertical before
