@@ -1,7 +1,10 @@
 import type { GameContext, GameModule } from '../types';
 import { getTier, initialTier, setTier } from '../../lobby3d/quality';
 import type { LevelData } from './engine/level';
+import type { HelperBook } from './engine/boosters';
 import type { SaveData } from './engine/state';
+import type { Controller } from './controller';
+import { getState } from '../../storage';
 import { buildHud, type Hud } from './ui/hud';
 
 interface Progress {
@@ -10,17 +13,17 @@ interface Progress {
   /** the level to start with */
   current: string;
 }
-interface Session { savedAt: number; key: string; data: SaveData }
+interface Session { savedAt: number; key: string; data: SaveData; book?: HelperBook }
 
 let ctx: GameContext | null = null;
 let hud: Hud | null = null;
 let handle: { dispose(): void; fadeIn(ms: number): void } | null = null;
-let ctl: { destroy(): void } | null = null;
+let ctl: Controller | null = null;
 let token = 0;
 
 const progress = (): Progress => ctx!.load<Progress>('progress', { stars: {}, current: 't1' });
 
-async function start(key: string, resume?: SaveData): Promise<void> {
+async function start(key: string, resume?: SaveData, book?: HelperBook): Promise<void> {
   const my = ++token;
   handle?.dispose();
   ctl?.destroy();
@@ -41,7 +44,9 @@ async function start(key: string, resume?: SaveData): Promise<void> {
     title: level.kind === 'tutorial' ? `הדרכה ${level.number}` : `שלב ${level.number}`,
     hard: level.hard,
     total: level.queue.length,
+    stars: getState().stars,
     onHome: () => exitHome(),
+    onBooster: (k) => ctl?.useHelper(k),
   });
   let scene: Awaited<ReturnType<typeof createTrafficScene>> | null = null;
   try {
@@ -77,7 +82,11 @@ async function start(key: string, resume?: SaveData): Promise<void> {
         ctx!.onRoundEnd({ won: true, stars: gained as 0 | 1 | 2 | 3, score: moves });
         return { next: !!nxt, newStars: gained };
       },
-      save: (data) => ctx!.save<Session>('session', { savedAt: Date.now(), key: level.key, data }),
+      save: (data, b) => ctx!.save<Session>('session', { savedAt: Date.now(), key: level.key, data, book: b }),
+      stars: () => getState().stars,
+      spend: (n) => ctx!.addStars(-n),
+      lastFreeDay: () => ctx!.load<{ day: string | null }>('daily', { day: null }).day,
+      useFreeDay: (day) => ctx!.save('daily', { day }),
       clearSave: () => ctx!.save('session', null),
       restart: () => void start(level.key),
       replay: () => begin(level.key),
@@ -88,6 +97,7 @@ async function start(key: string, resume?: SaveData): Promise<void> {
       home: () => exitHome(),
     },
     resume,
+    book,
   );
   ctl = c;
   if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__traffic = { scene, state: c.state, ctl: c, load: (k: string) => void start(k) };
@@ -121,7 +131,7 @@ const mod: GameModule = {
     if (c.resuming) {
       const s = c.load<Session | null>('session', null);
       if (s && Date.now() - s.savedAt < 10 * 60 * 1000) {
-        void start(s.key, s.data);
+        void start(s.key, s.data, s.book);
         return;
       }
     } else c.save('session', null);

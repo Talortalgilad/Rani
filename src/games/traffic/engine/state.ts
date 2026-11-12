@@ -255,11 +255,12 @@ export class TrafficState {
   /** "VIP": any parked vehicle flies straight to the VIP place, whatever is in front of it. */
   sendToVip(id: number): boolean {
     const v = this.get(id);
-    if (v.status !== 'parked' || this.vip !== null || this.status !== 'playing') return false;
+    if (v.status !== 'parked' || this.vip !== null || this.status === 'won') return false; // allowed when stuck: that is what it is for
     this.history.push(this.snapshot());
     v.status = 'driving';
     v.slot = VIP_SLOT;
     v.order = this.sent++;
+    v.revealed = true; // a "?" vehicle that flies to the VIP place shows its colour
     this.vip = id;
     return true;
   }
