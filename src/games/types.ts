@@ -30,6 +30,8 @@ export interface GameModule {
   icon: string;
   color: string;
   mount(ctx: GameContext): void;
+  /** The game is learning in itself: no maths gate before it. */
+  noGate?: boolean;
   /** True when a friendly full-screen message can appear without cutting off a move (ball stuck, round over, paused, menus). */
   canInterrupt?(): boolean;
   pause(): void;
