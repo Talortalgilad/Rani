@@ -7,7 +7,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import type { LevelData, LevelStats } from '../src/games/traffic/engine/level';
 import { paramsFor } from '../src/games/traffic/engine/generator';
-import { difficultyScore } from '../src/games/traffic/engine/solver';
+import { difficultyScore, type ScoreExtra } from '../src/games/traffic/engine/solver';
 import { levelRuleProblems } from '../src/games/traffic/engine/rules';
 import { MIN_OUTLINE } from '../src/games/traffic/render/framing';
 import { minWidth } from './touch';
@@ -17,23 +17,37 @@ import { minWidth } from './touch';
 interface Cand { seed: number; data: LevelData; stats: LevelStats }
 const picked: LevelData[] = [];
 const missing: number[] = [];
+const extraOf = (d: LevelData): ScoreExtra => ({ hidden: d.vehicles.filter((v) => v.hidden).length, belts: d.belts?.length ?? 0, rotators: d.vehicles.filter((v) => v.rotator).length, fires: d.vehicles.filter((v) => v.type === 'fire').length });
+const pool = new Map<number, Cand[]>();
 for (let L = 1; L <= 100; L++) {
   const file = `scripts/.cache/${L}.json`;
   const p = paramsFor(L);
   const all: Cand[] = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
-  for (const c of all) c.stats.score = difficultyScore(c.stats.vehicles, c.stats); // the formula may have changed since the candidate was made
-  const ok = all.filter((c) => c.stats.exact &&  levelRuleProblems(c.data, 0.17).length === 0 && minWidth(c.data).minShort >= MIN_OUTLINE && (!p.hard || c.stats.traps >= 3));
-  if (!ok.length) {
-    missing.push(L);
-    continue;
-  }
-  ok.sort((a, b) => a.stats.score - b.stats.score);
-  // every level takes the candidate closest to its line: a gentle one for the normal levels, a steeper one for the very hard ones
-  const target = 22 + 1.9 * (L - 1);
-  const line = p.hard ? 70 + 2.6 * (L - 1) : target;
-  const c = ok.reduce((best, x) => (Math.abs(x.stats.score - line) < Math.abs(best.stats.score - line) ? x : best));
-  picked.push({ ...c.data, stats: c.stats });
+  for (const c of all) c.stats.score = difficultyScore(c.stats.vehicles, c.stats, extraOf(c.data)); // the formula may have changed since the candidate was made
+  const strict = all.filter((c) => c.stats.exact && levelRuleProblems(c.data, 0.17).length === 0 && minWidth(c.data).minShort >= MIN_OUTLINE && (!p.hard || c.stats.traps >= 3));
+  // when nothing meets every rule, the best candidate that is solvable is used and reported
+  const usable = strict.length ? strict : all.filter((c) => c.stats.exact).sort((a, b) => levelRuleProblems(a.data, 0.17).length - levelRuleProblems(b.data, 0.17).length).slice(0, 1);
+  if (!strict.length && usable.length) console.log(`level ${L}: no candidate meets every rule; used the best one: ${levelRuleProblems(usable[0].data, 0.17).join('; ') || 'outline narrower than ' + MIN_OUTLINE}`);
+  if (!usable.length) missing.push(L);
+  pool.set(L, usable);
 }
+// the very hard levels take the hardest candidate; the others take the gentlest one that is still harder than the level five before
+// and (next to a very hard level) easier than it
+const chosen = new Map<number, Cand>();
+for (let L = 5; L <= 100; L += 5) {
+  const c = pool.get(L)!;
+  if (c.length) chosen.set(L, c.reduce((best, x) => (x.stats.score > best.stats.score ? x : best)));
+}
+for (let L = 1; L <= 100; L++) {
+  if (chosen.has(L) || !pool.get(L)!.length) continue;
+  const c = [...pool.get(L)!].sort((a, b) => a.stats.score - b.stats.score);
+  const lo = L > 5 && chosen.has(L - 5) ? chosen.get(L - 5)!.stats.score : -Infinity;
+  const caps = [L - 1, L + 1].filter((n) => n % 5 === 0 && chosen.has(n)).map((n) => chosen.get(n)!.stats.score - 1);
+  const cap = caps.length ? Math.min(...caps) : Infinity;
+  const fit = c.filter((x) => x.stats.score > lo && x.stats.score <= cap);
+  chosen.set(L, fit.length ? fit[0] : c.filter((x) => x.stats.score <= cap).pop() ?? c[0]);
+}
+for (let L = 1; L <= 100; L++) if (chosen.has(L)) picked.push({ ...chosen.get(L)!.data, stats: chosen.get(L)!.stats });
 if (missing.length) console.log('no usable candidate for levels', missing.join(','));
 writeFileSync('src/games/traffic/levels/levels.json', JSON.stringify(picked));
 

@@ -305,8 +305,14 @@ export class Solver {
  * One number for the ramp test. More vehicles, a fuller station and deeper traps all count; the number of traps counts by
  * its logarithm (it can be in the thousands for a big lot, and that must not drown the rest).
  */
-export function difficultyScore(vehicles: number, m: Pick<Metrics, 'traps' | 'depth' | 'slotsNeeded'>): number {
-  return Math.round(vehicles * 1.5 + 8 * m.slotsNeeded + 2 * Math.min(m.depth, 20) + 1.5 * Math.log2(1 + m.traps));
+export interface ScoreExtra { hidden: number; belts: number; rotators: number; fires: number }
+/**
+ * How hard a level is. From level 33 the number of vehicles stops growing (a finger has to hit each one), so what makes a level
+ * harder is counted too: the "?" vehicles, and the special vehicles (belts, vehicles that turn, fire trucks).
+ */
+export function difficultyScore(vehicles: number, m: Pick<Metrics, 'traps' | 'depth' | 'slotsNeeded'>, extra?: ScoreExtra): number {
+  const e = extra ?? { hidden: 0, belts: 0, rotators: 0, fires: 0 };
+  return Math.round(vehicles * 1.5 + 8 * m.slotsNeeded + 2 * Math.min(m.depth, 20) + 1.5 * Math.log2(1 + m.traps) + 2 * e.hidden + 5 * e.belts + 4 * e.rotators + 5 * e.fires);
 }
 
 /** What would get a stuck game going again: an extra place, or the VIP place for one of the parked vehicles. */
