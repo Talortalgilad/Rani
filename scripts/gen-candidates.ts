@@ -17,7 +17,7 @@ mkdirSync('scripts/.cache', { recursive: true });
 for (const L of levels) {
   const file = `scripts/.cache/${L}.json`;
   const have: { seed: number; data: LevelData; stats: LevelStats }[] = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
-  const p = paramsFor(L);
+  const p = { ...paramsFor(L), ...(process.env.MIN_DENSITY ? { minDensity: Number(process.env.MIN_DENSITY) } : {}) };
   const t0 = Date.now();
   const fails: Record<string, number> = {};
   let seed = have.reduce((m, c) => Math.max(m, c.seed), 0) + 1;
