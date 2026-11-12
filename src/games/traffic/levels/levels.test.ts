@@ -3,7 +3,9 @@ import { replay, densityOf, angledShare } from '../engine/analyze';
 import { sameDirectionClusters, type Item } from '../engine/packing';
 import { isHard, paramsFor } from '../engine/generator';
 import { overlaps } from '../engine/geometry';
+import { quarterOf } from '../engine/generator';
 import { Solver } from '../engine/solver';
+import { levelRuleProblems } from '../engine/rules';
 import { boxOf } from '../engine/solver-types';
 import { SIZES } from '../engine/state';
 import { ALL_LEVELS, NUMBERED_LEVELS, levelByKey, nextLevel } from './index';
@@ -62,6 +64,14 @@ describe('the 30 levels of the city world', () => {
         if (l.number >= 6) expect(big).toBeGreaterThanOrEqual(0.35);
         if (l.hard) expect(l.vehicles.filter((v) => v.type === 'bus').length).toBeGreaterThanOrEqual(3);
       });
+      it('meets every rule of the levels (mix of sizes, big ones at 45 degrees, every quarter mixed, "?" vehicles)', () => {
+        expect(levelRuleProblems(l)).toEqual([]);
+      });
+      it('has "?" vehicles from level 8, each with a visible vehicle in front of it', () => {
+        const hidden = l.vehicles.filter((v) => v.hidden).length;
+        if (l.number < 8) expect(hidden).toBe(0);
+        else expect(hidden).toBeGreaterThanOrEqual(1);
+      });
       it('is a jam: only a few vehicles can leave at the start', () => {
         const s = new Solver(l);
         const free = s.legal(s.initial(), 99).length;
@@ -77,6 +87,24 @@ describe('the 30 levels of the city world', () => {
       }
     });
   }
+  it('from level 10, every quarter of the lot has big and small vehicles, and straight and diagonal ones', () => {
+    for (const l of NUMBERED_LEVELS.filter((x) => x.number >= 10)) {
+      for (let q = 0; q < 4; q++) {
+        const inQ = l.vehicles.filter((v) => quarterOf(v.x, v.z) === q);
+        const where = `level ${l.number}, quarter ${q}`;
+        expect(inQ.some((v) => v.type === 'car'), `${where}: small`).toBe(true);
+        expect(inQ.some((v) => v.type !== 'car'), `${where}: big`).toBe(true);
+        expect(inQ.some((v) => v.heading % 90 === 0), `${where}: straight`).toBe(true);
+        expect(inQ.some((v) => v.heading % 90 !== 0), `${where}: diagonal`).toBe(true);
+      }
+    }
+  });
+  it('from level 10, at least 25% of the vans and buses stand at 45 degrees', () => {
+    for (const l of NUMBERED_LEVELS.filter((x) => x.number >= 10)) {
+      const big = l.vehicles.filter((v) => v.type !== 'car');
+      expect(big.filter((v) => v.heading % 90 !== 0).length / big.length, `level ${l.number}`).toBeGreaterThanOrEqual(0.25);
+    }
+  });
   it('the number of vehicles grows from 8 to more than 40', () => {
     expect(NUMBERED_LEVELS[0].vehicles.length).toBe(8);
     expect(NUMBERED_LEVELS[29].vehicles.length).toBeGreaterThanOrEqual(40);

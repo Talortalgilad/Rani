@@ -4,7 +4,7 @@ import { pickIndex } from '../../../lobby3d/pick';
 import { setSky, disposeTree, type SceneEnv, type StageScene } from '../../../lobby3d/stage';
 import type { Tier } from '../../../lobby3d/quality';
 import { corners, rad } from '../engine/geometry';
-import { SIZES, type ColorId, type VehicleDef } from '../engine/state';
+import { REGULAR_SLOTS, SIZES, type ColorId, type VehicleDef } from '../engine/state';
 import { Timeline, easeInOutCubic, easeOutBack, easeOutQuad } from './animations';
 import { buildWorld, type WorldKind } from './dioramas';
 import { frameCamera, type SafeArea } from './framing';
@@ -18,6 +18,13 @@ export const CAMERA_ELEVATION = 48;
 const SEE_AHEAD = 30; // passengers farther back than this wait out of sight, inside the cabana
 
 interface Lot { halfW: number; halfH: number }
+export interface SyncState {
+  vehicles: { id: number; status: string; slot: number | null; color: ColorId; filled: number; revealed: boolean }[];
+  boarded: number;
+  queue: ColorId[];
+  slots: number;
+}
+
 export interface LevelView { vehicles: VehicleDef[]; queue: ColorId[]; lot: Lot; world: WorldKind }
 
 interface VehicleView {
@@ -146,8 +153,17 @@ export interface TrafficScene extends StageScene {
   focusOn(id: number | null, zoom?: number): void;
   /** where a vehicle is on the screen (CSS pixels): for the pointing hand of the tutorial */
   screenPos(id: number): { x: number; y: number };
-  /** puts the scene into the state of a game that was saved in the middle (nothing is on the road) */
-  restore(state: { vehicles: { id: number; status: string; slot: number | null; color: ColorId; filled: number }[]; boarded: number }): void;
+  /**
+   * Puts the whole scene into the state of the game (a saved game, an undo, a shuffle): every vehicle where it belongs, the
+   * passengers that have boarded gone and the rest in the order of the queue. Nothing may be on the road.
+   */
+  sync(state: SyncState): void;
+  /** opens or closes places in the station (the station is drawn again, and the vehicles in it move over) */
+  setSlots(n: number): void;
+  /** "VIP": the vehicle flies to the VIP place */
+  startVip(id: number, arrived: () => void): void;
+  /** while a vehicle is to be picked, the parked ones bob a little */
+  setPickMode(on: boolean): void;
 }
 
 export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclude<Tier, '2d'>, getSafe?: () => SafeArea): TrafficScene {
@@ -160,9 +176,12 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
 
   // ---- the layout depends on the lot: the station sits right above it, and its width follows the width on screen
   const fitHalf = Math.max(level.lot.halfW + 0.6, 3.7);
-  const pads = fitHalf >= 5.7 ? 8 : 5;
-  const pitch = Math.min(1.42, (fitHalf * 2 * 0.95) / pads);
-  const kPitch = pitch / 1.42;
+  const pads0 = fitHalf >= 5.7 ? 8 : 5;
+  /** how many regular places are open (the helper "extra place" opens more) */
+  let slotsOpen = REGULAR_SLOTS;
+  let pads = pads0;
+  let pitch = Math.min(1.42, (fitHalf * 2 * 0.95) / pads);
+  let kPitch = pitch / 1.42;
   const slotX = (i: number): number => (i - (pads - 1) / 2) * pitch;
   const STATION_Z = -(level.lot.halfH + 1.75);
   const dzN = STATION_Z + 8.15; // the diorama is drawn for a station at -8.15
@@ -218,11 +237,6 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   pad.position.y = 0.0;
   pad.receiveShadow = true;
   scene.add(pad);
-  const platform = new T.Mesh(keep(rbox(pads * pitch + 0.6, 0.1, 3.3, 0.45)), keep(new T.MeshStandardMaterial({ color: theme.platform, roughness: 0.9 })));
-  platform.position.set(0, 0.0, STATION_Z - 0.05);
-  platform.receiveShadow = true;
-  scene.add(platform);
-
   // station places: sunk pads with a "P", a golden VIP place, and three locked ones
   const texP = keep(glyphTexture((g) => {
     g.fillStyle = 'rgba(255,244,214,0.95)';
@@ -252,24 +266,38 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     g.lineTo(94, 128);
     g.stroke();
   }));
-  const padGeo = keep(rbox(pitch - 0.22, 0.08, 2.25, 0.2));
-  for (let i = 0; i < pads; i++) {
-    const kind = i === 0 ? 'vip' : i <= 4 ? 'p' : 'locked';
-    const color = kind === 'vip' ? theme.padVip : kind === 'p' ? theme.padP : theme.padLocked;
-    const m = new T.Mesh(padGeo, keep(new T.MeshStandardMaterial({ color, roughness: 0.85 })));
-    m.position.set(slotX(i), 0.02, STATION_Z);
-    m.receiveShadow = true;
-    scene.add(m);
-    const glyph = new T.Mesh(keep(new T.PlaneGeometry(Math.min(0.95, pitch - 0.4), 1.9)), keep(new T.MeshBasicMaterial({ map: kind === 'vip' ? texVip : kind === 'p' ? texP : texPlus, transparent: true })));
-    glyph.rotation.x = -Math.PI / 2;
-    glyph.position.set(slotX(i), 0.07, STATION_Z);
-    scene.add(glyph);
-    if (kind === 'locked') {
-      // dashed outline: the place is not open yet
-      const dash = new T.Mesh(keep(new T.TorusGeometry(0, 0, 1, 1)), keep(new T.MeshBasicMaterial({ visible: false })));
-      scene.add(dash);
+  // the station: a platform and the places on it. It is built again when a place is added.
+  const stationGroup = new T.Group();
+  scene.add(stationGroup);
+  const stationOwn: { dispose(): void }[] = [];
+  const stationKeep = <A extends { dispose(): void }>(x: A): A => {
+    stationOwn.push(x);
+    return x;
+  };
+  function buildStation(): void {
+    stationGroup.clear();
+    stationOwn.forEach((o) => o.dispose());
+    stationOwn.length = 0;
+    const platform = new T.Mesh(stationKeep(rbox(pads * pitch + 0.6, 0.1, 3.3, 0.45)), stationKeep(new T.MeshStandardMaterial({ color: theme.platform, roughness: 0.9 })));
+    platform.position.set(0, 0.0, STATION_Z - 0.05);
+    platform.receiveShadow = true;
+    stationGroup.add(platform);
+    const padGeo = stationKeep(rbox(pitch - 0.22, 0.08, 2.25, 0.2));
+    for (let i = 0; i < pads; i++) {
+      // 0 = the VIP place, then the open places, then the ones that are still locked
+      const kind = i === 0 ? 'vip' : i <= slotsOpen ? 'p' : 'locked';
+      const color = kind === 'vip' ? theme.padVip : kind === 'p' ? theme.padP : theme.padLocked;
+      const m = new T.Mesh(padGeo, stationKeep(new T.MeshStandardMaterial({ color, roughness: 0.85 })));
+      m.position.set(slotX(i), 0.02, STATION_Z);
+      m.receiveShadow = true;
+      stationGroup.add(m);
+      const glyph = new T.Mesh(stationKeep(new T.PlaneGeometry(Math.min(0.95, pitch - 0.4), 1.9)), stationKeep(new T.MeshBasicMaterial({ map: kind === 'vip' ? texVip : kind === 'p' ? texP : texPlus, transparent: true })));
+      glyph.rotation.x = -Math.PI / 2;
+      glyph.position.set(slotX(i), 0.07, STATION_Z);
+      stationGroup.add(glyph);
     }
   }
+  buildStation();
 
   scene.add(diorama.group);
 
@@ -458,6 +486,15 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     });
   }
 
+  let pickMode = false;
+  /** the "?" look (black with a question mark) until the vehicle is uncovered, then its colour and its arrow */
+  function applyLook(v: VehicleView, revealed: boolean): void {
+    if (!v.def.hidden) return;
+    const geo = vehicleGeometry(v.def.type, revealed ? COLOR_HEX[v.def.color] : BLACK_HEX, lowDetail);
+    if (v.mesh.geometry !== geo) v.mesh.geometry = geo;
+    if (v.q) v.q.visible = !revealed;
+  }
+
   const api: TrafficScene = {
     scene,
     camera,
@@ -624,25 +661,110 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       return { x: ((p.x + 1) / 2) * width, y: ((1 - p.y) / 2) * height };
     },
 
-    restore(st) {
+    sync(st) {
+      if (st.slots !== slotsOpen) api.setSlots(st.slots);
       for (const sv of st.vehicles) {
         const v = views.get(sv.id)!;
-        if (sv.status === 'gone') v.root.visible = false;
-        else if (sv.status === 'station' && sv.slot !== null) {
+        const wasAway = v.slot !== null || !v.root.visible;
+        applyLook(v, sv.revealed);
+        if (v.badge) {
+          scene.remove(v.badge);
+          (v.badge.material as T.SpriteMaterial).dispose();
+          v.badge = null;
+        }
+        v.hop.value = 0;
+        v.hop.velocity = 0;
+        v.pitch.value = 0;
+        v.pitch.velocity = 0;
+        v.squash.value = 0;
+        v.mesh.position.set(0, 0, 0);
+        if (sv.status === 'gone') {
+          v.root.visible = false;
+          v.slot = null;
+        } else if (sv.status === 'station' && sv.slot !== null) {
           v.slot = sv.slot;
+          v.root.visible = true;
           v.root.position.set(slotX(sv.slot + 1), 0, STATION_Z);
-          v.root.rotation.y = -rad(270);
+          v.root.rotation.set(0, -rad(270), 0);
           v.root.scale.setScalar(stationScale(v.def.type));
           api.setSeatsLeft(sv.id, sv.color, SIZES[v.def.type].seats - sv.filled);
+        } else {
+          // parked in the lot: back to its place (with a little pop if it came back from the station)
+          v.slot = null;
+          v.root.visible = true;
+          v.root.position.set(v.def.x, 0, v.def.z);
+          v.root.rotation.set(0, -rad(v.def.heading), 0);
+          if (wasAway && !reduced) {
+            v.root.scale.setScalar(0.05);
+            timeline.tween(0.4, (t) => v.root.scale.setScalar(Math.max(0.05, easeOutBack(t))), () => v.root.scale.setScalar(1));
+            fx.sparkle(v.def.x, 0.9, v.def.z, 8);
+          } else v.root.scale.setScalar(1);
         }
       }
-      for (let i = 0; i < st.boarded && waiting.length; i++) {
-        const p = waiting.shift()!;
-        p.gone = true;
-      }
-      waiting.forEach((p, i) => {
-        p.s = p.target = i * SPACING;
+      // passengers: the first `boarded` are gone; the others wait in the order of the queue
+      waiting.length = 0;
+      slotOwner.fill(-1);
+      const perColor = new Map<ColorId, number>();
+      passengers.forEach((p, i) => {
+        p.flight = null;
+        p.on = false;
+        if (i < st.boarded) {
+          p.gone = true;
+          return;
+        }
+        p.gone = false;
+        p.color = st.queue[i - st.boarded];
+        const idx = perColor.get(p.color) ?? 0;
+        perColor.set(p.color, idx + 1);
+        p.stick = { mesh: stickMeshes.get(p.color)!, idx };
+        p.s = p.target = (i - st.boarded) * SPACING;
+        p.delay = 0;
+        p.hop = 0;
+        waiting.push(p);
       });
+    },
+
+    setSlots(n) {
+      slotsOpen = n;
+      pads = Math.max(pads0, 1 + n);
+      pitch = Math.min(1.42, (fitHalf * 2 * 0.95) / pads);
+      kPitch = pitch / 1.42;
+      buildStation();
+      for (const v of views.values()) {
+        if (v.slot === null || !v.root.visible) continue;
+        if (!timeline.busy) v.root.position.x = slotX(v.slot + 1);
+        if (v.badge) v.badge.position.x = slotX(v.slot + 1);
+      }
+      layout();
+    },
+
+    startVip(id, arrived) {
+      const v = views.get(id)!;
+      v.slot = -1;
+      const from = v.root.position.clone();
+      const to = new T.Vector3(slotX(0), 0, STATION_Z);
+      const startRot = v.root.rotation.y;
+      const endRot = -rad(270) + Math.round((startRot + rad(270)) / (Math.PI * 2)) * Math.PI * 2;
+      const s0 = v.root.scale.x;
+      const s1 = stationScale(v.def.type);
+      fx.sparkle(from.x, 0.9, from.z, 10, ['#ffd02b', '#ffffff']);
+      timeline.tween(reduced ? 0.01 : 1.0, (t) => {
+        const e = easeInOutCubic(t);
+        v.root.position.set(from.x + (to.x - from.x) * e, Math.sin(Math.PI * e) * 3.4, from.z + (to.z - from.z) * e);
+        v.root.rotation.y = startRot + (endRot - startRot) * e;
+        v.root.scale.setScalar(s0 + (s1 - s0) * e);
+      }, () => {
+        v.root.position.set(to.x, 0, to.z);
+        v.root.rotation.y = -rad(270);
+        v.pitch.value = reduced ? 0 : 0.12;
+        v.pitch.velocity = 0;
+        fx.sparkle(to.x, 0.9, to.z, 12, ['#ffd02b', '#ffffff']);
+        arrived();
+      });
+    },
+
+    setPickMode(on) {
+      pickMode = on;
     },
 
     focusOn(id, zoom = 3.4) {
@@ -671,6 +793,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
           const a = (v.jitter.until - t) * 0.5;
           v.mesh.position.set((Math.random() - 0.5) * 0.12 * a * 4, 0, (Math.random() - 0.5) * 0.12 * a * 4);
         } else v.mesh.position.set(0, 0, 0);
+        if (pickMode && v.root.visible && v.slot === null && !reduced) v.mesh.position.y = 0.08 + Math.abs(Math.sin(t * 5 + v.def.id)) * 0.12;
         const visible = v.root.visible;
         const size = SIZES[v.def.type];
         dummy.position.set(v.root.position.x, 0.062, v.root.position.z); // just above the pad and the platform

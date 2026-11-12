@@ -1,21 +1,16 @@
 /**
  * Picks the final 30 levels from the candidates in scripts/.cache and writes
  *   src/games/traffic/levels/levels.json   (what the game loads)
- *   docs/traffic/stage1/levels-table.md    (the numbers of every level)
+ *   docs/traffic/stage2a/levels-table.md    (the numbers of every level)
  * Hard levels (every fifth) take the hardest candidate that meets the rules; the others take the middle one.
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import type { LevelData, LevelStats } from '../src/games/traffic/engine/level';
 import { paramsFor } from '../src/games/traffic/engine/generator';
 import { difficultyScore } from '../src/games/traffic/engine/solver';
-import { sameDirectionClusters, type Item } from '../src/games/traffic/engine/packing';
+import { levelRuleProblems } from '../src/games/traffic/engine/rules';
 
 /** A little stricter than the test (0.15), so that rounding can never push a level over the line. */
-const clusterOk = (l: LevelData): boolean => {
-  const cls = (h: number): number => ({ 0: 0, 90: 1, 45: 2, 135: 3 } as Record<number, number>)[h % 180];
-  const items: Item[] = l.vehicles.map((v) => ({ type: v.type, cls: cls(v.heading), x: v.x, z: v.z }));
-  return sameDirectionClusters(items, 0.17).every((c) => c.length <= 3);
-};
 
 interface Cand { seed: number; data: LevelData; stats: LevelStats }
 const picked: LevelData[] = [];
@@ -25,7 +20,7 @@ for (let L = 1; L <= 30; L++) {
   const p = paramsFor(L);
   const all: Cand[] = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
   for (const c of all) c.stats.score = difficultyScore(c.stats.vehicles, c.stats); // the formula may have changed since the candidate was made
-  const ok = all.filter((c) => c.stats.exact && c.stats.density >= p.minDensity && c.stats.angled + 1e-9 >= (L >= 10 ? 0.3 : 0) && clusterOk(c.data) && (!p.hard || c.stats.traps >= 3));
+  const ok = all.filter((c) => c.stats.exact &&  levelRuleProblems(c.data, 0.17).length === 0 && (!p.hard || c.stats.traps >= 3));
   if (!ok.length) {
     missing.push(L);
     continue;
@@ -40,14 +35,27 @@ for (let L = 1; L <= 30; L++) {
 if (missing.length) console.log('no usable candidate for levels', missing.join(','));
 writeFileSync('src/games/traffic/levels/levels.json', JSON.stringify(picked));
 
-mkdirSync('docs/traffic/stage1', { recursive: true });
+mkdirSync('docs/traffic/stage2a', { recursive: true });
 const rows = picked.map((l) => {
   const s = l.stats!;
-  return `| ${l.number}${l.hard ? ' ⚠️' : ''} | ${s.vehicles} | ${s.passengers} | ${s.colors} | ${Math.round(s.density * 100)}% | ${Math.round(s.angled * 100)}% | ${s.free} | ${s.safeMoves} | ${s.traps} | ${s.depth} | ${s.slotsNeeded} | ${s.window} | ${s.score} |`;
+  const big = l.vehicles.filter((v) => v.type !== 'car');
+  const bigDiag = big.length ? Math.round((100 * big.filter((v) => v.heading % 90 !== 0).length) / big.length) : 0;
+  const hidden = l.vehicles.filter((v) => v.hidden).length;
+  return `| ${l.number}${l.hard ? ' ⚠️' : ''} | ${s.vehicles} | ${Math.round((100 * big.length) / s.vehicles)}% | ${l.number >= 10 ? bigDiag + '%' : '-'} | ${hidden} | ${s.passengers} | ${Math.round(s.density * 100)}% | ${Math.round(s.angled * 100)}% | ${s.free} | ${s.traps} | ${s.depth} | ${s.score} |`;
 });
 writeFileSync(
-  'docs/traffic/stage1/levels-table.md',
-  `| שלב | רכבים | נוסעים | צבעים | צפיפות | באלכסון | חופשיים בהתחלה | מהלכים בטוחים | מלכודות | עומק חשיבה | מקומות בתחנה שנדרשים | חלון ערבוב | ציון קושי |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`,
+  'docs/traffic/stage2a/levels-table.md',
+  `# 30 השלבים של עולם העיר (שלב 2א)
+
+- **גדולים**: חלק הוואנים והאוטובוסים מכל הרכבים. **גדולים באלכסון**: חלק הגדולים שעומדים ב-45° (מ-10).
+- **צפיפות**: שטח הרכבים (גלגלים כלולים) חלקי שטח החניון. **חופשיים**: רכבים שיכולים לצאת בהתחלה.
+- **מלכודות**: מהלכים שנראים בסדר ומובילים לתקיעה, בכל מצב שעדיין אפשר לנצח ממנו, עד עומק 8 מהלכים.
+- **ציון קושי**: \`1.5 × רכבים + 8 × מקומות + 2 × עומק + 1.5 × log₂(1 + מלכודות)\`. ⚠️ = "קשה מאוד!".
+
+| שלב | רכבים | גדולים | גדולים באלכסון | רכבי "?" | נוסעים | צפיפות | באלכסון | חופשיים | מלכודות | עומק | ציון |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+${rows.join('\n')}
+`,
 );
 console.log(`${picked.length} levels written`);
 let up = 0;

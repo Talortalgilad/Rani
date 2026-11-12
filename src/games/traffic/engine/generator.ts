@@ -1,5 +1,5 @@
-import { dropPack } from './dropPack';
-import { FAR, corners, overlaps, swept, type Obb } from './geometry';
+import { cornerPack, type ClassInfo } from './dropPack';
+import { FAR, corners, firstContact, overlaps, swept, type Obb } from './geometry';
 import { CLASS_THETA, itemBox, sameDirectionClusters, shrinkLoop, type Item } from './packing';
 import type { LevelData } from './level';
 import { SIZES, type ColorId, type VType, type VehicleDef } from './state';
@@ -45,6 +45,8 @@ export interface GenParams {
   /** type weights: car, van, bus */
   mix: [number, number, number];
   zones: number;
+  /** how many "?" vehicles (from level 8) */
+  hidden: number;
 }
 
 export function paramsFor(level: number): GenParams {
@@ -62,6 +64,7 @@ export function paramsFor(level: number): GenParams {
     minDensity: hard ? 0.7 : 0.65,
     mix: [0.5 - 0.12 * t, 0.4, 0.1 + 0.12 * t],
     zones: level < 3 ? 2 : level < 4 ? 1 : 3,
+    hidden: level < 8 ? 0 : Math.round(1 + ((level - 8) * 4) / 22) + (hard ? 1 : 0),
   };
 }
 
@@ -148,36 +151,44 @@ export function generate(p0: GenParams, seed: number): Built | null {
   const r = mulberry(seed);
   // a few vehicles more or fewer than the plan: a different count packs a hard lot better. The plan still sets the trend.
   const p: GenParams = p0.hard ? { ...p0, vehicles: p0.vehicles + [0, 1, -1, 2][seed % 4] } : p0;
-  const types = typesFor(p, r).sort((a, b) => area(b) - area(a));
-  const total = types.reduce((s, q) => s + area(q), 0);
-  const needDiag = Math.ceil(p.angled * types.length);
-
-  // 1. packing: dropped one at a time into a box; the directions are mixed everywhere and no more than 3 neighbours lie the same way
-  const width = Math.sqrt(total / (p.hard ? 0.8 : 0.74));
-  const packed = dropPack(
-    types,
-    (i, placed) => {
+  // 1. packing: the vehicles settle toward the four corners of a box in turn, biggest first, so every corner gets big ones and the small
+  // ones fill the middle; the directions are mixed everywhere, no more than 3 neighbours lie the same way, and every quarter of the lot has
+  // big and small vehicles and (from level 10) straight and diagonal ones. A packing that misses a quarter is thrown away at once (cheap).
+  let types: VType[] = [];
+  let total = 0;
+  let packed: ReturnType<typeof cornerPack> = null;
+  for (let attempt = 0; attempt < 30 && !packed; attempt++) {
+    types = typesFor(p, r).sort((a, b) => area(b) - area(a));
+    total = types.reduce((sum, q) => sum + area(q), 0);
+    const needDiag = Math.ceil(p.angled * types.length);
+    const bigCount = types.filter((t) => t !== 'car').length;
+    // from level 10, at least 25% of the vans and buses stand at 45 degrees too
+    const needBigDiag = p.level >= 10 ? Math.ceil(bigCount * 0.26) : 0;
+    const chooser = ({ placed, type, rest }: ClassInfo): number[] => {
       if (p.angled <= 0) return [0, 1];
       const diagPlaced = placed.filter((q) => q.cls >= 2).length;
-      return needDiag - diagPlaced >= types.length - i ? [2, 3] : [0, 1, 2, 3];
-    },
-    width,
-    r,
-    3,
-    p.hard ? 70 : 45,
-    p.hard ? 200 : 50,
-  );
+      const bigDiagPlaced = placed.filter((q) => q.cls >= 2 && q.type !== 'car').length;
+      const bigRest = rest.filter((t) => t !== 'car').length;
+      // the diagonal ones are spread over the whole packing, not saved for the end: a diagonal share is due at every step
+      const due = Math.round(((placed.length + 1) * needDiag) / types.length);
+      const bigDone = placed.filter((q) => q.type !== 'car').length;
+      const bigDue = Math.round(((bigDone + (type !== 'car' ? 1 : 0)) * needBigDiag) / Math.max(1, bigCount));
+      const force = diagPlaced < due || needDiag - diagPlaced >= rest.length || (type !== 'car' && (bigDiagPlaced < bigDue || needBigDiag - bigDiagPlaced >= bigRest));
+      return force ? [2, 3] : [0, 1, 2, 3];
+    };
+    const side = Math.sqrt(total / (p.hard ? 0.67 : 0.64));
+    const first = cornerPack(types, chooser, side, side, r, 3, 40);
+    if (!first) continue;
+    const c0 = bounds(first.items);
+    if (!quartersOk(first.items.map((q) => ({ type: q.type, x: q.x - c0.cx, z: q.z - c0.cz, theta: CLASS_THETA[q.cls] })), p.level)) continue;
+    packed = first;
+  }
   if (!packed) {
     lastFail = 'pack';
     return null;
   }
   // squeeze: shrink the box a little at a time, pushing overlaps apart, as long as no group of same-direction neighbours gets bigger than 3
   const bb0 = bounds(packed.items);
-  // a packing that is far from the density asked for is not worth squeezing (squeezing adds about 0.05)
-  if (total / (bb0.w * bb0.h) < p.minDensity - 0.09) {
-    lastFail = 'packlow';
-    return null;
-  }
   const start = packed.items.map((q) => ({ ...q, x: q.x - bb0.cx, z: q.z - bb0.cz }));
   const squeezed = shrinkLoop(start, bb0.w / 2 + 0.05, bb0.h / 2 + 0.05, 1.05, 0.03, r, 25, 600, (items) => sameDirectionClusters(items, 0.17).every((c) => c.length <= 3));
   const slots: Slot[] = squeezed.items.map((q) => ({ type: q.type, x: q.x, z: q.z, theta: CLASS_THETA[q.cls] }));
@@ -189,6 +200,8 @@ export function generate(p0: GenParams, seed: number): Built | null {
   let hh = (bb.maxZ - bb.minZ) / 2 + 0.06;
   if (hh / hw < 0.75) hh = hw * 0.75;
   if (hh / hw > 1.35) hw = hh / 1.35;
+  hw = Math.ceil(hw * 100) / 100; // the lot as it is saved (to the centimetre): the density is measured on that
+  hh = Math.ceil(hh * 100) / 100;
   const density = total / (4 * hw * hh);
   if (density < p.minDensity) {
     lastFail = `density ${density.toFixed(2)}`;
@@ -197,6 +210,13 @@ export function generate(p0: GenParams, seed: number): Built | null {
   const angledShare = centred.filter((s) => s.theta % 90 !== 0).length / centred.length;
   if (angledShare + 1e-9 < p.angled) {
     lastFail = `angled ${angledShare.toFixed(2)}`;
+    return null;
+  }
+
+  // every quarter of the lot has big and small vehicles, and (from level 10) straight and diagonal ones
+  const quad = quartersOk(centred, p.level);
+  if (!quad) {
+    lastFail = 'quarters';
     return null;
   }
 
@@ -216,6 +236,10 @@ export function generate(p0: GenParams, seed: number): Built | null {
     .map((s, i): VehicleDef => ({ id: rank.get(i)!, type: s.type, color: colorOf.get(i)!, x: s.x, z: s.z, heading: ch.heading[i] }))
     .sort((a, b) => a.id - b.id);
 
+  // the "?" vehicles: blocked ones, spread over the lot; the vehicle in front of one is never "?" itself
+  const hiddenIds = pickHidden(defs, p.hidden, r);
+  for (const d of defs) if (hiddenIds.has(d.id)) d.hidden = true;
+
   // 4. the queue, in the order the vehicles leave, shuffled inside windows
   const queue: ColorId[] = [];
   const exit = [...defs].sort((a, c) => c.id - a.id);
@@ -234,11 +258,73 @@ export function generate(p0: GenParams, seed: number): Built | null {
     number: p.level,
     world: 'city',
     hard: p.hard,
-    lot: { halfW: Math.ceil(hw * 100) / 100, halfH: Math.ceil(hh * 100) / 100 },
+    lot: { halfW: hw, halfH: hh },
     vehicles: defs,
     queue,
   };
   return { data, density };
+}
+
+/**
+ * The order of dropping: bigger first (that packs best), but a few big ones are kept for the end and a few small ones
+ * are dropped at the start, so that big and small vehicles are found at the bottom and at the top of the lot alike.
+ */
+export function interleave(list: VType[], r: () => number): VType[] {
+  const sorted = [...list].sort((a, b) => SIZES[b].len * SIZES[b].wid - SIZES[a].len * SIZES[a].wid);
+  const n = sorted.length;
+  const bigs = sorted.filter((t) => t !== 'car').length;
+  const move = Math.max(1, Math.round(bigs * 0.3));
+  // some big ones to the last third, some small ones to the first third
+  for (let k = 0; k < move && bigs > k + 1; k++) {
+    const from = Math.floor(r() * Math.max(1, bigs - 1 - k));
+    const t = sorted.splice(from, 1)[0];
+    sorted.splice(Math.floor(n * (0.66 + r() * 0.3)), 0, t);
+  }
+  for (let k = 0; k < move; k++) {
+    const idx = sorted.findIndex((t, i) => t === 'car' && i > n * 0.4);
+    if (idx < 0) break;
+    const t = sorted.splice(idx, 1)[0];
+    sorted.splice(Math.floor(n * 0.05 + r() * n * 0.25), 0, t);
+  }
+  return sorted;
+}
+
+/** Chooses `count` vehicles to hide: each has a vehicle right in front of it, which is not hidden itself. */
+export function pickHidden(defs: VehicleDef[], count: number, r: () => number): Set<number> {
+  const out = new Set<number>();
+  if (count <= 0) return out;
+  const boxes = defs.map((d) => ({ id: d.id, box: boxOf(d) }));
+  const front = new Map<number, number>();
+  for (const d of defs) {
+    const hit = firstContact(boxOf(d), boxes.filter((b) => b.id !== d.id));
+    if (hit) front.set(d.id, hit.id);
+  }
+  const cands = [...front.keys()].map((id) => ({ id, k: r() })).sort((a, b) => a.k - b.k).map((x) => x.id);
+  for (const id of cands) {
+    if (out.size >= count) break;
+    const f = front.get(id)!;
+    if (out.has(f)) continue;
+    if ([...out].some((h) => front.get(h) === id)) continue; // the one in front of a hidden vehicle stays visible
+    out.add(id);
+  }
+  return out;
+}
+
+/** Which quarter (0..3) of the lot a vehicle is in, by its centre. */
+export const quarterOf = (x: number, z: number): number => (x < 0 ? 0 : 1) + (z < 0 ? 0 : 2);
+
+/** Every quarter holds big and small vehicles (from level 6) and straight and diagonal ones (from level 10). */
+export let quarterReason = '';
+export function quartersOk(slots: { type: VType; x: number; z: number; theta: number }[], level: number): boolean {
+  if (level < 6) return true;
+  for (let q = 0; q < 4; q++) {
+    const inQ = slots.filter((s) => quarterOf(s.x, s.z) === q);
+    if (!inQ.some((s) => s.type === 'car')) { quarterReason = `Q${q} no small`; return false; }
+    if (!inQ.some((s) => s.type !== 'car')) { quarterReason = `Q${q} no big`; return false; }
+    if (level >= 10 && !inQ.some((s) => s.theta % 90 === 0)) { quarterReason = `Q${q} no straight`; return false; }
+    if (level >= 10 && !inQ.some((s) => s.theta % 90 !== 0)) { quarterReason = `Q${q} no diag`; return false; }
+  }
+  return true;
 }
 
 function bounds(items: Item[]): { w: number; h: number; cx: number; cz: number } {

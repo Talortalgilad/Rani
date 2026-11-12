@@ -1,4 +1,4 @@
-import { SIZES, REGULAR_SLOTS, type ColorId } from './state';
+import { MAX_SLOTS, SIZES, REGULAR_SLOTS, type ColorId, type TrafficState } from './state';
 import { boxOf, type LevelDataLike } from './solver-types';
 import { overlaps, swept, FAR, type Obb } from './geometry';
 
@@ -65,6 +65,28 @@ export class Solver {
 
   private key(s: State): string {
     return s.parked.toString(36) + '|' + s.station.map((e) => `${e.v}:${e.filled}`).join(',') + '|' + s.qi;
+  }
+
+  /** The position of a game in progress (the queue of this solver must be the queue that is left). */
+  stateOf(ts: TrafficState): State {
+    let parked = 0n;
+    const station: Entry[] = [];
+    const idx = new Map(this.ids.map((id, i) => [id, i]));
+    for (const v of ts.vehicles) if (v.status === 'parked') parked |= 1n << BigInt(idx.get(v.id)!);
+    for (const v of [...ts.vehicles].filter((x) => x.status === 'station' || x.status === 'driving').sort((a, b) => a.order - b.order)) station.push({ v: idx.get(v.id)!, filled: v.filled });
+    return { parked, station, qi: 0 };
+  }
+
+  /** A vehicle flies to the VIP place: it joins the station whatever is in front of it. */
+  applyAny(s: State, i: number): State {
+    return this.apply({ ...s, parked: s.parked | (1n << BigInt(i)) }, i);
+  }
+
+  /** The vehicles that are still parked, as indexes. */
+  parkedList(s: State): number[] {
+    const out: number[] = [];
+    for (let i = 0; i < this.n; i++) if ((s.parked >> BigInt(i)) & 1n) out.push(i);
+    return out;
   }
 
   isFree(s: State, i: number): boolean {
@@ -249,4 +271,19 @@ export class Solver {
  */
 export function difficultyScore(vehicles: number, m: Pick<Metrics, 'traps' | 'depth' | 'slotsNeeded'>): number {
   return Math.round(vehicles * 1.5 + 8 * m.slotsNeeded + 2 * Math.min(m.depth, 20) + 1.5 * Math.log2(1 + m.traps));
+}
+
+/** What would get a stuck game going again: an extra place, or the VIP place for one of the parked vehicles. */
+export function suggestHelper(vehicles: LevelDataLike['vehicles'], ts: TrafficState): { kind: 'slot' | 'vip'; vehicle?: number } | null {
+  const solver = new Solver({ vehicles, queue: ts.queue });
+  const st = solver.stateOf(ts);
+  const cap = ts.slots.length;
+  if (cap < MAX_SLOTS && solver.can(st, cap + 1) === true) return { kind: 'slot' };
+  if (ts.vip === null) {
+    for (const i of solver.parkedList(st)) {
+      const child = solver.applyAny(st, i);
+      if (solver.can(child, cap + 1) === true) return { kind: 'vip', vehicle: vehicles.slice().sort((a, b) => a.id - b.id)[i].id };
+    }
+  }
+  return null;
 }
