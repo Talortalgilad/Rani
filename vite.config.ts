@@ -24,8 +24,9 @@ export default defineConfig({
         scope: base,
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#fff3ef',
-        theme_color: '#8e5cf0',
+        // the splash screen and the status bar match the lobby sky and the icon
+        background_color: '#7cc0f4',
+        theme_color: '#5ab2f5',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

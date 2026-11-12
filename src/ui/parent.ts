@@ -1,4 +1,5 @@
 import { go } from '../router';
+import { IOS_PICTURE, currentInstallMode, onInstallChange, promptInstall } from '../install';
 import { activeLevel } from '../math/adaptive';
 import { TYPE_LABEL, computeStats } from '../math/stats';
 import { addExtraMinutes, allowedMinutes, playedMinutes } from '../usage';
@@ -22,6 +23,8 @@ export function renderParent(root: HTMLElement): () => void {
   let b = int(3, 9);
   let confirmReset = false;
   let flash = '';
+  let showIos = false;
+  const stopInstallWatch = onInstallChange(() => root.querySelector('#done') && settings());
 
   const shell = (inner: string) => {
     root.innerHTML = `<div class="screen parent">${inner}</div>`;
@@ -77,6 +80,23 @@ export function renderParent(root: HTMLElement): () => void {
       </section>`;
   }
 
+  /** "Install to the home screen": hidden when the app is already installed or the browser cannot install it. */
+  function installHtml(): string {
+    const mode = currentInstallMode();
+    if (mode === 'hidden') return '';
+    return `
+      <section class="p-card" id="install-card">
+        <h2>התקנה למסך הבית</h2>
+        <div class="p-sub">האפליקציה נפתחת מהמסך הבית כמו כל אפליקציה, גם בלי אינטרנט.</div>
+        <button class="btn alt" id="install">📲 התקנה למסך הבית</button>
+        ${
+          mode === 'ios' && showIos
+            ? `<div class="p-ios">${IOS_PICTURE}<ol><li>לוחצים על כפתור <b>השיתוף</b> בשורה התחתונה של Safari</li><li>גוללים ובוחרים <b>"הוספה למסך הבית"</b></li><li>לוחצים <b>"הוספה"</b></li></ol></div>`
+            : ''
+        }
+      </section>`;
+  }
+
   function settings(): void {
     const st = getState();
     const se = st.settings;
@@ -124,6 +144,8 @@ export function renderParent(root: HTMLElement): () => void {
         ${chips('dailyLimitMin', [['כבוי', null], ['15 דק׳', 15], ['30 דק׳', 30], ['45 דק׳', 45], ['60 דק׳', 60]], se.dailyLimitMin)}
         ${allowed === null ? '' : `<div class="p-sub">שיחקו היום ${played} דק׳ מתוך ${allowed}</div><button class="btn alt" id="plus15">➕ הוסף 15 דקות להיום</button>`}
       </section>
+
+      ${installHtml()}
 
       ${statsHtml()}
 
@@ -183,6 +205,16 @@ export function renderParent(root: HTMLElement): () => void {
         s.profile.name = v || 'רני';
       });
     });
+    root.querySelector('#install')?.addEventListener('click', async () => {
+      if (currentInstallMode() === 'ios') {
+        showIos = !showIos;
+        settings();
+        return;
+      }
+      const r = await promptInstall();
+      flash = r === 'accepted' ? 'האפליקציה הותקנה ✓' : '';
+      settings();
+    });
     root.querySelector('#plus15')?.addEventListener('click', () => {
       addExtraMinutes(15);
       flash = 'נוספו 15 דקות ✓';
@@ -206,5 +238,5 @@ export function renderParent(root: HTMLElement): () => void {
   }
 
   quiz();
-  return () => {};
+  return () => stopInstallWatch();
 }
