@@ -1,8 +1,9 @@
 import { mountCheesy } from '../art/cheesy';
 import { he } from '../content/lines';
 import { mixed } from './text';
-import { speakEn, speakHe } from '../voice';
+import { speakEn } from '../voice';
 import type { SoundApi } from '../../../sound';
+import { sayLine } from '../content/heLines';
 
 /** The island's front door: the companion greets, and one big button starts the station. */
 export function showStart(root: HTMLElement, name: string, rescued: string[], sound: SoundApi, o: { onPlay(): void; onHome(): void }): () => void {
@@ -17,7 +18,7 @@ export function showStart(root: HTMLElement, name: string, rescued: string[], so
       <div class="start-shelf">${rescued.length ? `⭐ ${rescued.map((r) => r).join(', ')}` : ''}</div>
     </div>`;
   const c = mountCheesy(root.querySelector<HTMLElement>('#ch')!, 'happy', () => sound.play('pop', 520));
-  void speakHe(he.start);
+  void sayLine('start');
   root.querySelector('#play')!.addEventListener('click', () => {
     c.set('dance');
     sound.play('bonus');

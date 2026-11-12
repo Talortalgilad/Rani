@@ -11,6 +11,7 @@ export const games: GameModule[] = [brickBreaker, memory, traffic, english];
 brickBreaker.lobbyIsland = (ctx) => import('./brick-breaker/lobby-island').then((m) => m.createLobbyIsland(ctx));
 memory.lobbyIsland = (ctx) => import('./memory/lobby-island').then((m) => m.createLobbyIsland(ctx));
 traffic.lobbyIsland = (ctx) => import('./traffic/lobby-island').then((m) => m.createLobbyIsland(ctx));
+english.lobbyIsland = (ctx) => import('./english/lobby-island').then((m) => m.createLobbyIsland(ctx));
 
 export const comingSoon = [
   { title: 'בקרוב', color: '#c9c4cf' },

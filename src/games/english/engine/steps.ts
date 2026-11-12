@@ -14,6 +14,8 @@ export type Step =
   | { kind: 'bigsmall'; right: string; which: 'big' | 'small'; score: string[] }
   | { kind: 'where'; item: string; ref: string; prep: 'on' | 'in' | 'under' | 'over'; score: string[] }
   | { kind: 'sentence'; words: string[]; picture: string; missing: number; score: string[] }
+  /** "Say it!" (only when a parent turned it on): she says the word, the phone listens */
+  | { kind: 'say'; right: string; score: string[] }
   | { kind: 'song'; world: number; score: string[] };
 
 export type Kind = Step['kind'];

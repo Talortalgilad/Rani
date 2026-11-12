@@ -11,9 +11,10 @@ import { songTaskStep } from './engine/steps';
 import { showShelf } from './ui/shelf';
 import { preloadCheesy, setLook } from './art/cheesy';
 import { planStation } from './engine/planner';
+import { preloadVoice } from './content/heLines';
 import { likeIds } from './content/likes';
 import { STATIONS_PER_WORLD, addPlay, dayNumber, emptyMap, finishStation, markSeen, review, type MapProgress, type Words } from './engine/progress';
-import { stopSpeech } from './voice';
+import { recognitionAvailable, stopSpeech } from './voice';
 import { getState } from '../../storage';
 import { he } from './content/lines';
 import { preloadWorld } from './art/images';
@@ -115,7 +116,7 @@ function startStation(world: number, station: number): void {
   const name = displayName();
   const today = dayNumber();
   const t0 = Date.now();
-  const steps = planStation({ world, station, words: words(), today, likes: ctx!.load<string[]>('likes', likeIds), seed: today * 31 + (mapState().done[world] ?? 0) * 7 + station + Math.floor(Math.random() * 1000) });
+  const steps = planStation({ world, station, words: words(), today, likes: ctx!.load<string[]>('likes', likeIds), say: ctx!.load<boolean>('say', false) && recognitionAvailable(), seed: today * 31 + (mapState().done[world] ?? 0) * 7 + station + Math.floor(Math.random() * 1000) });
   swap(() =>
     runStation(root!, {
       name,
@@ -169,6 +170,7 @@ const mod: GameModule = {
     ctx = c;
     applyLook();
     preloadCheesy();
+    void preloadVoice(0);
     if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, displayName());
     root = document.createElement('div');
     root.className = 'english-root';

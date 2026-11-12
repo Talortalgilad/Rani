@@ -137,3 +137,17 @@ describe('worlds 5-12', () => {
     }
   });
 });
+
+describe('"Say it!"', () => {
+  it('is only planned when it is on, and then for words of the world, at most twice a station', () => {
+    for (let seed = 1; seed < 30; seed++) {
+      expect(planStation({ world: 3, station: 1, words: {}, today: T, seed }).some((s) => s.kind === 'say')).toBe(false);
+      const on = planStation({ world: 3, station: 1, words: {}, today: T, seed, say: true });
+      const says = on.filter((s) => s.kind === 'say');
+      expect(says.length).toBeLessThanOrEqual(2);
+      says.forEach((s) => expect(ids.has((s as { right: string }).right)).toBe(true));
+    }
+    expect(kindsForWorld(3, true)).toContain('say');
+    expect(kindsForWorld(3)).not.toContain('say');
+  });
+});

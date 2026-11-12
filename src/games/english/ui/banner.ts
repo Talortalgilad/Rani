@@ -1,7 +1,8 @@
 import { he } from '../content/lines';
 import { mixed } from './text';
-import { speakEn, speakHe } from '../voice';
+import { speakEn } from '../voice';
 import type { SoundApi } from '../../../sound';
+import { sayLine } from '../content/heLines';
 
 /** "Great Job!": a shiny banner with three stars that light up one by one, and confetti. */
 export function showBanner(root: HTMLElement, stars: 1 | 2 | 3, name: string, sound: SoundApi, onNext: () => void): () => void {
@@ -28,7 +29,7 @@ export function showBanner(root: HTMLElement, stars: 1 | 2 | 3, name: string, so
     box.appendChild(p);
   }
   sound.play('win');
-  void speakEn('Great job!', 0.85).then(() => speakHe(he.proud(name)));
+  void speakEn('Great job!', 0.85).then(() => sayLine('proud', name));
   wrap.querySelector('#bn')!.addEventListener('click', () => {
     wrap.remove();
     onNext();

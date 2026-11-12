@@ -259,3 +259,8 @@ html, body {
 /* install to the home screen (parents' area) */
 .p-ios { display: flex; flex-direction: column; gap: 10px; }
 .p-ios ol { margin: 0; padding-inline-start: 22px; line-height: 1.7; font-size: 17px; }
+
+/* the English question of the gate: three pictures to tap */
+.choices.english-gate .choice { min-height: 0; aspect-ratio: 1; padding: 6px; background: #fff; box-shadow: 0 6px 0 #cbbfe0; }
+.choices.english-gate .choice img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+.choices.english-gate .choice.right { background: #d8f8e1; }

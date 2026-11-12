@@ -3,8 +3,9 @@ import { WORDS, labelOf } from '../content/words';
 import { dayNumber, isKnown, markKnown, minutesInWeek, unmarkKnown, STATIONS_PER_WORLD, type MapProgress, type PlayLog, type Words } from '../engine/progress';
 import { SQUISHIES } from '../art/squishies';
 import { WORLDS } from '../content/worlds';
-import { hasHebrewVoice, pickVoice, speakEn, speakHe } from '../voice';
+import { hasHebrewVoice, pickVoice, speakEn } from '../voice';
 import { gameStore } from '../../../storage';
+import { sayLine } from '../content/heLines';
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const store = gameStore('english');
@@ -19,6 +20,7 @@ export function englishParentHtml(): string {
   const name = store.load<{ name: string } | null>('companion', null)?.name ?? '';
   const liked = store.load<string[]>('likes', likeIds);
   const openAll = store.load<boolean>('openAll', false);
+  const say = store.load<boolean>('say', false);
   const known = WORDS.filter((w) => isKnown(words[w.id])).length;
   const learning = WORDS.filter((w) => words[w.id]?.seen && !isKnown(words[w.id])).length;
   const worldsDone = WORLDS.filter((w) => (map.done[w.n] ?? 0) >= STATIONS_PER_WORLD).length;
@@ -50,6 +52,9 @@ export function englishParentHtml(): string {
       </details>
       <div class="p-sub">פתח את כל העולמות (לבדיקה: ברירת המחדל כבויה, ועולם נפתח רק אחרי שמסיימים את הקודם)</div>
       <div class="p-chips"><button class="chip-btn ${openAll ? 'on' : ''}" data-openall="1">כן</button><button class="chip-btn ${openAll ? '' : 'on'}" data-openall="0">לא</button></div>
+      <div class="p-sub">"אמור!" (המשחק מבקש מרני להגיד מילה, והטלפון מקשיב)</div>
+      <div class="p-chips"><button class="chip-btn ${say ? 'on' : ''}" data-say="1">פעיל</button><button class="chip-btn ${say ? '' : 'on'}" data-say="0">כבוי</button></div>
+      <div class="p-sub">זיהוי הדיבור משתמש בשירות של Google או Apple, ולכן הקול נשלח אליהם בזמן הדיבור, ונדרש אינטרנט. שום דבר לא נשמר חוץ מהמילה שזוהתה. בלי אינטרנט המשימה פשוט לא מופיעה.</div>
       <div class="p-sub">בדיקת קול</div>
       <button class="btn alt" id="en-voice">🔊 בדוק קול</button>
       <div class="p-sub" id="en-voice-out">אנגלית: <span dir="ltr">${esc(voiceEn)}</span><br>עברית: ${esc(voiceHe)}</div>
@@ -86,5 +91,11 @@ export function bindEnglishParent(root: HTMLElement, redraw: () => void): void {
       redraw();
     }),
   );
-  card.querySelector('#en-voice')?.addEventListener('click', () => void speakEn("Hello! I'm your friend. Let's play!", 0.85).then(() => speakHe('שלום! בואי נשחק באנגלית.')));
+  card.querySelectorAll<HTMLElement>('[data-say]').forEach((b) =>
+    b.addEventListener('click', () => {
+      store.save('say', b.dataset.say === '1');
+      redraw();
+    }),
+  );
+  card.querySelector('#en-voice')?.addEventListener('click', () => void speakEn("Hello! I'm your friend. Let's play!", 0.85).then(() => sayLine('parent_test')));
 }

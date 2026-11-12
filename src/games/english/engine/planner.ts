@@ -6,13 +6,14 @@ import { STATIONS_PER_WORLD, dueWords, isKnown, type Words } from './progress';
 import type { Kind, Step } from './steps';
 
 /** Which kinds of task a world brings (SPEC-english.md sections 4 and 5): each world has the ones of the world before, and more. */
-export function kindsForWorld(world: number): Kind[] {
+export function kindsForWorld(world: number, say = false): Kind[] {
   const k: Kind[] = ['circle', 'tap', 'put', 'listen', 'match'];
   if (world >= 2) k.push('find');
   if (world >= 4) k.push('color');
   if (world >= 5) k.push('count');
   if (world >= 6) k.push('sentence');
   if (world >= 11) k.push('where', 'bigsmall');
+  if (say) k.push('say');
   // the words of the dance party are actions and the weather cannot be put in a box or counted: those worlds keep to tapping, circling, listening and matching
   const not: Kind[] = world === 8 ? ['put', 'find', 'count'] : world === 9 ? ['put', 'count'] : [];
   return k.filter((x) => !not.includes(x));
@@ -49,6 +50,8 @@ export interface PlanInput {
   seed: number;
   /** the words that Rani likes (parents choose): the new words of a world start with them */
   likes?: string[];
+  /** "Say it!" is on (a parent turned it on and the phone can listen) */
+  say?: boolean;
 }
 
 /** The colours introduced by a station of world 4 (three at a time, with a card each). */
@@ -75,7 +78,7 @@ export function planStation(o: PlanInput): Step[] {
   const review = o.station >= 3 ? ws : due.length ? due : earlier;
   const taskCount = o.station < 3 ? 5 : 6;
 
-  const kinds = kindsForWorld(o.world);
+  const kinds = kindsForWorld(o.world, o.say);
   let last: Kind | null = null;
   const used: Record<string, number> = {};
   const targets: string[] = [];
@@ -97,7 +100,7 @@ export function planStation(o: PlanInput): Step[] {
     let kind = pick(r, options.length ? options : kinds.filter((k) => k !== last));
     if (o.station === 3 || o.station === 4) {
       // the review and rescue stations lean on the harder kinds of the world
-      const hard = options.filter((k) => ['find', 'color', 'count', 'sentence', 'where', 'bigsmall', 'match'].includes(k));
+      const hard = options.filter((k) => ['find', 'color', 'count', 'sentence', 'where', 'bigsmall', 'match', 'say'].includes(k));
       if (hard.length && r() < 0.6) kind = pick(r, hard);
     }
     last = kind;
@@ -106,6 +109,9 @@ export function planStation(o: PlanInput): Step[] {
     switch (kind) {
       case 'circle': case 'tap': case 'listen':
         steps.push({ kind, right: target, ids: [target, ...others(2)], score: [target] });
+        break;
+      case 'say':
+        steps.push({ kind, right: target, score: [target] });
         break;
       case 'put':
         steps.push({ kind, right: target, others: others(2), score: [target] });

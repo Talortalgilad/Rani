@@ -45,7 +45,8 @@ export default defineConfig({
           {
             urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/'),
             handler: 'CacheFirst',
-            options: { cacheName: 'english-images', expiration: { maxEntries: 200 }, cacheableResponse: { statuses: [0, 200] } },
+            // pictures and the recorded Hebrew voice (mp3: Safari asks for ranges)
+            options: { cacheName: 'english-images', expiration: { maxEntries: 400 }, cacheableResponse: { statuses: [0, 200] }, rangeRequests: true },
           },
         ],
       },

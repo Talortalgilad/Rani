@@ -1,8 +1,9 @@
 import { mountCheesy } from '../art/cheesy';
 import { he, nameOptions } from '../content/lines';
-import { speakEn, speakHe } from '../voice';
+import { speakEn } from '../voice';
 import { mixed } from './text';
 import type { SoundApi } from '../../../sound';
+import { sayLine } from '../content/heLines';
 
 export const MAX_NAME = 12;
 /** A name typed by a parent or by Rani: trimmed, no tags, at most 12 characters. */
@@ -39,7 +40,7 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
   const timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));
   later(() => c.squish(), 900);
-  later(() => (c.set('thinking'), void speakHe(he.askName)), 1300);
+  later(() => (c.set('thinking'), void sayLine('ask_name')), 1300);
   let chosen = false;
   const confetti = (): void => {
     const box = root.querySelector<HTMLElement>('#confetti')!;
