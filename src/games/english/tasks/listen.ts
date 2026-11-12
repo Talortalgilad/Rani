@@ -29,7 +29,7 @@ export function listenTask(env: TaskEnv, rightId: string, ids: string[], seed = 
         b.classList.add('shake');
         const n = env.mistake();
         env.sound('oops');
-        env.face('encourage', 'Hmm, try again!');
+        env.face('cheer', 'Hmm, try again!');
         window.setTimeout(() => env.say(labelOf(rightId), true), 500);
         if (n >= 3) {
           locked = true;

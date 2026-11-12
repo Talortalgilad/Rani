@@ -46,7 +46,7 @@ export function sentenceTask(env: TaskEnv, words: string[], picture: string, mis
         } else {
           env.mistake();
           env.sound('oops');
-          env.face('encourage', 'Hmm, try again!');
+          env.face('cheer', 'Hmm, try again!');
           for (const s of slotEls.slice(missing)) {
             s.classList.add('shake');
             window.setTimeout(() => {

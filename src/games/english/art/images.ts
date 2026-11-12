@@ -1,4 +1,7 @@
 import { WORDS, wordsOfWorld } from '../content/words';
+import { PAINT, paintUrl } from '../content/paint';
+import { bgUrl } from './scenes';
+import { squishyOfWorld, squishyUrl } from './squishies';
 
 /** The picture of a word: a transparent WebP, 512 x 512, one for each word in the whole game. */
 export const imageUrl = (id: string): string => `${import.meta.env.BASE_URL}english/words/${id}.webp`;
@@ -14,14 +17,16 @@ const loaded = new Set<number>();
  */
 export function preloadWorld(world: number): Promise<void> {
   if (loaded.has(world)) return Promise.resolve();
-  const jobs = wordsOfWorld(world).map(
-    (w) =>
+  // the nine words, the room (background), the squishy to be rescued, and the white objects of the colouring task
+  const urls = [...wordsOfWorld(world).map((w) => imageUrl(w.id)), bgUrl(world), squishyUrl(squishyOfWorld(world).id), `${import.meta.env.BASE_URL}english/words/gift.webp`, ...(world >= 4 ? PAINT.map((p) => paintUrl(p.id)) : [])];
+  const jobs = urls.map(
+    (u) =>
       new Promise<void>((res) => {
         const im = new Image();
         im.decoding = 'async';
         im.onload = () => res();
         im.onerror = () => res();
-        im.src = imageUrl(w.id);
+        im.src = u;
       }),
   );
   return Promise.all(jobs).then(() => void loaded.add(world));

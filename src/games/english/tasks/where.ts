@@ -55,7 +55,7 @@ export function whereTask(env: TaskEnv, item: string, ref: string, prep: 'on' | 
       if (got !== null) {
         const n = env.mistake();
         env.sound('oops');
-        env.face('encourage', 'Hmm, try again!');
+        env.face('cheer', 'Hmm, try again!');
         env.say(en.tryAgain);
         if (n >= 3) {
           locked = true;

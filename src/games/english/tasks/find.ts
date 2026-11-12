@@ -37,7 +37,7 @@ export function findTask(env: TaskEnv, right: string, others: string[], count: n
         b.classList.add('shake');
         const n = env.mistake();
         env.sound('oops');
-        env.face('encourage', 'Hmm, try again!');
+        env.face('cheer', 'Hmm, try again!');
         env.say(en.tryAgain);
         if (n >= 3) {
           locked = true;

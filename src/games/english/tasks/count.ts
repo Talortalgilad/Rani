@@ -43,7 +43,7 @@ export function countTask(env: TaskEnv, right: string, n: number): TaskHandle {
         b.classList.add('shake');
         const m = env.mistake();
         env.sound('oops');
-        env.face('encourage', 'Hmm, try again!');
+        env.face('cheer', 'Hmm, try again!');
         env.say(en.tryAgain);
         if (m >= 3) {
           locked = true;

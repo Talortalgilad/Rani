@@ -1,4 +1,5 @@
 import { COLORS, colorKey } from '../content/colors';
+import { PAINT } from '../content/paint';
 import { sentencesFor } from '../content/sentences';
 import { wordsOfWorld } from '../content/words';
 import { STATIONS_PER_WORLD, dueWords, isKnown, type Words } from './progress';
@@ -112,7 +113,7 @@ export function planStation(o: PlanInput): Step[] {
         break;
       case 'color': {
         const c = pick(r, colorsMet);
-        steps.push({ kind, object: target, color: c, score: [colorKey(c)] });
+        steps.push({ kind, object: pick(r, PAINT).id, color: c, score: [colorKey(c)] });
         break;
       }
       case 'count':

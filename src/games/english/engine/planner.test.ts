@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { WORDS, wordsOfWorld } from '../content/words';
 import { colorById } from '../content/colors';
 import { SONGS } from '../content/songs';
+import { PAINT } from '../content/paint';
 import { kindsForWorld, planStation } from './planner';
 import { review, type Words } from './progress';
 
@@ -22,7 +23,7 @@ function check(steps: ReturnType<typeof planStation>, world: number): void {
       case 'put': expect(s.others).not.toContain(s.right); expect(new Set([s.right, ...s.others]).size).toBe(3); break;
       case 'match': expect(new Set(s.ids).size).toBe(3); break;
       case 'find': expect(s.others).not.toContain(s.right); expect(s.count).toBeGreaterThanOrEqual(2); break;
-      case 'color': colorById(s.color); expect(ids.has(s.object)).toBe(true); break;
+      case 'color': colorById(s.color); expect(PAINT.map((x) => x.id)).toContain(s.object); break;
       case 'count': expect(s.n).toBeGreaterThanOrEqual(2); expect(s.n).toBeLessThanOrEqual(5); break;
       case 'sentence': expect(s.words.length).toBeGreaterThanOrEqual(2); expect(s.words.length).toBeLessThanOrEqual(4); expect(s.missing).toBeLessThan(s.words.length); break;
       case 'where': expect(['on', 'in', 'under']).toContain(s.prep); break;

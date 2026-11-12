@@ -12,6 +12,8 @@
 .en-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(58, 47, 75, .18); }
 
 bdi { unicode-bidi: isolate; }
+.run { display: inline-block; unicode-bidi: isolate; }
+.run + .run { margin-inline-start: .3em; }
 .bubble { background: #fff; border-radius: 22px; padding: 12px 18px; font-weight: 600; font-size: 20px; line-height: 1.35; box-shadow: 0 6px 16px rgba(58, 47, 75, .14); position: relative; max-width: 100%; text-align: center; border: 3px solid #fff; outline: 3px solid rgba(142, 92, 240, .25); animation: bubble-in .25s ease-out; }
 .bubble.big { font-size: 26px; padding: 16px 22px; }
 @keyframes bubble-in { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -246,3 +248,29 @@ bdi { unicode-bidi: isolate; }
 .song-pic { position: relative; transform: none; }
 .song-pic.hop { animation: squish .5s; }
 .song-pic.lit { filter: drop-shadow(0 0 14px rgba(255, 190, 40, 1)); }
+
+/* ---- art round 2: pictures instead of drawings ---- */
+.cheesy-img, .squishy-img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; filter: drop-shadow(0 6px 5px rgba(58, 47, 75, .22)); }
+.scene-img { width: 100%; height: 100%; object-fit: cover; object-position: center 62%; display: block; }
+.scene::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0) 40%); }
+.gift { width: 190px; height: 190px; }
+.gift-img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 8px 6px rgba(58, 47, 75, .25)); transform-origin: 50% 90%; }
+.gift.open { animation: none; }
+.gift.open .gift-img { animation: gift-pop .5s ease-in forwards; }
+@keyframes gift-pop { 0% { transform: scale(1, 1); } 30% { transform: scale(1.25, .8); } 70% { transform: scale(.9, 1.25) translateY(-14px); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+.gift-body, .gift-lid { display: none; }
+/* painting: the colour is multiplied with the white picture (the light and shade stay), only where the picture is */
+.paint { --it: clamp(150px, 46vw, 220px); isolation: isolate; }
+.paint-tint { position: absolute; inset: 0; z-index: 2; mix-blend-mode: multiply; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; transition: opacity .25s; pointer-events: none; }
+.paint .item-img { filter: drop-shadow(0 3px 2px rgba(58, 47, 75, .18)) brightness(.97); }
+.paint::after { z-index: 0; }
+/* the shelf */
+.shelf-count { font-weight: 700; font-size: 20px; }
+.shelf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 8px; width: 100%; max-width: 480px; flex: 1; align-content: start; overflow-y: auto; padding: 4px 4px 20px; }
+.shelf-slot { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.shelf-sq { width: 100%; aspect-ratio: 1; border: 0; background: none; padding: 4px; position: relative; cursor: pointer; transform-origin: 50% 90%; }
+.shelf-sq.squish { animation: squish .9s cubic-bezier(.2, 1.6, .4, 1); }
+.shelf-slot.lost .squishy-img { filter: brightness(0) opacity(.28); }
+.shelf-q { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; color: #fff; text-shadow: 0 2px 0 rgba(58, 47, 75, .4); }
+.shelf-board { width: 100%; height: 14px; border-radius: 8px; background: linear-gradient(#d9a066, #b07a4a); box-shadow: 0 4px 0 rgba(58, 47, 75, .2); margin-top: -8px; }
+.shelf-slot small { font-weight: 700; font-size: 14px; direction: ltr; margin-top: 4px; }

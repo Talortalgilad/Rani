@@ -1,5 +1,5 @@
 import { mountCheesy, type Expression } from '../art/cheesy';
-import { sceneSvg } from '../art/scenes';
+import { sceneImg } from '../art/scenes';
 import { COLORS } from '../content/colors';
 import { VERBS, labelOf, pluralOf } from '../content/words';
 import { en, he } from '../content/lines';
@@ -65,7 +65,7 @@ export function instruction(s: Step): { text: string; html: string } {
     case 'listen': return { text: labelOf(s.right), html: `<span class="listen-q">?</span>` };
     case 'match': return { text: s.mode === 'audio' ? 'Listen and match!' : en.match, html: s.mode === 'audio' ? 'Listen and match!' : 'Match!' };
     case 'find': return { text: `Find all the ${pluralOf(s.right)}!`, html: `Find all the <b>${pluralOf(s.right)}</b>!` };
-    case 'color': return { text: `Color the ${labelOf(s.object)} ${s.color}!`, html: `Color the <b>${labelOf(s.object)}</b> <b>${s.color}</b>!` };
+    case 'color': return { text: `Color the ${s.object} ${s.color}!`, html: `Color the <b>${s.object}</b> <b>${s.color}</b>!` };
     case 'count': return { text: `How many ${pluralOf(s.right)}? Tap the number!`, html: `How many <b>${pluralOf(s.right)}</b>?` };
     case 'bigsmall': return { text: `Tap the ${s.which} ${labelOf(s.right)}!`, html: `Tap the <b>${s.which}</b> ${labelOf(s.right)}!` };
     case 'where': return { text: `Put the ${labelOf(s.item)} ${s.prep} the ${labelOf(s.ref)}!`, html: `Put the <b>${labelOf(s.item)}</b> <b>${s.prep}</b> the <b>${labelOf(s.ref)}</b>!` };
@@ -93,7 +93,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       <div class="q-stage" id="stage"></div>
     </div>`;
   const stage = root.querySelector<HTMLElement>('#stage')!;
-  stage.insertAdjacentHTML('afterbegin', `<div class="scene">${sceneSvg(d.world)}</div>`);
+  stage.insertAdjacentHTML('afterbegin', `<div class="scene">${sceneImg(d.world)}</div>`);
   const instr = root.querySelector<HTMLElement>('#instr')!;
   const bub = root.querySelector<HTMLElement>('#bub')!;
   const dots = root.querySelector<HTMLElement>('#dots')!;
@@ -115,7 +115,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   const face = (e: Expression, text?: string): void => {
     cheesy.set(e);
     note(text);
-    if (e === 'dance' || e === 'encourage') later(() => cheesy.set('happy'), 1800);
+    if (e === 'dance' || e === 'cheer') later(() => cheesy.set('happy'), 1800);
   };
 
   const sparkle = (x: number, y: number): void => {

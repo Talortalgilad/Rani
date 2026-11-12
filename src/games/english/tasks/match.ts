@@ -69,7 +69,7 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4, mode: 'audio' |
     } else {
       mistakes = env.mistake();
       env.sound('oops');
-      env.face('encourage', 'Hmm, try again!');
+      env.face('cheer', 'Hmm, try again!');
       words.get(wordId)!.classList.add('shake');
       window.setTimeout(() => words.get(wordId)!.classList.remove('shake'), 500);
       if (mistakes >= 3) {

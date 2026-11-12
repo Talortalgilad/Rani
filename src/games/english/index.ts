@@ -4,7 +4,9 @@ import { showBanner } from './ui/banner';
 import { showRescue } from './ui/rescue';
 import { runStation } from './ui/quest';
 import { showMap, showWorld } from './ui/map';
-import { SQUISHIES } from './art/squishies';
+import { squishyOfWorld } from './art/squishies';
+import { showShelf } from './ui/shelf';
+import { preloadCheesy } from './art/cheesy';
 import { planStation } from './engine/planner';
 import { STATIONS_PER_WORLD, dayNumber, emptyMap, finishStation, markSeen, review, type MapProgress, type Words } from './engine/progress';
 import { stopSpeech } from './voice';
@@ -47,10 +49,14 @@ function enter(): void {
   } else showWorlds();
 }
 
+function showShelfScreen(): void {
+  swap(() => showShelf(root!, { rescued: rescued(), sound: ctx!.sound, onBack: showWorlds }));
+}
+
 /** The map of the worlds (the first screen after the name). */
 function showWorlds(): void {
   const name = companion()!.name;
-  swap(() => showMap(root!, { name, map: mapState(), sound: ctx!.sound, onWorld: showStations, onHome: () => ctx!.onExit() }));
+  swap(() => showMap(root!, { name, map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onHome: () => ctx!.onExit() }));
 }
 
 function showStations(world: number): void {
@@ -94,9 +100,9 @@ function startStation(world: number, station: number): void {
 }
 
 function rescue(world: number, name: string): void {
-  const sq = SQUISHIES[world];
+  const sq = squishyOfWorld(world);
   if (!rescued().includes(sq.name)) ctx!.save('rescued', [...rescued(), sq.name]);
-  swap(() => showRescue(root!, name, sq, ctx!.sound, () => showWorlds()));
+  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : showWorlds())));
 }
 
 const icon = `<svg viewBox="0 0 100 100" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -119,6 +125,8 @@ const mod: GameModule = {
   noGate: true,
   mount(c: GameContext) {
     ctx = c;
+    preloadCheesy();
+    if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, companion()?.name ?? 'Rani');
     root = document.createElement('div');
     root.className = 'english-root';
     c.container.appendChild(root);

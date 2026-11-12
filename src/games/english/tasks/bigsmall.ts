@@ -32,7 +32,7 @@ export function bigSmallTask(env: TaskEnv, right: string, which: 'big' | 'small'
         b.classList.add('shake');
         const n = env.mistake();
         env.sound('oops');
-        env.face('encourage', 'Hmm, try again!');
+        env.face('cheer', 'Hmm, try again!');
         env.say(en.tryAgain);
         if (n >= 2) {
           locked = true;
