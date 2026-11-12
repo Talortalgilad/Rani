@@ -1,6 +1,6 @@
-import type { ColorId, VehicleDef } from './state';
+import type { BeltDef, ColorId, VehicleDef } from './state';
 
-export type World = 'city' | 'beach';
+export type World = 'city' | 'beach' | 'snow' | 'carnival';
 
 /** What the solver and the generator know about a level (kept next to it in levels.json). */
 export interface LevelStats {
@@ -49,6 +49,10 @@ export interface LevelData {
   lot: { halfW: number; halfH: number };
   vehicles: VehicleDef[];
   queue: ColorId[];
+  /** conveyor belts (from level 30) */
+  belts?: BeltDef[];
+  /** a sentence that explains what is new in this level (shown at the start) */
+  intro?: string;
   /** tutorial only: what to tell the child; step k is shown after k moves have been made */
   steps?: TutorialStep[];
   stats?: LevelStats;

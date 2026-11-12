@@ -1,7 +1,7 @@
 /**
- * Picks the final 30 levels from the candidates in scripts/.cache and writes
+ * Picks the final 100 levels from the candidates in scripts/.cache and writes
  *   src/games/traffic/levels/levels.json   (what the game loads)
- *   docs/traffic/stage2a/levels-table.md    (the numbers of every level)
+ *   docs/traffic/stage2b/levels-table.md    (every 10th level) and levels-table-full.md
  * Hard levels (every fifth) take the hardest candidate that meets the rules; the others take the middle one.
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
@@ -15,7 +15,7 @@ import { levelRuleProblems } from '../src/games/traffic/engine/rules';
 interface Cand { seed: number; data: LevelData; stats: LevelStats }
 const picked: LevelData[] = [];
 const missing: number[] = [];
-for (let L = 1; L <= 30; L++) {
+for (let L = 1; L <= 100; L++) {
   const file = `scripts/.cache/${L}.json`;
   const p = paramsFor(L);
   const all: Cand[] = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
@@ -35,7 +35,7 @@ for (let L = 1; L <= 30; L++) {
 if (missing.length) console.log('no usable candidate for levels', missing.join(','));
 writeFileSync('src/games/traffic/levels/levels.json', JSON.stringify(picked));
 
-mkdirSync('docs/traffic/stage2a', { recursive: true });
+mkdirSync('docs/traffic/stage2b', { recursive: true });
 const rows = picked.map((l) => {
   const s = l.stats!;
   const big = l.vehicles.filter((v) => v.type !== 'car');
@@ -43,20 +43,29 @@ const rows = picked.map((l) => {
   const hidden = l.vehicles.filter((v) => v.hidden).length;
   return `| ${l.number}${l.hard ? ' ⚠️' : ''} | ${s.vehicles} | ${Math.round((100 * big.length) / s.vehicles)}% | ${l.number >= 10 ? bigDiag + '%' : '-'} | ${hidden} | ${s.passengers} | ${Math.round(s.density * 100)}% | ${Math.round(s.angled * 100)}% | ${s.free} | ${s.traps} | ${s.depth} | ${s.score} |`;
 });
-writeFileSync(
-  'docs/traffic/stage2a/levels-table.md',
-  `# 30 השלבים של עולם העיר (שלב 2א)
-
-- **גדולים**: חלק הוואנים והאוטובוסים מכל הרכבים. **גדולים באלכסון**: חלק הגדולים שעומדים ב-45° (מ-10).
+const head = `- **גדולים**: חלק הוואנים והאוטובוסים מכל הרכבים. **גדולים באלכסון**: חלק הגדולים שעומדים ב-45° (מ-10).
 - **צפיפות**: שטח הרכבים (גלגלים כלולים) חלקי שטח החניון. **חופשיים**: רכבים שיכולים לצאת בהתחלה.
-- **מלכודות**: מהלכים שנראים בסדר ומובילים לתקיעה, בכל מצב שעדיין אפשר לנצח ממנו, עד עומק 8 מהלכים.
-- **ציון קושי**: \`1.5 × רכבים + 8 × מקומות + 2 × עומק + 1.5 × log₂(1 + מלכודות)\`. ⚠️ = "קשה מאוד!".
+- **מלכודות**: מהלכים שנראים בסדר ומובילים לתקיעה, עד עומק 8 מהלכים. ⚠️ = "קשה מאוד!".
+- **מיוחדים**: מסוע / מסתובב / כבאית (כמות).
 
-| שלב | רכבים | גדולים | גדולים באלכסון | רכבי "?" | נוסעים | צפיפות | באלכסון | חופשיים | מלכודות | עומק | ציון |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-${rows.join('\n')}
-`,
-);
+| שלב | עולם | רכבים | גדולים | גדולים באלכסון | "?" | מיוחדים | צפיפות | באלכסון | חופשיים | מלכודות | עומק | ציון |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+`;
+const withWorld = picked.map((l, i) => rows[i].replace(/^\| (\S+(?: ⚠️)?) \|/, `| $1 | ${l.world} |`).replace(/(\| \d+ \| )(\d+% \|)/, '$1$2'));
+void withWorld;
+const special = (l: LevelData) => {
+  const t = (x: string) => l.vehicles.filter((v) => v.type === x).length;
+  const parts = [(l.belts?.length ?? 0) ? `מסוע ×${l.belts!.length}` : '', t('rotator') ? `מסתובב ×${t('rotator')}` : '', t('fire') ? `כבאית ×${t('fire')}` : ''].filter(Boolean);
+  return parts.join(', ') || '-';
+};
+const tableRows = picked.map((l, i) => {
+  const cells = rows[i].split('|').map((c) => c.trim());
+  // cells: ['', num, vehicles, big, bigDiag, hidden, pass, density, angled, free, traps, depth, score, '']
+  const out = [cells[1], l.world, cells[2], cells[3], cells[4], cells[5], special(l), cells[7], cells[8], cells[9], cells[10], cells[11], cells[12]];
+  return `| ${out.join(' | ')} |`;
+});
+writeFileSync('docs/traffic/stage2b/levels-table-full.md', `# כל 100 השלבים (שלב 2ב)\n\n${head}${tableRows.join('\n')}\n`);
+writeFileSync('docs/traffic/stage2b/levels-table.md', `# טבלה מקוצרת: כל שלב עשירי (שלב 2ב)\n\n${head}${tableRows.filter((_, i) => (i + 1) % 10 === 0).join('\n')}\n`);
 console.log(`${picked.length} levels written`);
 let up = 0;
 let n = 0;

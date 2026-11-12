@@ -11,6 +11,7 @@ import type { LevelData, LevelStats } from '../src/games/traffic/engine/level';
 const levels = (process.env.LEVELS ?? '1').split(',').map(Number);
 const want = Number(process.env.CAND ?? 10);
 const maxTry = Number(process.env.TRY ?? 400);
+const budget = Number(process.env.BUDGET ?? 1e9) * 1000;
 mkdirSync('scripts/.cache', { recursive: true });
 
 for (const L of levels) {
@@ -20,7 +21,7 @@ for (const L of levels) {
   const t0 = Date.now();
   const fails: Record<string, number> = {};
   let seed = have.reduce((m, c) => Math.max(m, c.seed), 0) + 1;
-  for (let tried = 0; have.length < want && tried < maxTry; tried++, seed++) {
+  for (let tried = 0; have.length < want && tried < maxTry && Date.now() - t0 < budget; tried++, seed++) {
     const b = generate(p, 9000 * L + seed);
     if (!b) {
       const k = lastFail.split(' ')[0];

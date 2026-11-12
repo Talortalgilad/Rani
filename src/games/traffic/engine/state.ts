@@ -1,14 +1,22 @@
 import { firstContact, pathClear, type Obb } from './geometry';
 
-export type VType = 'car' | 'van' | 'bus';
-export type ColorId = 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'purple' | 'pink' | 'brown';
+export type VType = 'car' | 'van' | 'bus' | 'fire';
+/** 'fire' is the colour of the firefighters (the passengers of a fire truck), not of an ordinary vehicle. */
+export type ColorId = 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'purple' | 'pink' | 'brown' | 'fire';
 
 /** Length and width in cells, and seats. */
 export const SIZES: Record<VType, { len: number; wid: number; seats: number }> = {
   car: { len: 2, wid: 1.18, seats: 4 },
   van: { len: 3, wid: 1.18, seats: 6 },
   bus: { len: 4, wid: 1.28, seats: 10 },
+  fire: { len: 4, wid: 1.28, seats: 8 },
 };
+
+/** A "turntable": the vehicle that turns on the spot has a square place of this side, so that it can face any way. */
+export const TURNTABLE = 2.34;
+/** The cars of a conveyor belt stand this far apart (centre to centre) and the belt is this wide. */
+export const BELT_PITCH = 2.25;
+export const BELT_WIDTH = 1.34;
 
 export interface VehicleDef {
   id: number;
@@ -20,6 +28,10 @@ export interface VehicleDef {
   heading: number;
   /** a "?" vehicle: its colour is hidden until the vehicle in front of it leaves */
   hidden?: boolean;
+  /** turns 90 degrees at every tap; a long press sends it (from level 45) */
+  rotator?: boolean;
+  /** a car on a conveyor belt: which belt, and its place on it (0 = the front) */
+  belt?: { id: number; slot: number };
 }
 
 export type VStatus = 'parked' | 'driving' | 'station' | 'gone';
@@ -37,7 +49,7 @@ export interface Vehicle extends VehicleDef {
 }
 
 export type TapResult =
-  | { kind: 'exit'; id: number; slot: number }
+  | { kind: 'exit'; id: number; slot: number; /** conveyor belt: the cars behind move up to these places */ shifts: { id: number; x: number; z: number; slot: number }[] }
   | { kind: 'blocked'; id: number; by: number; distance: number }
   | { kind: 'ignored' }
   | { kind: 'full' };
@@ -50,7 +62,7 @@ export const MAX_SLOTS = 7;
 export const VIP_SLOT = -1;
 
 export interface SaveData {
-  veh: { id: number; status: VStatus; slot: number | null; filled: number; revealed: boolean; order: number }[];
+  veh: { id: number; status: VStatus; slot: number | null; filled: number; revealed: boolean; order: number; x: number; z: number; heading: number; beltSlot: number | null }[];
   slots: (number | null)[];
   vip: number | null;
   queue: ColorId[];
@@ -60,7 +72,7 @@ export interface SaveData {
 }
 
 interface Snapshot {
-  veh: { status: VStatus; slot: number | null; filled: number; revealed: boolean; order: number }[];
+  veh: { status: VStatus; slot: number | null; filled: number; revealed: boolean; order: number; x: number; z: number; heading: number; beltSlot: number | null }[];
   slots: (number | null)[];
   vip: number | null;
   queue: ColorId[];
@@ -69,9 +81,24 @@ interface Snapshot {
   sent: number;
 }
 
-export const boxOf = (v: VehicleDef): Obb => ({ x: v.x, z: v.z, hl: SIZES[v.type].len / 2, hw: SIZES[v.type].wid / 2, heading: v.heading });
+/** The vehicle's real footprint, turned the way it faces. */
+export const ownBox = (v: VehicleDef): Obb => ({ x: v.x, z: v.z, hl: SIZES[v.type].len / 2, hw: SIZES[v.type].wid / 2, heading: v.heading });
+
+/** What the vehicle is to the others: its footprint, or the whole turntable (a square) when it turns on the spot. */
+export const boxOf = (v: VehicleDef): Obb => (v.rotator ? { x: v.x, z: v.z, hl: TURNTABLE / 2, hw: TURNTABLE / 2, heading: 0 } : ownBox(v));
+
+/** Area of the place a vehicle takes in the lot (a turntable is a part of its vehicle). */
+export const placeArea = (v: Pick<VehicleDef, 'type' | 'rotator'>): number => (v.rotator ? TURNTABLE * TURNTABLE : SIZES[v.type].len * SIZES[v.type].wid);
 
 /** The rules of the game, with no graphics: tap, exit, blocked, boarding, win and "stuck". */
+export interface BeltDef {
+  id: number;
+  /** the direction the cars on the belt drive, degrees */
+  heading: number;
+  /** where the cars stand, the front one first */
+  slots: [number, number][];
+}
+
 export class TrafficState {
   vehicles: Vehicle[];
   /** vehicle id per regular station slot; null = free. More slots can be opened with `addSlot` (up to 7). */
@@ -85,12 +112,16 @@ export class TrafficState {
   boarded = 0;
   moves = 0;
 
-  constructor(defs: VehicleDef[], queue: ColorId[]) {
+  /** conveyor belts: the places of the cars on each (front first) */
+  readonly belts: BeltDef[];
+
+  constructor(defs: VehicleDef[], queue: ColorId[], belts: BeltDef[] = []) {
+    this.belts = belts;
     this.vehicles = defs.map((d) => ({ ...d, status: 'parked', slot: null, filled: 0, revealed: !d.hidden, revealedBy: null, order: 0 }));
     this.queue = [...queue];
     this.total = queue.length;
     for (const v of this.vehicles.filter((x) => x.hidden)) {
-      const hit = firstContact(boxOf(v), this.others(v.id));
+      const hit = firstContact(ownBox(v), this.others(v.id));
       if (hit) v.revealedBy = hit.id;
       else v.revealed = true;
     }
@@ -108,7 +139,7 @@ export class TrafficState {
 
   /** Vehicles still in the lot that can drive out right now. */
   freeVehicles(): Vehicle[] {
-    return this.vehicles.filter((v) => v.status === 'parked' && pathClear(boxOf(v), this.others(v.id).map((o) => o.box)));
+    return this.vehicles.filter((v) => v.status === 'parked' && pathClear(ownBox(v), this.others(v.id).map((o) => o.box)));
   }
 
   /** The colour a vehicle shows to the player ("?" until uncovered). */
@@ -119,7 +150,7 @@ export class TrafficState {
   tap(id: number): TapResult {
     const v = this.get(id);
     if (v.status !== 'parked' || this.status !== 'playing') return { kind: 'ignored' };
-    const hit = firstContact(boxOf(v), this.others(id));
+    const hit = firstContact(ownBox(v), this.others(id));
     if (hit) return { kind: 'blocked', id, by: hit.id, distance: hit.distance }; // a blocked tap is not a move
     const slot = this.slots.findIndex((s) => s === null);
     if (slot < 0) return { kind: 'full' };
@@ -130,7 +161,45 @@ export class TrafficState {
     this.slots[slot] = id;
     this.moves++;
     // leaving the lot uncovers the "?" cars that were behind it
-    return { kind: 'exit', id, slot };
+    return { kind: 'exit', id, slot, shifts: this.shiftBelt(v) };
+  }
+
+  /** The cars behind a car that left a conveyor belt move up one place. */
+  private shiftBelt(v: Vehicle): { id: number; x: number; z: number; slot: number }[] {
+    if (!v.belt) return [];
+    const belt = this.belts.find((b) => b.id === v.belt!.id);
+    if (!belt) return [];
+    const left = v.belt.slot;
+    const out: { id: number; x: number; z: number; slot: number }[] = [];
+    for (const m of this.vehicles) {
+      if (!m.belt || m.belt.id !== v.belt.id || m.status !== 'parked' || m.belt.slot <= left) continue;
+      const slot = m.belt.slot - 1;
+      const [x, z] = belt.slots[slot];
+      m.belt = { ...m.belt, slot };
+      m.x = x;
+      m.z = z;
+      out.push({ id: m.id, x, z, slot });
+    }
+    return out;
+  }
+
+  /** A vehicle that turns on the spot: 90 degrees to the right. It is not a move. */
+  rotate(id: number): number | null {
+    const v = this.get(id);
+    if (!v.rotator || v.status !== 'parked' || this.status !== 'playing') return null;
+    v.heading = (v.heading + 90) % 360;
+    return v.heading;
+  }
+
+  /** Turns the vehicle (up to three times) until its way out is clear. False when no way is clear. */
+  autoRotate(id: number): boolean {
+    const v = this.get(id);
+    for (let k = 0; k < 4; k++) {
+      if (!firstContact(ownBox(v), this.others(id))) return true;
+      if (!v.rotator) return false;
+      v.heading = (v.heading + 90) % 360;
+    }
+    return false;
   }
 
   /** Vehicles uncovered by `id` leaving the lot. */
@@ -185,7 +254,7 @@ export class TrafficState {
 
   private snapshot(): Snapshot {
     return {
-      veh: this.vehicles.map((v) => ({ status: v.status, slot: v.slot, filled: v.filled, revealed: v.revealed, order: v.order })),
+      veh: this.vehicles.map((v) => ({ status: v.status, slot: v.slot, filled: v.filled, revealed: v.revealed, order: v.order, x: v.x, z: v.z, heading: v.heading, beltSlot: v.belt ? v.belt.slot : null })),
       slots: [...this.slots],
       vip: this.vip,
       queue: [...this.queue],
@@ -198,7 +267,7 @@ export class TrafficState {
   /** The state of a game in the middle, for the 10-minute resume. Only meaningful when nothing is on the road. */
   serialize(): SaveData {
     return {
-      veh: this.vehicles.map((v) => ({ id: v.id, status: v.status === 'driving' ? 'parked' : v.status, slot: v.status === 'driving' ? null : v.slot, filled: v.filled, revealed: v.revealed, order: v.order })),
+      veh: this.vehicles.map((v) => ({ id: v.id, status: v.status === 'driving' ? 'parked' : v.status, slot: v.status === 'driving' ? null : v.slot, filled: v.filled, revealed: v.revealed, order: v.order, x: v.x, z: v.z, heading: v.heading, beltSlot: v.belt ? v.belt.slot : null })),
       slots: this.slots.map((s) => (s !== null && this.get(s).status === 'driving' ? null : s)),
       vip: this.vip,
       queue: [...this.queue],
@@ -214,7 +283,8 @@ export class TrafficState {
     for (const sv of d.veh) {
       const v = this.vehicles.find((x) => x.id === sv.id);
       if (!v) return false;
-      Object.assign(v, { status: sv.status, slot: sv.slot, filled: sv.filled, revealed: sv.revealed, order: sv.order });
+      Object.assign(v, { status: sv.status, slot: sv.slot, filled: sv.filled, revealed: sv.revealed, order: sv.order, x: sv.x, z: sv.z, heading: sv.heading });
+      if (v.belt && sv.beltSlot !== null) v.belt = { ...v.belt, slot: sv.beltSlot };
     }
     this.slots = [...d.slots];
     this.vip = d.vip;
@@ -235,7 +305,11 @@ export class TrafficState {
   undo(): boolean {
     if (!this.canUndo()) return false;
     const s = this.history.pop()!;
-    this.vehicles.forEach((v, i) => Object.assign(v, s.veh[i]));
+    this.vehicles.forEach((v, i) => {
+      const { beltSlot, ...rest } = s.veh[i];
+      Object.assign(v, rest);
+      if (v.belt && beltSlot !== null) v.belt = { ...v.belt, slot: beltSlot };
+    });
     this.slots = s.slots;
     this.vip = s.vip;
     this.queue = s.queue;

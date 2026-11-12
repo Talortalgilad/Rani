@@ -10,12 +10,12 @@ import { boxOf } from '../engine/solver-types';
 import { SIZES } from '../engine/state';
 import { ALL_LEVELS, NUMBERED_LEVELS, levelByKey, nextLevel } from './index';
 
-describe('the 30 levels of the city world', () => {
-  it('there are 30, numbered 1 to 30, after five tutorial levels', () => {
-    expect(NUMBERED_LEVELS.map((l) => l.number)).toEqual(Array.from({ length: 30 }, (_, i) => i + 1));
+describe('the 100 levels', () => {
+  it('there are 100, numbered 1 to 100, after five tutorial levels', () => {
+    expect(NUMBERED_LEVELS.map((l) => l.number)).toEqual(Array.from({ length: 100 }, (_, i) => i + 1));
     expect(ALL_LEVELS.slice(0, 5).map((l) => l.key)).toEqual(['t1', 't2', 't3', 't4', 't5']);
     expect(nextLevel('t5')!.key).toBe('1');
-    expect(nextLevel('30')).toBeNull();
+    expect(nextLevel('100')).toBeNull();
     expect(levelByKey('17')!.number).toBe(17);
   });
   it('every fifth level is "very hard"', () => {
