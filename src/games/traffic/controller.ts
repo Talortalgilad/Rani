@@ -54,6 +54,7 @@ export class Controller {
     this.refreshBoosters();
     scene.onTapVehicle = (id, long) => this.tap(id, long);
     scene.canLeave = (id) => this.state.canLeave(id);
+    scene.onSpeed = (fast) => this.hud.setFast(fast);
     window.addEventListener('resize', this.onResize);
     this.showHint();
     if (resume) this.wait(300, () => this.pump());
@@ -62,6 +63,7 @@ export class Controller {
   private snd = (n: Parameters<GameContext['sound']['play']>[0]) => this.ctx.sound.play(n);
   private wait(ms: number, f: () => void): void {
     if (this.scene.reduced) ms = Math.min(ms, 30);
+    ms /= this.scene.speed; // double speed while the finger is held down
     this.later.push(window.setTimeout(() => this.alive && f(), ms));
   }
 

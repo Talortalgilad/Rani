@@ -28,7 +28,7 @@ export interface Framing { dist: number; tz: number }
 /** Height of the vehicles, the highest thing in the lot. */
 export const VEHICLE_TOP = 1.5;
 /** The pad and its kerb stick out this far past the vehicles. */
-export const LOT_RIM = 0.6;
+export const LOT_RIM = 1.05; // the lot, and the ring road round it (its outer edge may touch the side of the screen)
 
 /** The points that must be visible: the lot with its rim at the floor and at vehicle height, and the station. */
 export function framePoints(lot: FrameInput['lot'], stationZ: number, stationHalfW: number): T.Vector3[] {
@@ -187,7 +187,7 @@ export function narrowestWidth(pts: P[]): number {
 }
 /**
  * On a 360px-wide screen no vehicle's outline may be narrower than this. With the 12-point tolerance on both sides that is a
- * 50-point target (the guideline is 44). When this and the density rule disagree, this one wins, which is why a level
+ * 48-point target (the guideline is 44). It was 26 before the ring road came round the lot: the road costs ~5% of the size. When this and the density rule disagree, this one wins, which is why a level
  * never has more than MAX_VEHICLES vehicles.
  */
-export const MIN_OUTLINE = 26;
+export const MIN_OUTLINE = 24;

@@ -2,10 +2,12 @@ import * as T from '../../../lobby3d/lib';
 import { Spring } from '../../../lobby3d/motion';
 import { setSky, disposeTree, type SceneEnv, type StageScene } from '../../../lobby3d/stage';
 import type { Tier } from '../../../lobby3d/quality';
-import { corners, rad } from '../engine/geometry';
+import { rad } from '../engine/geometry';
 import { BELT_PITCH, BELT_WIDTH, REGULAR_SLOTS, SIZES, TURNTABLE, type BeltDef, type ColorId, type VehicleDef } from '../engine/state';
 import { Timeline, easeInOutCubic, easeOutBack, easeOutQuad } from './animations';
 import { buildWorld, type WorldKind } from './dioramas';
+import { RoadFlow, poseAt } from './roadflow';
+import { ROAD, buildRoute, stationZOf } from './route';
 import { frameCamera, nearestVehicle, type HitShape, type SafeArea } from './framing';
 import { Fx } from './fx';
 import { COLOR_HEX, COLOR_SHAPE, shapePoints } from './palette';
@@ -15,7 +17,7 @@ const SPACING = 0.46;
 /** Camera angle above the floor. */
 export const CAMERA_ELEVATION = 48;
 /** How long a press on a vehicle that turns must last to send it. */
-export const LONG_PRESS_MS = 450;
+export const LONG_PRESS_MS = 350;
 const SEE_AHEAD = 30; // passengers farther back than this wait out of sight, inside the cabana
 
 interface Lot { halfW: number; halfH: number }
@@ -137,6 +139,10 @@ export interface TrafficScene extends StageScene {
   onTapVehicle: ((id: number, long: boolean) => void) | null;
   /** can this vehicle drive out right now? Used to pick between two vehicles a tap lands between */
   canLeave: ((id: number) => boolean) | null;
+  /** 1 normally, 2 while the finger is held down: scales the time of every animation (not the rules of the game) */
+  speed: number;
+  /** told when the double speed turns on and off (for the little badge) */
+  onSpeed: ((fast: boolean) => void) | null;
   timeline: Timeline;
   fx: Fx;
   /** reduced motion: everything jumps to its end */
@@ -190,7 +196,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   let pitch = Math.min(1.42, (fitHalf * 2 * 0.95) / pads);
   let kPitch = pitch / 1.42;
   const slotX = (i: number): number => (i - (pads - 1) / 2) * pitch;
-  const STATION_Z = -(level.lot.halfH + 1.75);
+  const STATION_Z = stationZOf(level.lot.halfH);
   const dzN = STATION_Z + 8.15; // the diorama is drawn for a station at -8.15
   const queueHalf = Math.max(3.3, fitHalf * 0.82);
 
@@ -244,6 +250,54 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   pad.position.y = 0.0;
   pad.receiveShadow = true;
   scene.add(pad);
+  // the ring road round the lot, joined to the station: the vehicles that leave the lot drive along it
+  {
+    const hw = level.lot.halfW;
+    const hh = level.lot.halfH;
+    const r0 = ROAD.off - ROAD.width / 2;
+    const r1 = ROAD.off + ROAD.width / 2;
+    const asphalt = keep(new T.MeshStandardMaterial({ color: '#4a4f66', roughness: 0.9 }));
+    const lineMat = keep(new T.MeshBasicMaterial({ color: '#e8e6f2' }));
+    const strip = (cx: number, cz: number, w: number, d: number): void => {
+      const m = new T.Mesh(keep(new T.BoxGeometry(w, 0.05, d)), asphalt);
+      m.position.set(cx, 0.018, cz);
+      m.receiveShadow = true;
+      scene.add(m);
+    };
+    const mid = (hw + ROAD.off) * 2;
+    const lenZ = (hh + r1) * 2;
+    // the four sides (the corners are filled with a quarter ring)
+    strip(0, hh + ROAD.off, hw * 2 + 0.0, ROAD.width);
+    strip(0, -hh - ROAD.off, hw * 2 + 0.0, ROAD.width);
+    strip(-hw - ROAD.off, 0, ROAD.width, hh * 2);
+    strip(hw + ROAD.off, 0, ROAD.width, hh * 2);
+    const quarter = keep(new T.RingGeometry(r0, r1, 14, 1, 0, Math.PI / 2));
+    for (const [sx, sz, rot] of [[1, 1, 0], [-1, 1, Math.PI / 2], [-1, -1, Math.PI], [1, -1, -Math.PI / 2]] as const) {
+      const q = new T.Mesh(quarter, asphalt);
+      q.rotation.x = -Math.PI / 2;
+      q.rotation.z = -rot;
+      q.position.set(sx * hw, 0.019, sz * hh);
+      q.receiveShadow = true;
+      scene.add(q);
+    }
+    void mid;
+    void lenZ;
+    // a dashed line down the middle of the road
+    const dash = keep(new T.BoxGeometry(0.34, 0.01, 0.05));
+    const dashV = keep(new T.BoxGeometry(0.05, 0.01, 0.34));
+    for (const side of [-1, 1]) {
+      for (let x = -hw + 0.3; x < hw; x += 0.8) {
+        const m = new T.Mesh(dash, lineMat);
+        m.position.set(x, 0.046, side * (hh + ROAD.off));
+        scene.add(m);
+      }
+      for (let z = -hh + 0.3; z < hh; z += 0.8) {
+        const m = new T.Mesh(dashV, lineMat);
+        m.position.set(side * (hw + ROAD.off), 0.046, z);
+        scene.add(m);
+      }
+    }
+  }
   // station places: sunk pads with a "P", a golden VIP place, and three locked ones
   const texP = keep(glyphTexture((g) => {
     g.fillStyle = 'rgba(255,244,214,0.95)';
@@ -632,6 +686,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
     downAt = null;
     if (h?.fired) return;
+    if (longHeld) return; // a long press only speeds things up: it does not send a vehicle
     if (moved > 14 || !api.onTapVehicle) return;
     const id = pick(e);
     if (id !== null) api.onTapVehicle(id, false);
@@ -639,33 +694,63 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   canvas.addEventListener('pointerdown', onDown);
   canvas.addEventListener('pointerup', onUp);
 
+  // ---- holding a finger on the screen (anywhere but on a vehicle that turns) makes everything that moves twice as fast, as long as it stays there
+  let speedTimer = 0;
+  let swallowClick = false;
+  let longHeld = false;
+  const onHoldDown = (e: PointerEvent): void => {
+    window.clearTimeout(speedTimer);
+    longHeld = false;
+    const id = e.target === canvas ? pick(e) : null;
+    if (id !== null && views.get(id)?.def.rotator) return; // there a long press sends the vehicle
+    speedTimer = window.setTimeout(() => {
+      api.speed = 2;
+      longHeld = true;
+      swallowClick = true; // the button or vehicle under the finger is not pressed by letting go
+      api.onSpeed?.(true);
+    }, LONG_PRESS_MS);
+  };
+  const onHoldUp = (): void => {
+    window.clearTimeout(speedTimer);
+    if (api.speed !== 1) {
+      api.speed = 1;
+      api.onSpeed?.(false);
+      window.setTimeout(() => (swallowClick = false), 60);
+    }
+  };
+  const onClickCapture = (e: MouseEvent): void => {
+    if (!swallowClick) return;
+    swallowClick = false;
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  window.addEventListener('pointerdown', onHoldDown, true);
+  window.addEventListener('pointerup', onHoldUp, true);
+  window.addEventListener('pointercancel', onHoldUp, true);
+  window.addEventListener('click', onClickCapture, true);
+
   // ---- helpers for motion
   const stationScale = (t: VehicleDef['type']) => (t === 'car' ? 0.98 : t === 'van' ? 0.7 : 0.53) * kPitch;
 
   /** Where a vehicle is now and which way it faces (a belt car has moved up, a vehicle that turns has turned). */
   const nowOf = (v: VehicleView) => ({ x: v.root.position.x, z: v.root.position.z, heading: ((((-v.root.rotation.y * 180) / Math.PI) % 360) + 360) % 360 });
 
-  function exitCurve(v: VehicleView, slot: number): T.CatmullRomCurve3 {
-    const def = { ...v.def, ...nowOf(v) };
-    const u = { x: Math.cos(rad(def.heading)), z: Math.sin(rad(def.heading)) };
-    // drive straight until the whole vehicle is outside the lot
-    const box = { x: def.x, z: def.z, hl: SIZES[def.type].len / 2, hw: SIZES[def.type].wid / 2, heading: def.heading };
-    let d = 0;
-    while (d < 40 && corners({ ...box, x: def.x + u.x * d, z: def.z + u.z * d }).some((p) => Math.abs(p.x) < level.lot.halfW + 0.2 && Math.abs(p.z) < level.lot.halfH + 0.2)) d += 0.1;
-    const p1 = { x: def.x + u.x * (d + 0.4), z: def.z + u.z * (d + 0.4) };
-    const sx = slotX(slot + 1);
-    const side = p1.x >= 0 ? 1 : -1;
-    const pts: [number, number][] = [[def.x, def.z], [def.x + u.x * (d * 0.5), def.z + u.z * (d * 0.5)], [p1.x, p1.z]];
-    const towardStation = u.z < -0.5 && Math.abs(p1.x) < level.lot.halfW;
-    if (!towardStation) {
-      // round the outside of the lot: out to the side road, up it, and across to the station
-      const rx = side * (level.lot.halfW + 1.5);
-      if (p1.z > level.lot.halfH - 0.1) pts.push([p1.x + side * 0.6, p1.z + 1.2], [rx, level.lot.halfH + 0.2]);
-      else pts.push([rx, p1.z]);
-      pts.push([rx, -level.lot.halfH + 0.4]);
+  // the vehicles that are on their way to the station: they follow the ring road and never go through each other
+  const flow = new RoadFlow();
+  let sendOrder = 0;
+  const flowViews = new Map<number, { v: VehicleView; arrived: () => void; slot: number }>();
+
+  /** Puts the poses of the vehicles on the road on the screen. */
+  function applyFlow(): void {
+    for (const c of flow.cars) {
+      const f = flowViews.get(c.id);
+      if (!f) continue;
+      const q = poseAt(c.route, c.s);
+      f.v.root.position.set(q.x, f.v.hop.value, q.z);
+      f.v.root.rotation.y = -rad(q.heading);
+      f.v.root.scale.setScalar(q.scale);
+      if (c.v > 1.5 && !reduced && Math.random() < 0.4) fx.puff(q.x - Math.cos(rad(q.heading)) * 0.7, q.z - Math.sin(rad(q.heading)) * 0.7);
     }
-    pts.push([sx, STATION_Z + 3.6], [sx, STATION_Z + 1.4], [sx, STATION_Z]);
-    return new T.CatmullRomCurve3(pts.map(([x, z]) => new T.Vector3(x, 0, z)), false, 'centripetal');
   }
 
   /** Drives a vehicle along a curve with acceleration, cruising and braking. */
@@ -707,6 +792,8 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     camera,
     onTapVehicle: null,
     canLeave: null,
+    speed: 1,
+    onSpeed: null,
     timeline,
     fx,
     reduced,
@@ -723,19 +810,24 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       }, () => {
         v.root.scale.set(1, 1, 1);
         v.root.position.y = 0;
-        const curve = exitCurve(v, slot);
-        drive(v, curve, {
-          vmax: 8.5, brake: 14, scaleTo: stationScale(v.def.type), dust: true,
-          done: () => {
+        const now = nowOf(v);
+        const route = buildRoute({ x: now.x, z: now.z, heading: now.heading, type: v.def.type, lot: level.lot, slotX: slotX(slot + 1), stationZ: STATION_Z, stationScale: stationScale(v.def.type) });
+        flowViews.set(id, {
+          v,
+          slot,
+          arrived: () => {
             v.slot = slot;
             v.root.position.set(slotX(slot + 1), 0, STATION_Z);
             v.root.rotation.y = -rad(270);
+            v.root.scale.setScalar(stationScale(v.def.type));
             // rock back and forth on its springs
             v.pitch.value = reduced ? 0 : 0.12;
             v.pitch.velocity = 0;
+            flowViews.delete(id);
             arrived();
           },
         });
+        flow.add({ id, type: v.def.type, route, order: sendOrder++ });
       });
     },
 
@@ -995,11 +1087,17 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     shiftOnBelt(id, x, z) {
       const v = views.get(id)!;
       const from = v.root.position.clone();
-      timeline.after(reduced ? 0 : 0.35, () => {
+      // the car behind moves up when the one in front has really driven off (it may still be waiting for a gap on the road)
+      let waited = 0;
+      timeline.add((dt) => {
+        waited += dt;
+        const blocked = [...flow.cars].some((c) => c.s < 1.4 && Math.hypot(poseAt(c.route, c.s).x - x, poseAt(c.route, c.s).z - z) < 2.2);
+        if (!reduced && (waited < 0.35 || blocked) && waited < 6) return false;
         timeline.tween(reduced ? 0.01 : 0.55, (t) => {
           const e = easeInOutCubic(t);
           v.root.position.set(from.x + (x - from.x) * e, v.root.position.y, from.z + (z - from.z) * e);
         }, () => v.root.position.set(x, v.root.position.y, z));
+        return true;
       });
     },
 
@@ -1008,9 +1106,12 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       layout();
     },
 
-    update(dt, t) {
+    update(dt0, t) {
+      const dt = dt0 * api.speed; // the long press makes everything that moves go twice as fast
       time = t;
       timeline.update(dt);
+      for (const c of flow.step(dt, reduced)) flowViews.get(c.id)?.arrived();
+      applyFlow();
       fx.update(dt);
       if (!reduced) for (const bt of beltTextures) bt.offset.x -= dt * 0.9;
 
@@ -1133,6 +1234,11 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       timeline.clear();
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointerdown', onHoldDown, true);
+      window.removeEventListener('pointerup', onHoldUp, true);
+      window.removeEventListener('pointercancel', onHoldUp, true);
+      window.removeEventListener('click', onClickCapture, true);
+      window.clearTimeout(speedTimer);
       if (held) window.clearTimeout(held.timer);
       renderer.toneMapping = T.NoToneMapping;
       renderer.toneMappingExposure = 1;

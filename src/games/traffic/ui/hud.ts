@@ -40,6 +40,8 @@ export interface Hud {
   /** a gentle note above the buttons that goes away by itself */
   toast(text: string): void;
   setStars(n: number): void;
+  /** the little "⏩ X2" next to the title while the double speed is on */
+  setFast(on: boolean): void;
   setBooster(kind: Helper, look: BoosterLook): void;
   root: HTMLElement;
 }
@@ -50,6 +52,7 @@ export function buildHud(container: HTMLElement, o: { title: string; hard?: bool
   root.className = 'tr';
   root.innerHTML = `
     <div class="tr-title">${o.hard ? '<span class="tr-hard">קשה מאוד!</span>' : ''}<b>${o.title}</b></div>
+    <div class="tr-fast" id="tr-fast" hidden>⏩ X2</div>
     <div class="tr-count"><i></i><span id="tr-n">0/${o.total}</span></div>
     <div class="tr-stars-chip" id="tr-stars">⭐ ${o.stars}</div>
     <button class="tr-home" aria-label="בית">🏠</button>
@@ -127,6 +130,9 @@ export function buildHud(container: HTMLElement, o: { title: string; hard?: bool
       toast.classList.add('show');
       window.clearTimeout(toastTimer);
       toastTimer = window.setTimeout(() => (toast.hidden = true), 2400);
+    },
+    setFast(on) {
+      root.querySelector<HTMLElement>('#tr-fast')!.hidden = !on;
     },
     setStars(v) {
       chip.textContent = `⭐ ${v}`;

@@ -66,3 +66,7 @@ body.traffic-on #app > .screen.game { background: transparent; padding: 0; point
   .tr-stars-chip { inset-inline-start: 8px; font-size: 16px; }
   .tr-home { inset-inline-end: 8px; width: 50px; height: 50px; }
 }
+
+/* the double speed badge, next to the title */
+.tr-fast { position: absolute; top: calc(76px + env(safe-area-inset-top)); inset-inline: 0; margin-inline: auto; width: max-content; padding: 3px 12px; border-radius: 14px; background: rgba(255, 208, 43, .95); color: #2a2540; font-weight: 800; font-size: 18px; box-shadow: 0 3px 0 rgba(0, 0, 0, .25); pointer-events: none; animation: tr-fast-in .15s ease-out; }
+@keyframes tr-fast-in { from { transform: scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }

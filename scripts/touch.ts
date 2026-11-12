@@ -3,12 +3,13 @@ import * as T from '../src/lobby3d/lib';
 import { corners } from '../src/games/traffic/engine/geometry';
 import { boxOf } from '../src/games/traffic/engine/solver-types';
 import { CAMERA_ELEVATION } from '../src/games/traffic/render/scene';
+import { stationZOf } from '../src/games/traffic/render/route';
 import { VEHICLE_TOP, frameCamera, hullWidth, project, convexHull, narrowestWidth, type FrameInput } from '../src/games/traffic/render/framing';
 export function minWidth(l: any, w = 360, h = 640): { min: number; minShort: number } {
   const fitHalf = Math.max(l.lot.halfW + 0.6, 3.7);
   const pads = fitHalf >= 5.7 ? 8 : 5;
   const pitch = Math.min(1.42, (fitHalf * 2 * 0.95) / pads);
-  const f: FrameInput = { width: w, height: h, fov: 30, elevation: CAMERA_ELEVATION, lot: l.lot, stationZ: -(l.lot.halfH + 1.75), stationHalfW: (pads * pitch) / 2 + 0.3, safe: { top: 110, bottom: h - 122 }, marginX: 0.02 };
+  const f: FrameInput = { width: w, height: h, fov: 30, elevation: CAMERA_ELEVATION, lot: l.lot, stationZ: stationZOf(l.lot.halfH), stationHalfW: (pads * pitch) / 2 + 0.3, safe: { top: 110, bottom: h - 122 }, marginX: 0.02 };
   const fr = frameCamera(f);
   const cam = new T.PerspectiveCamera(30, w / h, 1, 400);
   let min = 1e9, minShort = 1e9;
