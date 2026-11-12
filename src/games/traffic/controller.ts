@@ -45,14 +45,17 @@ export class Controller {
   private pickVip = false;
 
   constructor(private ctx: GameContext, private scene: TrafficScene, private hud: Hud, private level: LevelData, private hooks: Hooks, resume?: SaveData, book?: HelperBook) {
-    this.state = new TrafficState(level.vehicles, level.queue);
+    this.state = new TrafficState(level.vehicles, level.queue, level.belts);
     this.book = book ?? newBook();
     if (resume && this.state.load(resume)) {
       this.syncScene();
       hud.setCount(this.state.boarded, this.state.total);
     }
     this.refreshBoosters();
-    scene.onTapVehicle = (id) => this.tap(id);
+    scene.onTapVehicle = (id, long) => this.tap(id, long);
+    scene.canLeave = (id) => this.state.canLeave(id);
+    scene.onSpeed = (fast) => this.hud.setFast(fast);
+    scene.onHop = () => this.snd('boing');
     window.addEventListener('resize', this.onResize);
     this.showHint();
     if (resume) this.wait(300, () => this.pump());
@@ -61,13 +64,19 @@ export class Controller {
   private snd = (n: Parameters<GameContext['sound']['play']>[0]) => this.ctx.sound.play(n);
   private wait(ms: number, f: () => void): void {
     if (this.scene.reduced) ms = Math.min(ms, 30);
+    ms /= this.scene.speed; // double speed while the finger is held down
     this.later.push(window.setTimeout(() => this.alive && f(), ms));
   }
 
   /** The tutorial: what to say now, and which vehicle the hand points at. */
   private showHint(blocked = false): void {
     const steps = this.level.steps;
-    if (!steps || this.ended) return;
+    if (this.ended) return;
+    if (!steps) {
+      // what is new in this level, until the first move
+      this.hud.caption(this.level.intro && this.state.moves === 0 ? this.level.intro : null);
+      return;
+    }
     const step = steps[Math.min(this.state.moves, steps.length - 1)];
     const text = blocked && step.blocked ? step.blocked.text : step.text;
     const hand = blocked && step.blocked ? step.blocked.hand : step.hand;
@@ -78,16 +87,27 @@ export class Controller {
 
   private syncScene(): void {
     this.scene.sync({
-      vehicles: this.state.vehicles.map((v) => ({ id: v.id, status: v.status, slot: v.slot, color: v.color, filled: v.filled, revealed: v.revealed })),
+      vehicles: this.state.vehicles.map((v) => ({ id: v.id, status: v.status, slot: v.slot, color: v.color, filled: v.filled, revealed: v.revealed, x: v.x, z: v.z, heading: v.heading })),
       boarded: this.state.boarded,
       queue: this.state.queue,
       slots: this.state.slots.length,
     });
   }
 
-  tap(id: number): void {
+  tap(id: number, long = false): void {
     if (this.ended) return;
     if (this.pickVip) return this.vipPick(id);
+    const rv = this.state.get(id);
+    if (rv.rotator && rv.status === 'parked' && !long) {
+      // a short tap turns a vehicle that turns on the spot; a long press sends it
+      const h = this.state.rotate(id);
+      if (h !== null) {
+        this.scene.rotateTo(id, h);
+        this.snd('flip');
+        this.hud.hand(null);
+      }
+      return;
+    }
     const r = this.state.tap(id);
     if (r.kind === 'ignored') return;
     if (r.kind === 'full') {
@@ -107,6 +127,7 @@ export class Controller {
     this.snd('engine');
     for (const v of this.state.uncovered(id)) this.wait(350, () => (this.scene.reveal(v.id, v.color), this.snd('pop')));
     this.refreshBoosters();
+    for (const sh of r.shifts) this.scene.shiftOnBelt(sh.id, sh.x, sh.z);
     this.scene.startExit(id, r.slot, () => {
       this.snd('brake');
       this.state.arrive(id);
@@ -200,7 +221,8 @@ export class Controller {
       const hb = o.querySelector('#tr-help') as HTMLElement | null;
       if (hb && help && price) {
         const ok = canAfford(price, this.hooks.stars());
-        hb.classList.toggle('grey-btn', !ok);
+        hb.classList.toggle('dim', !ok);
+        if (!ok) hb.textContent = `🔒 ${label}`;
         hb.addEventListener('click', () => {
           if (!canAfford(price, this.hooks.stars())) return this.hud.toast(`צריך עוד ${price.stars - this.hooks.stars()} ⭐ בשביל זה`);
           this.hud.clearOverlay();
@@ -231,14 +253,15 @@ export class Controller {
     return this.state.vip === null && this.state.vehicles.some((v) => v.status === 'parked');
   }
 
-  /** Looks of the four buttons: the badge says what it costs, and a button is grey when it cannot be used. */
+  /** Looks of the four buttons: the badge says what it costs, and a button is dimmed (not grey) when it cannot be used. */
   refreshBoosters(): void {
     const stars = this.hooks.stars();
     this.hud.setStars(stars);
     for (const h of ['undo', 'shuffle', 'slot', 'vip'] as Helper[]) {
       const price = priceOf(h, this.book);
       const badge = h === 'undo' && price.free ? String(FREE_UNDOS - this.book.undosUsed) : `${price.stars}⭐`;
-      this.hud.setBooster(h, { badge, grey: !canAfford(price, stars) || !this.applicable(h), active: h === 'vip' && this.pickVip });
+      const poor = !canAfford(price, stars);
+      this.hud.setBooster(h, { badge, dim: poor || !this.applicable(h), locked: poor, active: h === 'vip' && this.pickVip });
     }
   }
 
@@ -340,6 +363,7 @@ export class Controller {
     this.alive = false;
     this.later.forEach(clearTimeout);
     this.scene.onTapVehicle = null;
+    this.scene.onHop = null;
     this.scene.setPickMode(false);
     window.removeEventListener('resize', this.onResize);
   }

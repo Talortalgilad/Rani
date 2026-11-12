@@ -1,13 +1,14 @@
 import * as T from '../../../lobby3d/lib';
 import { Spring } from '../../../lobby3d/motion';
-import { pickIndex } from '../../../lobby3d/pick';
 import { setSky, disposeTree, type SceneEnv, type StageScene } from '../../../lobby3d/stage';
 import type { Tier } from '../../../lobby3d/quality';
-import { corners, rad } from '../engine/geometry';
-import { REGULAR_SLOTS, SIZES, type ColorId, type VehicleDef } from '../engine/state';
+import { rad } from '../engine/geometry';
+import { BELT_PITCH, BELT_WIDTH, REGULAR_SLOTS, SIZES, TURNTABLE, type BeltDef, type ColorId, type VehicleDef } from '../engine/state';
 import { Timeline, easeInOutCubic, easeOutBack, easeOutQuad } from './animations';
 import { buildWorld, type WorldKind } from './dioramas';
-import { frameCamera, type SafeArea } from './framing';
+import { HOP_TIME, RoadFlow, poseAt } from './roadflow';
+import { ROAD, buildRoute, stationZOf } from './route';
+import { frameCamera, nearestVehicle, type HitShape, type SafeArea } from './framing';
 import { Fx } from './fx';
 import { COLOR_HEX, COLOR_SHAPE, shapePoints } from './palette';
 import { BLACK_HEX, makeVehicle, PASSENGER_SCALE, passengerGeometry, plasticMaterial, roofY, stickerGeometry, vehicleGeometry } from './toykit';
@@ -15,17 +16,19 @@ import { BLACK_HEX, makeVehicle, PASSENGER_SCALE, passengerGeometry, plasticMate
 const SPACING = 0.46;
 /** Camera angle above the floor. */
 export const CAMERA_ELEVATION = 48;
+/** How long a press on a vehicle that turns must last to send it. */
+export const LONG_PRESS_MS = 350;
 const SEE_AHEAD = 30; // passengers farther back than this wait out of sight, inside the cabana
 
 interface Lot { halfW: number; halfH: number }
 export interface SyncState {
-  vehicles: { id: number; status: string; slot: number | null; color: ColorId; filled: number; revealed: boolean }[];
+  vehicles: { id: number; status: string; slot: number | null; color: ColorId; filled: number; revealed: boolean; x: number; z: number; heading: number }[];
   boarded: number;
   queue: ColorId[];
   slots: number;
 }
 
-export interface LevelView { vehicles: VehicleDef[]; queue: ColorId[]; lot: Lot; world: WorldKind }
+export interface LevelView { vehicles: VehicleDef[]; queue: ColorId[]; lot: Lot; world: WorldKind; belts?: BeltDef[] }
 
 interface VehicleView {
   def: VehicleDef;
@@ -133,7 +136,15 @@ function badgeTexture(color: ColorId, n: number): T.CanvasTexture {
 }
 
 export interface TrafficScene extends StageScene {
-  onTapVehicle: ((id: number) => void) | null;
+  onTapVehicle: ((id: number, long: boolean) => void) | null;
+  /** can this vehicle drive out right now? Used to pick between two vehicles a tap lands between */
+  canLeave: ((id: number) => boolean) | null;
+  /** 1 normally, 2 while the finger is held down: scales the time of every animation (not the rules of the game) */
+  speed: number;
+  /** told when a vehicle hops over another on the road (for the "boing") */
+  onHop: (() => void) | null;
+  /** told when the double speed turns on and off (for the little badge) */
+  onSpeed: ((fast: boolean) => void) | null;
   timeline: Timeline;
   fx: Fx;
   /** reduced motion: everything jumps to its end */
@@ -164,6 +175,10 @@ export interface TrafficScene extends StageScene {
   startVip(id: number, arrived: () => void): void;
   /** while a vehicle is to be picked, the parked ones bob a little */
   setPickMode(on: boolean): void;
+  /** a vehicle that turns on the spot turns to a heading (degrees) */
+  rotateTo(id: number, heading: number): void;
+  /** a car on a conveyor belt moves up to its new place */
+  shiftOnBelt(id: number, x: number, z: number): void;
 }
 
 export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclude<Tier, '2d'>, getSafe?: () => SafeArea): TrafficScene {
@@ -183,7 +198,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   let pitch = Math.min(1.42, (fitHalf * 2 * 0.95) / pads);
   let kPitch = pitch / 1.42;
   const slotX = (i: number): number => (i - (pads - 1) / 2) * pitch;
-  const STATION_Z = -(level.lot.halfH + 1.75);
+  const STATION_Z = stationZOf(level.lot.halfH);
   const dzN = STATION_Z + 8.15; // the diorama is drawn for a station at -8.15
   const queueHalf = Math.max(3.3, fitHalf * 0.82);
 
@@ -237,6 +252,54 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
   pad.position.y = 0.0;
   pad.receiveShadow = true;
   scene.add(pad);
+  // the ring road round the lot, joined to the station: the vehicles that leave the lot drive along it
+  {
+    const hw = level.lot.halfW;
+    const hh = level.lot.halfH;
+    const r0 = ROAD.off - ROAD.width / 2;
+    const r1 = ROAD.off + ROAD.width / 2;
+    const asphalt = keep(new T.MeshStandardMaterial({ color: '#4a4f66', roughness: 0.9 }));
+    const lineMat = keep(new T.MeshBasicMaterial({ color: '#e8e6f2' }));
+    const strip = (cx: number, cz: number, w: number, d: number): void => {
+      const m = new T.Mesh(keep(new T.BoxGeometry(w, 0.05, d)), asphalt);
+      m.position.set(cx, 0.018, cz);
+      m.receiveShadow = true;
+      scene.add(m);
+    };
+    const mid = (hw + ROAD.off) * 2;
+    const lenZ = (hh + r1) * 2;
+    // the four sides (the corners are filled with a quarter ring)
+    strip(0, hh + ROAD.off, hw * 2 + 0.0, ROAD.width);
+    strip(0, -hh - ROAD.off, hw * 2 + 0.0, ROAD.width);
+    strip(-hw - ROAD.off, 0, ROAD.width, hh * 2);
+    strip(hw + ROAD.off, 0, ROAD.width, hh * 2);
+    const quarter = keep(new T.RingGeometry(r0, r1, 14, 1, 0, Math.PI / 2));
+    for (const [sx, sz, rot] of [[1, 1, -Math.PI / 2], [-1, 1, -Math.PI], [-1, -1, Math.PI / 2], [1, -1, 0]] as const) {
+      const q = new T.Mesh(quarter, asphalt);
+      q.rotation.x = -Math.PI / 2;
+      q.rotation.z = rot;
+      q.position.set(sx * hw, 0.019, sz * hh);
+      q.receiveShadow = true;
+      scene.add(q);
+    }
+    void mid;
+    void lenZ;
+    // a dashed line down the middle of the road
+    const dash = keep(new T.BoxGeometry(0.34, 0.01, 0.05));
+    const dashV = keep(new T.BoxGeometry(0.05, 0.01, 0.34));
+    for (const side of [-1, 1]) {
+      for (let x = -hw + 0.3; x < hw; x += 0.8) {
+        const m = new T.Mesh(dash, lineMat);
+        m.position.set(x, 0.046, side * (hh + ROAD.off));
+        scene.add(m);
+      }
+      for (let z = -hh + 0.3; z < hh; z += 0.8) {
+        const m = new T.Mesh(dashV, lineMat);
+        m.position.set(side * (hw + ROAD.off), 0.046, z);
+        scene.add(m);
+      }
+    }
+  }
   // station places: sunk pads with a "P", a golden VIP place, and three locked ones
   const texP = keep(glyphTexture((g) => {
     g.fillStyle = 'rgba(255,244,214,0.95)';
@@ -323,7 +386,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     if (def.hidden) {
       q = new T.Mesh(qGeo, qMat);
       q.rotation.x = -Math.PI / 2;
-      q.rotation.z = Math.PI / 2;
+      q.rotation.z = rad(def.heading); // kept upright for the camera every frame (see update)
       const sz = def.type === 'bus' ? 1.1 : 0.78;
       q.scale.set(sz, sz, 1);
       q.position.set(0, roofY(def.type) + 0.03, 0);
@@ -333,6 +396,161 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     root.rotation.y = -rad(def.heading);
     scene.add(root);
     views.set(def.id, { def, root, mesh, slot: null, badge: null, hop: new Spring(0, 160, 10), pitch: new Spring(0, 220, 9), squash: new Spring(0, 260, 14), jitter: { x: 0, z: 0, until: 0 }, q });
+  }
+
+  // ---- the turntables under the vehicles that turn, and the conveyor belts
+  const beltTextures: T.CanvasTexture[] = [];
+  const turnTex = keep(glyphTexture((g) => {
+    g.strokeStyle = 'rgba(255,255,255,0.8)';
+    g.lineWidth = 12;
+    g.lineCap = 'round';
+    for (const a0 of [0.3, Math.PI + 0.3]) {
+      g.beginPath();
+      g.arc(128, 128, 84, a0, a0 + 2.2);
+      g.stroke();
+      const ex = 128 + Math.cos(a0 + 2.2) * 84;
+      const ey = 128 + Math.sin(a0 + 2.2) * 84;
+      g.fillStyle = 'rgba(255,255,255,0.85)';
+      g.beginPath();
+      g.moveTo(ex + Math.cos(a0 + 2.2 + 1.57) * 22, ey + Math.sin(a0 + 2.2 + 1.57) * 22);
+      g.lineTo(ex + Math.cos(a0 + 2.2 + 3.1) * 30, ey + Math.sin(a0 + 2.2 + 3.1) * 30);
+      g.lineTo(ex + Math.cos(a0 + 2.2 - 1.57) * 22, ey + Math.sin(a0 + 2.2 - 1.57) * 22);
+      g.fill();
+    }
+  }, 256, 256));
+  const diskGeo = keep(new T.CylinderGeometry(TURNTABLE / 2 * 0.98, TURNTABLE / 2 * 0.98, 0.07, 32));
+  const diskMat = keep(new T.MeshStandardMaterial({ color: '#3b4160', roughness: 0.6 }));
+  const ringGeo = keep(new T.TorusGeometry(TURNTABLE / 2 * 0.98, 0.07, 6, 40));
+  const ringMat = keep(new T.MeshStandardMaterial({ color: '#ffd02b', roughness: 0.5 }));
+  const iconGeo = keep(new T.PlaneGeometry(TURNTABLE * 0.95, TURNTABLE * 0.95));
+  const iconMat = keep(new T.MeshBasicMaterial({ map: turnTex, transparent: true, depthWrite: false }));
+  for (const def of level.vehicles) {
+    if (!def.rotator) continue;
+    const disk = new T.Mesh(diskGeo, diskMat);
+    disk.position.set(def.x, 0.065, def.z);
+    disk.receiveShadow = true;
+    const ring = new T.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(def.x, 0.1, def.z);
+    const icon = new T.Mesh(iconGeo, iconMat);
+    icon.rotation.x = -Math.PI / 2;
+    icon.position.set(def.x, 0.108, def.z);
+    scene.add(disk, ring, icon);
+  }
+  // the roof of a vehicle that turns: a blue badge with the turn symbol, and a small arrow beside it for the way it faces now
+  const badgeTex = keep(glyphTexture((g) => {
+    g.fillStyle = '#2f6bff';
+    g.beginPath();
+    g.arc(72, 128, 62, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = 13;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.arc(72, 128, 33, -0.6, Math.PI * 1.45);
+    g.stroke();
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    g.moveTo(72 + 33 * Math.cos(-0.6) + 4, 128 + 33 * Math.sin(-0.6) - 22);
+    g.lineTo(72 + 33 * Math.cos(-0.6) + 4, 128 + 33 * Math.sin(-0.6) + 12);
+    g.lineTo(72 + 33 * Math.cos(-0.6) + 26, 128 + 33 * Math.sin(-0.6) - 8);
+    g.fill();
+    // the small arrow: where the vehicle goes if it is sent
+    g.fillStyle = '#ffd02b';
+    g.strokeStyle = '#2a2540';
+    g.lineWidth = 6;
+    g.beginPath();
+    g.moveTo(150, 104);
+    g.lineTo(188, 104);
+    g.lineTo(188, 84);
+    g.lineTo(240, 128);
+    g.lineTo(188, 172);
+    g.lineTo(188, 152);
+    g.lineTo(150, 152);
+    g.closePath();
+    g.stroke();
+    g.fill();
+  }, 256, 256));
+  const badgeGeo = keep(new T.PlaneGeometry(1, 1));
+  const badgeMat2 = keep(new T.MeshBasicMaterial({ map: badgeTex, transparent: true, depthWrite: false }));
+  for (const def of level.vehicles) {
+    if (!def.rotator) continue;
+    const b = new T.Mesh(badgeGeo, badgeMat2);
+    b.rotation.x = -Math.PI / 2;
+    b.scale.set(1.05, 1.05, 1);
+    b.position.set(-0.28, roofY(def.type) + 0.05, 0);
+    views.get(def.id)?.root.add(b);
+  }
+  const beltGeoBase = keep(new T.BoxGeometry(1, 0.06, 1));
+  const beltMat = keep(new T.MeshStandardMaterial({ color: '#363a4c', roughness: 0.7 }));
+  for (const belt of level.belts ?? []) {
+    const len = (belt.slots.length - 1) * BELT_PITCH + SIZES.car.len;
+    const cx = belt.slots.reduce((a, p) => a + p[0], 0) / belt.slots.length;
+    const cz = belt.slots.reduce((a, p) => a + p[1], 0) / belt.slots.length;
+    const grp = new T.Group();
+    grp.position.set(cx, 0.06, cz);
+    grp.rotation.y = -rad(belt.heading);
+    const base = new T.Mesh(beltGeoBase, beltMat);
+    base.scale.set(len + 0.25, 1, BELT_WIDTH + 0.14);
+    base.receiveShadow = true;
+    const tex = glyphTexture((g) => {
+      // a roller: a light bar across the belt with a dark gap, and a moving chevron
+      g.fillStyle = '#3a3e52';
+      g.fillRect(0, 0, 128, 128);
+      g.fillStyle = '#6a7090';
+      g.fillRect(6, 0, 36, 128);
+      g.fillStyle = '#868cab';
+      g.fillRect(10, 0, 8, 128);
+      g.fillStyle = '#6a7090';
+      g.fillRect(70, 0, 36, 128);
+      g.fillStyle = '#868cab';
+      g.fillRect(74, 0, 8, 128);
+      g.strokeStyle = '#ffd02b';
+      g.lineWidth = 12;
+      g.lineJoin = 'round';
+      g.beginPath();
+      g.moveTo(38, 34);
+      g.lineTo(76, 64);
+      g.lineTo(38, 94);
+      g.stroke();
+    }, 128, 128);
+    tex.wrapS = tex.wrapT = T.RepeatWrapping;
+    tex.repeat.set(len / 1.0, 1);
+    beltTextures.push(tex);
+    own.push(tex);
+    const stripe = new T.Mesh(keep(new T.PlaneGeometry(len, BELT_WIDTH)), keep(new T.MeshBasicMaterial({ map: tex })));
+    stripe.rotation.x = -Math.PI / 2;
+    stripe.position.y = 0.034;
+    // yellow and black rails along both sides, and the exit at the end the cars leave from: a chequered line and a green arrow gate
+    const railMat = keep(new T.MeshStandardMaterial({ color: '#ffd02b', roughness: 0.5 }));
+    for (const side of [-1, 1]) {
+      const rail = new T.Mesh(keep(new T.BoxGeometry(len + 0.25, 0.12, 0.1)), railMat);
+      rail.position.set(0, 0.07, side * (BELT_WIDTH / 2 + 0.07));
+      grp.add(rail);
+    }
+    const exitTex = keep(glyphTexture((g) => {
+      for (let i = 0; i < 8; i++) for (let j = 0; j < 2; j++) { g.fillStyle = (i + j) % 2 ? '#ffffff' : '#222222'; g.fillRect(i * 16, j * 16, 16, 16); }
+    }, 128, 32));
+    const check = new T.Mesh(keep(new T.PlaneGeometry(0.34, BELT_WIDTH + 0.2)), keep(new T.MeshBasicMaterial({ map: exitTex })));
+    check.rotation.x = -Math.PI / 2;
+    check.rotation.z = Math.PI / 2;
+    check.position.set(len / 2 + 0.17, 0.036, 0);
+    const gateTex = keep(glyphTexture((g) => {
+      g.fillStyle = '#2fb344';
+      g.beginPath();
+      g.roundRect(8, 8, 240, 240, 40);
+      g.fill();
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.moveTo(52, 100); g.lineTo(130, 100); g.lineTo(130, 62); g.lineTo(206, 128); g.lineTo(130, 194); g.lineTo(130, 156); g.lineTo(52, 156);
+      g.closePath();
+      g.fill();
+    }, 256, 256));
+    const gate = new T.Mesh(keep(new T.PlaneGeometry(0.9, 0.9)), keep(new T.MeshBasicMaterial({ map: gateTex, transparent: true })));
+    gate.rotation.x = -Math.PI / 2;
+    gate.position.set(len / 2 + 0.95, 0.04, 0);
+    grp.add(base, stripe, check, gate);
+    scene.add(grp);
   }
 
   // contact shadows: one InstancedMesh for all vehicles, one for passengers
@@ -421,44 +639,123 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
 
   const canvas = env.canvas;
   let downAt: { x: number; y: number; t: number } | null = null;
+  /** The outlines of the vehicles that can be tapped, on the screen (CSS pixels, from the top-left of the canvas). */
+  const hitShapes = (): HitShape[] => {
+    const rect = canvas.getBoundingClientRect();
+    const out: HitShape[] = [];
+    const p = new T.Vector3();
+    camera.updateMatrixWorld();
+    for (const v of views.values()) {
+      if (!v.root.visible || v.slot !== null) continue;
+      v.root.updateMatrixWorld(true);
+      const g = v.mesh.geometry;
+      if (!g.boundingBox) g.computeBoundingBox();
+      const bb = g.boundingBox!;
+      const pts: { x: number; y: number }[] = [];
+      for (const x of [bb.min.x, bb.max.x]) for (const y of [bb.min.y, bb.max.y]) for (const z of [bb.min.z, bb.max.z]) {
+        p.set(x, y, z).applyMatrix4(v.mesh.matrixWorld).project(camera);
+        pts.push({ x: ((p.x + 1) / 2) * rect.width, y: ((1 - p.y) / 2) * rect.height });
+      }
+      out.push({ id: v.def.id, pts });
+    }
+    return out;
+  };
+  const pick = (e: PointerEvent): number | null => {
+    const rect = canvas.getBoundingClientRect();
+    return nearestVehicle(hitShapes(), e.clientX - rect.left, e.clientY - rect.top, undefined, api.canLeave ?? undefined);
+  };
+  let held: { id: number | null; timer: number; fired: boolean } | null = null;
   const onDown = (e: PointerEvent) => {
     downAt = { x: e.clientX, y: e.clientY, t: performance.now() };
+    // a vehicle that turns on the spot: a long press sends it, a short one turns it
+    const id = pick(e);
+    const v = id !== null ? views.get(id) : null;
+    held = { id, timer: 0, fired: false };
+    if (v?.def.rotator) {
+      const h = held;
+      h.timer = window.setTimeout(() => {
+        if (held !== h || !downAt) return;
+        h.fired = true;
+        api.onTapVehicle?.(id!, true);
+      }, LONG_PRESS_MS);
+    }
   };
   const onUp = (e: PointerEvent) => {
+    const h = held;
+    held = null;
+    if (h) window.clearTimeout(h.timer);
     if (!downAt) return;
     const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
     downAt = null;
+    if (h?.fired) return;
+    if (longHeld) return; // a long press only speeds things up: it does not send a vehicle
     if (moved > 14 || !api.onTapVehicle) return;
-    const id = pickIndex(camera, canvas, e.clientX, e.clientY, [...views.values()].map((v) => v.mesh));
-    if (id !== null) api.onTapVehicle(id);
+    const id = pick(e);
+    if (id !== null) api.onTapVehicle(id, false);
   };
   canvas.addEventListener('pointerdown', onDown);
   canvas.addEventListener('pointerup', onUp);
 
+  // ---- holding a finger on the screen (anywhere but on a vehicle that turns) makes everything that moves twice as fast, as long as it stays there
+  let speedTimer = 0;
+  let swallowClick = false;
+  let longHeld = false;
+  const onHoldDown = (e: PointerEvent): void => {
+    window.clearTimeout(speedTimer);
+    longHeld = false;
+    const id = e.target === canvas ? pick(e) : null;
+    if (id !== null && views.get(id)?.def.rotator) return; // there a long press sends the vehicle
+    speedTimer = window.setTimeout(() => {
+      api.speed = 2;
+      longHeld = true;
+      swallowClick = true; // the button or vehicle under the finger is not pressed by letting go
+      api.onSpeed?.(true);
+    }, LONG_PRESS_MS);
+  };
+  const onHoldUp = (): void => {
+    window.clearTimeout(speedTimer);
+    if (api.speed !== 1) {
+      api.speed = 1;
+      api.onSpeed?.(false);
+      window.setTimeout(() => (swallowClick = false), 60);
+    }
+  };
+  const onClickCapture = (e: MouseEvent): void => {
+    if (!swallowClick) return;
+    swallowClick = false;
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  window.addEventListener('pointerdown', onHoldDown, true);
+  window.addEventListener('pointerup', onHoldUp, true);
+  window.addEventListener('pointercancel', onHoldUp, true);
+  window.addEventListener('click', onClickCapture, true);
+
   // ---- helpers for motion
   const stationScale = (t: VehicleDef['type']) => (t === 'car' ? 0.98 : t === 'van' ? 0.7 : 0.53) * kPitch;
 
-  function exitCurve(v: VehicleView, slot: number): T.CatmullRomCurve3 {
-    const def = v.def;
-    const u = { x: Math.cos(rad(def.heading)), z: Math.sin(rad(def.heading)) };
-    // drive straight until the whole vehicle is outside the lot
-    const box = { x: def.x, z: def.z, hl: SIZES[def.type].len / 2, hw: SIZES[def.type].wid / 2, heading: def.heading };
-    let d = 0;
-    while (d < 40 && corners({ ...box, x: def.x + u.x * d, z: def.z + u.z * d }).some((p) => Math.abs(p.x) < level.lot.halfW + 0.2 && Math.abs(p.z) < level.lot.halfH + 0.2)) d += 0.1;
-    const p1 = { x: def.x + u.x * (d + 0.4), z: def.z + u.z * (d + 0.4) };
-    const sx = slotX(slot + 1);
-    const side = p1.x >= 0 ? 1 : -1;
-    const pts: [number, number][] = [[def.x, def.z], [def.x + u.x * (d * 0.5), def.z + u.z * (d * 0.5)], [p1.x, p1.z]];
-    const towardStation = u.z < -0.5 && Math.abs(p1.x) < level.lot.halfW;
-    if (!towardStation) {
-      // round the outside of the lot: out to the side road, up it, and across to the station
-      const rx = side * (level.lot.halfW + 1.5);
-      if (p1.z > level.lot.halfH - 0.1) pts.push([p1.x + side * 0.6, p1.z + 1.2], [rx, level.lot.halfH + 0.2]);
-      else pts.push([rx, p1.z]);
-      pts.push([rx, -level.lot.halfH + 0.4]);
+  /** Where a vehicle is now and which way it faces (a belt car has moved up, a vehicle that turns has turned). */
+  const nowOf = (v: VehicleView) => ({ x: v.root.position.x, z: v.root.position.z, heading: ((((-v.root.rotation.y * 180) / Math.PI) % 360) + 360) % 360 });
+
+  // the vehicles that are on their way to the station: they follow the ring road and never go through each other
+  const flow = new RoadFlow();
+  flow.onHop = () => api.onHop?.();
+  let sendOrder = 0;
+  const flowViews = new Map<number, { v: VehicleView; arrived: () => void; slot: number }>();
+
+  /** Puts the poses of the vehicles on the road on the screen. */
+  function applyFlow(): void {
+    for (const c of flow.cars) {
+      const f = flowViews.get(c.id);
+      if (!f) continue;
+      const q = poseAt(c.route, c.s);
+      // a vehicle that hops over another goes up in an arc (0.4 s)
+      const air = c.hopLeft ? Math.sin((1 - c.hopLeft / HOP_TIME) * Math.PI) * 1.1 : 0;
+      f.v.root.position.set(q.x, f.v.hop.value + air, q.z);
+      f.v.root.rotation.y = -rad(q.heading);
+      f.v.root.scale.setScalar(q.scale);
+      if (c.v > 1.5 && !reduced && Math.random() < 0.4) fx.puff(q.x - Math.cos(rad(q.heading)) * 0.7, q.z - Math.sin(rad(q.heading)) * 0.7);
     }
-    pts.push([sx, STATION_Z + 3.6], [sx, STATION_Z + 1.4], [sx, STATION_Z]);
-    return new T.CatmullRomCurve3(pts.map(([x, z]) => new T.Vector3(x, 0, z)), false, 'centripetal');
   }
 
   /** Drives a vehicle along a curve with acceleration, cruising and braking. */
@@ -499,6 +796,10 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     scene,
     camera,
     onTapVehicle: null,
+    canLeave: null,
+    speed: 1,
+    onHop: null,
+    onSpeed: null,
     timeline,
     fx,
     reduced,
@@ -507,34 +808,45 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     startExit(id, slot, arrived) {
       const v = views.get(id)!;
       v.squash.value = 0;
-      // squash 90 ms, then away
-      timeline.tween(reduced ? 0.01 : 0.09, (t) => v.root.scale.set(1, 1 - 0.1 * Math.sin(t * Math.PI), 1), () => {
+      // the chosen vehicle pops for a moment (squash and a small hop, 140 ms) so it is clear which one was chosen, then away
+      timeline.tween(reduced ? 0.01 : 0.14, (t) => {
+        const k = Math.sin(t * Math.PI);
+        v.root.scale.set(1 + 0.07 * k, 1 - 0.2 * k * (t < 0.5 ? 1 : -0.6), 1 + 0.07 * k);
+        v.root.position.y = 0.16 * k * k;
+      }, () => {
         v.root.scale.set(1, 1, 1);
-        const curve = exitCurve(v, slot);
-        drive(v, curve, {
-          vmax: 8.5, brake: 14, scaleTo: stationScale(v.def.type), dust: true,
-          done: () => {
+        v.root.position.y = 0;
+        const now = nowOf(v);
+        const route = buildRoute({ x: now.x, z: now.z, heading: now.heading, type: v.def.type, lot: level.lot, slotX: slotX(slot + 1), stationZ: STATION_Z, stationScale: stationScale(v.def.type) });
+        flowViews.set(id, {
+          v,
+          slot,
+          arrived: () => {
             v.slot = slot;
             v.root.position.set(slotX(slot + 1), 0, STATION_Z);
             v.root.rotation.y = -rad(270);
+            v.root.scale.setScalar(stationScale(v.def.type));
             // rock back and forth on its springs
             v.pitch.value = reduced ? 0 : 0.12;
             v.pitch.velocity = 0;
+            flowViews.delete(id);
             arrived();
           },
         });
+        flow.add({ id, type: v.def.type, route, order: sendOrder++ });
       });
     },
 
     bonk(id, byId, distance, hit) {
       const v = views.get(id)!;
       const other = views.get(byId)!;
-      const u = { x: Math.cos(rad(v.def.heading)), z: Math.sin(rad(v.def.heading)) };
+      const now = nowOf(v);
+      const u = { x: Math.cos(rad(now.heading)), z: Math.sin(rad(now.heading)) };
       const d = Math.max(0.05, distance);
       let s = 0;
       let vel = 0;
       let phase: 'out' | 'back' = 'out';
-      const home = { x: v.def.x, z: v.def.z };
+      const home = { x: now.x, z: now.z };
       timeline.add((dt) => {
         if (phase === 'out') {
           vel = Math.min(vel + 24 * dt, 6);
@@ -692,12 +1004,12 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
           // parked in the lot: back to its place (with a little pop if it came back from the station)
           v.slot = null;
           v.root.visible = true;
-          v.root.position.set(v.def.x, 0, v.def.z);
-          v.root.rotation.set(0, -rad(v.def.heading), 0);
+          v.root.position.set(sv.x, 0, sv.z);
+          v.root.rotation.set(0, -rad(sv.heading), 0);
           if (wasAway && !reduced) {
             v.root.scale.setScalar(0.05);
             timeline.tween(0.4, (t) => v.root.scale.setScalar(Math.max(0.05, easeOutBack(t))), () => v.root.scale.setScalar(1));
-            fx.sparkle(v.def.x, 0.9, v.def.z, 8);
+            fx.sparkle(sv.x, 0.9, sv.z, 8);
           } else v.root.scale.setScalar(1);
         }
       }
@@ -767,15 +1079,47 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       pickMode = on;
     },
 
+    rotateTo(id, heading) {
+      const v = views.get(id)!;
+      const from = v.root.rotation.y;
+      // the shortest way round, 90 degrees to the right (the heading grows clockwise on the screen)
+      let to = -rad(heading);
+      while (to > from + 0.01) to -= Math.PI * 2;
+      while (to < from - Math.PI * 1.5) to += Math.PI * 2;
+      timeline.tween(reduced ? 0.01 : 0.26, (t) => (v.root.rotation.y = from + (to - from) * easeOutBack(t)), () => (v.root.rotation.y = -rad(heading)));
+      if (!reduced) fx.sparkle(v.root.position.x, 0.3, v.root.position.z, 4, ['#ffffff', '#bfe9ff']);
+    },
+
+    shiftOnBelt(id, x, z) {
+      const v = views.get(id)!;
+      const from = v.root.position.clone();
+      // the car behind moves up when the one in front has really driven off (it may still be waiting for a gap on the road)
+      let waited = 0;
+      timeline.add((dt) => {
+        waited += dt;
+        const blocked = [...flow.cars].some((c) => c.s < 1.4 && Math.hypot(poseAt(c.route, c.s).x - x, poseAt(c.route, c.s).z - z) < 2.2);
+        if (!reduced && (waited < 0.35 || blocked) && waited < 6) return false;
+        timeline.tween(reduced ? 0.01 : 0.55, (t) => {
+          const e = easeInOutCubic(t);
+          v.root.position.set(from.x + (x - from.x) * e, v.root.position.y, from.z + (z - from.z) * e);
+        }, () => v.root.position.set(x, v.root.position.y, z));
+        return true;
+      });
+    },
+
     focusOn(id, zoom = 3.4) {
       focus = { id, zoom };
       layout();
     },
 
-    update(dt, t) {
+    update(dt0, t) {
+      const dt = dt0 * api.speed; // the long press makes everything that moves go twice as fast
       time = t;
       timeline.update(dt);
+      for (const c of flow.step(dt, reduced)) flowViews.get(c.id)?.arrived();
+      applyFlow();
       fx.update(dt);
+      if (!reduced) for (const bt of beltTextures) bt.offset.x -= dt * 0.9;
 
       // vehicles: spring wobble, shake, and the shadows
       let k = 0;
@@ -783,6 +1127,8 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
         v.hop.step(dt);
         v.pitch.step(dt);
         v.squash.step(dt);
+        // the "?" always stands upright toward the camera, whichever way the vehicle faces
+        if (v.q) v.q.rotation.z = -v.root.rotation.y;
         if (v.slot !== null) {
           // parked in the station: rocks gently on its springs, squashes when it swallows a passenger
           v.root.rotation.z = v.pitch.value;
@@ -894,6 +1240,12 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       timeline.clear();
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointerdown', onHoldDown, true);
+      window.removeEventListener('pointerup', onHoldUp, true);
+      window.removeEventListener('pointercancel', onHoldUp, true);
+      window.removeEventListener('click', onClickCapture, true);
+      window.clearTimeout(speedTimer);
+      if (held) window.clearTimeout(held.timer);
       renderer.toneMapping = T.NoToneMapping;
       renderer.toneMappingExposure = 1;
       envTexture.dispose();

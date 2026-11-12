@@ -19,8 +19,10 @@ const LABELS: Record<Helper, string> = { undo: 'ביטול', shuffle: 'ערבו�
 export interface BoosterLook {
   /** the text on the red badge */
   badge: string;
-  /** grey: cannot be used now (not enough stars, or nothing to do) */
-  grey: boolean;
+  /** dimmed to 70%: cannot be used now (not enough stars, or nothing to do); the button keeps its colour */
+  dim: boolean;
+  /** a small lock next to the price: there are not enough stars */
+  locked?: boolean;
   /** waiting for the child to pick a vehicle */
   active?: boolean;
 }
@@ -38,6 +40,8 @@ export interface Hud {
   /** a gentle note above the buttons that goes away by itself */
   toast(text: string): void;
   setStars(n: number): void;
+  /** the little "⏩ X2" next to the title while the double speed is on */
+  setFast(on: boolean): void;
   setBooster(kind: Helper, look: BoosterLook): void;
   root: HTMLElement;
 }
@@ -48,6 +52,7 @@ export function buildHud(container: HTMLElement, o: { title: string; hard?: bool
   root.className = 'tr';
   root.innerHTML = `
     <div class="tr-title">${o.hard ? '<span class="tr-hard">קשה מאוד!</span>' : ''}<b>${o.title}</b></div>
+    <div class="tr-fast" id="tr-fast" hidden>⏩ X2</div>
     <div class="tr-count"><i></i><span id="tr-n">0/${o.total}</span></div>
     <div class="tr-stars-chip" id="tr-stars">⭐ ${o.stars}</div>
     <button class="tr-home" aria-label="בית">🏠</button>
@@ -126,15 +131,20 @@ export function buildHud(container: HTMLElement, o: { title: string; hard?: bool
       window.clearTimeout(toastTimer);
       toastTimer = window.setTimeout(() => (toast.hidden = true), 2400);
     },
+    setFast(on) {
+      root.querySelector<HTMLElement>('#tr-fast')!.hidden = !on;
+    },
     setStars(v) {
       chip.textContent = `⭐ ${v}`;
     },
     setBooster(kind, look) {
       const b = buttons.get(kind)!;
-      (b.querySelector('.tr-badge') as HTMLElement).textContent = look.badge;
-      b.classList.toggle('grey', look.grey);
+      const badge = b.querySelector('.tr-badge') as HTMLElement;
+      badge.textContent = (look.locked ? '🔒' : '') + look.badge;
+      badge.classList.toggle('locked', !!look.locked);
+      b.classList.toggle('dim', look.dim);
       b.classList.toggle('active', !!look.active);
-      b.setAttribute('aria-disabled', look.grey ? 'true' : 'false');
+      b.setAttribute('aria-disabled', look.dim ? 'true' : 'false');
     },
   };
 }

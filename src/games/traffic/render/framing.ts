@@ -28,7 +28,7 @@ export interface Framing { dist: number; tz: number }
 /** Height of the vehicles, the highest thing in the lot. */
 export const VEHICLE_TOP = 1.5;
 /** The pad and its kerb stick out this far past the vehicles. */
-export const LOT_RIM = 0.6;
+export const LOT_RIM = 1.05; // the lot, and the ring road round it (its outer edge may touch the side of the screen)
 
 /** The points that must be visible: the lot with its rim at the floor and at vehicle height, and the station. */
 export function framePoints(lot: FrameInput['lot'], stationZ: number, stationHalfW: number): T.Vector3[] {
@@ -97,3 +97,97 @@ export function frameCamera(f: FrameInput): Framing {
   }
   return { dist: hi, tz: solveTz(hi) };
 }
+
+// ---- tapping near a vehicle ---------------------------------------------------------------------------------------------
+
+/** A tap this close (CSS pixels) to a vehicle's outline still counts as a tap on it. */
+export const HIT_TOLERANCE = 12;
+/** Every vehicle is at least this wide to a finger (its outline plus the tolerance on both sides), in CSS pixels. */
+export const MIN_TOUCH = 44;
+
+export interface HitShape { id: number; pts: { x: number; y: number }[] }
+
+type P = { x: number; y: number };
+
+/** The convex hull of some points (monotone chain). */
+export function convexHull(points: P[]): P[] {
+  const pts = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+  if (pts.length < 3) return pts;
+  const cross = (o: P, a: P, b: P) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const lower: P[] = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+    lower.push(p);
+  }
+  const upper: P[] = [];
+  for (const p of [...pts].reverse()) {
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+    upper.push(p);
+  }
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
+
+/** Distance from a point to a convex polygon: 0 when it is inside. */
+export function distanceToHull(hull: P[], x: number, y: number): number {
+  let inside = hull.length >= 3;
+  let best = Infinity;
+  for (let i = 0; i < hull.length; i++) {
+    const a = hull[i];
+    const b = hull[(i + 1) % hull.length];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len2 = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / len2));
+    best = Math.min(best, Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy)));
+    if (dx * (y - a.y) - dy * (x - a.x) < 0) inside = false;
+  }
+  return inside ? 0 : best;
+}
+
+/**
+ * The vehicle a tap means. A tap squarely on one vehicle is that vehicle. Otherwise the candidates are the vehicles whose outline is
+ * within `tol` pixels (nearly all taps near several vehicles are like this): if only some of them can drive out (`free`), the
+ * nearest of those is chosen; if all or none can, the nearest of all. Null when nothing is close enough.
+ */
+export function nearestVehicle(shapes: HitShape[], x: number, y: number, tol = HIT_TOLERANCE, free?: (id: number) => boolean): number | null {
+  const cands: { id: number; d: number; c: number }[] = [];
+  for (const s of shapes) {
+    const hull = convexHull(s.pts);
+    const d = distanceToHull(hull, x, y);
+    if (d > tol) continue;
+    const cx = hull.reduce((a, p) => a + p.x, 0) / hull.length;
+    const cy = hull.reduce((a, p) => a + p.y, 0) / hull.length;
+    cands.push({ id: s.id, d, c: Math.hypot(x - cx, y - cy) });
+  }
+  if (!cands.length) return null;
+  const nearest = (list: typeof cands) => list.reduce((best, k) => (k.d < best.d - 1e-6 || (Math.abs(k.d - best.d) < 1e-6 && k.c < best.c) ? k : best)).id;
+  const on = cands.filter((k) => k.d === 0);
+  if (on.length === 1) return on[0].id;
+  if (free && cands.length > 1) {
+    const ok = cands.filter((k) => free(k.id));
+    if (ok.length > 0 && ok.length < cands.length) return nearest(ok);
+  }
+  return nearest(cands);
+}
+
+/** Width (CSS pixels) of the outline of a vehicle on the screen. */
+export const hullWidth = (pts: P[]): number => Math.max(...pts.map((p) => p.x)) - Math.min(...pts.map((p) => p.x));
+
+/** The narrowest the outline of a vehicle gets, in any direction (CSS pixels): what a finger has to land on. */
+export function narrowestWidth(pts: P[]): number {
+  const hull = convexHull(pts);
+  let best = Infinity;
+  for (let a = 0; a < 180; a += 3) {
+    const c = Math.cos((a * Math.PI) / 180);
+    const s = Math.sin((a * Math.PI) / 180);
+    const ps = hull.map((p) => p.x * c + p.y * s);
+    best = Math.min(best, Math.max(...ps) - Math.min(...ps));
+  }
+  return best;
+}
+/**
+ * On a 360px-wide screen no vehicle's outline may be narrower than this. With the 12-point tolerance on both sides that is a
+ * 48-point target (the guideline is 44). It was 26 before the ring road came round the lot: the road costs ~5% of the size. When this and the density rule disagree, this one wins, which is why a level
+ * never has more than MAX_VEHICLES vehicles.
+ */
+export const MIN_OUTLINE = 24;

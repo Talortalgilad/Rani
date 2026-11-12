@@ -1,12 +1,13 @@
 import type { LevelData, LevelStats } from './level';
 import { Solver, difficultyScore } from './solver';
-import { SIZES, TrafficState } from './state';
+import { BELT_PITCH, BELT_WIDTH, SIZES, TrafficState, placeArea } from './state';
 
 /** Clears the level in the engine in the given order of vehicle ids. Returns whether it was won and how many places were used at most. */
-export function replay(level: Pick<LevelData, 'vehicles' | 'queue'>, order: number[]): { won: boolean; maxStation: number; moves: number } {
-  const st = new TrafficState(level.vehicles, level.queue);
+export function replay(level: Pick<LevelData, 'vehicles' | 'queue' | 'belts'>, order: number[]): { won: boolean; maxStation: number; moves: number } {
+  const st = new TrafficState(level.vehicles, level.queue, level.belts);
   let maxStation = 0;
   for (const id of order) {
+    st.autoRotate(id); // a vehicle that turns on the spot is turned to a way that is clear
     const r = st.tap(id);
     if (r.kind !== 'exit') return { won: false, maxStation, moves: st.moves };
     st.uncovered(id);
@@ -22,8 +23,11 @@ export function replay(level: Pick<LevelData, 'vehicles' | 'queue'>, order: numb
 }
 
 /** Footprints as a share of the lot. */
-export function densityOf(level: Pick<LevelData, 'vehicles' | 'lot'>): number {
-  const total = level.vehicles.reduce((s, v) => s + SIZES[v.type].len * SIZES[v.type].wid, 0);
+export function densityOf(level: Pick<LevelData, 'vehicles' | 'lot' | 'belts'>): number {
+  // a belt is one strip (its cars and the belt under them); a vehicle that turns has its turntable
+  const belts = (level as Pick<LevelData, 'belts'>).belts ?? [];
+  const beltArea = belts.reduce((s, b) => s + ((b.slots.length - 1) * BELT_PITCH + SIZES.car.len) * BELT_WIDTH, 0);
+  const total = level.vehicles.filter((v) => !v.belt).reduce((s, v) => s + placeArea(v), 0) + beltArea;
   return total / (4 * level.lot.halfW * level.lot.halfH);
 }
 

@@ -4,7 +4,7 @@
  * Nothing eager (home, gate, parent area, games' 2D code) may import this file.
  */
 export {
-  ACESFilmicToneMapping, NeutralToneMapping, ShapeGeometry, AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, CapsuleGeometry, CatmullRomCurve3,
+  ACESFilmicToneMapping, NeutralToneMapping, ShapeGeometry, RingGeometry, RepeatWrapping, AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, CapsuleGeometry, CatmullRomCurve3,
   CubicBezierCurve3, DoubleSide, Float32BufferAttribute, Matrix4, NoToneMapping, PMREMGenerator, Quaternion, Sprite,
   SpriteMaterial, TubeGeometry, BufferGeometry, CanvasTexture, CircleGeometry, Color, ConeGeometry, CylinderGeometry,
   DirectionalLight, ExtrudeGeometry, Fog, Group, HemisphereLight, InstancedMesh, MathUtils, Mesh,

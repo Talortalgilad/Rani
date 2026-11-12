@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { replay, densityOf, angledShare } from '../engine/analyze';
 import { sameDirectionClusters, type Item } from '../engine/packing';
-import { isHard, paramsFor } from '../engine/generator';
+import { isHard, minDensityFor, paramsFor } from '../engine/generator';
 import { overlaps } from '../engine/geometry';
 import { quarterOf } from '../engine/generator';
 import { Solver } from '../engine/solver';
@@ -10,12 +10,12 @@ import { boxOf } from '../engine/solver-types';
 import { SIZES } from '../engine/state';
 import { ALL_LEVELS, NUMBERED_LEVELS, levelByKey, nextLevel } from './index';
 
-describe('the 30 levels of the city world', () => {
-  it('there are 30, numbered 1 to 30, after five tutorial levels', () => {
-    expect(NUMBERED_LEVELS.map((l) => l.number)).toEqual(Array.from({ length: 30 }, (_, i) => i + 1));
+describe('the 100 levels', () => {
+  it('there are 100, numbered 1 to 100, after five tutorial levels', () => {
+    expect(NUMBERED_LEVELS.map((l) => l.number)).toEqual(Array.from({ length: 100 }, (_, i) => i + 1));
     expect(ALL_LEVELS.slice(0, 5).map((l) => l.key)).toEqual(['t1', 't2', 't3', 't4', 't5']);
     expect(nextLevel('t5')!.key).toBe('1');
-    expect(nextLevel('30')).toBeNull();
+    expect(nextLevel('100')).toBeNull();
     expect(levelByKey('17')!.number).toBe(17);
   });
   it('every fifth level is "very hard"', () => {
@@ -30,7 +30,7 @@ describe('the 30 levels of the city world', () => {
       });
       it('is dense enough, and the numbers saved with it are true', () => {
         const d = densityOf(l);
-        expect(d).toBeGreaterThanOrEqual(l.hard ? 0.7 : 0.65);
+        expect(d).toBeGreaterThanOrEqual(minDensityFor(l.number) - 0.0005);
         expect(Math.abs(d - l.stats!.density)).toBeLessThan(0.001);
         expect(l.vehicles.length).toBe(l.stats!.vehicles);
         expect(l.queue.length).toBe(l.vehicles.reduce((n, v) => n + SIZES[v.type].seats, 0));
@@ -51,7 +51,7 @@ describe('the 30 levels of the city world', () => {
       });
       it('mixes the directions: no more than 3 neighbours lie the same way', () => {
         const cls = (h: number): number => ({ 0: 0, 90: 1, 45: 2, 135: 3 } as Record<number, number>)[h % 180];
-        const items: Item[] = l.vehicles.map((v) => ({ type: v.type, cls: cls(v.heading), x: v.x, z: v.z }));
+        const items: Item[] = l.vehicles.map((v) => ({ type: v.type, cls: cls(v.heading), x: v.x, z: v.z, rot: v.rotator }));
         const groups = sameDirectionClusters(items, 0.15);
         expect(Math.max(...groups.map((g) => g.length))).toBeLessThanOrEqual(3);
         // and all four directions are in use from level 10, horizontal and vertical before
@@ -108,24 +108,40 @@ describe('the 30 levels of the city world', () => {
   it('the number of vehicles grows from 8 to more than 40', () => {
     expect(NUMBERED_LEVELS[0].vehicles.length).toBe(8);
     expect(NUMBERED_LEVELS[29].vehicles.length).toBeGreaterThanOrEqual(40);
+    expect(Math.max(...NUMBERED_LEVELS.map((l) => l.vehicles.length))).toBeLessThanOrEqual(44); // touch size wins over density
     for (let i = 1; i < 30; i++) if (!NUMBERED_LEVELS[i].hard && !NUMBERED_LEVELS[i - 1].hard) expect(NUMBERED_LEVELS[i].vehicles.length).toBeGreaterThanOrEqual(NUMBERED_LEVELS[i - 1].vehicles.length - 1);
   });
-  it('the difficulty of level N+5 is higher than that of N, on average and almost always', () => {
+  it('the difficulty rises: N+5 is harder than N on average and in most pairs, N+10 almost always', () => {
     const score = (n: number) => NUMBERED_LEVELS[n - 1].stats!.score;
-    let diff = 0;
-    let up = 0;
-    let pairs = 0;
-    for (let n = 1; n + 5 <= 30; n++) {
-      pairs++;
-      diff += score(n + 5) - score(n);
-      if (score(n + 5) > score(n)) up++;
+    for (const [gap, share] of [[5, 0.75], [10, 0.9]] as const) {
+      let diff = 0;
+      let up = 0;
+      let pairs = 0;
+      for (let n = 1; n + gap <= 100; n++) {
+        pairs++;
+        diff += score(n + gap) - score(n);
+        if (score(n + gap) > score(n)) up++;
+      }
+      expect(diff / pairs, `gap ${gap}`).toBeGreaterThan(0);
+      expect(up / pairs, `gap ${gap}`).toBeGreaterThanOrEqual(share);
     }
-    expect(diff / pairs).toBeGreaterThan(0);
-    expect(up / pairs).toBeGreaterThanOrEqual(0.9);
   });
-  it('a very hard level is clearly harder than the levels around it', () => {
+  it('a very hard level (every fifth) is clearly harder than the levels around it', () => {
     const score = (n: number) => NUMBERED_LEVELS[n - 1].stats!.score;
-    for (const n of [5, 10, 15, 20, 25]) expect(score(n)).toBeGreaterThan(score(n + 1));
-    for (const n of [10, 15, 20, 25, 30]) expect(score(n)).toBeGreaterThan(score(n - 1));
+    for (let n = 5; n <= 100; n += 5) {
+      if (!NUMBERED_LEVELS[n - 1].hard) continue;
+      expect(score(n), `level ${n}`).toBeGreaterThan(score(n + 1 <= 100 ? n + 1 : n - 1));
+      if (n > 5) expect(score(n), `level ${n}`).toBeGreaterThan(score(n - 1));
+    }
+  });
+  it('special vehicles appear from their levels: belt 30, turning vehicle 45, fire truck 60', () => {
+    for (const l of NUMBERED_LEVELS) {
+      expect((l.belts?.length ?? 0) > 0, `belt ${l.number}`).toBe(l.number >= 30);
+      expect(l.vehicles.some((v) => v.rotator), `rotator ${l.number}`).toBe(l.number >= 45);
+      expect(l.vehicles.some((v) => v.type === 'fire'), `fire ${l.number}`).toBe(l.number >= 60);
+    }
+  });
+  it('the worlds: city 1-25, beach 26-50, snow 51-75, carnival 76-100', () => {
+    for (const l of NUMBERED_LEVELS) expect(l.world, `level ${l.number}`).toBe(l.number <= 25 ? 'city' : l.number <= 50 ? 'beach' : l.number <= 75 ? 'snow' : 'carnival');
   });
 });

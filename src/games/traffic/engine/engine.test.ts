@@ -38,7 +38,7 @@ describe('rules', () => {
     const s = lot();
     expect(s.tap(0)).toMatchObject({ kind: 'blocked', by: 1 });
     expect(s.moves).toBe(0);
-    expect(s.tap(1)).toEqual({ kind: 'exit', id: 1, slot: 0 });
+    expect(s.tap(1)).toEqual({ kind: 'exit', id: 1, slot: 0, shifts: [] });
     expect(s.moves).toBe(1);
     expect(s.tap(0)).toMatchObject({ kind: 'exit', slot: 1 }); // the blocker has gone
   });

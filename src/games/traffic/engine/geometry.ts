@@ -61,3 +61,33 @@ export function firstContact(o: Obb, others: { id: number; box: Obb }[]): { dist
 
 export const insideLot = (o: Obb, halfW: number, halfH: number, pad = 0): boolean =>
   corners(o).every((p) => Math.abs(p.x) <= halfW - pad && Math.abs(p.z) <= halfH - pad);
+
+/** Distance from a point to a vehicle's footprint (0 inside it). */
+export function distanceToBox(px: number, pz: number, o: Obb): number {
+  const u = dirOf(o.heading);
+  const dx = px - o.x;
+  const dz = pz - o.z;
+  const a = Math.abs(dx * u.x + dz * u.z) - o.hl;
+  const b = Math.abs(-dx * u.z + dz * u.x) - o.hw;
+  return Math.hypot(Math.max(a, 0), Math.max(b, 0));
+}
+
+/**
+ * The radius of the biggest empty circle that fits inside the lot between the vehicles: how big the biggest hole is. A lot built as a
+ * ring around an empty middle has a big one; an empty corner does not (a circle does not fit into it).
+ */
+export function largestHole(boxes: Obb[], halfW: number, halfH: number, step = 0.15): number {
+  let best = 0;
+  for (let x = -halfW + step; x < halfW; x += step) {
+    for (let z = -halfH + step; z < halfH; z += step) {
+      let d = Math.min(halfW - Math.abs(x), halfH - Math.abs(z)); // the lot's own edges end the circle
+      for (const b of boxes) {
+        if (Math.abs(b.x - x) > d + b.hl + b.hw || Math.abs(b.z - z) > d + b.hl + b.hw) continue;
+        d = Math.min(d, distanceToBox(x, z, b));
+        if (d <= best) break;
+      }
+      if (d > best) best = d;
+    }
+  }
+  return best;
+}

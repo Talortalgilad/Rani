@@ -38,7 +38,9 @@ async function start(key: string, resume?: SaveData, book?: HelperBook): Promise
     import('./levels'),
   ]);
   if (my !== token) return;
-  const level: LevelData = levelByKey(key) ?? ALL_LEVELS[0];
+  // (in development a level can be handed in as data, for screenshots of levels that are not built yet)
+  const dev = import.meta.env.DEV ? (window as unknown as { __devLevels?: Record<string, LevelData> }).__devLevels?.[key] : undefined;
+  const level: LevelData = dev ?? levelByKey(key) ?? ALL_LEVELS[0];
   if (getTier() === '2d') setTier(initialTier('auto') === '2d' ? '2d' : initialTier('auto'));
   hud = buildHud(ctx!.container, {
     title: level.kind === 'tutorial' ? `הדרכה ${level.number}` : `שלב ${level.number}`,
@@ -52,7 +54,7 @@ async function start(key: string, resume?: SaveData, book?: HelperBook): Promise
   try {
     handle = await showScene(
       (env) =>
-        (scene = createTrafficScene(env, { vehicles: level.vehicles, queue: level.queue, lot: level.lot, world: level.world }, env.tier === 'high' ? 'high' : 'medium', () => {
+        (scene = createTrafficScene(env, { vehicles: level.vehicles, queue: level.queue, lot: level.lot, world: level.world, belts: level.belts }, env.tier === 'high' ? 'high' : 'medium', () => {
           // the picture may use the rows between the title and the helper buttons
           const top = Math.max(...['.tr-title', '.tr-count', '.tr-home'].map((q) => hud?.root.querySelector(q)?.getBoundingClientRect().bottom ?? 0), 90) + 6;
           const boosters = hud?.root.querySelector('.tr-boosters')?.getBoundingClientRect().top ?? window.innerHeight - 110;

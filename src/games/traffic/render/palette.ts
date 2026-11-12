@@ -11,14 +11,15 @@ export const COLOR_HEX: Record<ColorId, string> = {
   purple: '#8A4DFF',
   pink: '#FF4FB8',
   brown: '#9A5B2E',
+  fire: '#C62828',
 };
 
 /** A second shape on every passenger and place, so that colours that look alike (cyan and blue) are never confused. */
 export const COLOR_SHAPE: Record<ColorId, StickerShape> = {
-  red: 'circle', orange: 'triangle', yellow: 'star', green: 'leaf', cyan: 'drop', blue: 'square', purple: 'moon', pink: 'heart', brown: 'diamond',
+  red: 'circle', orange: 'triangle', yellow: 'star', green: 'leaf', cyan: 'drop', blue: 'square', purple: 'moon', pink: 'heart', brown: 'diamond', fire: 'helmet',
 };
 
-export type StickerShape = 'circle' | 'triangle' | 'star' | 'leaf' | 'drop' | 'square' | 'moon' | 'heart' | 'diamond';
+export type StickerShape = 'circle' | 'triangle' | 'star' | 'leaf' | 'drop' | 'square' | 'moon' | 'heart' | 'diamond' | 'helmet';
 
 /** Outline of a sticker as points around the origin, about 1 unit wide: used for the 3D shape and the canvas drawing. */
 export function shapePoints(shape: StickerShape): [number, number][] {
@@ -27,6 +28,7 @@ export function shapePoints(shape: StickerShape): [number, number][] {
   switch (shape) {
     case 'circle': return circle(0.5);
     case 'triangle': return [[0, 0.56], [-0.52, -0.38], [0.52, -0.38]];
+    case 'helmet': return [...circle(0.5, 0, Math.PI, 24), [-0.5, -0.12] as [number, number], [0.62, -0.12] as [number, number]];
     case 'diamond': return [[0, 0.58], [-0.44, 0], [0, -0.58], [0.44, 0]];
     case 'square': return [[-0.42, -0.42], [0.42, -0.42], [0.42, 0.42], [-0.42, 0.42]];
     case 'star': return Array.from({ length: 10 }, (_, i) => { const a = Math.PI / 2 + (i * Math.PI) / 5; const r = i % 2 === 0 ? 0.58 : 0.26; return [Math.cos(a) * r, Math.sin(a) * r] as [number, number]; });

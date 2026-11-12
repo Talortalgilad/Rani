@@ -1,5 +1,5 @@
 import { MAX_SLOTS, SIZES, REGULAR_SLOTS, type ColorId, type TrafficState } from './state';
-import { boxOf, type LevelDataLike } from './solver-types';
+import { boxOf, ownBox, type LevelDataLike } from './solver-types';
 import { overlaps, swept, FAR, type Obb } from './geometry';
 
 /**
@@ -28,11 +28,15 @@ export interface Solution {
   nodes: number;
 }
 
+/** One way a vehicle can drive out: the vehicles (bits) that must be gone, and the conveyor belts whose first places must be empty. */
+interface Way { mask: bigint; belts: { g: number; min: number }[] }
+
 export class Solver {
   private n: number;
   private seats: number[];
   private color: ColorId[];
-  private blockers: bigint[];
+  private ways: Way[][];
+  private beltMembers: number[][];
   private queue: ColorId[];
   private fail = new Map<number, Set<string>>();
   private ok = new Map<number, Map<string, number>>();
@@ -46,16 +50,40 @@ export class Solver {
     this.seats = vs.map((v) => SIZES[v.type].seats);
     this.color = vs.map((v) => v.color);
     this.queue = level.queue;
-    const boxes: Obb[] = vs.map(boxOf);
-    this.blockers = boxes.map((b, i) => {
-      const s = swept(b, FAR);
-      let m = 0n;
-      boxes.forEach((o, j) => {
-        if (j !== i && overlaps(s, o)) m |= 1n << BigInt(j);
-      });
-      return m;
-    });
     this.ids = vs.map((v) => v.id);
+    const belts = level.belts ?? [];
+    const slotBoxes = belts.map((b) => b.slots.map(([x, z]): Obb => ({ x, z, hl: SIZES.car.len / 2, hw: SIZES.car.wid / 2, heading: b.heading })));
+    const beltIdx = new Map(belts.map((b, g) => [b.id, g]));
+    this.beltMembers = belts.map(() => []);
+    vs.forEach((v, i) => {
+      if (v.belt) this.beltMembers[beltIdx.get(v.belt.id)!].push(i);
+    });
+    this.beltMembers.forEach((m) => m.sort((a, b) => vs[a].belt!.slot - vs[b].belt!.slot));
+    // what every vehicle is to the others: its footprint (a belt car: its place on the belt, handled below)
+    const col: (Obb | null)[] = vs.map((v) => (v.belt ? null : boxOf(v)));
+    this.ways = vs.map((v, i) => {
+      const headings = v.rotator ? [0, 90, 180, 270] : [v.heading];
+      const g0 = v.belt ? beltIdx.get(v.belt.id)! : -1;
+      return headings.map((h): Way => {
+        let own: Obb = { ...ownBox(v), heading: h };
+        // a car on a belt drives out of the front place
+        if (g0 >= 0) own = { ...own, x: belts[g0].slots[0][0], z: belts[g0].slots[0][1], heading: belts[g0].heading };
+        const sw = swept(own, FAR);
+        let mask = 0n;
+        col.forEach((c, j) => {
+          if (j !== i && c && overlaps(sw, c)) mask |= 1n << BigInt(j);
+        });
+        const bl: { g: number; min: number }[] = [];
+        slotBoxes.forEach((boxes, g) => {
+          if (g === g0) return;
+          const hit = boxes.findIndex((bx) => overlaps(sw, bx));
+          if (hit >= 0) bl.push({ g, min: hit });
+        });
+        // the cars ahead of it on its own belt
+        if (g0 >= 0) for (const m of this.beltMembers[g0]) if (vs[m].belt!.slot < v.belt!.slot) mask |= 1n << BigInt(m);
+        return { mask, belts: bl };
+      });
+    });
   }
   private ids: number[];
 
@@ -89,8 +117,16 @@ export class Solver {
     return out;
   }
 
+  /** How many cars of a conveyor belt are still parked. */
+  private onBelt(s: State, g: number): number {
+    let c = 0;
+    for (const m of this.beltMembers[g]) if ((s.parked >> BigInt(m)) & 1n) c++;
+    return c;
+  }
+
   isFree(s: State, i: number): boolean {
-    return (s.parked >> BigInt(i)) & 1n ? (this.blockers[i] & s.parked) === 0n : false;
+    if (!((s.parked >> BigInt(i)) & 1n)) return false;
+    return this.ways[i].some((w) => (w.mask & s.parked) === 0n && w.belts.every((b) => this.onBelt(s, b.g) <= b.min));
   }
 
   won(s: State): boolean {
@@ -269,13 +305,19 @@ export class Solver {
  * One number for the ramp test. More vehicles, a fuller station and deeper traps all count; the number of traps counts by
  * its logarithm (it can be in the thousands for a big lot, and that must not drown the rest).
  */
-export function difficultyScore(vehicles: number, m: Pick<Metrics, 'traps' | 'depth' | 'slotsNeeded'>): number {
-  return Math.round(vehicles * 1.5 + 8 * m.slotsNeeded + 2 * Math.min(m.depth, 20) + 1.5 * Math.log2(1 + m.traps));
+export interface ScoreExtra { hidden: number; belts: number; rotators: number; fires: number }
+/**
+ * How hard a level is. From level 33 the number of vehicles stops growing (a finger has to hit each one), so what makes a level
+ * harder is counted too: the "?" vehicles, and the special vehicles (belts, vehicles that turn, fire trucks).
+ */
+export function difficultyScore(vehicles: number, m: Pick<Metrics, 'traps' | 'depth' | 'slotsNeeded'>, extra?: ScoreExtra): number {
+  const e = extra ?? { hidden: 0, belts: 0, rotators: 0, fires: 0 };
+  return Math.round(vehicles * 1.5 + 8 * m.slotsNeeded + 2 * Math.min(m.depth, 20) + 1.5 * Math.log2(1 + m.traps) + 2 * e.hidden + 5 * e.belts + 4 * e.rotators + 5 * e.fires);
 }
 
 /** What would get a stuck game going again: an extra place, or the VIP place for one of the parked vehicles. */
 export function suggestHelper(vehicles: LevelDataLike['vehicles'], ts: TrafficState): { kind: 'slot' | 'vip'; vehicle?: number } | null {
-  const solver = new Solver({ vehicles, queue: ts.queue });
+  const solver = new Solver({ vehicles, queue: ts.queue, belts: ts.belts });
   const st = solver.stateOf(ts);
   const cap = ts.slots.length;
   if (cap < MAX_SLOTS && solver.can(st, cap + 1) === true) return { kind: 'slot' };

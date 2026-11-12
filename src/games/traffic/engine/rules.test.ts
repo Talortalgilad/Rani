@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_SLOTS, TrafficState, type VehicleDef } from './state';
+import { Solver } from './solver';
+import { MAX_SLOTS, TrafficState, type ColorId, type VehicleDef } from './state';
 
 const car = (id: number, x: number, z: number, heading: number, color: VehicleDef['color'] = 'red'): VehicleDef => ({ id, type: 'car', color, x, z, heading });
 const settle = (s: TrafficState, id: number) => {
@@ -99,5 +100,106 @@ describe('boarding order', () => {
     expect(s.nextBoarding()).toBeNull(); // yellow is first in the queue and nobody is yellow
     s.queue.shift();
     expect(s.nextBoarding()!.vehicle.id).toBe(1);
+  });
+});
+
+describe('conveyor belt', () => {
+  // three cars in a row driving to the right: the front one at x = 2.25, then 0, then -2.25
+  const belt = { id: 0, heading: 0, slots: [[2.25, 0], [0, 0], [-2.25, 0]] as [number, number][] };
+  const cars = [0, 1, 2].map((i): VehicleDef => ({ id: i, type: 'car', color: 'red', x: belt.slots[i][0], z: 0, heading: 0, belt: { id: 0, slot: i } }));
+  it('only the front car can leave; the others are blocked by the car in front', () => {
+    const s = new TrafficState(cars, ['red', 'red', 'red', 'red'], [belt]);
+    expect(s.tap(1).kind).toBe('blocked');
+    expect(s.tap(2).kind).toBe('blocked');
+    expect(s.tap(0).kind).toBe('exit');
+  });
+  it('when the first car leaves, the others move up one place', () => {
+    const s = new TrafficState(cars, Array<ColorId>(12).fill('red'), [belt]);
+    const r = s.tap(0);
+    expect(r.kind === 'exit' && r.shifts).toEqual([{ id: 1, x: 2.25, z: 0, slot: 0 }, { id: 2, x: 0, z: 0, slot: 1 }]);
+    expect(s.get(1).x).toBe(2.25);
+    expect(s.get(2).belt!.slot).toBe(1);
+    settle(s, 0);
+    expect(s.tap(2).kind).toBe('blocked'); // still behind car 1
+    expect(s.tap(1).kind).toBe('exit');
+  });
+  it('undo puts the belt back', () => {
+    const s = new TrafficState(cars, ['red', 'red', 'red', 'red'], [belt]);
+    s.tap(0);
+    s.arrive(0);
+    expect(s.undo()).toBe(true);
+    expect(s.get(1).x).toBe(0);
+    expect(s.get(1).belt!.slot).toBe(1);
+  });
+  it('a saved game keeps the belt as it was', () => {
+    const s = new TrafficState(cars, ['red', 'red', 'red', 'red'], [belt]);
+    s.tap(0);
+    settle(s, 0);
+    const t = new TrafficState(cars, ['red', 'red', 'red', 'red'], [belt]);
+    expect(t.load(JSON.parse(JSON.stringify(s.serialize())))).toBe(true);
+    expect(t.get(1).x).toBe(2.25);
+    expect(t.get(2).belt!.slot).toBe(1);
+  });
+  it('the solver knows that a car behind waits for the one in front', () => {
+    const lvl = { vehicles: cars, queue: ['red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red'] as ColorId[], belts: [belt] };
+    const sol = new Solver(lvl).solve();
+    expect(sol.solvable).toBe(true);
+    expect(sol.path).toEqual([0, 1, 2]);
+  });
+});
+
+describe('a vehicle that turns on the spot', () => {
+  // a car with another car right in front of it (to the right) and nothing above: it has to turn to leave
+  const defs: VehicleDef[] = [
+    { id: 0, type: 'car', color: 'red', x: 0, z: 0, heading: 0, rotator: true },
+    { id: 1, type: 'car', color: 'blue', x: 3, z: 0, heading: 90 },
+  ];
+  it('is blocked until it faces a free way; turning is not a move', () => {
+    const s = new TrafficState(defs, ['red', 'red', 'red', 'red', 'blue', 'blue', 'blue', 'blue']);
+    expect(s.tap(0).kind).toBe('blocked');
+    expect(s.rotate(0)).toBe(90);
+    expect(s.moves).toBe(0);
+    expect(s.tap(0).kind).toBe('exit');
+  });
+  it('only the vehicle itself can turn', () => {
+    const s = new TrafficState(defs, ['red']);
+    expect(s.rotate(1)).toBeNull();
+  });
+  it('autoRotate finds a clear heading, and the solver knows it is free as soon as any way is clear', () => {
+    const s = new TrafficState(defs, ['red', 'red', 'red', 'red', 'blue', 'blue', 'blue', 'blue']);
+    expect(s.autoRotate(0)).toBe(true);
+    const sv = new Solver({ vehicles: defs, queue: ['red', 'red', 'red', 'red', 'blue', 'blue', 'blue', 'blue'] });
+    expect(sv.isFree(sv.initial(), 0)).toBe(true);
+  });
+  it('its turntable (a square) is what the others see', () => {
+    // a car whose way passes beside the turntable is blocked by it, wherever the car on it points
+    const d2: VehicleDef[] = [{ id: 0, type: 'car', color: 'red', x: 0, z: 0, heading: 0, rotator: true }, { id: 1, type: 'car', color: 'blue', x: 0, z: 2.1, heading: 270 }];
+    const s = new TrafficState(d2, ['blue', 'blue', 'blue', 'blue']);
+    expect(s.tap(1).kind).toBe('blocked');
+  });
+});
+
+describe('a fire truck', () => {
+  it('carries 8 firefighters, and only a fire truck takes them', () => {
+    const defs: VehicleDef[] = [
+      { id: 0, type: 'fire', color: 'fire', x: -3, z: 0, heading: 270 },
+      { id: 1, type: 'bus', color: 'red', x: 3, z: 0, heading: 270 },
+    ];
+    const s = new TrafficState(defs, [...Array<ColorId>(8).fill('fire'), ...Array<ColorId>(10).fill('red')]);
+    s.tap(1);
+    s.arrive(1);
+    expect(s.nextBoarding()).toBeNull(); // the first in the queue is a firefighter: the red bus does not take him
+    s.tap(0);
+    s.arrive(0);
+    expect(s.nextBoarding()!.vehicle.id).toBe(0);
+    let n = 0;
+    for (;;) {
+      const b = s.board();
+      if (!b) break;
+      n++;
+      if (b.full) s.depart(b.vehicle.id);
+      if (n > 40) break;
+    }
+    expect(s.boarded).toBe(18);
   });
 });

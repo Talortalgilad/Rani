@@ -94,6 +94,7 @@ const SPECS: Record<VType, Spec> = {
   car: { len: 1.94, wid: 0.98, bodyH: 0.5, cabH: 0.42, wheelR: 0.3 },
   van: { len: 2.94, wid: 0.98, bodyH: 0.54, cabH: 0.48, wheelR: 0.32 },
   bus: { len: 3.94, wid: 1.08, bodyH: 0.64, cabH: 0.56, wheelR: 0.36 },
+  fire: { len: 3.94, wid: 1.08, bodyH: 0.64, cabH: 0.5, wheelR: 0.36 },
 };
 const baseOf = (s: Spec): number => s.wheelR * 0.72; // the body sits low, the wheels stand out
 const ROOF_CAP = 0.12;
@@ -115,15 +116,15 @@ function buildVehicle(type: VType, bodyHex: string, low: boolean): T.BufferGeome
   parts.push(rbox(L, bodyH, W, r, 0, base + bodyH / 2, 0, bodyHex, seg));
 
   // cabin: ONE rounded shell in the body colour, narrower than the body, whose top is the roof (nothing overhangs)
-  const cabLen = type === 'car' ? L * 0.56 : type === 'van' ? L * 0.9 : L * 0.96;
-  const cabX = type === 'car' ? -L * 0.07 : type === 'van' ? -L * 0.03 : 0;
+  const cabLen = type === 'car' ? L * 0.56 : type === 'van' ? L * 0.9 : type === 'fire' ? L * 0.34 : L * 0.96;
+  const cabX = type === 'car' ? -L * 0.07 : type === 'van' ? -L * 0.03 : type === 'fire' ? L * 0.3 : 0;
   const cabW = W * 0.9;
   const shellBottom = bodyTop - 0.28;
   const roofTop = bodyTop + cabH + ROOF_CAP;
   parts.push(rbox(cabLen, roofTop - shellBottom, cabW, 0.15, cabX, (roofTop + shellBottom) / 2, 0, bodyHex, seg));
 
   // separate window panes in bright glossy cyan; what is left of the shell between them are the pillars
-  const n = type === 'car' ? 2 : type === 'van' ? 3 : 6;
+  const n = type === 'car' ? 2 : type === 'van' ? 3 : type === 'fire' ? 2 : 6;
   const pillar = 0.09;
   const margin = 0.14;
   const paneLen = (cabLen - margin * 2 - pillar * (n - 1)) / n;
@@ -153,6 +154,20 @@ function buildVehicle(type: VType, bodyHex: string, low: boolean): T.BufferGeome
   }
   parts.push(box(0.05, 0.13, W * 0.34, L / 2 - 0.005, base + bodyH * 0.28, 0, DARK));
   if (type === 'bus') for (const side of [1, -1]) parts.push(box(0.06, 0.2, 0.05, L / 2 - 0.2, bodyTop + 0.22, side * (W / 2 + 0.05), DARK));
+
+  // a fire truck: a ladder on the back, a light bar on the cab, white stripes and a rack of equipment along the sides
+  if (type === 'fire') {
+    const top = bodyTop + 0.02;
+    for (const side of [1, -1]) {
+      parts.push(box(2.3, 0.07, 0.07, -L * 0.17, top + 0.2, side * 0.3, '#e8e8ee'));
+      parts.push(box(2.1, 0.05, 0.05, -L * 0.17, top + 0.1, side * 0.3, '#9aa0b0'));
+      parts.push(box(1.7, 0.4, 0.04, -L * 0.14, base + bodyH * 0.55, side * (W / 2 + 0.01), '#c8ccd8')); // equipment doors
+    }
+    for (let i = 0; i < 9; i++) parts.push(box(0.05, 0.05, 0.62, -L * 0.17 - 1.0 + i * 0.25, top + 0.2, 0, '#e8e8ee'));
+    parts.push(box(0.2, 0.1, 0.5, cabX - 0.3, roofY(type) + 0.07, 0, '#2f6bff'));
+    parts.push(box(0.2, 0.1, 0.22, cabX - 0.3, roofY(type) + 0.07, 0.2, '#ff3b30'));
+    parts.push(box(L * 0.97, 0.07, W * 1.01, 0, base + bodyH * 0.3, 0, '#ffffff'));
+  }
 
   // the arrow on the roof (60% of the old size, puffy). A hidden "?" vehicle has none until it is uncovered.
   if (bodyHex !== BLACK_HEX) {

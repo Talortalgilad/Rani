@@ -10,9 +10,22 @@ import { SIZES, type VType } from './state';
 export const CLASS_THETA = [0, 90, 45, 135] as const;
 export const isDiagClass = (c: number): boolean => c >= 2;
 
-export interface Item { type: VType; cls: number; x: number; z: number }
+export interface Item {
+  type: VType;
+  cls: number;
+  x: number;
+  z: number;
+  /** a footprint of its own: a belt of cars is one long piece, a vehicle on a turntable a square */
+  dims?: { len: number; wid: number };
+  /** how many vehicles the piece is (a belt is 3) */
+  w?: number;
+  /** turns on the spot: it has no direction, so it is not counted in groups of vehicles that lie the same way */
+  rot?: boolean;
+}
 
-export const itemBox = (it: Item, grow = 0): Obb => ({ x: it.x, z: it.z, hl: SIZES[it.type].len / 2 + grow, hw: SIZES[it.type].wid / 2 + grow, heading: CLASS_THETA[it.cls] });
+export const dimsOf = (it: Pick<Item, 'type' | 'dims'>): { len: number; wid: number } => it.dims ?? SIZES[it.type];
+
+export const itemBox = (it: Item, grow = 0): Obb => ({ x: it.x, z: it.z, hl: dimsOf(it).len / 2 + grow, hw: dimsOf(it).wid / 2 + grow, heading: CLASS_THETA[it.cls] });
 
 /** How far (in the axis where they overlap least) two boxes overlap; null when they do not. */
 function mtv(a: Obb, b: Obb): { nx: number; nz: number; depth: number } | null {
@@ -46,7 +59,7 @@ function mtv(a: Obb, b: Obb): { nx: number; nz: number; depth: number } | null {
   return { nx: bx, nz: bz, depth: best };
 }
 
-const reach = (it: Item): number => Math.hypot(SIZES[it.type].len, SIZES[it.type].wid) / 2;
+const reach = (it: Item): number => Math.hypot(dimsOf(it).len, dimsOf(it).wid) / 2;
 
 /** Pushes the items apart and inside the box. True when nothing overlaps any more (with `gap` of room). */
 export function relax(items: Item[], hw: number, hh: number, gap: number, iters: number): boolean {
@@ -56,8 +69,9 @@ export function relax(items: Item[], hw: number, hh: number, gap: number, iters:
     // inside the box
     for (const q of items) {
       const th = (CLASS_THETA[q.cls] * Math.PI) / 180;
-      const ex = Math.abs(Math.cos(th)) * (SIZES[q.type].len / 2 + gap) + Math.abs(Math.sin(th)) * (SIZES[q.type].wid / 2 + gap);
-      const ez = Math.abs(Math.sin(th)) * (SIZES[q.type].len / 2 + gap) + Math.abs(Math.cos(th)) * (SIZES[q.type].wid / 2 + gap);
+      const d = dimsOf(q);
+      const ex = Math.abs(Math.cos(th)) * (d.len / 2 + gap) + Math.abs(Math.sin(th)) * (d.wid / 2 + gap);
+      const ez = Math.abs(Math.sin(th)) * (d.len / 2 + gap) + Math.abs(Math.cos(th)) * (d.wid / 2 + gap);
       const nx = Math.max(-hw + ex, Math.min(hw - ex, q.x));
       const nz = Math.max(-hh + ez, Math.min(hh - ez, q.z));
       worst = Math.max(worst, Math.abs(nx - q.x), Math.abs(nz - q.z));
@@ -89,7 +103,7 @@ export interface Packed { items: Item[]; hw: number; hh: number }
 
 /** Compresses `items` (random starting positions) into the smallest box (of the given width : height ratio) that it can. */
 export function compress(items: Item[], aspect: number, gap: number, r: () => number): Packed | null {
-  const area = items.reduce((s, q) => s + SIZES[q.type].len * SIZES[q.type].wid, 0);
+  const area = items.reduce((s, q) => s + dimsOf(q).len * dimsOf(q).wid, 0);
   let hw = Math.sqrt(area / 0.5 / (4 * aspect));
   let hh = hw * aspect;
   for (const q of items) {
@@ -162,14 +176,38 @@ export function sameDirectionClusters(items: Item[], near: number): number[][] {
     return mtv(itemBox(a, near), itemBox(b, near)) !== null;
   };
   for (let i = 0; i < n; i++) {
-    if (seen[i]) continue;
+    if (seen[i] || items[i].rot) continue;
     const comp = [i];
     seen[i] = true;
-    for (let k = 0; k < comp.length; k++) for (let j = 0; j < n; j++) if (!seen[j] && adj(comp[k], j)) {
+    for (let k = 0; k < comp.length; k++) for (let j = 0; j < n; j++) if (!seen[j] && !items[j].rot && adj(comp[k], j)) {
       seen[j] = true;
       comp.push(j);
     }
-    out.push(comp);
+    // a belt counts as the vehicles on it: its index appears once for each
+    out.push(comp.flatMap((idx) => Array<number>(items[idx].w ?? 1).fill(idx)));
   }
   return out;
+}
+
+/** How many vehicles lie the same way in the group of neighbours that item `idx` belongs to (a belt counts as its cars). */
+export function groupSizeOf(items: Item[], idx: number, near: number): number {
+  if (items[idx].rot) return 1;
+  const seen = new Set<number>([idx]);
+  const queue = [idx];
+  let size = items[idx].w ?? 1;
+  for (let k = 0; k < queue.length; k++) {
+    const a = items[queue[k]];
+    for (let j = 0; j < items.length; j++) {
+      if (seen.has(j) || items[j].rot) continue;
+      const b = items[j];
+      if (a.cls !== b.cls) continue;
+      const r = reach(a) + reach(b) + 2 * near;
+      if (Math.abs(a.x - b.x) > r || Math.abs(a.z - b.z) > r) continue;
+      if (mtv(itemBox(a, near), itemBox(b, near)) === null) continue;
+      seen.add(j);
+      queue.push(j);
+      size += b.w ?? 1;
+    }
+  }
+  return size;
 }

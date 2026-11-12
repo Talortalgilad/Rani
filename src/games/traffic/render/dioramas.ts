@@ -206,6 +206,11 @@ export function buildBeach(half = 5): Diorama {
   parts.push(beachBall(-3.6, 0.42, -12.9), lifeRing(2.7, 0.3, -12.7), starfish(-1.5, -12.2), starfish(1.1, -14.4));
   parts.push(...cabana(half + 0.6, -15.4));
   parts.push(...ropeFence(-half - 0.4, half - 0.4, -9.55));
+  // waves: long foamy crests lying on the sea, curling toward the shore
+  for (let i = 0; i < 4; i++) {
+    const pts = Array.from({ length: 26 }, (_, k) => new T.Vector3(-23 + k * 1.85, 0.06, -23.4 - i * 1.7 + Math.sin(k * 0.8 + i * 1.3) * 0.3));
+    parts.push(colored(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 70, 0.08, 5, false), '#ffffff'));
+  }
   const merged = T.mergeGeometries(parts, false);
   parts.forEach((p) => p.dispose());
   const mat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, metalness: 0, side: T.DoubleSide, envMapIntensity: 0.5 });
@@ -329,5 +334,235 @@ export function buildCity(half = 5): Diorama {
   };
 }
 
-export type WorldKind = 'city' | 'beach';
-export const buildWorld = (w: WorldKind, half: number): Diorama => (w === 'city' ? buildCity(half) : buildBeach(half));
+
+// ---- the snow ---------------------------------------------------------------------------------------------------------
+
+/** A fir tree: stacked cones, with a cap of snow on each. */
+function fir(x: number, z: number, s = 1): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  out.push(at(colored(new T.CylinderGeometry(0.2 * s, 0.26 * s, 0.7 * s, 8), '#7a4f2e'), x, 0.35 * s, z));
+  const tiers: [number, number, number][] = [[1.25, 1.4, 0.9], [0.95, 1.25, 1.75], [0.65, 1.1, 2.5]];
+  for (const [r, h, y] of tiers) {
+    out.push(at(colored(new T.ConeGeometry(r * s, h * s, 10), '#2f7d57'), x, y * s, z));
+    out.push(at(colored(new T.ConeGeometry(r * 0.62 * s, h * 0.55 * s, 10), '#ffffff'), x, (y + h * 0.28) * s, z));
+  }
+  return out;
+}
+
+function snowman(x: number, z: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  const ball = (r: number, y: number, hex = '#ffffff') => out.push(at(colored(new T.SphereGeometry(r, 12, 9), hex), x, y, z));
+  ball(0.78, 0.78);
+  ball(0.56, 1.8);
+  ball(0.42, 2.58);
+  out.push(at(colored(new T.CylinderGeometry(0.3, 0.3, 0.32, 10), '#2b2833'), x, 3.05, z));
+  out.push(at(colored(new T.CylinderGeometry(0.46, 0.46, 0.06, 12), '#2b2833'), x, 2.9, z));
+  const nose = new T.ConeGeometry(0.09, 0.45, 8);
+  nose.rotateX(Math.PI / 2);
+  out.push(at(colored(nose, '#ff8a1f'), x, 2.58, z + 0.55));
+  for (const dx of [-0.14, 0.14]) out.push(at(colored(new T.SphereGeometry(0.06, 6, 5), '#1a1822'), x + dx, 2.7, z + 0.38));
+  out.push(at(colored(new T.TorusGeometry(0.4, 0.1, 6, 14), '#ee3b3b'), x, 2.1, z));
+  for (const side of [-1, 1]) {
+    const arm = new T.CylinderGeometry(0.04, 0.04, 1.0, 5);
+    arm.rotateZ(side * 1.0);
+    out.push(at(colored(arm, '#7a4f2e'), x + side * 0.85, 1.9, z));
+  }
+  return out;
+}
+
+function sled(x: number, z: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  out.push(at(colored(rb(1.7, 0.14, 0.7, 0.05), '#c0392b'), x, 0.35, z));
+  for (const dz of [-0.28, 0.28]) {
+    const c = new T.CatmullRomCurve3([new T.Vector3(x - 1.0, 0.42, z + dz), new T.Vector3(x - 0.85, 0.12, z + dz), new T.Vector3(x + 0.85, 0.12, z + dz), new T.Vector3(x + 1.0, 0.42, z + dz)]);
+    out.push(colored(new T.TubeGeometry(c, 12, 0.04, 6, false), '#8a8fa0'));
+  }
+  for (const dx of [-0.5, 0.5]) for (const dz of [-0.28, 0.28]) out.push(at(colored(new T.CylinderGeometry(0.03, 0.03, 0.25, 5), '#8a8fa0'), x + dx, 0.22, z + dz));
+  return out;
+}
+
+function snowPile(x: number, z: number, s = 1): T.BufferGeometry {
+  const g = new T.SphereGeometry(1, 12, 8);
+  g.scale(1.3 * s, 0.45 * s, 1 * s);
+  return at(colored(g, '#ffffff'), x, 0.05, z);
+}
+
+export function buildSnow(half = 5): Diorama {
+  const group = new T.Group();
+  const parts: T.BufferGeometry[] = [];
+  const xR = half + 0.3;
+  parts.push(...fir(-half - 1.6, -12.8, 1.1), ...fir(-half + 0.9, -17.2, 1.35), ...fir(half - 3.2, -16.2, 1.0), ...fir(xR + 3.3, -12.4, 1.15), ...fir(-half - 3.4, -18, 1.3));
+  parts.push(...snowman(-1.6, -13.4), ...sled(2.4, -14.2));
+  parts.push(snowPile(-4.2, -12, 1), snowPile(0.6, -16.3, 1.3), snowPile(3.9, -11.7, 0.8), snowPile(-3, -17.5, 1.1), snowPile(xR + 1.5, -17.5, 1));
+  parts.push(...lamp(-half - 0.2, -11.4), ...lamp(0.3, -11.4), ...lamp(xR + 1.6, -11.4));
+  // the cabin the passengers come out of: wooden, with a roof heavy with snow
+  parts.push(at(colored(rb(3.0, 2.2, 2.6, 0.2), '#a8703f'), xR, 1.1, -17.0));
+  parts.push(at(colored(rb(3.5, 0.55, 3.1, 0.22), '#ffffff'), xR, 2.45, -17.0));
+  parts.push(at(colored(rb(1.0, 1.6, 0.2, 0.08), '#5b3a22'), xR - 0.5, 0.8, -15.62));
+  parts.push(at(colored(rb(0.9, 0.7, 0.2, 0.08), '#ffe9a8'), xR + 0.8, 1.3, -15.62));
+  parts.push(...ropeFence(-half - 0.4, half - 0.4, -9.55));
+  // mountains far away, with white tops
+  [[-14, 15, 6.5], [-4, 20, 9], [8, 16, 7], [17, 22, 10]].forEach(([x, w, h], i) => {
+    parts.push(at(colored(new T.ConeGeometry(w / 2, h, 6), '#8fa6c4'), x, h / 2, -29 - (i % 2) * 2));
+    parts.push(at(colored(new T.ConeGeometry(w / 4.4, h * 0.38, 6), '#ffffff'), x, h * 0.81, -29 - (i % 2) * 2));
+  });
+  const merged = T.mergeGeometries(parts, false);
+  parts.forEach((p) => p.dispose());
+  const mat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.65, metalness: 0, side: T.DoubleSide, envMapIntensity: 0.5 });
+  const props = new T.Mesh(merged, mat);
+  props.castShadow = true;
+  props.receiveShadow = true;
+  group.add(props);
+  return {
+    group,
+    queuePoints: queuePointsFor(half),
+    theme: { ground: '#f1f5fb', pad: '#dfe7f2', padEdge: '#a3b1ca', platform: '#97a8c4', padVip: '#d9a93a', padP: '#8394b3', padLocked: '#93a2bb', skyTop: '#8fcbf5', skyBottom: '#eef6ff', groundNorth: -30 },
+    dispose() {
+      merged.dispose();
+      mat.dispose();
+    },
+  };
+}
+
+// ---- the carnival -------------------------------------------------------------------------------------------------------
+
+function ferrisWheel(x: number, z: number, r: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  const cy = r + 1.6;
+  const ring = new T.TorusGeometry(r, 0.2, 8, 36);
+  out.push(at(colored(ring, '#ff5a7a'), x, cy, z));
+  out.push(at(colored(new T.TorusGeometry(r * 0.55, 0.12, 6, 28), '#ffd02b'), x, cy, z));
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const spoke = new T.BoxGeometry(r * 2, 0.08, 0.08);
+    spoke.rotateZ(a);
+    out.push(at(colored(spoke, '#e8e2f0'), x, cy, z));
+    const cabin = rb(0.9, 0.8, 0.9, 0.2);
+    out.push(at(colored(cabin, ['#ff4f4f', '#ffd02b', '#2ec4f0', '#47c94a', '#8a4dff', '#ff8a1f'][i % 6]), x + Math.cos(a) * r, cy + Math.sin(a) * r - 0.55, z));
+  }
+  for (const side of [-1, 1]) {
+    const leg = new T.CylinderGeometry(0.16, 0.2, cy * 1.12, 8);
+    leg.rotateZ(side * 0.32);
+    out.push(at(colored(leg, '#7d5fa8'), x + side * r * 0.36, cy / 2, z));
+  }
+  out.push(at(colored(new T.SphereGeometry(0.5, 12, 9), '#ffd02b'), x, cy, z));
+  return out;
+}
+
+function balloons(x: number, z: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  const cols = ['#ff4f4f', '#ffd02b', '#2ec4f0', '#ff4fb8', '#47c94a', '#8a4dff'];
+  cols.forEach((hex, i) => {
+    const bx = x + Math.cos(i * 1.7) * 0.7;
+    const bz = z + Math.sin(i * 1.7) * 0.5;
+    const by = 3.2 + (i % 3) * 0.5;
+    const b = new T.SphereGeometry(0.45, 12, 9);
+    b.scale(1, 1.2, 1);
+    out.push(at(colored(b, hex), bx, by, bz));
+    out.push(at(colored(new T.CylinderGeometry(0.012, 0.012, by - 0.3, 3), '#ffffff'), (bx + x) / 2, (by - 0.3) / 2 + 0.2, (bz + z) / 2));
+  });
+  out.push(at(colored(new T.CylinderGeometry(0.25, 0.3, 0.3, 8), '#7d5fa8'), x, 0.15, z));
+  return out;
+}
+
+function bunting(x0: number, x1: number, z: number, y: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  const cols = ['#ff4f4f', '#ffd02b', '#2ec4f0', '#47c94a', '#ff4fb8'];
+  const n = Math.round((x1 - x0) / 0.7);
+  for (let i = 0; i < n; i++) {
+    const x = x0 + ((x1 - x0) * (i + 0.5)) / n;
+    const sag = Math.sin(((i + 0.5) / n) * Math.PI) * 0.7;
+    const tri = new T.ConeGeometry(0.28, 0.5, 3);
+    tri.rotateX(Math.PI);
+    out.push(at(colored(tri, cols[i % cols.length]), x, y - sag - 0.25, z));
+  }
+  for (const x of [x0, x1]) out.push(at(colored(new T.CylinderGeometry(0.06, 0.08, y + 0.2, 6), '#7d5fa8'), x, (y + 0.2) / 2, z));
+  return out;
+}
+
+function candyStand(x: number, z: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  out.push(at(colored(rb(3.0, 1.2, 2.2, 0.15), '#ff7eb6'), x, 0.6, z));
+  out.push(at(colored(rb(3.2, 0.12, 2.4, 0.05), '#ffffff'), x, 1.28, z));
+  for (let i = 0; i < 8; i++) out.push(at(colored(rb(0.4, 0.1, 1.6, 0.04), i % 2 ? '#ffffff' : '#ff4f4f'), x - 1.4 + i * 0.4, 2.35, z + 0.5));
+  for (const dx of [-1.45, 1.45]) out.push(at(colored(new T.CylinderGeometry(0.07, 0.07, 1.2, 6), '#ffffff'), x + dx, 1.9, z + 1.15));
+  out.push(at(colored(rb(1.0, 1.0, 0.2, 0.08), '#5b3a6e'), x - 0.6, 0.55, z + 1.12));
+  out.push(at(colored(rb(0.9, 0.7, 0.2, 0.08), '#ffe9a8'), x + 0.8, 0.95, z + 1.12));
+  const cone = new T.ConeGeometry(0.4, 0.9, 8);
+  out.push(at(colored(cone, '#ffd02b'), x + 1.0, 1.8, z - 0.4));
+  return out;
+}
+
+/** A striped circus tent: red and white wedges on the wall and the roof, and a flag on top. */
+function circusTent(x: number, z: number, r: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  const wallH = r * 0.75;
+  const roofH = r * 0.95;
+  const n = 12;
+  for (let i = 0; i < n; i++) {
+    const hex = i % 2 ? '#fff6ea' : '#ff3b57';
+    const t0 = (i / n) * Math.PI * 2;
+    const dt = (Math.PI * 2) / n;
+    out.push(at(colored(new T.CylinderGeometry(r, r, wallH, 1, 1, true, t0, dt), hex), x, wallH / 2, z));
+    out.push(at(colored(new T.ConeGeometry(r * 1.12, roofH, 1, 1, true, t0, dt), hex), x, wallH + roofH / 2, z));
+  }
+  // the door: a dark opening with a little awning
+  out.push(at(colored(new T.BoxGeometry(r * 0.55, wallH * 0.7, 0.12), '#5b2a63'), x, wallH * 0.35, z + r * 0.97));
+  out.push(at(colored(new T.BoxGeometry(r * 0.75, 0.12, 0.45), '#ffd02b'), x, wallH * 0.74, z + r * 1.02));
+  // the flag
+  const top = wallH + roofH;
+  out.push(at(colored(new T.CylinderGeometry(0.05, 0.05, 1.5, 6), '#e8e2f0'), x, top + 0.7, z));
+  const flag = new T.CylinderGeometry(0, 0.34, 0.95, 3);
+  flag.rotateZ(-Math.PI / 2);
+  flag.scale(1, 1, 0.12);
+  out.push(at(colored(flag, '#ffd02b'), x + 0.5, top + 1.2, z));
+  out.push(at(colored(new T.SphereGeometry(0.12, 8, 6), '#ffd02b'), x, top + 1.5, z));
+  return out;
+}
+
+/** The plaza: pink and cream tiles instead of sand. */
+function plaza(x0: number, x1: number, z0: number, z1: number, tile = 2.4): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  let ix = 0;
+  for (let x = x0; x < x1 - 0.01; x += tile, ix++) {
+    let iz = 0;
+    for (let z = z0; z < z1 - 0.01; z += tile, iz++) {
+      out.push(flat(tile, tile, x + tile / 2, z + tile / 2, 0.02, (ix + iz) % 2 ? '#ffd9ec' : '#fff1c9'));
+    }
+  }
+  return out;
+}
+
+export function buildCarnival(half = 5): Diorama {
+  const group = new T.Group();
+  const parts: T.BufferGeometry[] = [];
+  const xR = half + 0.3;
+  // the whole Ferris wheel stands behind the queue where the picture always shows it (not cut by the title)
+  parts.push(...ferrisWheel(half * 0.3, -16.2, 3.0));
+  parts.push(...balloons(-half - 0.9, -13), ...balloons(xR + 3.1, -12));
+  parts.push(...bunting(-half - 1.2, xR + 3, -11.1, 3.2));
+  parts.push(...candyStand(xR, -17));
+  parts.push(...circusTent(-half - 0.6, -17.5, 2.3));
+  parts.push(...lamp(-half - 0.2, -11.4), ...lamp(0.3, -11.4), ...lamp(xR + 1.6, -11.4));
+  parts.push(...ropeFence(-half - 0.4, half - 0.4, -9.55));
+  parts.push(...plaza(-19.2, 19.2, -26.4, -9.6));
+  const merged = T.mergeGeometries(parts, false);
+  parts.forEach((p) => p.dispose());
+  const mat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0, side: T.DoubleSide, envMapIntensity: 0.55 });
+  const props = new T.Mesh(merged, mat);
+  props.castShadow = true;
+  props.receiveShadow = true;
+  group.add(props);
+  return {
+    group,
+    queuePoints: queuePointsFor(half),
+    theme: { ground: '#e7cdf0', pad: '#f9eedd', padEdge: '#c9a574', platform: '#8c6bb5', padVip: '#ffd02b', padP: '#6e4f9a', padLocked: '#7d60a6', skyTop: '#6ec6ff', skyBottom: '#ffe9c8', groundNorth: -30 },
+    dispose() {
+      merged.dispose();
+      mat.dispose();
+    },
+  };
+}
+
+export type WorldKind = 'city' | 'beach' | 'snow' | 'carnival';
+export const buildWorld = (w: WorldKind, half: number): Diorama => (w === 'city' ? buildCity(half) : w === 'beach' ? buildBeach(half) : w === 'snow' ? buildSnow(half) : buildCarnival(half));
