@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { imageUrl } from '../art/images';
 import { BODY_REGIONS, partAt } from './body';
-import { WORDS, WORLD_NAMES, artKey, wordsOfWorld } from './words';
+import { WORDS, WORLD_NAMES, labelOf, wordsOfWorld } from './words';
 
 const PICTURES = import.meta.glob('../../../../public/english/words/*.webp', { query: '?url', eager: false });
 const BODY = import.meta.glob('../../../../public/english/body.webp', { query: '?url', eager: false });
@@ -13,12 +13,21 @@ describe('the words and their pictures', () => {
     expect(new Set(WORDS.map((w) => w.id)).size).toBe(108);
     expect(Object.keys(WORLD_NAMES)).toHaveLength(12);
   });
+  it('the key is the file name, and the text that is shown and read is separate from it', () => {
+    for (const w of WORDS) expect(w.id, w.id).toMatch(/^[a-z]+$/);
+    expect(labelOf('tv')).toBe('TV');
+    expect(labelOf('icecream')).toBe('ice cream');
+    expect(labelOf('bars')).toBe('monkey bars');
+    expect(labelOf('wall')).toBe('climbing wall');
+    expect(labelOf('beam')).toBe('balance beam');
+    expect(labelOf('ball')).toBe('ball');
+  });
   it('every word has a Hebrew meaning', () => {
     for (const w of WORDS) expect(w.he.length, w.id).toBeGreaterThan(0);
   });
   it('every word has exactly one picture, and no picture is left over or used by two words', () => {
     const files = Object.keys(PICTURES).map((p) => p.split('/').pop()!).sort();
-    const wanted = WORDS.map((w) => `${artKey(w.id)}.webp`).sort();
+    const wanted = WORDS.map((w) => `${w.id}.webp`).sort();
     expect(files).toEqual(wanted);
     expect(new Set(WORDS.map((w) => imageUrl(w.id))).size).toBe(108);
   });

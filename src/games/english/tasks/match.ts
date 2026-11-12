@@ -1,4 +1,5 @@
 import { itemImg } from '../art/images';
+import { labelOf } from '../content/words';
 import { el, pictureButton, shuffled, type TaskEnv, type TaskHandle } from './common';
 
 /**
@@ -17,7 +18,7 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
   shuffled(ids, seed).forEach((id) => {
     const w = el('button', 'match-word', right);
     w.type = 'button';
-    w.textContent = id;
+    w.textContent = labelOf(id);
     words.set(id, w);
   });
   const joined = new Set<string>();
@@ -58,7 +59,7 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
       pics.get(picId)!.classList.add('win');
       words.get(wordId)!.classList.add('joined');
       env.sound('correct');
-      env.say(picId, true);
+      env.say(labelOf(picId), true);
       env.sparkle((from.x + to.x) / 2, (from.y + to.y) / 2);
       if (joined.size === ids.length) {
         env.face('dance');
@@ -83,7 +84,7 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
       p.setPointerCapture(e.pointerId);
       selected = id;
       p.classList.add('selected');
-      env.say(id, true);
+      env.say(labelOf(id), true);
       const s = env.stage.getBoundingClientRect();
       const r = p.getBoundingClientRect();
       rubber = line({ x: r.right - s.left, y: r.top - s.top + r.height / 2 }, { x: e.clientX - s.left, y: e.clientY - s.top }, '#ff3d8b');
@@ -113,7 +114,7 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
   });
   words.forEach((w, wid) =>
     w.addEventListener('click', () => {
-      env.say(wid, true);
+      env.say(labelOf(wid), true);
       if (selected && !joined.has(selected)) {
         const pid = selected;
         selected = null;

@@ -1,6 +1,8 @@
 export interface Word {
-  /** the English word; its picture is /english/words/<id in lower case>.webp (one picture per word, in the whole game) */
+  /** the key: the name of the picture file (/english/words/<id>.webp, one picture per word in the whole game); lower case, no spaces */
   id: string;
+  /** what is shown and read aloud when it differs from the key ("TV", "ice cream", "monkey bars") */
+  label?: string;
   world: number;
   /** what Cheesy says in Hebrew when the word first appears */
   he: string;
@@ -9,7 +11,7 @@ export interface Word {
 /** The 108 words of the 12 worlds, nine in each, in the order of the picture sheets. */
 export const WORDS: Word[] = [
   { id: 'phone', world: 1, he: 'טלפון' },
-  { id: 'TV', world: 1, he: 'טלוויזיה' },
+  { id: 'tv', label: 'TV', world: 1, he: 'טלוויזיה' },
   { id: 'ball', world: 1, he: 'כדור' },
   { id: 'doll', world: 1, he: 'בובה' },
   { id: 'bed', world: 1, he: 'מיטה' },
@@ -47,7 +49,7 @@ export const WORDS: Word[] = [
   { id: 'candy', world: 5, he: 'סוכרייה' },
   { id: 'lollipop', world: 5, he: 'סוכריה על מקל' },
   { id: 'cupcake', world: 5, he: 'קאפקייק' },
-  { id: 'icecream', world: 5, he: 'גלידה' },
+  { id: 'icecream', label: 'ice cream', world: 5, he: 'גלידה' },
   { id: 'cookie', world: 5, he: 'עוגייה' },
   { id: 'donut', world: 5, he: 'סופגנייה' },
   { id: 'chocolate', world: 5, he: 'שוקולד' },
@@ -99,9 +101,9 @@ export const WORDS: Word[] = [
   { id: 'giraffe', world: 10, he: 'ג׳ירפה' },
   { id: 'rabbit', world: 10, he: 'ארנב' },
   { id: 'rope', world: 11, he: 'חבל' },
-  { id: 'wall', world: 11, he: 'קיר טיפוס' },
-  { id: 'beam', world: 11, he: 'קורת שיווי משקל' },
-  { id: 'bars', world: 11, he: 'מקבילים' },
+  { id: 'wall', label: 'climbing wall', world: 11, he: 'קיר טיפוס' },
+  { id: 'beam', label: 'balance beam', world: 11, he: 'קורת שיווי משקל' },
+  { id: 'bars', label: 'monkey bars', world: 11, he: 'מקבילים' },
   { id: 'tunnel', world: 11, he: 'מנהרה' },
   { id: 'crate', world: 11, he: 'ארגז' },
   { id: 'bridge', world: 11, he: 'גשר' },
@@ -123,7 +125,8 @@ export const WORLD_NAMES: Record<number, string> = { 1: 'My room', 2: 'The kitch
 /** The words of a world (its pictures are loaded when the world is entered). */
 export const wordsOfWorld = (world: number): Word[] => WORDS.filter((w) => w.world === world);
 export const wordById = (id: string): Word => WORDS.find((w) => w.id === id) ?? WORDS[0];
-export const artKey = (id: string): string => id.toLowerCase();
+/** The English text of a word, as shown and read aloud. */
+export const labelOf = (id: string): string => WORDS.find((w) => w.id === id)?.label ?? id;
 
 /** The verbs of the instructions, with a short Hebrew explanation the first times. */
 export const VERBS: Record<string, { en: string; he: string }> = {

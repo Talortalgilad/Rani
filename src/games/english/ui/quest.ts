@@ -1,5 +1,5 @@
 import { mountCheesy, type Expression } from '../art/cheesy';
-import { VERBS } from '../content/words';
+import { VERBS, labelOf } from '../content/words';
 import { en, he } from '../content/lines';
 import { speakEn, speakHe, speakWord, stopSpeech } from '../voice';
 import type { SoundApi } from '../../../sound';
@@ -11,9 +11,13 @@ import { matchTask } from '../tasks/match';
 import { tapTask } from '../tasks/tap';
 import { wordCard } from '../tasks/card';
 import { el, type TaskEnv, type TaskHandle } from '../tasks/common';
+import { sceneSvg } from '../art/scenes';
+import { mixed } from './text';
 
 export interface QuestDeps {
   name: string;
+  /** the world whose room is the background (1 by default) */
+  world?: number;
   sound: SoundApi;
   /** how many times each verb was done right already (the Hebrew help goes away after 3) */
   verbs: Record<string, number>;
@@ -42,6 +46,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       <div class="q-stage" id="stage"></div>
     </div>`;
   const stage = root.querySelector<HTMLElement>('#stage')!;
+  stage.insertAdjacentHTML('afterbegin', `<div class="scene">${sceneSvg(d.world ?? 1)}</div>`);
   const instr = root.querySelector<HTMLElement>('#instr')!;
   const bub = root.querySelector<HTMLElement>('#bub')!;
   const dots = root.querySelector<HTMLElement>('#dots')!;
@@ -57,7 +62,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
 
   const note = (text?: string): void => {
     bub.hidden = !text;
-    if (text) bub.textContent = text;
+    if (text) bub.innerHTML = mixed(text);
   };
   const face = (e: Expression, text?: string): void => {
     cheesy.set(e);
@@ -87,10 +92,10 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   const instruction = (s: Step): { text: string; html: string } => {
     switch (s.kind) {
       case 'card': return { text: '', html: `<span class="hint-he">${he.cardTap}</span>` };
-      case 'circle': return { text: en.circle(s.right), html: `Circle the <b>${s.right}</b>!` };
-      case 'tap': return { text: en.tap(s.right), html: `Tap the <b>${s.right}</b>!` };
-      case 'put': return { text: en.put(s.right, 'box'), html: `Put the <b>${s.right}</b> in the <b>box</b>!` };
-      case 'listen': return { text: s.right, html: `<span class="listen-q">?</span>` };
+      case 'circle': return { text: en.circle(labelOf(s.right)), html: `Circle the <b>${labelOf(s.right)}</b>!` };
+      case 'tap': return { text: en.tap(labelOf(s.right)), html: `Tap the <b>${labelOf(s.right)}</b>!` };
+      case 'put': return { text: en.put(labelOf(s.right), 'box'), html: `Put the <b>${labelOf(s.right)}</b> in the <b>box</b>!` };
+      case 'listen': return { text: labelOf(s.right), html: `<span class="listen-q">?</span>` };
       case 'match': return { text: en.match, html: `Match!` };
     }
   };

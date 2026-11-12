@@ -1,6 +1,7 @@
 import { judgeLasso, type Pt, type Target } from '../engine/lasso';
 import { itemImg } from '../art/images';
 import { en } from '../content/lines';
+import { labelOf } from '../content/words';
 import { SPOTS3, el, pictureButton, place, shuffled, showSolution, type TaskEnv, type TaskHandle } from './common';
 
 /** "Circle the ball!": the finger draws a thick marker line; a forgiving loop round the right picture works. */
@@ -109,5 +110,5 @@ export function circleTask(env: TaskEnv, rightId: string, ids: string[], seed = 
   canvas.addEventListener('pointercancel', up);
   const ro = new ResizeObserver(resize);
   ro.observe(env.stage);
-  return { repeat: () => env.say(en.circle(rightId)), destroy: () => (ro.disconnect(), canvas.remove(), pics.forEach((e) => e.remove())) };
+  return { repeat: () => env.say(en.circle(labelOf(rightId))), destroy: () => (ro.disconnect(), canvas.remove(), pics.forEach((e) => e.remove())) };
 }

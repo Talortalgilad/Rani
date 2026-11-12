@@ -1,5 +1,6 @@
 import { itemImg } from '../art/images';
 import { en } from '../content/lines';
+import { labelOf } from '../content/words';
 import { el, pictureButton, place, showSolution, type TaskEnv, type TaskHandle } from './common';
 
 /** "Put the book in the box!": drag the right picture into the box; a wrong one slides back. */
@@ -22,7 +23,7 @@ export function dragTask(env: TaskEnv, rightId: string, otherIds: string[]): Tas
       b.setPointerCapture(e.pointerId);
       start = { x: e.clientX, y: e.clientY, px: 0, py: 0 };
       b.classList.add('dragging');
-      env.say(id, true);
+      env.say(labelOf(id), true);
     });
     b.addEventListener('pointermove', (e) => {
       if (!start) return;
@@ -67,5 +68,5 @@ export function dragTask(env: TaskEnv, rightId: string, otherIds: string[]): Tas
     b.addEventListener('pointerup', drop);
     b.addEventListener('pointercancel', drop);
   });
-  return { repeat: () => env.say(en.put(rightId, 'box')), destroy: () => (box.remove(), items.forEach((e) => e.remove())) };
+  return { repeat: () => env.say(en.put(labelOf(rightId), 'box')), destroy: () => (box.remove(), items.forEach((e) => e.remove())) };
 }

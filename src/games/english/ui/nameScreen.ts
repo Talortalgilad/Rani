@@ -1,6 +1,7 @@
 import { mountCheesy } from '../art/cheesy';
 import { he, nameOptions } from '../content/lines';
 import { speakEn, speakHe } from '../voice';
+import { mixed } from './text';
 import type { SoundApi } from '../../../sound';
 
 export const MAX_NAME = 12;
@@ -20,6 +21,7 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
         <div class="bubble big" id="bub">${he.askName}</div>
       </div>
       <div class="name-buttons" id="opts"></div>
+      <button class="en-btn go name-confirm" id="confirm" type="button" hidden>זה השם שלי!</button>
       <div class="name-custom" id="custom" hidden>
         <div class="p-sub">${he.typeName}</div>
         <input id="typed" class="name-input" maxlength="${MAX_NAME}" autocomplete="off" aria-label="${he.typeName}" />
@@ -31,6 +33,8 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
   const bub = root.querySelector<HTMLElement>('#bub')!;
   const opts = root.querySelector<HTMLElement>('#opts')!;
   const custom = root.querySelector<HTMLElement>('#custom')!;
+  const confirmBtn = root.querySelector<HTMLButtonElement>('#confirm')!;
+  let picked: { name: string; say: string } | null = null;
   const c = mountCheesy(ch, 'surprised', () => sound.play('pop', 520));
   const timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));
@@ -54,9 +58,10 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
     chosen = true;
     opts.hidden = true;
     custom.hidden = true;
+    confirmBtn.hidden = true;
     c.set('dance');
     sound.play('bonus');
-    bub.textContent = he.iAm(name);
+    bub.innerHTML = mixed(he.iAm(name));
     void speakEn(say, 0.8);
     confetti();
     later(() => onChosen(name), 3200);
@@ -67,14 +72,13 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
     b.className = 'en-btn name-btn';
     b.innerHTML = `<b>${o.name}</b><small>${o.say}</small>`;
     b.addEventListener('click', () => {
-      if (b.dataset.heard !== '1') {
-        // the first tap says the name; a second tap picks it
-        opts.querySelectorAll<HTMLElement>('.name-btn').forEach((x) => (x.dataset.heard = '0', x.classList.remove('heard')));
-        b.dataset.heard = '1';
-        b.classList.add('heard');
-        c.squish();
-        void speakEn(o.say, 0.75);
-      } else choose(o.name, o.say);
+      // a tap picks the name and says it; the button "this is my name!" then confirms it
+      opts.querySelectorAll<HTMLElement>('.name-btn').forEach((x) => x.classList.remove('heard'));
+      b.classList.add('heard');
+      picked = o;
+      confirmBtn.hidden = false;
+      c.squish();
+      void speakEn(o.say, 0.75);
     });
     opts.appendChild(b);
   });
@@ -85,9 +89,11 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
   other.addEventListener('click', () => {
     custom.hidden = false;
     opts.hidden = true;
+    confirmBtn.hidden = true;
     root.querySelector<HTMLInputElement>('#typed')!.focus();
   });
   opts.appendChild(other);
+  confirmBtn.addEventListener('click', () => picked && choose(picked.name, picked.say));
   const typed = root.querySelector<HTMLInputElement>('#typed')!;
   const submit = (): void => {
     const n = cleanName(typed.value);

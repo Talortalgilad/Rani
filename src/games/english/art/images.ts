@@ -1,7 +1,7 @@
-import { WORDS, artKey, wordsOfWorld } from '../content/words';
+import { WORDS, wordsOfWorld } from '../content/words';
 
 /** The picture of a word: a transparent WebP, 512 x 512, one for each word in the whole game. */
-export const imageUrl = (id: string): string => `${import.meta.env.BASE_URL}english/words/${artKey(id)}.webp`;
+export const imageUrl = (id: string): string => `${import.meta.env.BASE_URL}english/words/${id}.webp`;
 export const BODY_URL = `${import.meta.env.BASE_URL}english/body.webp`;
 
 /** The picture as an element: sits on the scene with a soft shadow under it (the shadow is in the CSS). */
@@ -28,4 +28,4 @@ export function preloadWorld(world: number): Promise<void> {
 }
 
 /** Every file name that has a word (for the tests that no picture is missing or left over). */
-export const allImageNames = (): string[] => WORDS.map((w) => artKey(w.id));
+export const allImageNames = (): string[] => WORDS.map((w) => w.id);

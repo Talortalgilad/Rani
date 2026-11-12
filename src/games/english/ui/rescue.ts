@@ -1,6 +1,7 @@
 import { bunnySvg } from '../art/bunny';
 import { mountCheesy } from '../art/cheesy';
 import { he, en } from '../content/lines';
+import { mixed } from './text';
 import { speakEn, speakHe } from '../voice';
 import type { SoundApi } from '../../../sound';
 
@@ -51,7 +52,7 @@ export function showRescue(root: HTMLElement, name: string, sound: SoundApi, onD
       bunny.classList.add('land');
       sound.play('pop', 440);
       ch.set('dance');
-      bub.textContent = en.imBunny;
+      bub.innerHTML = mixed(en.imBunny);
       void speakEn(en.imBunny, 0.8);
       const colors = ['#ff5d73', '#ffd23f', '#3fb56b', '#3fa0ff', '#8e5cf0', '#ff8fd0'];
       const box = root.querySelector<HTMLElement>('#rc')!;
@@ -64,7 +65,7 @@ export function showRescue(root: HTMLElement, name: string, sound: SoundApi, onD
       }
     }, 1300);
     later(() => {
-      bub.textContent = he.rescued(name);
+      bub.innerHTML = mixed(he.rescued(name));
       void speakHe(he.rescued(name));
       acts.hidden = false;
     }, 3000);

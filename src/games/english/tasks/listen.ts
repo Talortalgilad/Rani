@@ -1,5 +1,5 @@
 import { itemImg } from '../art/images';
-import { en } from '../content/lines';
+import { labelOf } from '../content/words';
 import { el, pictureButton, shuffled, showSolution, type TaskEnv, type TaskHandle } from './common';
 
 /** "What did you hear?": a word is said, and she picks the picture out of three. */
@@ -21,7 +21,7 @@ export function listenTask(env: TaskEnv, rightId: string, ids: string[], seed = 
         env.sound('correct');
         env.face('dance');
         b.classList.add('win');
-        env.say(rightId, true);
+        env.say(labelOf(rightId), true);
         window.setTimeout(() => env.done(), 1300);
       } else {
         b.classList.remove('shake');
@@ -30,7 +30,7 @@ export function listenTask(env: TaskEnv, rightId: string, ids: string[], seed = 
         const n = env.mistake();
         env.sound('oops');
         env.face('encourage', 'Hmm, try again!');
-        window.setTimeout(() => env.say(en.listen(rightId), true), 500);
+        window.setTimeout(() => env.say(labelOf(rightId), true), 500);
         if (n >= 3) {
           locked = true;
           await showSolution(env.stage, pics.get(rightId)!);
@@ -39,6 +39,6 @@ export function listenTask(env: TaskEnv, rightId: string, ids: string[], seed = 
       }
     });
   });
-  speaker.addEventListener('click', () => env.say(rightId, true));
-  return { repeat: () => env.say(rightId, true), destroy: () => (speaker.remove(), row.remove()) };
+  speaker.addEventListener('click', () => env.say(labelOf(rightId), true));
+  return { repeat: () => env.say(labelOf(rightId), true), destroy: () => (speaker.remove(), row.remove()) };
 }

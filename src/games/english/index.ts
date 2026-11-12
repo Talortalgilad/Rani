@@ -5,6 +5,8 @@ import { showRescue } from './ui/rescue';
 import { runStation } from './ui/quest';
 import { showStart } from './ui/start';
 import { stopSpeech } from './voice';
+import { getState } from '../../storage';
+import { he } from './content/lines';
 import { preloadWorld } from './art/images';
 import '@fontsource/fredoka/latin-600.css';
 import '@fontsource/fredoka/latin-700.css';
@@ -87,7 +89,11 @@ const icon = `<svg viewBox="0 0 100 100" width="64" height="64" xmlns="http://ww
 
 const mod: GameModule = {
   id: 'english',
-  title: 'אנגלית עם צ׳יזי',
+  /** the lobby shows "the adventures of ___" with the name Rani gave the squishy (before she names it: the plain title) */
+  get title(): string {
+    const name = (getState().games.english as { companion?: { name?: string } } | undefined)?.companion?.name;
+    return name ? he.islandTitle(name) : 'אנגלית עם צ׳יזי';
+  },
   icon,
   color: '#ffb52e',
   /** English is learning in itself: no maths gate in front of it (a parent setting later) */

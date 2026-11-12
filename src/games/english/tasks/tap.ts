@@ -1,5 +1,6 @@
 import { itemImg } from '../art/images';
 import { en } from '../content/lines';
+import { labelOf } from '../content/words';
 import { SPOTS3, pictureButton, place, shuffled, showSolution, type TaskEnv, type TaskHandle } from './common';
 
 /** "Tap the bed!": three pictures, one tap on the right one. */
@@ -38,5 +39,5 @@ export function tapTask(env: TaskEnv, rightId: string, ids: string[], seed = 2):
       }
     });
   });
-  return { repeat: () => env.say(en.tap(rightId)), destroy: () => pics.forEach((e) => e.remove()) };
+  return { repeat: () => env.say(en.tap(labelOf(rightId))), destroy: () => pics.forEach((e) => e.remove()) };
 }

@@ -1,5 +1,6 @@
 import { mountCheesy } from '../art/cheesy';
 import { he } from '../content/lines';
+import { mixed } from './text';
 import { speakEn, speakHe } from '../voice';
 import type { SoundApi } from '../../../sound';
 
@@ -9,7 +10,7 @@ export function showStart(root: HTMLElement, name: string, rescued: string[], so
     <div class="en-screen en-start">
       <div class="en-sky"></div>
       <button class="q-home" id="sh" type="button" aria-label="${he.home}">🏠</button>
-      <h1 class="start-title">${he.islandTitle(name)}</h1>
+      <h1 class="start-title">${mixed(he.islandTitle(name))}</h1>
       <div class="start-stage"><div class="cheesy-big" id="ch"></div><div class="bubble big" id="bub">${he.start}</div></div>
       <div class="start-world">🛏️ My room</div>
       <button class="en-btn go huge" id="play" type="button">▶ ${he.start}</button>
