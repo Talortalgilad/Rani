@@ -130,6 +130,7 @@ function createLobbyScene(env: SceneEnv, o: LobbyOpts, minis: (LobbyIslandHandle
   camera.add(jar.group);
 
   const carousel = new Carousel(islands.length, reduced, clamp(o.startIndex, 0, islands.length - 1));
+  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__lobbyGoTo = (i: number) => carousel.goTo(i);
   let lastFront = -1;
   let wasMoving = false;
   let lastTick = 0;
