@@ -86,6 +86,11 @@ onRoute((route: Route) => {
       break;
     case 'gate':
       if (!games.some((g) => g.id === route.gameId)) return go({ name: 'home' }, { replace: true });
+      if (games.find((g) => g.id === route.gameId)?.noGate) {
+        // a game that is learning in itself has no maths gate
+        grantPass(route.gameId);
+        return go({ name: 'game', gameId: route.gameId }, { replace: true });
+      }
       cleanup = renderGate(app, route.gameId, () => {
         grantPass(route.gameId);
         go({ name: 'game', gameId: route.gameId }, { replace: true });
