@@ -1,6 +1,5 @@
 import { judgeLasso, type Pt, type Target } from '../engine/lasso';
-import { itemSvg } from '../art/items';
-import { artKey } from '../content/words';
+import { itemImg } from '../art/images';
 import { en } from '../content/lines';
 import { SPOTS3, el, pictureButton, place, shuffled, showSolution, type TaskEnv, type TaskHandle } from './common';
 
@@ -9,7 +8,7 @@ export function circleTask(env: TaskEnv, rightId: string, ids: string[], seed = 
   const order = shuffled(ids, seed);
   const pics = new Map<string, HTMLElement>();
   order.forEach((id, i) => {
-    const b = pictureButton(env.stage, itemSvg(artKey(id)), id, 'pic floaty');
+    const b = pictureButton(env.stage, itemImg(id), id, 'pic floaty');
     b.tabIndex = -1;
     place(b, SPOTS3[i % 3]);
     pics.set(id, b);

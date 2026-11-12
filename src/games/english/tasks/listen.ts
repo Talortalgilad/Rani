@@ -1,5 +1,4 @@
-import { itemSvg } from '../art/items';
-import { artKey } from '../content/words';
+import { itemImg } from '../art/images';
 import { en } from '../content/lines';
 import { el, pictureButton, shuffled, showSolution, type TaskEnv, type TaskHandle } from './common';
 
@@ -13,7 +12,7 @@ export function listenTask(env: TaskEnv, rightId: string, ids: string[], seed = 
   const pics = new Map<string, HTMLButtonElement>();
   let locked = false;
   shuffled(ids, seed).forEach((id) => {
-    const b = pictureButton(row, itemSvg(artKey(id)), id, 'pic choice');
+    const b = pictureButton(row, itemImg(id), id, 'pic en-choice');
     pics.set(id, b);
     b.addEventListener('click', async () => {
       if (locked) return;

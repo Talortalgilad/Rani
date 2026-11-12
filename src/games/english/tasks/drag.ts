@@ -1,20 +1,19 @@
-import { itemSvg } from '../art/items';
-import { artKey } from '../content/words';
+import { itemImg } from '../art/images';
 import { en } from '../content/lines';
 import { el, pictureButton, place, showSolution, type TaskEnv, type TaskHandle } from './common';
 
 /** "Put the book in the box!": drag the right picture into the box; a wrong one slides back. */
 export function dragTask(env: TaskEnv, rightId: string, otherIds: string[]): TaskHandle {
   const box = el('div', 'drop-box', env.stage);
-  box.innerHTML = itemSvg('box');
+  box.innerHTML = itemImg('box');
   box.style.left = '50%';
   box.style.top = '74%';
   const items = new Map<string, HTMLButtonElement>();
-  const spots: [number, number][] = [[0.22, 0.28], [0.78, 0.28], [0.5, 0.26]];
+  const spots: [number, number][] = [[0.2, 0.36], [0.5, 0.16], [0.8, 0.36]];
   const ids = [otherIds[0], rightId, otherIds[1]].filter(Boolean);
   let locked = false;
   ids.forEach((id, i) => {
-    const b = pictureButton(env.stage, itemSvg(artKey(id)), id, 'pic drag');
+    const b = pictureButton(env.stage, itemImg(id), id, 'pic drag');
     place(b, spots[i]);
     items.set(id, b);
     let start: { x: number; y: number; px: number; py: number } | null = null;

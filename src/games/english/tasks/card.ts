@@ -1,5 +1,5 @@
-import { itemSvg } from '../art/items';
-import { artKey, wordById } from '../content/words';
+import { itemImg } from '../art/images';
+import { wordById } from '../content/words';
 import { el, type TaskEnv, type TaskHandle } from './common';
 
 /** A new word: a card that turns over to show the picture; Cheesy says the word twice, and tapping the card says it again. */
@@ -9,7 +9,7 @@ export function wordCard(env: TaskEnv, wordId: string): TaskHandle {
   const card = el('button', 'word-card', wrap);
   card.type = 'button';
   card.setAttribute('aria-label', w.id);
-  card.innerHTML = `<div class="wc-inner"><div class="wc-back"><span>?</span></div><div class="wc-front">${itemSvg(artKey(w.id))}<b class="wc-word">${w.id}</b></div></div>`;
+  card.innerHTML = `<div class="wc-inner"><div class="wc-back"><span>?</span></div><div class="wc-front">${itemImg(w.id)}<b class="wc-word">${w.id}</b></div></div>`;
   let flipped = false;
   let timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));

@@ -1,5 +1,4 @@
-import { itemSvg } from '../art/items';
-import { artKey } from '../content/words';
+import { itemImg } from '../art/images';
 import { el, pictureButton, shuffled, type TaskEnv, type TaskHandle } from './common';
 
 /**
@@ -14,7 +13,7 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
   env.stage.appendChild(svg);
   const pics = new Map<string, HTMLButtonElement>();
   const words = new Map<string, HTMLButtonElement>();
-  ids.forEach((id) => pics.set(id, pictureButton(left, itemSvg(artKey(id)), id, 'pic match-pic')));
+  ids.forEach((id) => pics.set(id, pictureButton(left, itemImg(id), id, 'pic match-pic')));
   shuffled(ids, seed).forEach((id) => {
     const w = el('button', 'match-word', right);
     w.type = 'button';

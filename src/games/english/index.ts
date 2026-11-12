@@ -5,6 +5,7 @@ import { showRescue } from './ui/rescue';
 import { runStation } from './ui/quest';
 import { showStart } from './ui/start';
 import { stopSpeech } from './voice';
+import { preloadWorld } from './art/images';
 import '@fontsource/fredoka/latin-600.css';
 import '@fontsource/fredoka/latin-700.css';
 import '@fontsource/fredoka/hebrew-600.css';
@@ -43,8 +44,20 @@ function showFront(): void {
   swap(() => showStart(root!, name, rescued(), ctx!.sound, { onPlay: playStation, onHome: () => ctx!.onExit() }));
 }
 
+/** The pictures of the world are fetched now, when it is entered; the service worker keeps them for offline. */
 function playStation(): void {
   const name = companion()!.name;
+  const wait = document.createElement('div');
+  wait.className = 'en-loading';
+  wait.textContent = '⏳';
+  root!.appendChild(wait);
+  void preloadWorld(1).then(() => {
+    wait.remove();
+    if (root) startStation(name);
+  });
+}
+
+function startStation(name: string): void {
   swap(() =>
     runStation(root!, {
       name,
