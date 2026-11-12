@@ -1,6 +1,6 @@
-import { bunnySvg } from '../art/bunny';
+import type { Squishy } from '../art/squishies';
 import { mountCheesy } from '../art/cheesy';
-import { he, en } from '../content/lines';
+import { he } from '../content/lines';
 import { mixed } from './text';
 import { speakEn, speakHe } from '../voice';
 import type { SoundApi } from '../../../sound';
@@ -9,7 +9,7 @@ import type { SoundApi } from '../../../sound';
  * The rescue: a gift box shakes and a tiny voice calls. A tap opens it, the lid pops and Bunny jumps out in an arc, squashes
  * on landing and says its name. It joins the shelf of rescued squishies.
  */
-export function showRescue(root: HTMLElement, name: string, sound: SoundApi, onDone: () => void): () => void {
+export function showRescue(root: HTMLElement, name: string, squishy: Squishy, sound: SoundApi, onDone: () => void): () => void {
   root.innerHTML = `
     <div class="en-screen en-rescue">
       <div class="en-sky"></div>
@@ -17,7 +17,7 @@ export function showRescue(root: HTMLElement, name: string, sound: SoundApi, onD
         <div class="cheesy-side" id="ch"></div>
         <div class="bubble" id="bub">שמעת? מישהו קורא לעזרה!</div>
         <div class="gift" id="gift"><div class="gift-lid"></div><div class="gift-body"></div><div class="gift-help">help!</div></div>
-        <div class="bunny-out" id="bunny" hidden><div class="bunny-in" id="bunnyIn">${bunnySvg()}</div></div>
+        <div class="bunny-out" id="bunny" hidden><div class="bunny-in" id="bunnyIn">${squishy.svg}</div></div>
       </div>
       <div class="rescue-actions" id="acts" hidden>
         <button class="en-btn go" id="home" type="button">🏠 ${he.home}</button>
@@ -52,8 +52,8 @@ export function showRescue(root: HTMLElement, name: string, sound: SoundApi, onD
       bunny.classList.add('land');
       sound.play('pop', 440);
       ch.set('dance');
-      bub.innerHTML = mixed(en.imBunny);
-      void speakEn(en.imBunny, 0.8);
+      bub.innerHTML = mixed(`I'm ${squishy.name}!`);
+      void speakEn(`I'm ${squishy.name}!`, 0.8);
       const colors = ['#ff5d73', '#ffd23f', '#3fb56b', '#3fa0ff', '#8e5cf0', '#ff8fd0'];
       const box = root.querySelector<HTMLElement>('#rc')!;
       for (let i = 0; i < 50; i++) {
@@ -75,7 +75,7 @@ export function showRescue(root: HTMLElement, name: string, sound: SoundApi, onD
     void bunnyIn.offsetWidth;
     bunnyIn.classList.add('squish');
     sound.play('pop', 560);
-    void speakEn(en.imBunny, 0.8);
+    void speakEn(`I'm ${squishy.name}!`, 0.8);
   });
   root.querySelector('#home')!.addEventListener('click', () => onDone());
   root.querySelector('#again')!.addEventListener('click', () => {

@@ -130,9 +130,28 @@ export const labelOf = (id: string): string => WORDS.find((w) => w.id === id)?.l
 
 /** The verbs of the instructions, with a short Hebrew explanation the first times. */
 export const VERBS: Record<string, { en: string; he: string }> = {
+  find: { en: 'Find', he: 'למצוא' },
+  color: { en: 'Color', he: 'לצבוע' },
+  count: { en: 'How many', he: 'כמה יש' },
+  big: { en: 'Big', he: 'גדול' },
+  small: { en: 'Small', he: 'קטן' },
+  on: { en: 'On', he: 'על' },
+  in: { en: 'In', he: 'בתוך' },
+  under: { en: 'Under', he: 'מתחת' },
+  sentence: { en: 'Make a sentence', he: 'לבנות משפט' },
   circle: { en: 'Circle', he: 'להקיף בעיגול' },
   tap: { en: 'Tap', he: 'להקיש' },
   put: { en: 'Put', he: 'לשים' },
   match: { en: 'Match', he: 'לחבר' },
   listen: { en: 'Listen', he: 'להקשיב' },
 };
+
+/** The plural of a word, for "Find all the ___!" and "How many ___?". */
+export function pluralOf(id: string): string {
+  const l = labelOf(id);
+  if (l === 'fish') return 'fish';
+  if (/ss$|x$|ch$|sh$/.test(l)) return `${l}es`;
+  if (/s$/.test(l)) return l; // already a plural: glasses, scissors, skates, shoes
+  if (/[^aeiou]y$/.test(l)) return `${l.slice(0, -1)}ies`;
+  return `${l}s`;
+}
