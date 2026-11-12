@@ -255,3 +255,7 @@ html, body {
 .timeup-card h2 { font-size: 34px; line-height: 1.4; margin: 0; }
 .timeup-emoji { font-size: 110px; }
 .timeup .btn { background: #fff; color: var(--ink); }
+
+/* install to the home screen (parents' area) */
+.p-ios { display: flex; flex-direction: column; gap: 10px; }
+.p-ios ol { margin: 0; padding-inline-start: 22px; line-height: 1.7; font-size: 17px; }
