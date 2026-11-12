@@ -3,7 +3,7 @@ import { WORDS, wordsOfWorld } from '../content/words';
 import { colorById } from '../content/colors';
 import { SONGS } from '../content/songs';
 import { PAINT } from '../content/paint';
-import { kindsForWorld, planStation } from './planner';
+import { OBSTACLES, kindsForWorld, planStation } from './planner';
 import { review, type Words } from './progress';
 
 const T = 20000;
@@ -26,7 +26,7 @@ function check(steps: ReturnType<typeof planStation>, world: number): void {
       case 'color': colorById(s.color); expect(PAINT.map((x) => x.id)).toContain(s.object); break;
       case 'count': expect(s.n).toBeGreaterThanOrEqual(2); expect(s.n).toBeLessThanOrEqual(5); break;
       case 'sentence': expect(s.words.length).toBeGreaterThanOrEqual(2); expect(s.words.length).toBeLessThanOrEqual(4); expect(s.missing).toBeLessThan(s.words.length); break;
-      case 'where': expect(['on', 'in', 'under']).toContain(s.prep); break;
+      case 'where': expect(s.item).toBe('ninja'); expect(Object.keys(OBSTACLES)).toContain(s.ref); expect(OBSTACLES[s.ref]).toContain(s.prep); break;
       default: break;
     }
   }
@@ -111,5 +111,29 @@ describe('planning a station', () => {
   it('the match task is written only when all its words are known at level 2 or more (from world 3)', () => {
     const lvl = (n: number): Words => Object.fromEntries(wordsOfWorld(3).map((w) => [w.id, { level: n, due: T, seen: true }]));
     for (const level of [0, 1]) for (let seed = 1; seed < 8; seed++) for (const s of planStation({ world: 3, station: 3, words: lvl(level), today: T, seed })) if (s.kind === 'match') expect(s.mode).toBe('audio');
+  });
+});
+
+describe('worlds 5-12', () => {
+  it('the dance party and the weather keep to kinds that make sense for actions and weather', () => {
+    expect(kindsForWorld(8)).not.toEqual(expect.arrayContaining(['put']));
+    for (const k of ['put', 'find', 'count'] as const) expect(kindsForWorld(8)).not.toContain(k);
+    for (const k of ['put', 'count'] as const) expect(kindsForWorld(9)).not.toContain(k);
+    expect(kindsForWorld(8)).toContain('sentence');
+  });
+  it('every world ends with its song, which exists', () => {
+    for (let world = 5; world <= 12; world++) expect(planStation({ world, station: 4, words: {}, today: T, seed: 4 }).some((s) => s.kind === 'song' && s.world === world), String(world)).toBe(true);
+  });
+  it('the words that Rani likes come first in their world (the same words, in a new order)', () => {
+    const plain = planStation({ world: 2, station: 0, words: {}, today: T, seed: 5 }).filter((s) => s.kind === 'card').map((s) => (s as { word: string }).word);
+    const liked = planStation({ world: 2, station: 0, words: {}, today: T, seed: 5, likes: ['egg', 'milk', 'cake'] }).filter((s) => s.kind === 'card').map((s) => (s as { word: string }).word);
+    expect(plain).toEqual(['pizza', 'cheese', 'pasta']);
+    expect([...liked].sort()).toEqual(['cake', 'egg', 'milk']);
+  });
+  it('the ninja course has every obstacle, with something to do', () => {
+    for (const [ref, preps] of Object.entries(OBSTACLES)) {
+      expect(ids.has(ref), ref).toBe(true);
+      expect(preps.length).toBeGreaterThan(0);
+    }
   });
 });

@@ -1,25 +1,35 @@
+import { cheesyImg } from '../art/cheesy';
 import { itemImg } from '../art/images';
 import { en } from '../content/lines';
 import { labelOf } from '../content/words';
 import { el, pictureButton, showSolution, type TaskEnv, type TaskHandle } from './common';
 
-/** Which of on / in / under the dropped picture is, relative to the box (its middle against the box's rectangle). */
-export function placeOf(item: { x: number; y: number }, box: { left: number; top: number; right: number; bottom: number }): 'on' | 'in' | 'under' | null {
+/** Which of on / over / in / under the dropped picture is, relative to the box (its middle against the box's rectangle). */
+export function placeOf(item: { x: number; y: number }, box: { left: number; top: number; right: number; bottom: number }): 'on' | 'in' | 'under' | 'over' | null {
   const w = box.right - box.left;
   const h = box.bottom - box.top;
   const dx = item.x - (box.left + w / 2);
   if (Math.abs(dx) > w * 0.75) return null;
   if (item.y > box.top + h * 0.12 && item.y < box.bottom - h * 0.05 && Math.abs(dx) < w * 0.5) return 'in';
-  if (item.y <= box.top + h * 0.12 && item.y > box.top - h * 1.1) return 'on';
+  if (item.y <= box.top + h * 0.12 && item.y > box.top - h * 0.25) return 'on';
+  if (item.y <= box.top - h * 0.25 && item.y > box.top - h * 1.6) return 'over';
   if (item.y >= box.bottom - h * 0.05 && item.y < box.bottom + h * 0.9) return 'under';
   return null;
 }
 
+export const nameOfItem = (item: string): string => (item === 'ninja' ? 'The ninja is' : `The ${labelOf(item)} is`);
+/** "Put the cat on the box!" / "Jump over the rope!" (the ninja course) */
+export function whereText(item: string, prep: 'on' | 'in' | 'under' | 'over', ref: string): string {
+  if (item === 'ninja') return prep === 'over' ? `Jump over the ${labelOf(ref)}!` : prep === 'under' ? `Go under the ${labelOf(ref)}!` : prep === 'in' ? `Go in the ${labelOf(ref)}!` : `Put the ninja on the ${labelOf(ref)}!`;
+  return `Put the ${labelOf(item)} ${prep} the ${labelOf(ref)}!`;
+}
+
 /** "Put the cat on the box!": drag the picture to the place the word says. */
-export function whereTask(env: TaskEnv, item: string, ref: string, prep: 'on' | 'in' | 'under'): TaskHandle {
+export function whereTask(env: TaskEnv, item: string, ref: string, prep: 'on' | 'in' | 'under' | 'over'): TaskHandle {
   const box = el('div', 'where-box', env.stage);
   box.innerHTML = itemImg(ref);
-  const b = pictureButton(env.stage, itemImg(item), item, 'pic drag where-item');
+  // in the ninja park the one who runs the course is the companion himself ("the ninja")
+  const b = pictureButton(env.stage, item === 'ninja' ? cheesyImg('happy') : itemImg(item), item, `pic drag where-item ${item === 'ninja' ? 'ninja' : ''}`);
   b.style.left = '22%';
   b.style.top = '84%';
   let start: { x: number; y: number } | null = null;
@@ -29,7 +39,7 @@ export function whereTask(env: TaskEnv, item: string, ref: string, prep: 'on' | 
     b.setPointerCapture(e.pointerId);
     start = { x: e.clientX, y: e.clientY };
     b.classList.add('dragging');
-    env.say(labelOf(item), true);
+    if (item !== 'ninja') env.say(labelOf(item), true);
   });
   b.addEventListener('pointermove', (e) => {
     if (start) b.style.translate = `${e.clientX - start.x}px ${e.clientY - start.y}px`;
@@ -46,7 +56,7 @@ export function whereTask(env: TaskEnv, item: string, ref: string, prep: 'on' | 
       env.sound('correct');
       env.face('dance');
       b.classList.add('win');
-      env.say(`${labelOf(item)} ${prep} the ${labelOf(ref)}`);
+      env.say(`${nameOfItem(item)} ${prep} the ${labelOf(ref)}`);
       window.setTimeout(() => env.done(), 1400);
     } else {
       b.classList.add('slide-back');
@@ -67,5 +77,5 @@ export function whereTask(env: TaskEnv, item: string, ref: string, prep: 'on' | 
   };
   b.addEventListener('pointerup', drop);
   b.addEventListener('pointercancel', drop);
-  return { repeat: () => env.say(`Put the ${labelOf(item)} ${prep} the ${labelOf(ref)}!`), destroy: () => (box.remove(), b.remove()) };
+  return { repeat: () => env.say(whereText(item, prep, ref)), destroy: () => (box.remove(), b.remove()) };
 }

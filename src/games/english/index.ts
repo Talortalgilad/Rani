@@ -4,11 +4,15 @@ import { showBanner } from './ui/banner';
 import { showRescue } from './ui/rescue';
 import { runStation } from './ui/quest';
 import { showMap, showWorld } from './ui/map';
-import { squishyOfWorld } from './art/squishies';
+import { ACCESSORIES, accessoryOf, unlockedAccessories } from './art/accessories';
+import { SQUISHIES, squishyOfWorld } from './art/squishies';
+import { showWordbook } from './ui/wordbook';
+import { songTaskStep } from './engine/steps';
 import { showShelf } from './ui/shelf';
-import { preloadCheesy } from './art/cheesy';
+import { preloadCheesy, setLook } from './art/cheesy';
 import { planStation } from './engine/planner';
-import { STATIONS_PER_WORLD, dayNumber, emptyMap, finishStation, markSeen, review, type MapProgress, type Words } from './engine/progress';
+import { likeIds } from './content/likes';
+import { STATIONS_PER_WORLD, addPlay, dayNumber, emptyMap, finishStation, markSeen, review, type MapProgress, type Words } from './engine/progress';
 import { stopSpeech } from './voice';
 import { getState } from '../../storage';
 import { he } from './content/lines';
@@ -31,6 +35,15 @@ const verbs = (): Verbs => ctx!.load<Verbs>('verbs', {});
 const rescued = (): string[] => ctx!.load<string[]>('rescued', []);
 const words = (): Words => ctx!.load<Words>('words', {});
 const mapState = (): MapProgress => ctx!.load<MapProgress>('map', emptyMap());
+/** a parent setting (off): every world and station is open */
+const openAll = (): boolean => ctx!.load<boolean>('openAll', false);
+const buddy = (): string | null => ctx!.load<string | null>('buddy', null);
+const accessory = (): string | null => ctx!.load<string | null>('accessory', null);
+const unlocked = () => unlockedAccessories(mapState().done, STATIONS_PER_WORLD);
+/** What Cheesy and the others call the companion: Cheesy's own name, or the name of the squishy she chose as her friend. */
+const displayName = (): string => SQUISHIES.find((s) => s.id === buddy())?.name ?? companion()!.name;
+/** The accessory is worn only while it is won (a reset of the map takes it away). */
+const applyLook = (): void => setLook({ buddy: buddy(), accessory: unlocked().some((a) => a.id === accessory()) ? accessory() : null });
 const saveWords = (w: Words): void => ctx!.save('words', w);
 
 function swap(f: () => () => void): void {
@@ -50,17 +63,40 @@ function enter(): void {
 }
 
 function showShelfScreen(): void {
-  swap(() => showShelf(root!, { rescued: rescued(), sound: ctx!.sound, onBack: showWorlds }));
+  swap(() =>
+    showShelf(root!, {
+      rescued: rescued(),
+      buddy: buddy(),
+      accessory: accessory(),
+      unlocked: unlocked(),
+      sound: ctx!.sound,
+      onBuddy: (id) => (ctx!.save('buddy', id), applyLook()),
+      onAccessory: (id) => (ctx!.save('accessory', id), applyLook()),
+      onBack: showWorlds,
+    }),
+  );
+}
+
+function showBook(tab?: 'words' | 'songs'): void {
+  swap(() => showWordbook(root!, { words: words(), map: mapState(), sound: ctx!.sound, onSong: singSong, onBack: showWorlds }, tab));
+}
+
+/** A song of a finished world, sung again from the book. */
+function singSong(world: number): void {
+  void preloadWorld(world).then(() => {
+    if (!root) return;
+    swap(() => runStation(root!, { name: displayName(), world, steps: [songTaskStep(world)], sound: ctx!.sound, verbs: verbs(), onVerb: () => {}, onScore: () => {}, onSeen: () => {}, onHome: () => showBook('songs'), onFinish: () => showBook('songs') }));
+  });
 }
 
 /** The map of the worlds (the first screen after the name). */
 function showWorlds(): void {
-  const name = companion()!.name;
-  swap(() => showMap(root!, { name, map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onHome: () => ctx!.onExit() }));
+  const name = displayName();
+  swap(() => showMap(root!, { name, openAll: openAll(), map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
 }
 
 function showStations(world: number): void {
-  swap(() => showWorld(root!, { world, map: mapState(), sound: ctx!.sound, onStation: (s) => playStation(world, s), onBack: showWorlds }));
+  swap(() => showWorld(root!, { world, openAll: openAll(), map: mapState(), sound: ctx!.sound, onStation: (s) => playStation(world, s), onBack: showWorlds }));
 }
 
 /** The pictures of the world are fetched now, when it is entered; the service worker keeps them for offline. */
@@ -76,9 +112,10 @@ function playStation(world: number, station: number): void {
 }
 
 function startStation(world: number, station: number): void {
-  const name = companion()!.name;
+  const name = displayName();
   const today = dayNumber();
-  const steps = planStation({ world, station, words: words(), today, seed: today * 31 + (mapState().done[world] ?? 0) * 7 + station + Math.floor(Math.random() * 1000) });
+  const t0 = Date.now();
+  const steps = planStation({ world, station, words: words(), today, likes: ctx!.load<string[]>('likes', likeIds), seed: today * 31 + (mapState().done[world] ?? 0) * 7 + station + Math.floor(Math.random() * 1000) });
   swap(() =>
     runStation(root!, {
       name,
@@ -91,6 +128,7 @@ function startStation(world: number, station: number): void {
       onSeen: (key) => saveWords(markSeen(words(), key, today)),
       onHome: () => showStations(world),
       onFinish: (stars) => {
+        ctx!.save('playlog', addPlay(ctx!.load('playlog', {}), today, Math.min(20, Math.max(1, Math.round((Date.now() - t0) / 60000)))));
         ctx!.onRoundEnd({ won: true, stars, score: stars });
         ctx!.save('map', finishStation(mapState(), world, station, stars));
         swap(() => showBanner(root!, stars, name, ctx!.sound, () => (station === STATIONS_PER_WORLD - 1 ? rescue(world, name) : showStations(world))));
@@ -102,7 +140,11 @@ function startStation(world: number, station: number): void {
 function rescue(world: number, name: string): void {
   const sq = squishyOfWorld(world);
   if (!rescued().includes(sq.name)) ctx!.save('rescued', [...rescued(), sq.name]);
-  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : showWorlds())));
+  // every third world brings an accessory for Cheesy (it is worn at once)
+  const prize = ACCESSORIES.find((a) => a.world === world);
+  if (prize && !accessory()) ctx!.save('accessory', prize.id);
+  applyLook();
+  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : showWorlds()), { prize: accessoryOf(prize?.id), finale: world === 12 }));
 }
 
 const icon = `<svg viewBox="0 0 100 100" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -125,8 +167,9 @@ const mod: GameModule = {
   noGate: true,
   mount(c: GameContext) {
     ctx = c;
+    applyLook();
     preloadCheesy();
-    if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, companion()?.name ?? 'Rani');
+    if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, displayName());
     root = document.createElement('div');
     root.className = 'english-root';
     c.container.appendChild(root);

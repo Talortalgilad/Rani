@@ -136,6 +136,7 @@ export const VERBS: Record<string, { en: string; he: string }> = {
   big: { en: 'Big', he: 'גדול' },
   small: { en: 'Small', he: 'קטן' },
   on: { en: 'On', he: 'על' },
+  over: { en: 'Over', he: 'מעל' },
   in: { en: 'In', he: 'בתוך' },
   under: { en: 'Under', he: 'מתחת' },
   sentence: { en: 'Make a sentence', he: 'לבנות משפט' },

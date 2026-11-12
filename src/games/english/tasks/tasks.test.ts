@@ -10,6 +10,7 @@ describe('on / in / under', () => {
     expect(placeOf({ x: 150, y: 80 }, box)).toBe('on');
     expect(placeOf({ x: 150, y: 150 }, box)).toBe('in');
     expect(placeOf({ x: 150, y: 230 }, box)).toBe('under');
+    expect(placeOf({ x: 150, y: 20 }, box)).toBe('over');
     expect(placeOf({ x: 400, y: 150 }, box)).toBeNull();
     expect(placeOf({ x: 150, y: 400 }, box)).toBeNull();
   });

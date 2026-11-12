@@ -1,4 +1,4 @@
-import { mountCheesy, type Expression } from '../art/cheesy';
+import { mountCheesy, setHeadband, type Expression } from '../art/cheesy';
 import { sceneImg } from '../art/scenes';
 import { COLORS } from '../content/colors';
 import { VERBS, labelOf, pluralOf } from '../content/words';
@@ -18,7 +18,7 @@ import { matchTask } from '../tasks/match';
 import { sentenceTask } from '../tasks/sentence';
 import { songTask } from '../tasks/song';
 import { tapTask } from '../tasks/tap';
-import { whereTask } from '../tasks/where';
+import { whereTask, whereText } from '../tasks/where';
 import { el, type TaskEnv, type TaskHandle } from '../tasks/common';
 import { mixed } from './text';
 
@@ -68,7 +68,10 @@ export function instruction(s: Step): { text: string; html: string } {
     case 'color': return { text: `Color the ${s.object} ${s.color}!`, html: `Color the <b>${s.object}</b> <b>${s.color}</b>!` };
     case 'count': return { text: `How many ${pluralOf(s.right)}? Tap the number!`, html: `How many <b>${pluralOf(s.right)}</b>?` };
     case 'bigsmall': return { text: `Tap the ${s.which} ${labelOf(s.right)}!`, html: `Tap the <b>${s.which}</b> ${labelOf(s.right)}!` };
-    case 'where': return { text: `Put the ${labelOf(s.item)} ${s.prep} the ${labelOf(s.ref)}!`, html: `Put the <b>${labelOf(s.item)}</b> <b>${s.prep}</b> the <b>${labelOf(s.ref)}</b>!` };
+    case 'where': {
+      const text = whereText(s.item, s.prep, s.ref);
+      return { text, html: text.replace(new RegExp(`\\b(${s.prep}|${labelOf(s.ref)}|Jump|Go)\\b`, 'g'), '<b>$1</b>') };
+    }
     case 'sentence': return { text: 'Make the sentence!', html: 'Make the sentence!' };
     case 'song': return { text: 'Let’s sing!', html: 'Let’s sing!' };
   }
@@ -97,6 +100,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   const instr = root.querySelector<HTMLElement>('#instr')!;
   const bub = root.querySelector<HTMLElement>('#bub')!;
   const dots = root.querySelector<HTMLElement>('#dots')!;
+  setHeadband(d.world === 11);
   const cheesy = mountCheesy(root.querySelector<HTMLElement>('#ch')!, 'happy', () => d.sound.play('pop', 520));
   steps.forEach(() => el('i', 'dot', dots));
   let index = -1;
@@ -130,7 +134,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
     stage,
     face,
     mistake: () => ((mistakesInTask += 1), (mistakesTotal += 1), mistakesInTask),
-    done: () => next(),
+    done: () => void (!dead && next()),
     sparkle,
     sound: (n, pitch) => d.sound.play(n, pitch),
     say: (text, word) => void (word ? speakWord(text) : speakEn(text)),
@@ -208,6 +212,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   later(next, 300);
   return () => {
     dead = true;
+    setHeadband(false);
     timers.forEach(clearTimeout);
     handle?.destroy();
     stopSpeech();

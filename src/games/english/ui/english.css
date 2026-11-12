@@ -274,3 +274,63 @@ bdi { unicode-bidi: isolate; }
 .shelf-q { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; color: #fff; text-shadow: 0 2px 0 rgba(58, 47, 75, .4); }
 .shelf-board { width: 100%; height: 14px; border-radius: 8px; background: linear-gradient(#d9a066, #b07a4a); box-shadow: 0 4px 0 rgba(58, 47, 75, .2); margin-top: -8px; }
 .shelf-slot small { font-weight: 700; font-size: 14px; direction: ltr; margin-top: 4px; }
+
+/* the companion: a chosen squishy moves instead of changing its face; Cheesy wears what he won */
+.cheesy-wrap { position: relative; display: block; width: 100%; height: 100%; }
+.cheesy-acc { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; filter: drop-shadow(0 2px 2px rgba(58, 47, 75, .3)); }
+.cheesy-img.ex-sad { transform: translateY(4%) scaleY(.94); filter: saturate(.75) drop-shadow(0 6px 5px rgba(58, 47, 75, .22)); }
+.cheesy-img.ex-sleep { transform: rotate(-7deg) translateY(3%); opacity: .92; }
+.cheesy-img.ex-thinking { transform: rotate(-5deg); }
+.cheesy-img.ex-surprised { transform: scale(1.07); }
+.cheesy-img.ex-wave { animation: ex-wave 0.9s ease-in-out infinite; }
+.cheesy-img.ex-cheer, .cheesy-img.ex-dance { animation: ex-hop 0.55s ease-in-out infinite; }
+.cheesy-img.ex-squished { transform: scale(1.12, .8); transform-origin: 50% 100%; }
+@keyframes ex-wave { 0%, 100% { rotate: -6deg; } 50% { rotate: 6deg; } }
+@keyframes ex-hop { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8%; } }
+
+/* the friend for the adventure and the accessories */
+.shelf-pick { margin-top: 4px; border: 3px solid #3a2f4b; background: #fff; border-radius: 14px; font: 700 14px/1 inherit; font-family: inherit; padding: 5px 10px; cursor: pointer; color: #3a2f4b; }
+.shelf-slot.buddy .shelf-pick { background: #7ed957; }
+.shelf-slot.buddy .shelf-sq { filter: drop-shadow(0 0 10px #7ed957); }
+.shelf-grid { max-height: 62%; }
+.acc-bar { width: 100%; max-width: 480px; padding: 6px 8px 14px; text-align: center; }
+.acc-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.acc-row { display: flex; gap: 8px; justify-content: center; }
+.acc { width: 22%; border: 3px solid #3a2f4b; background: rgba(255, 255, 255, .85); border-radius: 16px; padding: 4px 2px; font-family: inherit; color: #3a2f4b; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+.acc.on { background: #fff6b3; border-color: #f2a900; }
+.acc.locked { opacity: .6; }
+.acc small { font-size: 12px; font-weight: 700; }
+.acc-prev { position: relative; display: block; width: 100%; aspect-ratio: 1; }
+.acc-prev img { position: absolute; inset: 14% 8% 0; width: 84%; height: 84%; object-fit: contain; }
+.acc-prev .cheesy-acc { z-index: 1; inset: 14% 8% 0; width: 84%; height: 84%; }
+.acc-lock { font-size: 30px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.acc-note { font-size: 12px; opacity: .75; margin-top: 4px; }
+
+/* the word book */
+.book-tabs { display: flex; gap: 8px; margin: 2px 0 6px; }
+.book-tab { border: 3px solid #3a2f4b; background: #fff; border-radius: 16px; padding: 6px 16px; font: 700 14px inherit; font-family: inherit; color: #3a2f4b; cursor: pointer; }
+.book-tab.on { background: #ffe58a; }
+.book-cheesy { width: 84px; height: 84px; margin-top: -2px; }
+.book-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 480px; flex: 1; overflow-y: auto; align-content: start; padding: 4px 8px 24px; }
+.book-word { display: flex; flex-direction: column; align-items: center; background: rgba(255, 255, 255, .8); border: 3px solid #cbbfe0; border-radius: 18px; padding: 6px 4px 8px; font-family: inherit; color: #3a2f4b; cursor: pointer; }
+.book-word.known { border-color: #f2a900; background: #fff9dc; }
+.book-word img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.book-word b { font-size: 17px; }
+.book-lv { display: flex; gap: 3px; margin-top: 3px; }
+.book-lv i { width: 9px; height: 9px; border-radius: 50%; background: #d9d0e8; }
+.book-lv i.on { background: #f2a900; }
+.book-songs { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 480px; padding: 8px 12px; overflow-y: auto; flex: 1; }
+.book-song { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 3px solid #3a2f4b; border-radius: 18px; padding: 10px 16px; font: 700 20px inherit; font-family: inherit; color: #3a2f4b; cursor: pointer; }
+.book-empty { font-size: 64px; opacity: .5; text-align: center; padding: 30px; grid-column: 1 / -1; }
+.q-pair { display: flex; gap: 6px; flex: none; }
+.q-pair .q-say { width: 44px; height: 48px; font-size: 22px; }
+.map-title { min-width: 0; }
+
+/* the prize of a third world and the golden finale */
+.prize { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; background: #fff; border: 3px solid #f2a900; border-radius: 18px; padding: 6px 14px; margin-bottom: 8px; width: 100%; justify-content: center; }
+.rescue-actions { flex-wrap: wrap; justify-content: center; }
+.prize-pic { position: relative; width: 56px; height: 56px; flex: none; }
+.prize-pic img { position: absolute; inset: 14% 8% 0; width: 84%; height: 84%; object-fit: contain; }
+.prize-pic .cheesy-acc { z-index: 1; inset: 14% 8% 0; width: 84%; height: 84%; }
+.en-rescue.finale .bunny-in .squishy-img { filter: sepia(.5) saturate(2.2) hue-rotate(-12deg) brightness(1.1) drop-shadow(0 0 18px #ffc83a); }
+.en-rescue.finale .en-sky { background: radial-gradient(circle at 50% 35%, #fff2b0, #ffd56a 40%, #ff9fc0 100%); }

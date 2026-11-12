@@ -62,15 +62,36 @@ export interface MapProgress {
 export const emptyMap = (): MapProgress => ({ done: {}, stars: {}, rescued: [] });
 
 /** World 1 is open; a world opens when the one before it is finished (its rescue station done). */
-export function worldOpen(map: MapProgress, world: number): boolean {
-  return world === 1 || (map.done[world - 1] ?? 0) >= STATIONS_PER_WORLD;
+export function worldOpen(map: MapProgress, world: number, openAll = false): boolean {
+  return openAll || world === 1 || (map.done[world - 1] ?? 0) >= STATIONS_PER_WORLD;
 }
 /** A station is open when the ones before it in its world are done. */
-export function stationOpen(map: MapProgress, world: number, station: number): boolean {
-  return worldOpen(map, world) && station <= (map.done[world] ?? 0);
+export function stationOpen(map: MapProgress, world: number, station: number, openAll = false): boolean {
+  return worldOpen(map, world, openAll) && (openAll || station <= (map.done[world] ?? 0));
 }
 export function finishStation(map: MapProgress, world: number, station: number, stars: number): MapProgress {
   const key = `${world}-${station}`;
   const done = { ...map.done, [world]: Math.max(map.done[world] ?? 0, station + 1) };
   return { ...map, done, stars: { ...map.stars, [key]: Math.max(map.stars[key] ?? 0, stars) } };
 }
+
+/** A parent says the word is already known: it counts as known and comes back later as a light review, not as a new word. */
+export function markKnown(words: Words, id: string, today: number): Words {
+  const cur = words[id] ?? fresh();
+  return { ...words, [id]: { ...cur, seen: true, known: true, level: Math.max(cur.level, KNOWN_LEVEL), due: today + INTERVALS[KNOWN_LEVEL - 1] } };
+}
+/** Takes the mark back: the word is new again. */
+export function unmarkKnown(words: Words, id: string): Words {
+  const { [id]: _gone, ...rest } = words;
+  void _gone;
+  return rest;
+}
+
+/** Minutes played per day (the last 30 days are kept): { dayNumber: minutes }. */
+export type PlayLog = Record<number, number>;
+export function addPlay(log: PlayLog, today: number, minutes: number): PlayLog {
+  const next: PlayLog = { ...log, [today]: (log[today] ?? 0) + minutes };
+  for (const d of Object.keys(next)) if (Number(d) < today - 29) delete next[Number(d)];
+  return next;
+}
+export const minutesInWeek = (log: PlayLog, today: number): number => Object.entries(log).filter(([d]) => Number(d) > today - 7).reduce((a, [, m]) => a + m, 0);
