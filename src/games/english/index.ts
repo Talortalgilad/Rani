@@ -3,7 +3,10 @@ import { cleanName, showNameScreen } from './ui/nameScreen';
 import { showBanner } from './ui/banner';
 import { showRescue } from './ui/rescue';
 import { runStation } from './ui/quest';
-import { showStart } from './ui/start';
+import { showMap, showWorld } from './ui/map';
+import { SQUISHIES } from './art/squishies';
+import { planStation } from './engine/planner';
+import { STATIONS_PER_WORLD, dayNumber, emptyMap, finishStation, markSeen, review, type MapProgress, type Words } from './engine/progress';
 import { stopSpeech } from './voice';
 import { getState } from '../../storage';
 import { he } from './content/lines';
@@ -24,6 +27,9 @@ let stop: (() => void) | null = null;
 const companion = (): Companion | null => ctx!.load<Companion | null>('companion', null);
 const verbs = (): Verbs => ctx!.load<Verbs>('verbs', {});
 const rescued = (): string[] => ctx!.load<string[]>('rescued', []);
+const words = (): Words => ctx!.load<Words>('words', {});
+const mapState = (): MapProgress => ctx!.load<MapProgress>('map', emptyMap());
+const saveWords = (w: Words): void => ctx!.save('words', w);
 
 function swap(f: () => () => void): void {
   stop?.();
@@ -36,48 +42,61 @@ function enter(): void {
   if (!c?.name) {
     swap(() => showNameScreen(root!, ctx!.sound, (name) => {
       ctx!.save('companion', { name: cleanName(name) });
-      showFront();
+      showWorlds();
     }));
-  } else showFront();
+  } else showWorlds();
 }
 
-function showFront(): void {
+/** The map of the worlds (the first screen after the name). */
+function showWorlds(): void {
   const name = companion()!.name;
-  swap(() => showStart(root!, name, rescued(), ctx!.sound, { onPlay: playStation, onHome: () => ctx!.onExit() }));
+  swap(() => showMap(root!, { name, map: mapState(), sound: ctx!.sound, onWorld: showStations, onHome: () => ctx!.onExit() }));
+}
+
+function showStations(world: number): void {
+  swap(() => showWorld(root!, { world, map: mapState(), sound: ctx!.sound, onStation: (s) => playStation(world, s), onBack: showWorlds }));
 }
 
 /** The pictures of the world are fetched now, when it is entered; the service worker keeps them for offline. */
-function playStation(): void {
-  const name = companion()!.name;
+function playStation(world: number, station: number): void {
   const wait = document.createElement('div');
   wait.className = 'en-loading';
   wait.textContent = '⏳';
   root!.appendChild(wait);
-  void preloadWorld(1).then(() => {
+  void preloadWorld(world).then(() => {
     wait.remove();
-    if (root) startStation(name);
+    if (root) startStation(world, station);
   });
 }
 
-function startStation(name: string): void {
+function startStation(world: number, station: number): void {
+  const name = companion()!.name;
+  const today = dayNumber();
+  const steps = planStation({ world, station, words: words(), today, seed: today * 31 + (mapState().done[world] ?? 0) * 7 + station + Math.floor(Math.random() * 1000) });
   swap(() =>
     runStation(root!, {
       name,
+      world,
+      steps,
       sound: ctx!.sound,
       verbs: verbs(),
       onVerb: (v) => ctx!.save('verbs', { ...verbs(), [v]: (verbs()[v] ?? 0) + 1 }),
-      onHome: () => ctx!.onExit(),
+      onScore: (ws, firstTry) => saveWords(ws.reduce((acc, id) => review(acc, id, firstTry, today), words())),
+      onSeen: (key) => saveWords(markSeen(words(), key, today)),
+      onHome: () => showStations(world),
       onFinish: (stars) => {
         ctx!.onRoundEnd({ won: true, stars, score: stars });
-        swap(() => showBanner(root!, stars, name, ctx!.sound, () => rescue(name)));
+        ctx!.save('map', finishStation(mapState(), world, station, stars));
+        swap(() => showBanner(root!, stars, name, ctx!.sound, () => (station === STATIONS_PER_WORLD - 1 ? rescue(world, name) : showStations(world))));
       },
     }),
   );
 }
 
-function rescue(name: string): void {
-  if (!rescued().includes('Bunny')) ctx!.save('rescued', [...rescued(), 'Bunny']);
-  swap(() => showRescue(root!, name, ctx!.sound, () => showFront()));
+function rescue(world: number, name: string): void {
+  const sq = SQUISHIES[world];
+  if (!rescued().includes(sq.name)) ctx!.save('rescued', [...rescued(), sq.name]);
+  swap(() => showRescue(root!, name, sq, ctx!.sound, () => showWorlds()));
 }
 
 const icon = `<svg viewBox="0 0 100 100" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

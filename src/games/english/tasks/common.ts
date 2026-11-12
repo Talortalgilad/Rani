@@ -11,7 +11,7 @@ export interface TaskEnv {
   /** the task was done (also called after the solution was shown) */
   done(): void;
   sparkle(x: number, y: number): void;
-  sound(n: 'correct' | 'oops' | 'pop' | 'bonus'): void;
+  sound(n: 'correct' | 'oops' | 'pop' | 'bonus' | 'tick', pitch?: number): void;
   /** read a word or an instruction in English */
   say(text: string, word?: boolean): void;
 }
