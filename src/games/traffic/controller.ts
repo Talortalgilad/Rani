@@ -1,32 +1,67 @@
 import type { GameContext } from '../types';
-import { TrafficState } from './engine/state';
+import type { LevelData } from './engine/level';
+import { SIZES, TrafficState, type SaveData } from './engine/state';
 import type { TrafficScene } from './render/scene';
-import { SLICE_LEVEL, SLICE_QUEUE, SLICE_VEHICLES, LOT } from './levels/beach-slice';
 import type { Hud } from './ui/hud';
 
 const PRAISE = ['יופי!', 'מדהים!', 'אלופה!'];
 
+export interface Hooks {
+  /** called when the level is won; returns what the result card should say */
+  onWin(stars: 1 | 2 | 3, moves: number): { next: boolean; newStars: number };
+  /** the state is calm (nothing is driving): a good moment to save */
+  save(data: SaveData): void;
+  clearSave(): void;
+  /** try the same level again at once (after "stuck": no gate) */
+  restart(): void;
+  /** play the same level again (asks the gate like a new round) */
+  replay(): void;
+  next(): void;
+  home(): void;
+}
+
+/** Stars: three when no helper was used. (Stage 1 has no helpers yet, so a finished level is three stars.) */
+export const starsFor = (helpersUsed: number): 1 | 2 | 3 => (helpersUsed <= 0 ? 3 : helpersUsed === 1 ? 2 : 1);
+
 /** Ties the rules (TrafficState) to the picture (TrafficScene), the sounds and the HUD. */
 export class Controller {
-  state = new TrafficState(SLICE_VEHICLES, SLICE_QUEUE);
+  state: TrafficState;
   private busy = false; // a boarding is in the air
   private streak = 0;
   private lastBoard = 0;
   private ended = false;
   private alive = true;
   private later: number[] = [];
+  private onResize = (): void => this.showHint();
 
-  constructor(private ctx: GameContext, private scene: TrafficScene, private hud: Hud) {
+  constructor(private ctx: GameContext, private scene: TrafficScene, private hud: Hud, private level: LevelData, private hooks: Hooks, resume?: SaveData) {
+    this.state = new TrafficState(level.vehicles, level.queue);
+    if (resume && this.state.load(resume)) {
+      scene.restore({ vehicles: this.state.vehicles.map((v) => ({ id: v.id, status: v.status, slot: v.slot, color: v.color, filled: v.filled })), boarded: this.state.boarded });
+      hud.setCount(this.state.boarded, this.state.total);
+    }
     scene.onTapVehicle = (id) => this.tap(id);
+    window.addEventListener('resize', this.onResize);
+    this.showHint();
+    if (resume) this.wait(300, () => this.pump());
   }
-
-  static view = { vehicles: SLICE_VEHICLES, queue: SLICE_QUEUE, lot: LOT };
-  static level = SLICE_LEVEL;
 
   private snd = (n: Parameters<GameContext['sound']['play']>[0]) => this.ctx.sound.play(n);
   private wait(ms: number, f: () => void): void {
     if (this.scene.reduced) ms = Math.min(ms, 30);
     this.later.push(window.setTimeout(() => this.alive && f(), ms));
+  }
+
+  /** The tutorial: what to say now, and which vehicle the hand points at. */
+  private showHint(blocked = false): void {
+    const steps = this.level.steps;
+    if (!steps || this.ended) return;
+    const step = steps[Math.min(this.state.moves, steps.length - 1)];
+    const text = blocked && step.blocked ? step.blocked.text : step.text;
+    const hand = blocked && step.blocked ? step.blocked.hand : step.hand;
+    this.hud.caption(text);
+    const v = hand !== undefined ? this.state.get(hand) : null;
+    this.hud.hand(v && v.status === 'parked' ? this.scene.screenPos(v.id) : null);
   }
 
   tap(id: number): void {
@@ -41,9 +76,11 @@ export class Controller {
     if (r.kind === 'blocked') {
       this.snd('bonk');
       this.scene.bonk(id, r.by, r.distance, () => {});
+      this.showHint(true);
       return;
     }
     this.hud.message(null);
+    this.hud.hand(null);
     this.scene.stuck(false);
     this.snd('engine');
     for (const v of this.state.uncovered(id)) this.wait(350, () => (this.scene.reveal(v.id, v.color), this.snd('pop')));
@@ -58,7 +95,7 @@ export class Controller {
   private pump(): void {
     if (this.busy || this.ended) return;
     const next = this.state.nextBoarding();
-    if (!next) return this.check();
+    if (!next) return this.settled();
     this.busy = true;
     const { vehicle, color } = next;
     this.scene.boardPassenger(vehicle.id, color, () => {
@@ -89,37 +126,46 @@ export class Controller {
     });
   }
 
-  private check(): void {
+  /** Nothing is moving: save, show the next hint, and see if it is over. */
+  private settled(): void {
     const st = this.state.status;
-    if (st === 'won') this.win();
-    else if (st === 'stuck') this.stuck();
+    if (st === 'won') return this.win();
+    if (st === 'stuck') return this.stuck();
+    if (!this.state.vehicles.some((v) => v.status === 'driving')) {
+      this.hooks.save(this.state.serialize());
+      this.showHint();
+    }
   }
 
   private win(): void {
     this.ended = true;
+    this.hooks.clearSave();
+    this.hud.hand(null);
     this.scene.celebrate();
     this.snd('firework');
     this.wait(500, () => this.snd('win'));
-    const stars = this.state.moves <= SLICE_VEHICLES.length + 4 ? 3 : this.state.moves <= SLICE_VEHICLES.length + 10 ? 2 : 1;
-    this.ctx.onRoundEnd({ won: true, stars: stars as 1 | 2 | 3, score: this.state.moves });
+    const stars = starsFor(0);
+    const res = this.hooks.onWin(stars, this.state.moves);
     this.wait(2200, () => {
-      const o = this.hud.overlay(`<h2>כל הנוסעים על הסיפון!</h2>
+      const tut = this.level.kind === 'tutorial';
+      const o = this.hud.overlay(`<h2>${tut ? 'כל הכבוד!' : 'כל הנוסעים על הסיפון!'}</h2>
         <div class="tr-stars">${[1, 2, 3].map((i) => `<span class="${i <= stars ? 'on' : ''}">⭐</span>`).join('')}</div>
-        <button class="btn" id="tr-again">שוב</button><button class="btn secondary" id="tr-home2">הביתה</button>`);
-      o.querySelector('#tr-again')!.addEventListener('click', () => this.ctx.requestRound(() => this.restart?.()));
-      o.querySelector('#tr-home2')!.addEventListener('click', () => this.ctx.onExit());
+        ${res.next ? '<button class="btn" id="tr-next">הבא</button>' : '<p style="margin:0;font-size:20px">סיימת את כל השלבים!</p>'}
+        <button class="btn secondary" id="tr-again">שוב</button><button class="btn secondary" id="tr-home2">הביתה</button>`);
+      o.querySelector('#tr-next')?.addEventListener('click', () => this.hooks.next());
+      o.querySelector('#tr-again')?.addEventListener('click', () => this.hooks.replay());
+      o.querySelector('#tr-home2')?.addEventListener('click', () => this.hooks.home());
     });
   }
 
-  restart: (() => void) | null = null;
-
   private stuck(): void {
+    this.hooks.clearSave();
     this.scene.stuck(true);
     this.snd('oops');
     this.wait(900, () => {
-      const o = this.hud.overlay(`<h2>אופס! ננסה שוב?</h2><p style="margin:0;font-size:20px">אולי עזרה קטנה תעזור 💡</p>
+      const o = this.hud.overlay(`<h2>אופס! ננסה שוב?</h2><p style="margin:0;font-size:20px">טיפ: שלחו קודם רכב בצבע של הנוסעים הראשונים בתור</p>
         <button class="btn" id="tr-retry">ננסה שוב</button>`);
-      o.querySelector('#tr-retry')!.addEventListener('click', () => this.restart?.());
+      o.querySelector('#tr-retry')!.addEventListener('click', () => this.hooks.restart());
     });
   }
 
@@ -127,5 +173,8 @@ export class Controller {
     this.alive = false;
     this.later.forEach(clearTimeout);
     this.scene.onTapVehicle = null;
+    window.removeEventListener('resize', this.onResize);
   }
 }
+
+export const seatsOf = (type: 'car' | 'van' | 'bus'): number => SIZES[type].seats;
