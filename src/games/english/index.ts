@@ -35,6 +35,8 @@ const verbs = (): Verbs => ctx!.load<Verbs>('verbs', {});
 const rescued = (): string[] => ctx!.load<string[]>('rescued', []);
 const words = (): Words => ctx!.load<Words>('words', {});
 const mapState = (): MapProgress => ctx!.load<MapProgress>('map', emptyMap());
+/** a parent setting (off): every world and station is open */
+const openAll = (): boolean => ctx!.load<boolean>('openAll', false);
 const buddy = (): string | null => ctx!.load<string | null>('buddy', null);
 const accessory = (): string | null => ctx!.load<string | null>('accessory', null);
 const unlocked = () => unlockedAccessories(mapState().done, STATIONS_PER_WORLD);
@@ -90,11 +92,11 @@ function singSong(world: number): void {
 /** The map of the worlds (the first screen after the name). */
 function showWorlds(): void {
   const name = displayName();
-  swap(() => showMap(root!, { name, map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
+  swap(() => showMap(root!, { name, openAll: openAll(), map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
 }
 
 function showStations(world: number): void {
-  swap(() => showWorld(root!, { world, map: mapState(), sound: ctx!.sound, onStation: (s) => playStation(world, s), onBack: showWorlds }));
+  swap(() => showWorld(root!, { world, openAll: openAll(), map: mapState(), sound: ctx!.sound, onStation: (s) => playStation(world, s), onBack: showWorlds }));
 }
 
 /** The pictures of the world are fetched now, when it is entered; the service worker keeps them for offline. */

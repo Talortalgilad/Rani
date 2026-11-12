@@ -1,4 +1,4 @@
-import { mountCheesy, type Expression } from '../art/cheesy';
+import { mountCheesy, setHeadband, type Expression } from '../art/cheesy';
 import { sceneImg } from '../art/scenes';
 import { COLORS } from '../content/colors';
 import { VERBS, labelOf, pluralOf } from '../content/words';
@@ -100,6 +100,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   const instr = root.querySelector<HTMLElement>('#instr')!;
   const bub = root.querySelector<HTMLElement>('#bub')!;
   const dots = root.querySelector<HTMLElement>('#dots')!;
+  setHeadband(d.world === 11);
   const cheesy = mountCheesy(root.querySelector<HTMLElement>('#ch')!, 'happy', () => d.sound.play('pop', 520));
   steps.forEach(() => el('i', 'dot', dots));
   let index = -1;
@@ -211,6 +212,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   later(next, 300);
   return () => {
     dead = true;
+    setHeadband(false);
     timers.forEach(clearTimeout);
     handle?.destroy();
     stopSpeech();

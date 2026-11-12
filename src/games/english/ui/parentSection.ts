@@ -18,6 +18,7 @@ export function englishParentHtml(): string {
   const verbs = store.load<Record<string, number>>('verbs', {});
   const name = store.load<{ name: string } | null>('companion', null)?.name ?? '';
   const liked = store.load<string[]>('likes', likeIds);
+  const openAll = store.load<boolean>('openAll', false);
   const known = WORDS.filter((w) => isKnown(words[w.id])).length;
   const learning = WORDS.filter((w) => words[w.id]?.seen && !isKnown(words[w.id])).length;
   const worldsDone = WORLDS.filter((w) => (map.done[w.n] ?? 0) >= STATIONS_PER_WORLD).length;
@@ -35,8 +36,8 @@ export function englishParentHtml(): string {
         <div><b>${Object.values(verbs).filter((n) => n > 0).length}</b><span>פעלים שנלמדו</span></div>
       </div>
       <div class="p-kpis">
-        <div><b>${worldsDone}/${WORLDS.length}</b><span>עולמות שהושלמו</span></div>
-        <div><b>${rescued}/${SQUISHIES.length}</b><span>סקווישים שניצלו</span></div>
+        <div><b style="font-size:20px">${worldsDone} מתוך ${WORLDS.length}</b><span>עולמות שהושלמו</span></div>
+        <div><b style="font-size:20px">${rescued} מתוך ${SQUISHIES.length}</b><span>סקווישים שניצלו</span></div>
         <div><b>${week}</b><span>דקות השבוע</span></div>
       </div>
       <div class="p-sub">שם החבר (הדמות המלווה)</div>
@@ -47,6 +48,8 @@ export function englishParentHtml(): string {
       <details class="p-details"><summary>בחירת מילים</summary>
         ${WORLDS.map((w) => `<div class="p-sub">${w.emoji} ${w.he}</div><div class="p-chips">${WORDS.filter((x) => x.world === w.n).map((x) => chip(x.id, words[x.id]?.known === true, 'data-known')).join('')}</div>`).join('')}
       </details>
+      <div class="p-sub">פתח את כל העולמות (לבדיקה: ברירת המחדל כבויה, ועולם נפתח רק אחרי שמסיימים את הקודם)</div>
+      <div class="p-chips"><button class="chip-btn ${openAll ? 'on' : ''}" data-openall="1">כן</button><button class="chip-btn ${openAll ? '' : 'on'}" data-openall="0">לא</button></div>
       <div class="p-sub">בדיקת קול</div>
       <button class="btn alt" id="en-voice">🔊 בדוק קול</button>
       <div class="p-sub" id="en-voice-out">אנגלית: <span dir="ltr">${esc(voiceEn)}</span><br>עברית: ${esc(voiceHe)}</div>
@@ -74,6 +77,12 @@ export function bindEnglishParent(root: HTMLElement, redraw: () => void): void {
       const id = b.dataset.known!;
       const words = store.load<Words>('words', {});
       store.save('words', words[id]?.known ? unmarkKnown(words, id) : markKnown(words, id, dayNumber()));
+      redraw();
+    }),
+  );
+  card.querySelectorAll<HTMLElement>('[data-openall]').forEach((b) =>
+    b.addEventListener('click', () => {
+      store.save('openAll', b.dataset.openall === '1');
       redraw();
     }),
   );

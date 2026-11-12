@@ -29,7 +29,7 @@ export function showShelf(root: HTMLElement, o: ShelfOptions): () => void {
     <div class="en-screen en-shelf">
       <div class="en-sky"></div>
       <header class="q-top"><button class="q-home" id="sb" type="button" aria-label="${he.home}">⬅️</button><h1 class="map-title">🧸 ${he.shelfTitle}</h1><span class="q-say" style="visibility:hidden"></span></header>
-      <div class="shelf-count">${o.rescued.length} / ${SQUISHIES.length}</div>
+      <div class="shelf-count">${he.squishyCount(o.rescued.length, SQUISHIES.length)}</div>
       <div class="shelf-grid">
         <div class="shelf-slot have cheesy-slot ${o.buddy === null ? 'buddy' : ''}">
           <button class="shelf-sq" data-name="Cheesy" type="button" aria-label="Cheesy"><span class="cheesy-wrap"><img class="squishy-img" src="${cheesyUrl('happy')}" alt="" draggable="false">${o.buddy === null && o.accessory ? accessorySvg(ACCESSORIES.find((a) => a.id === o.accessory)!) : ''}</span></button>

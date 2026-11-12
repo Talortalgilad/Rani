@@ -308,7 +308,7 @@ bdi { unicode-bidi: isolate; }
 
 /* the word book */
 .book-tabs { display: flex; gap: 8px; margin: 2px 0 6px; }
-.book-tab { border: 3px solid #3a2f4b; background: #fff; border-radius: 16px; padding: 6px 16px; font: 700 17px inherit; font-family: inherit; color: #3a2f4b; cursor: pointer; }
+.book-tab { border: 3px solid #3a2f4b; background: #fff; border-radius: 16px; padding: 6px 16px; font: 700 14px inherit; font-family: inherit; color: #3a2f4b; cursor: pointer; }
 .book-tab.on { background: #ffe58a; }
 .book-cheesy { width: 84px; height: 84px; margin-top: -2px; }
 .book-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 480px; flex: 1; overflow-y: auto; align-content: start; padding: 4px 8px 24px; }

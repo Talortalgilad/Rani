@@ -93,3 +93,18 @@ describe('what a parent can set, and the play log', () => {
     expect(addPlay(l, 140, 1)[100]).toBeUndefined();
   });
 });
+
+describe('opening of worlds', () => {
+  it('a world opens only when the one before it is finished; the parents switch opens all', () => {
+    const m = finishStation(emptyMap(), 1, 4, 3);
+    expect(worldOpen(emptyMap(), 2)).toBe(false);
+    expect(worldOpen(m, 2)).toBe(true); // finishing the fifth station (the rescue) opens the next world
+    let all = emptyMap();
+    for (let s = 0; s < 5; s++) all = finishStation(all, 1, s, 3);
+    expect(worldOpen(all, 2)).toBe(true);
+    expect(worldOpen(all, 3)).toBe(false);
+    expect(worldOpen(emptyMap(), 12, true)).toBe(true);
+    expect(stationOpen(emptyMap(), 5, 3, true)).toBe(true);
+    expect(stationOpen(emptyMap(), 5, 3)).toBe(false);
+  });
+});

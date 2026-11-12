@@ -62,12 +62,12 @@ export interface MapProgress {
 export const emptyMap = (): MapProgress => ({ done: {}, stars: {}, rescued: [] });
 
 /** World 1 is open; a world opens when the one before it is finished (its rescue station done). */
-export function worldOpen(map: MapProgress, world: number): boolean {
-  return world === 1 || (map.done[world - 1] ?? 0) >= STATIONS_PER_WORLD;
+export function worldOpen(map: MapProgress, world: number, openAll = false): boolean {
+  return openAll || world === 1 || (map.done[world - 1] ?? 0) >= STATIONS_PER_WORLD;
 }
 /** A station is open when the ones before it in its world are done. */
-export function stationOpen(map: MapProgress, world: number, station: number): boolean {
-  return worldOpen(map, world) && station <= (map.done[world] ?? 0);
+export function stationOpen(map: MapProgress, world: number, station: number, openAll = false): boolean {
+  return worldOpen(map, world, openAll) && (openAll || station <= (map.done[world] ?? 0));
 }
 export function finishStation(map: MapProgress, world: number, station: number, stars: number): MapProgress {
   const key = `${world}-${station}`;

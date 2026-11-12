@@ -24,13 +24,17 @@ export function preloadCheesy(): void {
  */
 export interface Look { buddy: string | null; accessory: string | null }
 let look: Look = { buddy: null, accessory: null };
+/** In the ninja park whoever goes with Rani wears a red ninja headband (instead of an accessory), so that "the ninja" is clear. */
+let headband = false;
+export const setHeadband = (on: boolean): void => void (headband = on);
+const BAND = '<svg class="cheesy-acc" viewBox="0 0 100 100" aria-hidden="true"><path d="M26,27 Q50,15 74,27 L74,35 Q50,23 26,35 Z" fill="#e8283c" stroke="#3a2f4b" stroke-width="2.2" stroke-linejoin="round"/><path d="M74,29 L90,22 L86,31 L93,36 L76,34 Z" fill="#e8283c" stroke="#3a2f4b" stroke-width="2" stroke-linejoin="round"/><rect x="45" y="22" width="10" height="9" rx="2" fill="#c0c7d0" stroke="#3a2f4b" stroke-width="1.6"/></svg>';
 export const setLook = (l: Look): void => void (look = { ...l });
 export const getLook = (): Look => look;
 const srcFor = (e: Expression): string => (look.buddy ? squishyUrl(look.buddy) : cheesyUrl(e));
 
 export const cheesyImg = (e: Expression): string => {
-  const acc = look.buddy ? undefined : accessoryOf(look.accessory);
-  return `<span class="cheesy-wrap"><img class="cheesy-img ex-${e}" src="${srcFor(e)}" alt="" draggable="false" decoding="async">${acc ? accessorySvg(acc) : ''}</span>`;
+  const acc = look.buddy || headband ? undefined : accessoryOf(look.accessory);
+  return `<span class="cheesy-wrap"><img class="cheesy-img ex-${e}" src="${srcFor(e)}" alt="" draggable="false" decoding="async">${headband ? BAND : acc ? accessorySvg(acc) : ''}</span>`;
 };
 
 /** A living wedge: breathes, squashes when pressed (and shows the squished face for a moment), hops. `el` is the element to fill. */

@@ -8,8 +8,8 @@ import type { SoundApi } from '../../../sound';
 const worldStars = (map: MapProgress, n: number): number => Array.from({ length: STATIONS_PER_WORLD }, (_, s) => map.stars[`${n}-${s}`] ?? 0).reduce((a, b) => a + b, 0);
 
 /** The map of the worlds: a winding path, a world on each bend. A world opens when the one before it is finished. */
-export function showMap(root: HTMLElement, o: { name: string; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onBook(): void; onHome(): void }): () => void {
-  const open = WORLDS.map((w) => w.ready && worldOpen(o.map, w.n));
+export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onBook(): void; onHome(): void }): () => void {
+  const open = WORLDS.map((w) => w.ready && worldOpen(o.map, w.n, o.openAll));
   const current = WORLDS.findIndex((w, i) => open[i] && (o.map.done[w.n] ?? 0) < STATIONS_PER_WORLD);
   root.innerHTML = `
     <div class="en-screen en-map">
@@ -56,7 +56,7 @@ export function showMap(root: HTMLElement, o: { name: string; map: MapProgress; 
 }
 
 /** The stations of a world: five places on a path, the last one the rescue. */
-export function showWorld(root: HTMLElement, o: { world: number; map: MapProgress; sound: SoundApi; onStation(s: number): void; onBack(): void }): () => void {
+export function showWorld(root: HTMLElement, o: { world: number; openAll?: boolean; map: MapProgress; sound: SoundApi; onStation(s: number): void; onBack(): void }): () => void {
   const w = WORLDS[o.world - 1];
   root.innerHTML = `
     <div class="en-screen en-world" style="--c:${w.color}">
@@ -64,7 +64,7 @@ export function showWorld(root: HTMLElement, o: { world: number; map: MapProgres
       <header class="q-top"><button class="q-home" id="wb" type="button" aria-label="${he.home}">⬅️</button><h1 class="map-title">${w.emoji} ${w.name}</h1><span class="q-say" style="visibility:hidden"></span></header>
       <div class="station-path">
         ${Array.from({ length: STATIONS_PER_WORLD }, (_, s) => {
-          const op = stationOpen(o.map, o.world, s);
+          const op = stationOpen(o.map, o.world, s, o.openAll);
           const stars = o.map.stars[`${o.world}-${s}`] ?? 0;
           const cur = s === (o.map.done[o.world] ?? 0);
           const rescue = s === STATIONS_PER_WORLD - 1;
