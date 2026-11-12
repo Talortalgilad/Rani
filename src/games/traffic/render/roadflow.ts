@@ -27,11 +27,13 @@ export interface FlowCar {
   by?: FlowCar;
   /** how long it has stood still, seconds */
   still?: number;
-  /** a vehicle wedged for good with one sent earlier drives through it (rarely, and only for a moment) so that nothing ever stays stuck */
-  ghostUntil?: number;
+  /** a vehicle wedged with one sent earlier hops over it (0.4 s, in an arc) so that nothing ever stays stuck; seconds left of the hop */
+  hopLeft?: number;
 }
 
 export interface FlowOpts { vmax: number; accel: number; brake: number; gap: number; zone: number }
+/** how long a hop over another vehicle takes, seconds */
+export const HOP_TIME = 0.4;
 export const FLOW: FlowOpts = { vmax: 8.5, accel: 15, brake: 14, gap: 0.22, zone: 3.4 };
 
 export function poseAt(route: Route, s: number): RoutePoint {
@@ -52,9 +54,9 @@ export function poseAt(route: Route, s: number): RoutePoint {
 
 export class RoadFlow {
   cars: FlowCar[] = [];
-  /** how many times a vehicle had to pass through another (never in normal play) */
-  ghosts = 0;
-  onGhost?: (c: FlowCar, by: FlowCar) => void;
+  /** how many times a vehicle had to hop over another (rare) */
+  hops = 0;
+  onHop?: (c: FlowCar, over: FlowCar) => void;
   opts: FlowOpts;
   constructor(opts: Partial<FlowOpts> = {}) {
     this.opts = { ...FLOW, ...opts };
@@ -87,6 +89,7 @@ export class RoadFlow {
         c.s = L;
       } else {
         let v = Math.min(c.v + o.accel * dt, o.vmax, Math.sqrt(2 * o.brake * Math.max(0.002, L - c.s)) + 0.35);
+        if (c.hopLeft) v = Math.max(v, o.vmax * 0.7); // in the air it goes on at a good pace
         let s2 = Math.min(L, c.s + v * dt);
         if (!this.canMove(c, s2)) {
           // the whole step is not possible: go as far as it can without touching anything
@@ -96,10 +99,10 @@ export class RoadFlow {
           s2 = ok;
         }
         c.still = v === 0 && s2 === c.s ? (c.still ?? 0) + dt : 0;
-        if (c.still > 1.2 && c.by && c.by.by === c && (c.by.still ?? 0) > 1.2 && c.by.order < c.order && !c.locked && c.ghostUntil === undefined) {
-          c.ghostUntil = c.s + 2.5;
-          this.ghosts++;
-          this.onGhost?.(c, c.by);
+        if (c.still > 1.2 && c.by && c.by.by === c && (c.by.still ?? 0) > 1.2 && c.by.order < c.order && !c.locked && !c.hopLeft) {
+          c.hopLeft = HOP_TIME;
+          this.hops++;
+          this.onHop?.(c, c.by);
         }
         // a vehicle that is wedged in the way of one sent earlier (which waits for it) backs up out of the way
         if (c.still > 0.35 && c.by && c.by.order < c.order && c.s > 0.05 && (c.by.still ?? 0) > 0.2) {
@@ -109,6 +112,7 @@ export class RoadFlow {
         }
         c.v = v;
         c.s = s2;
+        if (c.hopLeft) c.hopLeft = c.hopLeft - dt > 0 ? c.hopLeft - dt : undefined;
       }
       if (c.s >= L - 0.001) {
         c.done = true;
@@ -142,10 +146,7 @@ export class RoadFlow {
 
   private canMove(c: FlowCar, s2: number): boolean {
     const r = c.route;
-    if (c.ghostUntil !== undefined) {
-      if (c.s < c.ghostUntil) return true;
-      c.ghostUntil = undefined;
-    }
+    if (c.hopLeft) return true; // in the air: it may touch
     c.locked = false;
     c.blocked = false;
     c.by = undefined;

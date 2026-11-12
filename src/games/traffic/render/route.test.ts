@@ -49,7 +49,7 @@ describe('the road to the station', () => {
     expect(points).toBeGreaterThan(100000);
   });
 
-  for (const [gapSteps, strict, maxGhosts] of [[30, true, 2], [12, true, 12], [4, false, 12]] as const) it(`vehicles sent ${(gapSteps / 30).toFixed(1)} s apart ${strict ? 'do not go through each other on the road' : 'all arrive too, even when sent in a rush'}`, () => {
+  for (const [gapSteps, strict, maxGhosts] of [[30, true, 2], [12, true, 12], [4, false, 12]] as const) it(`vehicles sent ${(gapSteps / 30).toFixed(1)} s apart ${strict ? 'never touch on the road, except while one hops over another' : 'all arrive too, even when sent in a rush'}`, () => {
     let sent = 0;
     let steps = 0;
     let ghosts = 0;
@@ -71,7 +71,7 @@ describe('the road to the station', () => {
         steps++;
         const cars = strict ? flow.cars : [];
         for (let a = 0; a < cars.length; a++) for (let b = a + 1; b < cars.length; b++) {
-          if (cars[a].s > 0 && cars[b].s > 0 && cars[a].ghostUntil === undefined && cars[b].ghostUntil === undefined && overlaps(flow.boxOf(cars[a]), flow.boxOf(cars[b]), 0.02)) problems.push(`level ${l.key}: vehicles ${cars[a].id} and ${cars[b].id} meet on the road`);
+          if (cars[a].s > 0 && cars[b].s > 0 && !cars[a].hopLeft && !cars[b].hopLeft && overlaps(flow.boxOf(cars[a]), flow.boxOf(cars[b]), 0.02)) problems.push(`level ${l.key}: vehicles ${cars[a].id} and ${cars[b].id} meet on the road`);
         }
       };
       for (const id of l.stats?.solution ?? []) {
@@ -91,10 +91,10 @@ describe('the road to the station', () => {
       let guard = 0;
       while (flow.cars.length && guard++ < 6000) land();
       expect(flow.cars.length, `level ${l.key}: some vehicles never got to the station`).toBe(0);
-      ghosts += flow.ghosts;
+      ghosts += flow.hops;
     }
     expect(problems.slice(0, 5)).toEqual([]);
-    // a wedge (two vehicles each waiting for the other) is broken after 1.2 s by letting the later one through: very rare
+    // a wedge (two vehicles each waiting for the other) is broken after 1.2 s: the later one hops over the other (0.4 s, may touch while in the air): very rare
     expect(ghosts).toBeLessThanOrEqual(maxGhosts);
     expect(sent).toBeGreaterThan(2500);
     expect(steps).toBeGreaterThan(10000);

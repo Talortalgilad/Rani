@@ -55,6 +55,7 @@ export class Controller {
     scene.onTapVehicle = (id, long) => this.tap(id, long);
     scene.canLeave = (id) => this.state.canLeave(id);
     scene.onSpeed = (fast) => this.hud.setFast(fast);
+    scene.onHop = () => this.snd('boing');
     window.addEventListener('resize', this.onResize);
     this.showHint();
     if (resume) this.wait(300, () => this.pump());
@@ -362,6 +363,7 @@ export class Controller {
     this.alive = false;
     this.later.forEach(clearTimeout);
     this.scene.onTapVehicle = null;
+    this.scene.onHop = null;
     this.scene.setPickMode(false);
     window.removeEventListener('resize', this.onResize);
   }

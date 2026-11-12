@@ -7,7 +7,9 @@ export type SoundName =
   // 3D lobby: a tiny tick as an island passes the middle (pitch in Hz), and a soft thud when the ring comes to rest
   | 'tick' | 'settle'
   // Traffic Jam: engine starting, the "bonk" of a blocked vehicle, braking, the honk of a full one, a firework
-  | 'engine' | 'bonk' | 'brake' | 'honk' | 'firework';
+  | 'engine' | 'bonk' | 'brake' | 'honk' | 'firework'
+  // a vehicle that hops over another on the road
+  | 'boing';
 
 export interface SoundApi {
   /** `pitch` (Hz) applies to 'pop', 'bell' and 'tick'. */
@@ -117,6 +119,10 @@ export const sound: SoundApi = {
           tone(494, 0, 0.13, 'square', 0.08);
           tone(392, 0.17, 0.2, 'square', 0.1);
           tone(494, 0.17, 0.2, 'square', 0.08);
+          break;
+        case 'boing':
+          tone(180, 0, 0.28, 'sine', 0.26, 640);
+          tone(360, 0.02, 0.22, 'triangle', 0.08, 900);
           break;
         case 'firework':
           tone(900, 0, 0.28, 'sawtooth', 0.06, 160);

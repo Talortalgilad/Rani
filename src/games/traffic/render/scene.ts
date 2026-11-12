@@ -6,7 +6,7 @@ import { rad } from '../engine/geometry';
 import { BELT_PITCH, BELT_WIDTH, REGULAR_SLOTS, SIZES, TURNTABLE, type BeltDef, type ColorId, type VehicleDef } from '../engine/state';
 import { Timeline, easeInOutCubic, easeOutBack, easeOutQuad } from './animations';
 import { buildWorld, type WorldKind } from './dioramas';
-import { RoadFlow, poseAt } from './roadflow';
+import { HOP_TIME, RoadFlow, poseAt } from './roadflow';
 import { ROAD, buildRoute, stationZOf } from './route';
 import { frameCamera, nearestVehicle, type HitShape, type SafeArea } from './framing';
 import { Fx } from './fx';
@@ -141,6 +141,8 @@ export interface TrafficScene extends StageScene {
   canLeave: ((id: number) => boolean) | null;
   /** 1 normally, 2 while the finger is held down: scales the time of every animation (not the rules of the game) */
   speed: number;
+  /** told when a vehicle hops over another on the road (for the "boing") */
+  onHop: (() => void) | null;
   /** told when the double speed turns on and off (for the little badge) */
   onSpeed: ((fast: boolean) => void) | null;
   timeline: Timeline;
@@ -737,6 +739,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
 
   // the vehicles that are on their way to the station: they follow the ring road and never go through each other
   const flow = new RoadFlow();
+  flow.onHop = () => api.onHop?.();
   let sendOrder = 0;
   const flowViews = new Map<number, { v: VehicleView; arrived: () => void; slot: number }>();
 
@@ -746,7 +749,9 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
       const f = flowViews.get(c.id);
       if (!f) continue;
       const q = poseAt(c.route, c.s);
-      f.v.root.position.set(q.x, f.v.hop.value, q.z);
+      // a vehicle that hops over another goes up in an arc (0.4 s)
+      const air = c.hopLeft ? Math.sin((1 - c.hopLeft / HOP_TIME) * Math.PI) * 1.1 : 0;
+      f.v.root.position.set(q.x, f.v.hop.value + air, q.z);
       f.v.root.rotation.y = -rad(q.heading);
       f.v.root.scale.setScalar(q.scale);
       if (c.v > 1.5 && !reduced && Math.random() < 0.4) fx.puff(q.x - Math.cos(rad(q.heading)) * 0.7, q.z - Math.sin(rad(q.heading)) * 0.7);
@@ -793,6 +798,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     onTapVehicle: null,
     canLeave: null,
     speed: 1,
+    onHop: null,
     onSpeed: null,
     timeline,
     fx,
