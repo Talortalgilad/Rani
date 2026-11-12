@@ -39,6 +39,15 @@ export default defineConfig({
         globIgnores: ['**/*.woff'],
         navigateFallback: `${base}index.html`,
         cleanupOutdatedCaches: true,
+        // the pictures of the English game are not in the main precache: a world's pictures are fetched when the world is entered and
+        // kept for offline by this runtime cache
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'english-images', expiration: { maxEntries: 200 }, cacheableResponse: { statuses: [0, 200] } },
+          },
+        ],
       },
     }),
   ],

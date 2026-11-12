@@ -1,0 +1,1622 @@
+{
+ "phone": {
+  "sheet": 1,
+  "box": [
+   131,
+   578,
+   173,
+   537
+  ],
+  "opaque_share": 0.447,
+  "white_part_candidate_share": 0.0002,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "tv": {
+  "sheet": 1,
+  "box": [
+   115,
+   569,
+   818,
+   1283
+  ],
+  "opaque_share": 0.509,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "ball": {
+  "sheet": 1,
+  "box": [
+   185,
+   583,
+   1536,
+   1921
+  ],
+  "opaque_share": 0.578,
+  "white_part_candidate_share": 0.0646,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "doll": {
+  "sheet": 1,
+  "box": [
+   783,
+   1279,
+   191,
+   521
+  ],
+  "opaque_share": 0.342,
+  "white_part_candidate_share": 0.0029,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "bed": {
+  "sheet": 1,
+  "box": [
+   815,
+   1266,
+   755,
+   1311
+  ],
+  "opaque_share": 0.395,
+  "white_part_candidate_share": 0.1229,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "book": {
+  "sheet": 1,
+  "box": [
+   855,
+   1211,
+   1487,
+   1946
+  ],
+  "opaque_share": 0.415,
+  "white_part_candidate_share": 0.0092,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "box": {
+  "sheet": 1,
+  "box": [
+   1547,
+   1923,
+   92,
+   598
+  ],
+  "opaque_share": 0.379,
+  "white_part_candidate_share": 0.0002,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "lamp": {
+  "sheet": 1,
+  "box": [
+   1499,
+   1930,
+   885,
+   1167
+  ],
+  "opaque_share": 0.322,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "chair": {
+  "sheet": 1,
+  "box": [
+   1476,
+   1962,
+   1548,
+   1888
+  ],
+  "opaque_share": 0.324,
+  "white_part_candidate_share": 0.0393,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "pizza": {
+  "sheet": 2,
+  "box": [
+   186,
+   557,
+   69,
+   630
+  ],
+  "opaque_share": 0.405,
+  "white_part_candidate_share": 0.0129,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "cheese": {
+  "sheet": 2,
+  "box": [
+   145,
+   558,
+   814,
+   1327
+  ],
+  "opaque_share": 0.528,
+  "white_part_candidate_share": 0.0016,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "pasta": {
+  "sheet": 2,
+  "box": [
+   179,
+   619,
+   1457,
+   2031
+  ],
+  "opaque_share": 0.411,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "meat": {
+  "sheet": 2,
+  "box": [
+   843,
+   1247,
+   101,
+   630
+  ],
+  "opaque_share": 0.443,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "apple": {
+  "sheet": 2,
+  "box": [
+   818,
+   1298,
+   834,
+   1294
+  ],
+  "opaque_share": 0.548,
+  "white_part_candidate_share": 0.0005,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "banana": {
+  "sheet": 2,
+  "box": [
+   791,
+   1287,
+   1483,
+   1991
+  ],
+  "opaque_share": 0.331,
+  "white_part_candidate_share": 0.0039,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "milk": {
+  "sheet": 2,
+  "box": [
+   1474,
+   1934,
+   176,
+   592
+  ],
+  "opaque_share": 0.485,
+  "white_part_candidate_share": null,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "cake": {
+  "sheet": 2,
+  "box": [
+   1476,
+   1946,
+   792,
+   1311
+  ],
+  "opaque_share": 0.436,
+  "white_part_candidate_share": 0.0053,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "egg": {
+  "sheet": 2,
+  "box": [
+   1542,
+   1885,
+   1461,
+   1967
+  ],
+  "opaque_share": 0.35,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "slide": {
+  "sheet": 3,
+  "box": [
+   130,
+   594,
+   110,
+   584
+  ],
+  "opaque_share": 0.342,
+  "white_part_candidate_share": 0.1151,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "swing": {
+  "sheet": 3,
+  "box": [
+   119,
+   601,
+   789,
+   1284
+  ],
+  "opaque_share": 0.288,
+  "white_part_candidate_share": 0.6854,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "tree": {
+  "sheet": 3,
+  "box": [
+   106,
+   618,
+   1509,
+   1917
+  ],
+  "opaque_share": 0.399,
+  "white_part_candidate_share": 0.0028,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "bike": {
+  "sheet": 3,
+  "box": [
+   825,
+   1262,
+   129,
+   596
+  ],
+  "opaque_share": 0.352,
+  "white_part_candidate_share": 0.0186,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "skates": {
+  "sheet": 3,
+  "box": [
+   869,
+   1258,
+   807,
+   1262
+  ],
+  "opaque_share": 0.439,
+  "white_part_candidate_share": 0.0011,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "helmet": {
+  "sheet": 3,
+  "box": [
+   821,
+   1286,
+   1514,
+   1918
+  ],
+  "opaque_share": 0.426,
+  "white_part_candidate_share": 0.0896,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "flower": {
+  "sheet": 3,
+  "box": [
+   1484,
+   1920,
+   210,
+   491
+  ],
+  "opaque_share": 0.306,
+  "white_part_candidate_share": 0.0116,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "bench": {
+  "sheet": 3,
+  "box": [
+   1514,
+   1927,
+   773,
+   1288
+  ],
+  "opaque_share": 0.319,
+  "white_part_candidate_share": 0.0662,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "kite": {
+  "sheet": 3,
+  "box": [
+   1472,
+   1949,
+   1518,
+   1884
+  ],
+  "opaque_share": 0.407,
+  "white_part_candidate_share": 0.0041,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "pencil": {
+  "sheet": 4,
+  "box": [
+   126,
+   579,
+   202,
+   497
+  ],
+  "opaque_share": 0.246,
+  "white_part_candidate_share": 0.0018,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "brush": {
+  "sheet": 4,
+  "box": [
+   126,
+   582,
+   847,
+   1200
+  ],
+  "opaque_share": 0.221,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "crayons": {
+  "sheet": 4,
+  "box": [
+   121,
+   592,
+   1518,
+   1930
+  ],
+  "opaque_share": 0.536,
+  "white_part_candidate_share": 0.0004,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "paper": {
+  "sheet": 4,
+  "box": [
+   799,
+   1264,
+   134,
+   560
+  ],
+  "opaque_share": 0.488,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "palette": {
+  "sheet": 4,
+  "box": [
+   822,
+   1246,
+   802,
+   1267
+  ],
+  "opaque_share": 0.538,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "scissors": {
+  "sheet": 4,
+  "box": [
+   791,
+   1270,
+   1508,
+   1886
+  ],
+  "opaque_share": 0.234,
+  "white_part_candidate_share": 0.052,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "glue": {
+  "sheet": 4,
+  "box": [
+   1473,
+   1959,
+   177,
+   503
+  ],
+  "opaque_share": 0.284,
+  "white_part_candidate_share": 0.0005,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "picture": {
+  "sheet": 4,
+  "box": [
+   1474,
+   1939,
+   803,
+   1274
+  ],
+  "opaque_share": 0.646,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "easel": {
+  "sheet": 4,
+  "box": [
+   1460,
+   1963,
+   1526,
+   1906
+  ],
+  "opaque_share": 0.357,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "candy": {
+  "sheet": 5,
+  "box": [
+   117,
+   595,
+   111,
+   569
+  ],
+  "opaque_share": 0.309,
+  "white_part_candidate_share": 0.0013,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "lollipop": {
+  "sheet": 5,
+  "box": [
+   112,
+   584,
+   884,
+   1191
+  ],
+  "opaque_share": 0.275,
+  "white_part_candidate_share": 0.0017,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "cupcake": {
+  "sheet": 5,
+  "box": [
+   123,
+   601,
+   1527,
+   1923
+  ],
+  "opaque_share": 0.432,
+  "white_part_candidate_share": 0.0007,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "icecream": {
+  "sheet": 5,
+  "box": [
+   789,
+   1267,
+   210,
+   477
+  ],
+  "opaque_share": 0.281,
+  "white_part_candidate_share": 0.0007,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "cookie": {
+  "sheet": 5,
+  "box": [
+   810,
+   1261,
+   816,
+   1237
+  ],
+  "opaque_share": 0.599,
+  "white_part_candidate_share": 0.0003,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "donut": {
+  "sheet": 5,
+  "box": [
+   809,
+   1270,
+   1493,
+   1930
+  ],
+  "opaque_share": 0.608,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "chocolate": {
+  "sheet": 5,
+  "box": [
+   1478,
+   1953,
+   128,
+   551
+  ],
+  "opaque_share": 0.422,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "balloon": {
+  "sheet": 5,
+  "box": [
+   1476,
+   1960,
+   857,
+   1191
+  ],
+  "opaque_share": 0.374,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "gift": {
+  "sheet": 5,
+  "box": [
+   1481,
+   1956,
+   1495,
+   1947
+  ],
+  "opaque_share": 0.562,
+  "white_part_candidate_share": 0.0004,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "mom": {
+  "sheet": 6,
+  "box": [
+   75,
+   643,
+   211,
+   473
+  ],
+  "opaque_share": 0.263,
+  "white_part_candidate_share": 0.0008,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "dad": {
+  "sheet": 6,
+  "box": [
+   73,
+   645,
+   892,
+   1157
+  ],
+  "opaque_share": 0.256,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "brother": {
+  "sheet": 6,
+  "box": [
+   88,
+   639,
+   1581,
+   1829
+  ],
+  "opaque_share": 0.249,
+  "white_part_candidate_share": 0.0008,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "sister": {
+  "sheet": 6,
+  "box": [
+   771,
+   1320,
+   216,
+   505
+  ],
+  "opaque_share": 0.273,
+  "white_part_candidate_share": 0.001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "baby": {
+  "sheet": 6,
+  "box": [
+   806,
+   1319,
+   873,
+   1176
+  ],
+  "opaque_share": 0.313,
+  "white_part_candidate_share": 0.0011,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "grandma": {
+  "sheet": 6,
+  "box": [
+   745,
+   1334,
+   1567,
+   1844
+  ],
+  "opaque_share": 0.262,
+  "white_part_candidate_share": 0.0012,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "grandpa": {
+  "sheet": 6,
+  "box": [
+   1438,
+   2003,
+   196,
+   475
+  ],
+  "opaque_share": 0.268,
+  "white_part_candidate_share": 0.0005,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "family": {
+  "sheet": 6,
+  "box": [
+   1438,
+   1979,
+   753,
+   1301
+  ],
+  "opaque_share": 0.535,
+  "white_part_candidate_share": 0.0008,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "friends": {
+  "sheet": 6,
+  "box": [
+   1502,
+   1981,
+   1432,
+   1981
+  ],
+  "opaque_share": 0.377,
+  "white_part_candidate_share": 0.0441,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "shirt": {
+  "sheet": 7,
+  "box": [
+   143,
+   566,
+   119,
+   573
+  ],
+  "opaque_share": 0.49,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "shorts": {
+  "sheet": 7,
+  "box": [
+   133,
+   587,
+   850,
+   1237
+  ],
+  "opaque_share": 0.511,
+  "white_part_candidate_share": 0.0061,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "dress": {
+  "sheet": 7,
+  "box": [
+   88,
+   620,
+   1488,
+   1956
+  ],
+  "opaque_share": 0.418,
+  "white_part_candidate_share": 0.0008,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "skirt": {
+  "sheet": 7,
+  "box": [
+   843,
+   1216,
+   102,
+   605
+  ],
+  "opaque_share": 0.405,
+  "white_part_candidate_share": 0.0039,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "shoes": {
+  "sheet": 7,
+  "box": [
+   837,
+   1229,
+   782,
+   1296
+  ],
+  "opaque_share": 0.404,
+  "white_part_candidate_share": 0.0032,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "socks": {
+  "sheet": 7,
+  "box": [
+   825,
+   1259,
+   1492,
+   1960
+  ],
+  "opaque_share": 0.457,
+  "white_part_candidate_share": 0.0088,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "hat": {
+  "sheet": 7,
+  "box": [
+   1543,
+   1853,
+   95,
+   594
+  ],
+  "opaque_share": 0.335,
+  "white_part_candidate_share": 0.0056,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "jacket": {
+  "sheet": 7,
+  "box": [
+   1496,
+   1932,
+   777,
+   1297
+  ],
+  "opaque_share": 0.438,
+  "white_part_candidate_share": 0.006,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "glasses": {
+  "sheet": 7,
+  "box": [
+   1598,
+   1850,
+   1458,
+   1977
+  ],
+  "opaque_share": 0.122,
+  "white_part_candidate_share": 0.5184,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "jump": {
+  "sheet": 8,
+  "box": [
+   77,
+   653,
+   166,
+   525
+  ],
+  "opaque_share": 0.295,
+  "white_part_candidate_share": 0.0015,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "clap": {
+  "sheet": 8,
+  "box": [
+   88,
+   644,
+   904,
+   1178
+  ],
+  "opaque_share": 0.246,
+  "white_part_candidate_share": 0.0003,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "dance": {
+  "sheet": 8,
+  "box": [
+   105,
+   639,
+   1521,
+   1874
+  ],
+  "opaque_share": 0.283,
+  "white_part_candidate_share": 0.0013,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "sing": {
+  "sheet": 8,
+  "box": [
+   764,
+   1314,
+   177,
+   518
+  ],
+  "opaque_share": 0.277,
+  "white_part_candidate_share": 0.0037,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "run": {
+  "sheet": 8,
+  "box": [
+   763,
+   1319,
+   849,
+   1197
+  ],
+  "opaque_share": 0.284,
+  "white_part_candidate_share": 0.0007,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "sleep": {
+  "sheet": 8,
+  "box": [
+   874,
+   1221,
+   1459,
+   1979
+  ],
+  "opaque_share": 0.298,
+  "white_part_candidate_share": 0.0003,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "eat": {
+  "sheet": 8,
+  "box": [
+   1466,
+   1958,
+   186,
+   518
+  ],
+  "opaque_share": 0.32,
+  "white_part_candidate_share": 0.0002,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "drink": {
+  "sheet": 8,
+  "box": [
+   1444,
+   1987,
+   903,
+   1179
+  ],
+  "opaque_share": 0.253,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "wave": {
+  "sheet": 8,
+  "box": [
+   1440,
+   1984,
+   1518,
+   1866
+  ],
+  "opaque_share": 0.286,
+  "white_part_candidate_share": 0.0009,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "sun": {
+  "sheet": 9,
+  "box": [
+   108,
+   590,
+   102,
+   577
+  ],
+  "opaque_share": 0.465,
+  "white_part_candidate_share": 0.0009,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "cloud": {
+  "sheet": 9,
+  "box": [
+   179,
+   521,
+   774,
+   1275
+  ],
+  "opaque_share": 0.372,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "rain": {
+  "sheet": 9,
+  "box": [
+   121,
+   580,
+   1471,
+   1944
+  ],
+  "opaque_share": 0.391,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "snowflake": {
+  "sheet": 9,
+  "box": [
+   786,
+   1264,
+   132,
+   549
+  ],
+  "opaque_share": 0.403,
+  "white_part_candidate_share": 0.0004,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "wind": {
+  "sheet": 9,
+  "box": [
+   821,
+   1228,
+   791,
+   1257
+  ],
+  "opaque_share": 0.271,
+  "white_part_candidate_share": 0.0008,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "rainbow": {
+  "sheet": 9,
+  "box": [
+   840,
+   1208,
+   1441,
+   1971
+  ],
+  "opaque_share": 0.355,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "umbrella": {
+  "sheet": 9,
+  "box": [
+   1479,
+   1938,
+   104,
+   576
+  ],
+  "opaque_share": 0.351,
+  "white_part_candidate_share": 0.0002,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "snowman": {
+  "sheet": 9,
+  "box": [
+   1453,
+   1963,
+   807,
+   1245
+  ],
+  "opaque_share": 0.336,
+  "white_part_candidate_share": 0.0005,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "storm": {
+  "sheet": 9,
+  "box": [
+   1464,
+   1952,
+   1470,
+   1940
+  ],
+  "opaque_share": 0.384,
+  "white_part_candidate_share": 0.0003,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "cat": {
+  "sheet": 10,
+  "box": [
+   144,
+   595,
+   159,
+   552
+  ],
+  "opaque_share": 0.44,
+  "white_part_candidate_share": 0.026,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "dog": {
+  "sheet": 10,
+  "box": [
+   146,
+   605,
+   818,
+   1250
+  ],
+  "opaque_share": 0.481,
+  "white_part_candidate_share": 0.0016,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "lion": {
+  "sheet": 10,
+  "box": [
+   114,
+   611,
+   1485,
+   1930
+  ],
+  "opaque_share": 0.492,
+  "white_part_candidate_share": 0.0006,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "monkey": {
+  "sheet": 10,
+  "box": [
+   777,
+   1278,
+   141,
+   614
+  ],
+  "opaque_share": 0.389,
+  "white_part_candidate_share": 0.0004,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "fish": {
+  "sheet": 10,
+  "box": [
+   830,
+   1218,
+   815,
+   1235
+  ],
+  "opaque_share": 0.483,
+  "white_part_candidate_share": 0.0016,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "bird": {
+  "sheet": 10,
+  "box": [
+   820,
+   1268,
+   1531,
+   1895
+  ],
+  "opaque_share": 0.391,
+  "white_part_candidate_share": 0.0013,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "elephant": {
+  "sheet": 10,
+  "box": [
+   1492,
+   1955,
+   96,
+   625
+  ],
+  "opaque_share": 0.546,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "giraffe": {
+  "sheet": 10,
+  "box": [
+   1431,
+   1975,
+   899,
+   1234
+  ],
+  "opaque_share": 0.239,
+  "white_part_candidate_share": 0.0014,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "rabbit": {
+  "sheet": 10,
+  "box": [
+   1443,
+   1965,
+   1555,
+   1908
+  ],
+  "opaque_share": 0.315,
+  "white_part_candidate_share": 0.0345,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "rope": {
+  "sheet": 11,
+  "box": [
+   64,
+   617,
+   309,
+   385
+  ],
+  "opaque_share": 0.046,
+  "white_part_candidate_share": 0.0071,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "wall": {
+  "sheet": 11,
+  "box": [
+   112,
+   605,
+   833,
+   1282
+  ],
+  "opaque_share": 0.538,
+  "white_part_candidate_share": 0.0,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "beam": {
+  "sheet": 11,
+  "box": [
+   247,
+   537,
+   1455,
+   1961
+  ],
+  "opaque_share": 0.208,
+  "white_part_candidate_share": 0.0013,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "bars": {
+  "sheet": 11,
+  "box": [
+   830,
+   1266,
+   112,
+   609
+  ],
+  "opaque_share": 0.206,
+  "white_part_candidate_share": 0.0007,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "tunnel": {
+  "sheet": 11,
+  "box": [
+   847,
+   1229,
+   795,
+   1289
+  ],
+  "opaque_share": 0.422,
+  "white_part_candidate_share": 0.0006,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "crate": {
+  "sheet": 11,
+  "box": [
+   838,
+   1252,
+   1489,
+   1959
+  ],
+  "opaque_share": 0.593,
+  "white_part_candidate_share": 0.0005,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "bridge": {
+  "sheet": 11,
+  "box": [
+   1519,
+   1912,
+   89,
+   647
+  ],
+  "opaque_share": 0.236,
+  "white_part_candidate_share": 0.0668,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "mat": {
+  "sheet": 11,
+  "box": [
+   1563,
+   1851,
+   759,
+   1318
+  ],
+  "opaque_share": 0.276,
+  "white_part_candidate_share": 0.0464,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "ladder": {
+  "sheet": 11,
+  "box": [
+   1457,
+   1957,
+   1493,
+   1969
+  ],
+  "opaque_share": 0.379,
+  "white_part_candidate_share": 0.0197,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "stage": {
+  "sheet": 12,
+  "box": [
+   105,
+   605,
+   86,
+   651
+  ],
+  "opaque_share": 0.58,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "microphone": {
+  "sheet": 12,
+  "box": [
+   113,
+   598,
+   865,
+   1181
+  ],
+  "opaque_share": 0.226,
+  "white_part_candidate_share": 0.0002,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "guitar": {
+  "sheet": 12,
+  "box": [
+   94,
+   628,
+   1479,
+   1943
+  ],
+  "opaque_share": 0.274,
+  "white_part_candidate_share": 0.0006,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "drum": {
+  "sheet": 12,
+  "box": [
+   821,
+   1248,
+   137,
+   609
+  ],
+  "opaque_share": 0.559,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "piano": {
+  "sheet": 12,
+  "box": [
+   813,
+   1266,
+   785,
+   1323
+  ],
+  "opaque_share": 0.543,
+  "white_part_candidate_share": 0.0011,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "trumpet": {
+  "sheet": 12,
+  "box": [
+   879,
+   1238,
+   1463,
+   1952
+  ],
+  "opaque_share": 0.256,
+  "white_part_candidate_share": 0.0186,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "star": {
+  "sheet": 12,
+  "box": [
+   1461,
+   1939,
+   150,
+   533
+  ],
+  "opaque_share": 0.359,
+  "white_part_candidate_share": 0.0006,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "crown": {
+  "sheet": 12,
+  "box": [
+   1509,
+   1900,
+   815,
+   1280
+  ],
+  "opaque_share": 0.517,
+  "white_part_candidate_share": 0.0017,
+  "cut": [
+   14,
+   14
+  ]
+ },
+ "flowers": {
+  "sheet": 12,
+  "box": [
+   1461,
+   1957,
+   1527,
+   1896
+  ],
+  "opaque_share": 0.345,
+  "white_part_candidate_share": 0.0001,
+  "cut": [
+   14,
+   14
+  ]
+ }
+}
