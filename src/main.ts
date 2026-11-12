@@ -10,6 +10,7 @@ import { renderHomeAuto } from './lobby3d/entry';
 import { fpsEnabled } from './lobby3d/quality';
 import { renderGate } from './ui/gate';
 import { initInstall } from './install';
+import { initUpdate } from './update';
 import { renderParent } from './ui/parent';
 import { showTimeUp } from './ui/timeup';
 import { isTimeUp, trackUsage } from './usage';
@@ -67,10 +68,13 @@ function mountGame(gameId: string): void {
 }
 
 let current: Route = { name: 'home' };
+// a new version of the app switches in only in the lobby
+const updateCheck = initUpdate(() => current.name);
 
 onRoute((route: Route) => {
   teardown();
   current = route;
+  updateCheck();
   if ((route.name === 'gate' || route.name === 'game') && isTimeUp()) {
     showTimeUp();
     return go({ name: 'home' }, { replace: true });
