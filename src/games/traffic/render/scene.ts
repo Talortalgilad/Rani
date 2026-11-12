@@ -272,10 +272,10 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     strip(-hw - ROAD.off, 0, ROAD.width, hh * 2);
     strip(hw + ROAD.off, 0, ROAD.width, hh * 2);
     const quarter = keep(new T.RingGeometry(r0, r1, 14, 1, 0, Math.PI / 2));
-    for (const [sx, sz, rot] of [[1, 1, 0], [-1, 1, Math.PI / 2], [-1, -1, Math.PI], [1, -1, -Math.PI / 2]] as const) {
+    for (const [sx, sz, rot] of [[1, 1, -Math.PI / 2], [-1, 1, -Math.PI], [-1, -1, Math.PI / 2], [1, -1, 0]] as const) {
       const q = new T.Mesh(quarter, asphalt);
       q.rotation.x = -Math.PI / 2;
-      q.rotation.z = -rot;
+      q.rotation.z = rot;
       q.position.set(sx * hw, 0.019, sz * hh);
       q.receiveShadow = true;
       scene.add(q);
