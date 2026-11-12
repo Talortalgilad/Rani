@@ -25,6 +25,8 @@ export const he = {
   voiceMissing: '',
   again: 'עוד פעם',
   home: 'בית',
+  shelf: 'המדף',
+  shelfTitle: 'מדף הסקווישים',
   verb: (en: string, he: string) => `${en}, זה ${he}!`,
 };
 

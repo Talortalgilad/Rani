@@ -55,7 +55,7 @@ export function dragTask(env: TaskEnv, rightId: string, otherIds: string[]): Tas
         if (inside) {
           const n = env.mistake();
           env.sound('oops');
-          env.face('encourage', 'Hmm, try again!');
+          env.face('cheer', 'Hmm, try again!');
           env.say(en.tryAgain);
           if (n >= 3) {
             locked = true;

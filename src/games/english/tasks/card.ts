@@ -1,4 +1,5 @@
 import { itemImg } from '../art/images';
+import { colorById } from '../content/colors';
 import { labelOf, wordById } from '../content/words';
 import { el, type TaskEnv, type TaskHandle } from './common';
 
@@ -36,4 +37,32 @@ export function wordCard(env: TaskEnv, wordId: string): TaskHandle {
     }
   });
   return { repeat: () => env.say(labelOf(w.id), true), destroy: () => (timers.forEach(clearTimeout), (timers = []), wrap.remove()) };
+}
+
+/** A new colour: a swatch card; Cheesy says the colour twice. */
+export function colorCard(env: TaskEnv, colorId: string): TaskHandle {
+  const c = colorById(colorId);
+  const wrap = el('div', 'word-card-wrap', env.stage);
+  const card = el('button', 'word-card', wrap);
+  card.type = 'button';
+  card.setAttribute('aria-label', c.id);
+  card.innerHTML = `<div class="wc-inner"><div class="wc-back"><span>?</span></div><div class="wc-front"><div class="swatch-big" style="background:${c.hex}"></div><b class="wc-word">${c.id}</b></div></div>`;
+  let flipped = false;
+  let timers: number[] = [];
+  const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));
+  card.addEventListener('click', () => {
+    if (!flipped) {
+      flipped = true;
+      card.classList.add('flipped');
+      env.sound('pop');
+      env.face('surprised');
+      later(() => {
+        env.face('happy', `${c.id} = ${c.he}`);
+        env.say(c.id, true);
+        later(() => env.say(c.id, true), 1500);
+      }, 450);
+      later(() => env.done(), 3600);
+    } else env.say(c.id, true);
+  });
+  return { repeat: () => env.say(c.id, true), destroy: () => (timers.forEach(clearTimeout), (timers = []), wrap.remove()) };
 }

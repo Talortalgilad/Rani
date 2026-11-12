@@ -89,7 +89,7 @@ export function circleTask(env: TaskEnv, rightId: string, ids: string[], seed = 
     }
     const n = env.mistake();
     env.sound('oops');
-    env.face('encourage', 'Hmm, try again!');
+    env.face('cheer', 'Hmm, try again!');
     env.say(en.tryAgain);
     window.setTimeout(() => {
       pts = [];

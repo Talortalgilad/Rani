@@ -6,7 +6,7 @@ import { el, pictureButton, shuffled, type TaskEnv, type TaskHandle } from './co
  * "Match!": pictures on one side, written words on the other. Dragging a line from a picture to a word joins them (or tap a picture,
  * then a word). Tapping a word says it. The written word is the first step to reading, so each tap on it is heard.
  */
-export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
+export function matchTask(env: TaskEnv, ids: string[], seed = 4, mode: 'audio' | 'written' = 'written'): TaskHandle {
   const left = el('div', 'match-col pics', env.stage);
   const right = el('div', 'match-col words', env.stage);
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -18,7 +18,8 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
   shuffled(ids, seed).forEach((id) => {
     const w = el('button', 'match-word', right);
     w.type = 'button';
-    w.textContent = labelOf(id);
+    w.textContent = mode === 'audio' ? '🔊' : labelOf(id);
+    if (mode === 'audio') w.classList.add('audio');
     words.set(id, w);
   });
   const joined = new Set<string>();
@@ -68,7 +69,7 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
     } else {
       mistakes = env.mistake();
       env.sound('oops');
-      env.face('encourage', 'Hmm, try again!');
+      env.face('cheer', 'Hmm, try again!');
       words.get(wordId)!.classList.add('shake');
       window.setTimeout(() => words.get(wordId)!.classList.remove('shake'), 500);
       if (mistakes >= 3) {
@@ -123,5 +124,5 @@ export function matchTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle {
       }
     }),
   );
-  return { repeat: () => env.say('Match!'), destroy: () => (left.remove(), right.remove(), svg.remove()) };
+  return { repeat: () => env.say(mode === 'audio' ? 'Listen and match!' : 'Match!'), destroy: () => (left.remove(), right.remove(), svg.remove()) };
 }

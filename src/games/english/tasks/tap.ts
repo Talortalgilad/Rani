@@ -29,7 +29,7 @@ export function tapTask(env: TaskEnv, rightId: string, ids: string[], seed = 2):
         b.classList.add('shake');
         const n = env.mistake();
         env.sound('oops');
-        env.face('encourage', 'Hmm, try again!');
+        env.face('cheer', 'Hmm, try again!');
         env.say(en.tryAgain);
         if (n >= 3) {
           locked = true;
