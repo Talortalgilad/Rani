@@ -9,6 +9,8 @@ import type { LevelData, LevelStats } from '../src/games/traffic/engine/level';
 import { paramsFor } from '../src/games/traffic/engine/generator';
 import { difficultyScore } from '../src/games/traffic/engine/solver';
 import { levelRuleProblems } from '../src/games/traffic/engine/rules';
+import { MIN_OUTLINE } from '../src/games/traffic/render/framing';
+import { minWidth } from './touch';
 
 /** A little stricter than the test (0.15), so that rounding can never push a level over the line. */
 
@@ -20,7 +22,7 @@ for (let L = 1; L <= 100; L++) {
   const p = paramsFor(L);
   const all: Cand[] = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : [];
   for (const c of all) c.stats.score = difficultyScore(c.stats.vehicles, c.stats); // the formula may have changed since the candidate was made
-  const ok = all.filter((c) => c.stats.exact &&  levelRuleProblems(c.data, 0.17).length === 0 && (!p.hard || c.stats.traps >= 3));
+  const ok = all.filter((c) => c.stats.exact &&  levelRuleProblems(c.data, 0.17).length === 0 && minWidth(c.data).minShort >= MIN_OUTLINE && (!p.hard || c.stats.traps >= 3));
   if (!ok.length) {
     missing.push(L);
     continue;

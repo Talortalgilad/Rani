@@ -3,8 +3,9 @@ import * as T from '../../../lobby3d/lib';
 import { corners } from '../engine/geometry';
 import { boxOf } from '../engine/solver-types';
 import { ALL_LEVELS } from '../levels';
+import { MAX_VEHICLES } from '../engine/generator';
 import { CAMERA_ELEVATION } from './scene';
-import { HIT_TOLERANCE, LOT_RIM, MIN_TOUCH, VEHICLE_TOP, convexHull, distanceToHull, frameCamera, hullWidth, nearestVehicle, project, type FrameInput, type HitShape } from './framing';
+import { HIT_TOLERANCE, LOT_RIM, MIN_OUTLINE, MIN_TOUCH, narrowestWidth, VEHICLE_TOP, convexHull, distanceToHull, frameCamera, hullWidth, nearestVehicle, project, type FrameInput, type HitShape } from './framing';
 
 // phones from small to large, and a tablet. The title takes the top ~110 px, the helper buttons the bottom ~122 px.
 const SCREENS: [number, number][] = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768, 1024]];
@@ -87,6 +88,17 @@ describe('a finger can hit every vehicle', () => {
   it('a tap farther than 12 points from everything chooses nothing', () => {
     const l = ALL_LEVELS.find((x) => x.key === '12')!;
     expect(nearestVehicle(shapesOf(l, 360, 640).shapes, -200, -200)).toBeNull();
+  });
+});
+
+describe('touch size wins over density', () => {
+  it(`on a 360px screen every vehicle of every level has an outline at least ${MIN_OUTLINE} points wide in every direction`, () => {
+    for (const l of ALL_LEVELS) {
+      for (const s of shapesOf(l, 360, 640).shapes) expect(narrowestWidth(s.pts), `${l.key} vehicle ${s.id}`).toBeGreaterThanOrEqual(MIN_OUTLINE);
+    }
+  });
+  it('no level has more vehicles than MAX_VEHICLES', () => {
+    for (const l of ALL_LEVELS) expect(l.vehicles.length, l.key).toBeLessThanOrEqual(MAX_VEHICLES);
   });
 });
 

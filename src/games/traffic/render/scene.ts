@@ -328,7 +328,7 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     if (def.hidden) {
       q = new T.Mesh(qGeo, qMat);
       q.rotation.x = -Math.PI / 2;
-      q.rotation.z = Math.PI / 2;
+      q.rotation.z = rad(def.heading); // kept upright for the camera every frame (see update)
       const sz = def.type === 'bus' ? 1.1 : 0.78;
       q.scale.set(sz, sz, 1);
       q.position.set(0, roofY(def.type) + 0.03, 0);
@@ -379,6 +379,50 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     icon.position.set(def.x, 0.108, def.z);
     scene.add(disk, ring, icon);
   }
+  // the roof of a vehicle that turns: a blue badge with the turn symbol, and a small arrow beside it for the way it faces now
+  const badgeTex = keep(glyphTexture((g) => {
+    g.fillStyle = '#2f6bff';
+    g.beginPath();
+    g.arc(72, 128, 62, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = 13;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.arc(72, 128, 33, -0.6, Math.PI * 1.45);
+    g.stroke();
+    g.fillStyle = '#ffffff';
+    g.beginPath();
+    g.moveTo(72 + 33 * Math.cos(-0.6) + 4, 128 + 33 * Math.sin(-0.6) - 22);
+    g.lineTo(72 + 33 * Math.cos(-0.6) + 4, 128 + 33 * Math.sin(-0.6) + 12);
+    g.lineTo(72 + 33 * Math.cos(-0.6) + 26, 128 + 33 * Math.sin(-0.6) - 8);
+    g.fill();
+    // the small arrow: where the vehicle goes if it is sent
+    g.fillStyle = '#ffd02b';
+    g.strokeStyle = '#2a2540';
+    g.lineWidth = 6;
+    g.beginPath();
+    g.moveTo(150, 104);
+    g.lineTo(188, 104);
+    g.lineTo(188, 84);
+    g.lineTo(240, 128);
+    g.lineTo(188, 172);
+    g.lineTo(188, 152);
+    g.lineTo(150, 152);
+    g.closePath();
+    g.stroke();
+    g.fill();
+  }, 256, 256));
+  const badgeGeo = keep(new T.PlaneGeometry(1, 1));
+  const badgeMat2 = keep(new T.MeshBasicMaterial({ map: badgeTex, transparent: true, depthWrite: false }));
+  for (const def of level.vehicles) {
+    if (!def.rotator) continue;
+    const b = new T.Mesh(badgeGeo, badgeMat2);
+    b.rotation.x = -Math.PI / 2;
+    b.scale.set(1.05, 1.05, 1);
+    b.position.set(-0.28, roofY(def.type) + 0.05, 0);
+    views.get(def.id)?.root.add(b);
+  }
   const beltGeoBase = keep(new T.BoxGeometry(1, 0.06, 1));
   const beltMat = keep(new T.MeshStandardMaterial({ color: '#363a4c', roughness: 0.7 }));
   for (const belt of level.belts ?? []) {
@@ -392,15 +436,24 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     base.scale.set(len + 0.25, 1, BELT_WIDTH + 0.14);
     base.receiveShadow = true;
     const tex = glyphTexture((g) => {
-      g.fillStyle = '#4a4f66';
+      // a roller: a light bar across the belt with a dark gap, and a moving chevron
+      g.fillStyle = '#3a3e52';
       g.fillRect(0, 0, 128, 128);
+      g.fillStyle = '#6a7090';
+      g.fillRect(6, 0, 36, 128);
+      g.fillStyle = '#868cab';
+      g.fillRect(10, 0, 8, 128);
+      g.fillStyle = '#6a7090';
+      g.fillRect(70, 0, 36, 128);
+      g.fillStyle = '#868cab';
+      g.fillRect(74, 0, 8, 128);
       g.strokeStyle = '#ffd02b';
       g.lineWidth = 12;
       g.lineJoin = 'round';
       g.beginPath();
-      g.moveTo(20, 20);
-      g.lineTo(70, 64);
-      g.lineTo(20, 108);
+      g.moveTo(38, 34);
+      g.lineTo(76, 64);
+      g.lineTo(38, 94);
       g.stroke();
     }, 128, 128);
     tex.wrapS = tex.wrapT = T.RepeatWrapping;
@@ -410,7 +463,35 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
     const stripe = new T.Mesh(keep(new T.PlaneGeometry(len, BELT_WIDTH)), keep(new T.MeshBasicMaterial({ map: tex })));
     stripe.rotation.x = -Math.PI / 2;
     stripe.position.y = 0.034;
-    grp.add(base, stripe);
+    // yellow and black rails along both sides, and the exit at the end the cars leave from: a chequered line and a green arrow gate
+    const railMat = keep(new T.MeshStandardMaterial({ color: '#ffd02b', roughness: 0.5 }));
+    for (const side of [-1, 1]) {
+      const rail = new T.Mesh(keep(new T.BoxGeometry(len + 0.25, 0.12, 0.1)), railMat);
+      rail.position.set(0, 0.07, side * (BELT_WIDTH / 2 + 0.07));
+      grp.add(rail);
+    }
+    const exitTex = keep(glyphTexture((g) => {
+      for (let i = 0; i < 8; i++) for (let j = 0; j < 2; j++) { g.fillStyle = (i + j) % 2 ? '#ffffff' : '#222222'; g.fillRect(i * 16, j * 16, 16, 16); }
+    }, 128, 32));
+    const check = new T.Mesh(keep(new T.PlaneGeometry(0.34, BELT_WIDTH + 0.2)), keep(new T.MeshBasicMaterial({ map: exitTex })));
+    check.rotation.x = -Math.PI / 2;
+    check.rotation.z = Math.PI / 2;
+    check.position.set(len / 2 + 0.17, 0.036, 0);
+    const gateTex = keep(glyphTexture((g) => {
+      g.fillStyle = '#2fb344';
+      g.beginPath();
+      g.roundRect(8, 8, 240, 240, 40);
+      g.fill();
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.moveTo(52, 100); g.lineTo(130, 100); g.lineTo(130, 62); g.lineTo(206, 128); g.lineTo(130, 194); g.lineTo(130, 156); g.lineTo(52, 156);
+      g.closePath();
+      g.fill();
+    }, 256, 256));
+    const gate = new T.Mesh(keep(new T.PlaneGeometry(0.9, 0.9)), keep(new T.MeshBasicMaterial({ map: gateTex, transparent: true })));
+    gate.rotation.x = -Math.PI / 2;
+    gate.position.set(len / 2 + 0.95, 0.04, 0);
+    grp.add(base, stripe, check, gate);
     scene.add(grp);
   }
 
@@ -931,6 +1012,8 @@ export function createTrafficScene(env: SceneEnv, level: LevelView, tier: Exclud
         v.hop.step(dt);
         v.pitch.step(dt);
         v.squash.step(dt);
+        // the "?" always stands upright toward the camera, whichever way the vehicle faces
+        if (v.q) v.q.rotation.z = -v.root.rotation.y;
         if (v.slot !== null) {
           // parked in the station: rocks gently on its springs, squashes when it swallows a passenger
           v.root.rotation.z = v.pitch.value;

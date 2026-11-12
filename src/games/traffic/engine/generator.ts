@@ -40,6 +40,8 @@ export const worldOf = (level: number): World => (level <= 25 ? 'city' : level <
 export const lotAspect = (level: number): number => (level >= 15 ? 1.85 : 1.0);
 
 /** What is new, and where (SPEC-traffic 3.2): conveyor belts from 30, vehicles that turn from 45, fire trucks from 60. */
+/** The most vehicles a level may have: more and the smallest vehicle is under ~26 points wide on a 360px screen. */
+export const MAX_VEHICLES = 44;
 export const FIRST_BELT = 30;
 export const FIRST_ROTATOR = 45;
 export const FIRST_FIRE = 60;
@@ -73,7 +75,9 @@ export function minDensityFor(level: number): number {
 export function paramsFor(level: number): GenParams {
   const hard = isHard(level);
   const t = (level - 1) / 29;
-  const base = level <= 30 ? Math.round(8 + 34 * Math.pow(t, 0.92)) : 43 + Math.round((level - 30) * 0.2);
+  // beyond level 30 the number of vehicles stops growing: a finger has to hit each one (MAX_VEHICLES), so the difficulty rises through
+  // traps, '?' vehicles and special vehicles instead
+  const base = Math.min(MAX_VEHICLES, level <= 30 ? Math.round(8 + 34 * Math.pow(t, 0.92)) : 42 + Math.round((level - 30) * 0.7));
   const vehicles = base + (hard && level < 30 ? 2 : 0);
   return {
     level,
@@ -82,9 +86,9 @@ export function paramsFor(level: number): GenParams {
     colors: Math.min(level >= 40 ? 9 : 8, 3 + Math.floor(level / 5) + (level >= 3 ? 1 : 0)),
     angled: level < 10 ? 0 : 0.32 + 0.06 * Math.min(1, t),
     window: hard ? 4 : level < 4 ? 1 : level < 15 ? 2 : 3,
-    maxFree: level < 3 ? Math.ceil(vehicles * 0.5) : level < 4 ? Math.ceil(vehicles * 0.3) : Math.max(2, Math.round(vehicles * (hard ? 0.2 : 0.12))),
+    maxFree: level < 3 ? Math.ceil(vehicles * 0.5) : level < 4 ? Math.ceil(vehicles * 0.3) : Math.max(2, Math.round(vehicles * (level >= 40 ? (hard ? 0.15 : 0.09) : hard ? 0.2 : 0.12))),
     minDensity: minDensityFor(level),
-    hidden: level < 8 ? 0 : Math.min(8, Math.round(1 + ((level - 8) * 4) / 22) + (hard ? 1 : 0)),
+    hidden: level < 8 ? 0 : Math.min(12, Math.round(1 + ((level - 8) * 4) / 22) + (hard ? 1 : 0)),
     belts: level < FIRST_BELT ? 0 : 1 + (level >= 55 ? 1 : 0) + (level >= 85 ? 1 : 0),
     rotators: level < FIRST_ROTATOR ? 0 : Math.min(5, 1 + Math.floor((level - FIRST_ROTATOR) / 12)) + (hard && level > FIRST_ROTATOR ? 1 : 0),
     fires: level < FIRST_FIRE ? 0 : Math.min(3, 1 + Math.floor((level - FIRST_FIRE) / 15)),

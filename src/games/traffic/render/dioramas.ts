@@ -493,19 +493,59 @@ function candyStand(x: number, z: number): T.BufferGeometry[] {
   return out;
 }
 
+/** A striped circus tent: red and white wedges on the wall and the roof, and a flag on top. */
+function circusTent(x: number, z: number, r: number): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  const wallH = r * 0.75;
+  const roofH = r * 0.95;
+  const n = 12;
+  for (let i = 0; i < n; i++) {
+    const hex = i % 2 ? '#fff6ea' : '#ff3b57';
+    const t0 = (i / n) * Math.PI * 2;
+    const dt = (Math.PI * 2) / n;
+    out.push(at(colored(new T.CylinderGeometry(r, r, wallH, 1, 1, true, t0, dt), hex), x, wallH / 2, z));
+    out.push(at(colored(new T.ConeGeometry(r * 1.12, roofH, 1, 1, true, t0, dt), hex), x, wallH + roofH / 2, z));
+  }
+  // the door: a dark opening with a little awning
+  out.push(at(colored(new T.BoxGeometry(r * 0.55, wallH * 0.7, 0.12), '#5b2a63'), x, wallH * 0.35, z + r * 0.97));
+  out.push(at(colored(new T.BoxGeometry(r * 0.75, 0.12, 0.45), '#ffd02b'), x, wallH * 0.74, z + r * 1.02));
+  // the flag
+  const top = wallH + roofH;
+  out.push(at(colored(new T.CylinderGeometry(0.05, 0.05, 1.5, 6), '#e8e2f0'), x, top + 0.7, z));
+  const flag = new T.CylinderGeometry(0, 0.34, 0.95, 3);
+  flag.rotateZ(-Math.PI / 2);
+  flag.scale(1, 1, 0.12);
+  out.push(at(colored(flag, '#ffd02b'), x + 0.5, top + 1.2, z));
+  out.push(at(colored(new T.SphereGeometry(0.12, 8, 6), '#ffd02b'), x, top + 1.5, z));
+  return out;
+}
+
+/** The plaza: pink and cream tiles instead of sand. */
+function plaza(x0: number, x1: number, z0: number, z1: number, tile = 2.4): T.BufferGeometry[] {
+  const out: T.BufferGeometry[] = [];
+  let ix = 0;
+  for (let x = x0; x < x1 - 0.01; x += tile, ix++) {
+    let iz = 0;
+    for (let z = z0; z < z1 - 0.01; z += tile, iz++) {
+      out.push(flat(tile, tile, x + tile / 2, z + tile / 2, 0.02, (ix + iz) % 2 ? '#ffd9ec' : '#fff1c9'));
+    }
+  }
+  return out;
+}
+
 export function buildCarnival(half = 5): Diorama {
   const group = new T.Group();
   const parts: T.BufferGeometry[] = [];
   const xR = half + 0.3;
-  parts.push(...ferrisWheel(half * 0.9, -28.5, 6.8));
-  parts.push(...balloons(-half - 0.9, -13), ...balloons(half - 2.6, -15.4), ...balloons(xR + 3.1, -12));
+  // the whole Ferris wheel stands behind the queue where the picture always shows it (not cut by the title)
+  parts.push(...ferrisWheel(half * 0.3, -16.2, 3.0));
+  parts.push(...balloons(-half - 0.9, -13), ...balloons(xR + 3.1, -12));
   parts.push(...bunting(-half - 1.2, xR + 3, -11.1, 3.2));
   parts.push(...candyStand(xR, -17));
-  // a striped tent in the background
-  parts.push(at(colored(new T.ConeGeometry(2.6, 2.4, 12), '#ffd02b'), -half - 1, 3.0, -23), at(colored(new T.CylinderGeometry(2.4, 2.4, 1.8, 12), '#ff4fb8'), -half - 1, 0.9, -23));
+  parts.push(...circusTent(-half - 0.6, -17.5, 2.3));
   parts.push(...lamp(-half - 0.2, -11.4), ...lamp(0.3, -11.4), ...lamp(xR + 1.6, -11.4));
   parts.push(...ropeFence(-half - 0.4, half - 0.4, -9.55));
-  parts.push(flat(80, 14, 0, -16.5, 0.02, '#f6d9b5'));
+  parts.push(...plaza(-19.2, 19.2, -26.4, -9.6));
   const merged = T.mergeGeometries(parts, false);
   parts.forEach((p) => p.dispose());
   const mat = new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0, side: T.DoubleSide, envMapIntensity: 0.55 });
@@ -516,7 +556,7 @@ export function buildCarnival(half = 5): Diorama {
   return {
     group,
     queuePoints: queuePointsFor(half),
-    theme: { ground: '#f3dcc0', pad: '#f9eedd', padEdge: '#c9a574', platform: '#8c6bb5', padVip: '#ffd02b', padP: '#6e4f9a', padLocked: '#7d60a6', skyTop: '#6ec6ff', skyBottom: '#ffe9c8', groundNorth: -30 },
+    theme: { ground: '#e7cdf0', pad: '#f9eedd', padEdge: '#c9a574', platform: '#8c6bb5', padVip: '#ffd02b', padP: '#6e4f9a', padLocked: '#7d60a6', skyTop: '#6ec6ff', skyBottom: '#ffe9c8', groundNorth: -30 },
     dispose() {
       merged.dispose();
       mat.dispose();

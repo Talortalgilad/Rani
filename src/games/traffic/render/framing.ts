@@ -164,3 +164,22 @@ export function nearestVehicle(shapes: HitShape[], x: number, y: number, tol = H
 
 /** Width (CSS pixels) of the outline of a vehicle on the screen. */
 export const hullWidth = (pts: P[]): number => Math.max(...pts.map((p) => p.x)) - Math.min(...pts.map((p) => p.x));
+
+/** The narrowest the outline of a vehicle gets, in any direction (CSS pixels): what a finger has to land on. */
+export function narrowestWidth(pts: P[]): number {
+  const hull = convexHull(pts);
+  let best = Infinity;
+  for (let a = 0; a < 180; a += 3) {
+    const c = Math.cos((a * Math.PI) / 180);
+    const s = Math.sin((a * Math.PI) / 180);
+    const ps = hull.map((p) => p.x * c + p.y * s);
+    best = Math.min(best, Math.max(...ps) - Math.min(...ps));
+  }
+  return best;
+}
+/**
+ * On a 360px-wide screen no vehicle's outline may be narrower than this. With the 12-point tolerance on both sides that is a
+ * 50-point target (the guideline is 44). When this and the density rule disagree, this one wins, which is why a level
+ * never has more than MAX_VEHICLES vehicles.
+ */
+export const MIN_OUTLINE = 26;
