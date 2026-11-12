@@ -121,7 +121,7 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
     body.innerHTML = `
       <div class="question"><div class="q-text" dir="ltr" style="font-size:36px;letter-spacing:0">What did you hear?</div></div>
       <div class="choices english-gate">
-        ${eq.choices.map((c) => `<button class="choice pic" data-v="${c}" aria-label="${c}"><img src="${imageUrl(c)}" alt="" draggable="false"></button>`).join('')}
+        ${eq.choices.map((c) => `<button class="choice" data-v="${c}" aria-label="${c}"><img src="${imageUrl(c)}" alt="" draggable="false"></button>`).join('')}
       </div>`;
     void speakWord(eq.say);
     body.querySelectorAll<HTMLButtonElement>('.choice').forEach((btn) =>

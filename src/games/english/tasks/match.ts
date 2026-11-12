@@ -98,7 +98,11 @@ export function matchDragTask(env: TaskEnv, ids: string[], seed = 4): TaskHandle
     joined.add(id);
     const p = pics.get(id)!;
     const w = words.get(id)!;
+    p.style.translate = '0 0'; // measure from where it rests, not from where the finger left it
+    p.style.transition = 'none';
     const pr = p.getBoundingClientRect();
+    void p.offsetWidth;
+    p.style.transition = '';
     const wr = w.getBoundingClientRect();
     p.style.translate = `${wr.left - pr.right + 8}px ${wr.top + wr.height / 2 - (pr.top + pr.height / 2)}px`;
     p.classList.add('win', 'placed');

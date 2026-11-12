@@ -349,4 +349,5 @@ bdi { unicode-bidi: isolate; }
 .en-choice.flying { transition: translate .45s cubic-bezier(.5, 0, .75, .4), scale .45s ease-in; z-index: 5; pointer-events: none; }
 .match-pic.placed { transition: translate .25s ease-out; }
 .match-pic.dragging { z-index: 6; }
-.choice-row.mid { bottom: auto; top: 26%; }
+.choice-row.mid { bottom: auto; top: 44%; }
+.match-pic.win { animation: none; }
