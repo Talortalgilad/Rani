@@ -133,7 +133,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
     stage,
     face,
     mistake: () => ((mistakesInTask += 1), (mistakesTotal += 1), mistakesInTask),
-    done: () => next(),
+    done: () => void (!dead && next()),
     sparkle,
     sound: (n, pitch) => d.sound.play(n, pitch),
     say: (text, word) => void (word ? speakWord(text) : speakEn(text)),

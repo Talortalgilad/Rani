@@ -167,7 +167,7 @@ const mod: GameModule = {
     ctx = c;
     applyLook();
     preloadCheesy();
-    if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, companion()?.name ?? 'Rani');
+    if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, displayName());
     root = document.createElement('div');
     root.className = 'english-root';
     c.container.appendChild(root);

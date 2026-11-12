@@ -16,14 +16,14 @@ BG = {
     1: '69razy69razy69ra.jpg',   # the room with the bed and the shelf
     2: 'o9ptbwo9ptbwo9pt.jpg',   # the kitchen
     3: 'hm3tfhm3tfhm3tfh.jpg',   # the garden
-    4: 's2ry7ps2ry7ps2ry.jpg',   # the drawing studio
+    4: 'ptxvweptxvweptxv.jpg',   # the drawing studio
     5: '10a6uz10a6uz10a6.jpg',   # the candy shop
     6: '91q9fl91q9fl91q9.jpg',   # the living room with the family pictures
     7: 'ou5jwqou5jwqou5j (1).jpg',  # the wardrobe
-    8: 'pseieupseieupsei.jpg',   # the dance party
+    8: 's2ry7ps2ry7ps2ry.jpg',   # the dance party
     9: '38dp2m38dp2m38dp.jpg',   # the weather
     10: 'nga3awnga3awnga3.jpg',  # the zoo
-    11: 'ptxvweptxvweptxv.jpg',  # the ninja park
+    11: 'pseieupseieupsei.jpg',  # the ninja park
     12: 'pseieupseieupsei (1).jpg',  # the stage
 }
 EXPR = ['happy', 'thinking', 'surprised', 'cheer', 'dance', 'wave', 'sad', 'sleep', 'squished']
