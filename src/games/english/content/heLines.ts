@@ -62,6 +62,8 @@ export const HE_LINES: HeLine[] = [
   { id: 'l_trace_blur', world: 0, parts: [he.traceBlur] },
   { id: 'l_trace_again', world: 0, parts: [he.traceAgain] },
   { id: 'soon', world: 0, parts: [he.soon] },
+  { id: 'l_bd_b', world: 0, parts: [he.bdB] },
+  { id: 'l_bd_d', world: 0, parts: [he.bdD] },
   { id: 'letter_shelf', world: 0, parts: [he.letterShelf] },
   ...ISLANDS.map((i): HeLine => ({ id: `island_${i.n}`, world: 0, parts: [i.he] })),
   ...ACCESSORIES.map((a): HeLine => ({ id: `acc_${a.id}`, world: 0, parts: [a.he] })),

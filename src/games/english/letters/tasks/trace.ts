@@ -1,5 +1,5 @@
 import { el, type TaskEnv, type TaskHandle } from '../../tasks/common';
-import { STROKES, type Pt, type Stroke } from '../strokes';
+import { STROKES, isDot, type Pt, type Stroke } from '../strokes';
 import { evaluateStroke, resample } from '../trace';
 import { toyLetter } from '../ui/glyph';
 
@@ -135,10 +135,15 @@ export function traceTask(env: TaskEnv, letterId: string, color = '#ff5d9e'): Ta
     const mine = line;
     drawing = null;
     line = null;
-    const r = evaluateStroke(strokes()[si], got);
+    const target = strokes()[si];
+    const r = evaluateStroke(target, got);
     if (r.ok) {
       env.sound('pop', 500 + si * 60);
-      mine.setAttribute('points', resample(got, Math.min(got.length, 60)).map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(' '));
+      if (isDot(target)) {
+        // a dot: a round marker where it belongs
+        mine.remove();
+        node('circle', { cx: target[0].x, cy: target[0].y, r: 4.6, fill: color, opacity: 0.92 }, ink);
+      } else mine.setAttribute('points', resample(got, Math.min(got.length, 60)).map((q) => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(' '));
       si++;
       failedHere = false;
       if (si >= strokes().length) {

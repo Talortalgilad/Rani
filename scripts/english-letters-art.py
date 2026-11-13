@@ -2,7 +2,7 @@
   assets/english/raw/sheet-13-letters-a.jpg  -> public/english/letter-words/{igloo,jam,nest,octopus,queen,van,web,fox,yoyo}.webp
   assets/english/raw/sheet-14-letters-b.jpg  -> .../{zebra,pig,hen,bus,cup,map,net,mug,bat}.webp
   assets/english/raw/sheet-16-letter-words.jpg -> .../{tap,sat,pat,pan,pin,mat,man,tin,nap}.webp
-  assets/english/raw/sheet-15-letter-squishies.jpg (optional, 3 x 2) -> public/english/letter-squishies/{s,m,g,r,f,z}.webp
+  assets/english/raw/letter-squishy-{s,m,g,r,f,z}.jpg (one letter each; or a sheet-15-letter-squishies.jpg, 3 x 2) -> public/english/letter-squishies/{s,m,g,r,f,z}.webp
 and writes src/games/english/letters/pictures.ts, the list of the pictures that exist (the game offers only words that have a picture).
 Run: python3 scripts/english-letters-art.py [13|14|16|15 ...]   (no argument: every sheet that is in the folder)"""
 import importlib.util, os, sys
@@ -21,6 +21,21 @@ SHEETS = {
     '16': ('sheet-16-letter-words.jpg', 'letter-words', ['tap', 'sat', 'pat', 'pan', 'pin', 'mat', 'man', 'tin', 'nap'], 9, 3),
     '15': ('sheet-15-letter-squishies.jpg', 'letter-squishies', ['s', 'm', 'g', 'r', 'f', 'z'], 6, 3),
 }
+
+
+def cut_single_squishies(session):
+    """One picture for each squishy letter (the letter-squishy-<l>.jpg files)."""
+    done = 0
+    for l in ['s', 'm', 'g', 'r', 'f', 'z']:
+        path = f'{RAW}letter-squishy-{l}.jpg'
+        if not os.path.exists(path):
+            continue
+        img = Image.open(path).convert('RGB')
+        objs = art.find_objects(np.array(img), 1, 1, None)
+        os.makedirs('public/english/letter-squishies', exist_ok=True)
+        art.cut(img, objs[0], session, None, True).save(f'public/english/letter-squishies/{l}.webp', 'WEBP', quality=82, method=6)
+        done += 1
+    print(f'letter squishies: {done} pictures', flush=True)
 
 
 def cut_sheet(key, session):
@@ -55,4 +70,6 @@ if __name__ == '__main__':
     session = new_session('u2net')
     for k in keys:
         cut_sheet(k, session)
+    if len(sys.argv) == 1 or '15' in keys:
+        cut_single_squishies(session)
     write_list()

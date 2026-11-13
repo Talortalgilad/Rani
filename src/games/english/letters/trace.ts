@@ -40,6 +40,11 @@ export interface TraceResult {
  */
 export function evaluateStroke(target: Stroke, drawn: Stroke, tol = TOLERANCE): TraceResult {
   const fail: TraceResult = { ok: false, coverage: 0, ordered: false, startOk: false };
+  // a dot (the dot of i and j) is written with a tap: the finger only has to land near it
+  if (lengthOf(target) < 6) {
+    const near = drawn.some((p) => dist(p, target[0]) <= tol * 1.4);
+    return { ok: near, coverage: near ? 1 : 0, ordered: near, startOk: near };
+  }
   if (drawn.length < 2) return fail;
   const t = resample(target, 24);
   const d = resample(drawn, 80);

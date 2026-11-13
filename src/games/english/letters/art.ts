@@ -1,19 +1,18 @@
 import { itemImg } from '../art/images';
 import { WORDS } from '../content/words';
-import { TEMP_EMOJI, islandInfo, letterById } from './journey';
+import { islandInfo, letterById } from './journey';
 import { LETTER_SQUISHY_PICS, LETTER_WORD_PICS, letterWordUrl } from './pictures';
 
 const base = import.meta.env.BASE_URL;
 const inWords = (id: string): boolean => WORDS.some((w) => w.id === id);
 
-/** Does the word have a picture (one of the words of the game, one cut for the letters journey, or a stand-in emoji until it is cut)? */
-export const hasPicture = (word: string): boolean => inWords(word) || LETTER_WORD_PICS.includes(word) || word in TEMP_EMOJI;
+/** Does the word have a picture (one of the words of the game, or one cut for the letters journey)? */
+export const hasPicture = (word: string): boolean => inWords(word) || LETTER_WORD_PICS.includes(word);
 
 /** The picture of a word as html: nothing when there is none. */
 export function wordPictureHtml(word: string): string {
   if (inWords(word)) return itemImg(word);
   if (LETTER_WORD_PICS.includes(word)) return `<img class="item-img" src="${letterWordUrl(word)}" alt="" draggable="false" decoding="async">`;
-  if (word in TEMP_EMOJI) return `<span class="emoji-pic" role="img" aria-label="${word}">${TEMP_EMOJI[word]}</span>`;
   return '';
 }
 
