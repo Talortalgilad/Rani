@@ -1,4 +1,5 @@
 import { getState } from '../../storage';
+import { clipIds, getClip } from './voiceStore';
 
 /** English (instructions, words) and Hebrew (story, encouragement) read aloud with the device's own voices. Works offline. */
 let voices: SpeechSynthesisVoice[] = [];
@@ -130,8 +131,17 @@ export function recordedClips(): Promise<Set<string>> {
     .catch(() => new Set<string>());
   return manifest;
 }
-/** For the tests: forget what was learned about the recordings. */
-export const resetRecorded = (): void => void (manifest = null);
+/** The recordings made in the studio on this phone (they come first). */
+let phone: Promise<Set<string>> | null = null;
+export function phoneClipIds(): Promise<Set<string>> {
+  phone ??= clipIds().then((ids) => new Set(ids));
+  return phone;
+}
+/** Forget what was learned about the recordings (the tests, and the studio after it saved or imported one). */
+export const resetRecorded = (): void => {
+  manifest = null;
+  phone = null;
+};
 
 let clip: HTMLAudioElement | null = null;
 function stopClip(): void {
@@ -171,10 +181,21 @@ export async function speakHeLine(pieces: LinePiece[], keep = false): Promise<bo
   if (keep) keepUntil = Date.now() + 2500;
   if (!pieces.length) return false;
   const have = await recordedClips();
-  if (!pieces.some((p) => p.clip && have.has(p.clip))) return say(pieces.map((p) => p.text).join(' '), 'he', 0.9);
+  const mine = await phoneClipIds();
+  if (!pieces.some((p) => p.clip && (mine.has(p.clip) || have.has(p.clip)))) return say(pieces.map((p) => p.text).join(' '), 'he', 0.9);
   let heard = false;
   for (const p of pieces) {
-    const played = p.clip && have.has(p.clip) ? await playClip(clipUrl(p.clip)) : false;
+    // the recording made on this phone first, then the file of the game, and the voice of the phone only at the end
+    let played = false;
+    if (p.clip && mine.has(p.clip)) {
+      const blob = await getClip(p.clip);
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        played = await playClip(url);
+        URL.revokeObjectURL(url);
+      }
+    }
+    if (!played && p.clip && have.has(p.clip)) played = await playClip(clipUrl(p.clip));
     if (played) heard = true;
     else if (await say(p.text, p.lang, p.lang === 'he' ? 0.9 : 0.8)) heard = true;
   }

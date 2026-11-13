@@ -61,8 +61,8 @@ export const NAME_KEYS: Record<string, string> = { 'צ׳יזי': 'cheesy', 'מו
 
 export interface Clip { id: string; text: string; world: number }
 
-/** The recordings to make: one for each text piece of each sentence, and one for each ready-made name. */
-export function allClips(): Clip[] {
+/** Every text piece of every sentence, and the ready-made names, one entry each (some have the same text as another: see allClips). */
+function rawClips(): Clip[] {
   const out: Clip[] = [];
   for (const l of HE_LINES) {
     l.parts.forEach((p, i) => {
@@ -73,6 +73,33 @@ export function allClips(): Clip[] {
   return out;
 }
 
+/** The first id of every text: two ids with exactly the same text ("משקפיים" is an accessory and a word) share one recording. */
+const firstOfText = (): Map<string, string> => {
+  const m = new Map<string, string>();
+  for (const c of rawClips()) if (!m.has(c.text)) m.set(c.text, c.id);
+  return m;
+};
+/** The id of the recording that an id plays: its own, or the earlier id that has the same text. */
+export function canonicalClip(id: string): string {
+  const c = rawClips().find((x) => x.id === id);
+  return c ? (firstOfText().get(c.text) ?? id) : id;
+}
+
+/** The recordings to make: one for each different text (the ids that share a text are aliases of the first). */
+export function allClips(): Clip[] {
+  const seen = new Set<string>();
+  return rawClips().filter((c) => (seen.has(c.text) ? false : (seen.add(c.text), true)));
+}
+
+/** The two tracks of the recording studio: the sentences of the game and the names first, then the words (and colours) she learns. */
+export type Track = 'important' | 'words';
+export const trackOf = (id: string): Track => (/^(w_|c_)/.test(id) ? 'words' : 'important');
+export const clipsOfTrack = (t: Track): Clip[] => {
+  const all = allClips();
+  const names = all.filter((c) => c.id.startsWith('name.'));
+  return t === 'words' ? all.filter((c) => trackOf(c.id) === 'words') : [...all.filter((c) => trackOf(c.id) === 'important' && !c.id.startsWith('name.')), ...names];
+};
+
 export interface LinePart { clip?: string; text: string; lang: 'he' | 'en' }
 
 /** What to play for a sentence: a clip with the text to read if the clip is missing; the name as a clip only when it is one of the four. */
@@ -80,7 +107,7 @@ export function linePartsFor(id: string, name = ''): LinePart[] {
   const l = HE_LINES.find((x) => x.id === id);
   if (!l) return [];
   return l.parts.map((p, i): LinePart => {
-    if (p !== null) return { clip: l.parts.length === 1 ? l.id : `${l.id}.${i}`, text: p.trim(), lang: 'he' };
+    if (p !== null) return { clip: canonicalClip(l.parts.length === 1 ? l.id : `${l.id}.${i}`), text: p.trim(), lang: 'he' };
     const key = NAME_KEYS[name];
     if (key) return { clip: `name.${key}`, text: name, lang: 'he' };
     return { text: name, lang: /[A-Za-z]/.test(name) ? 'en' : 'he' };

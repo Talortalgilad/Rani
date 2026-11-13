@@ -55,6 +55,8 @@ export function englishParentHtml(): string {
       <div class="p-sub">"אמור!" (המשחק מבקש מרני להגיד מילה, והטלפון מקשיב)</div>
       <div class="p-chips"><button class="chip-btn ${say ? 'on' : ''}" data-say="1">פעיל</button><button class="chip-btn ${say ? '' : 'on'}" data-say="0">כבוי</button></div>
       <div class="p-sub">זיהוי הדיבור משתמש בשירות של Google או Apple, ולכן הקול נשלח אליהם בזמן הדיבור, ונדרש אינטרנט. שום דבר לא נשמר חוץ מהמילה שזוהתה. בלי אינטרנט המשימה פשוט לא מופיעה.</div>
+      <div class="p-sub">קול עברי: ההקלטות שלך במקום קול הטלפון</div>
+      <button class="btn alt" id="en-studio">🎙️ אולפן הקלטה</button>
       <div class="p-sub">בדיקת קול</div>
       <button class="btn alt" id="en-voice">🔊 בדוק קול</button>
       <div class="p-sub" id="en-voice-out">אנגלית: <span dir="ltr">${esc(voiceEn)}</span><br>עברית: ${esc(voiceHe)}</div>
@@ -97,5 +99,6 @@ export function bindEnglishParent(root: HTMLElement, redraw: () => void): void {
       redraw();
     }),
   );
+  card.querySelector('#en-studio')?.addEventListener('click', () => void import('./studio').then((m) => m.openStudio(root, redraw)));
   card.querySelector('#en-voice')?.addEventListener('click', () => void speakEn("Hello! I'm your friend. Let's play!", 0.85).then(() => sayLine('parent_test')));
 }

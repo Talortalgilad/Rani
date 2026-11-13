@@ -25,3 +25,24 @@ describe('the Hebrew lines with a recording', () => {
     expect(total).toBe(allClips().length);
   });
 });
+
+describe('the recording studio lists', () => {
+  it('two ids with the same text share one recording ("משקפיים")', async () => {
+    const { canonicalClip, linePartsFor: parts } = await import('./heLines');
+    expect(canonicalClip('w_glasses')).toBe('acc_glasses');
+    expect(canonicalClip('acc_glasses')).toBe('acc_glasses');
+    expect(allClips().some((c) => c.id === 'w_glasses')).toBe(false);
+    expect(parts('proud', 'מוצי')[0].clip).toBe('name.mozzi');
+    const texts = allClips().map((c) => c.text);
+    expect(new Set(texts).size).toBe(texts.length);
+  });
+  it('the important track has the sentences and the names (the names last), the words track has words and colours; together everything once', async () => {
+    const { clipsOfTrack } = await import('./heLines');
+    const imp = clipsOfTrack('important');
+    const words = clipsOfTrack('words');
+    expect(imp[0].id).toBe('ask_name');
+    expect(imp.slice(-4).map((c) => c.id)).toEqual(['name.cheesy', 'name.mozzi', 'name.horiko', 'name.popcheese']);
+    expect(words.every((c) => /^(w_|c_)/.test(c.id))).toBe(true);
+    expect(imp.length + words.length).toBe(allClips().length);
+  });
+});
