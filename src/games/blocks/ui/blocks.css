@@ -94,3 +94,5 @@
 .bk-over .who { font-size: 56px; line-height: 1; }
 .bk-over h2 .l1, .bk-over h2 .l2 { display: block; }
 .bk-over h2 .l2 { font-size: 30px; }
+
+.cnt.frac { direction: ltr; unicode-bidi: isolate; display: inline-block; }

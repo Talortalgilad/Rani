@@ -1,7 +1,7 @@
 import type { GameContext, GameModule } from '../types';
 import { sayLabel, sayLine } from '../english/content/heLines';
 import { stopSpeech } from '../english/voice';
-import { counter } from '../../ui/counter';
+import { counter, fraction } from '../../ui/counter';
 import { SESSION_TTL_MS } from '../../access';
 import { getState } from '../../storage';
 import { BlockGame } from './game';
@@ -109,7 +109,7 @@ function setGoal(v: GoalView): void {
   const g = level.goal;
   const pic =
     g.kind === 'collect' ? `<img src="${itemUrl(g.item)}" alt="">` : g.kind === 'score' ? '<span class="ic">🎯</span>' : g.kind === 'clears' ? '<span class="ic">💥</span>' : `<img src="${itemUrl(level.world === 2 ? 'ice' : level.world === 3 ? 'crate' : 'padlock')}" alt="">`;
-  el.innerHTML = `${pic}<span dir="ltr">${counter(`${v.cur}/${v.target}`)}</span>`;
+  el.innerHTML = `${pic}${fraction(v.cur, v.target)}`;
   el.classList.toggle('done', v.done);
 }
 

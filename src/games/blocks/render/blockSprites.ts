@@ -39,8 +39,8 @@ export interface Sprite { canvas: Canvas2; /** the padding round the block for t
 export type BlockStyle = 'jelly' | 'candy' | 'garden' | 'art' | 'space';
 
 /** One jelly block of `size` px (device pixels) in colour `color`, in the set of a world (SPEC-blocks.md 2.2): stripes (candy), matte (garden), a drop of paint (art), twinkles (space). */
-export function makeSprite(color: number, size: number, style: BlockStyle = 'jelly'): Sprite {
-  const pal = PALETTE[color % PALETTE.length];
+export function makeSprite(color: number, size: number, style: BlockStyle = 'jelly', custom?: { top: string; mid: string; bottom: string }): Sprite {
+  const pal = custom ?? PALETTE[color % PALETTE.length];
   const pad = Math.round(size * 0.1);
   const total = size + pad * 2;
   const c = makeCanvas(total, total + Math.round(pad * 0.6));
@@ -121,24 +121,25 @@ function decorate(g: CanvasRenderingContext2D, style: BlockStyle, x: number, y: 
       g.fill();
     }
   } else if (style === 'garden') {
-    // a leaf: the middle vein and two side veins, matte
-    g.strokeStyle = 'rgba(30, 80, 30, .35)';
-    g.lineCap = 'round';
-    g.lineWidth = size * 0.045;
+    // a small, gentle leaf in the top corner (the block itself is matte)
+    const L = size * 0.24;
+    g.save();
+    g.translate(x + size * 0.72, y + size * 0.27);
+    g.rotate(-0.8);
+    g.fillStyle = 'rgba(190, 245, 170, .7)';
+    g.strokeStyle = 'rgba(40, 110, 50, .45)';
+    g.lineWidth = Math.max(1, size * 0.03);
     g.beginPath();
-    g.moveTo(x + size * 0.2, y + size * 0.82);
-    g.quadraticCurveTo(x + size * 0.5, y + size * 0.5, x + size * 0.8, y + size * 0.2);
+    g.moveTo(-L, 0);
+    g.bezierCurveTo(-L * 0.5, -L * 0.8, L * 0.5, -L * 0.8, L, 0);
+    g.bezierCurveTo(L * 0.5, L * 0.8, -L * 0.5, L * 0.8, -L, 0);
+    g.fill();
     g.stroke();
-    g.lineWidth = size * 0.03;
-    for (const t of [0.35, 0.55, 0.72]) {
-      const px = x + size * (0.2 + 0.6 * (1 - t)), py = y + size * (0.82 - 0.62 * (1 - t));
-      g.beginPath();
-      g.moveTo(px, py);
-      g.lineTo(px + size * 0.14, py + size * 0.1);
-      g.moveTo(px, py);
-      g.lineTo(px - size * 0.1, py - size * 0.12);
-      g.stroke();
-    }
+    g.beginPath();
+    g.moveTo(-L * 1.25, L * 0.12);
+    g.lineTo(L * 0.7, 0);
+    g.stroke();
+    g.restore();
   } else if (style === 'art') {
     // a glossy drop of paint in the corner
     const cx = x + size * 0.7, cy = y + size * 0.7, d = size * 0.18;
@@ -175,6 +176,9 @@ function decorate(g: CanvasRenderingContext2D, style: BlockStyle, x: number, y: 
     }
   }
 }
+
+/** The grey stone block of a chained cell. */
+export const makeStone = (size: number): Sprite => makeSprite(0, size, 'jelly', { top: '#d5d8de', mid: '#a3a9b4', bottom: '#737a87' });
 
 /** All seven colours at one size. */
 export function makeSprites(size: number, style: BlockStyle = 'jelly'): Sprite[] {

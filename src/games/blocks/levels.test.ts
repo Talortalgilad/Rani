@@ -40,19 +40,24 @@ describe('the journey: levels', () => {
 });
 
 describe('obstacles', () => {
-  const clearRow = (b: Board, r: number): void => { for (let c = 0; c < 9; c++) if (!b.lock[r * 9 + c] && !b.crate[r * 9 + c]) b.cells[r * 9 + c] = 1; };
+  const clearRow = (b: Board, r: number): void => { for (let c = 0; c < 9; c++) if (!b.lock[r * 9 + c] && !b.crate[r * 9 + c] && !(b.cells[r * 9 + c] !== -1 && b.ice[r * 9 + c])) b.cells[r * 9 + c] = 1; };
 
-  it('ice needs two clears and cracks after the first', () => {
+  it('ice holds a block: the first clear cracks it (the block stays), the second one frees the cell', () => {
     const b = new Board();
     b.ice[4 * 9 + 2] = 2;
+    b.cells[4 * 9 + 2] = 3;
     clearRow(b, 4);
     let c = b.clearFull();
     expect(c.events!.iceCracked).toEqual([4 * 9 + 2]);
     expect(b.ice[4 * 9 + 2]).toBe(1);
+    expect(b.cells[4 * 9 + 2]).toBe(3);
+    expect(c.cells).not.toContain(4 * 9 + 2);
+    expect(b.fullUnits().units).toBe(0);
     clearRow(b, 4);
     c = b.clearFull();
     expect(c.events!.iceBroken).toEqual([4 * 9 + 2]);
     expect(b.obstacles).toBe(0);
+    expect(b.cells[4 * 9 + 2]).toBe(-1);
   });
 
   it('a crate cannot be filled, does not count as full, and falls apart when a cleared row touches it', () => {
@@ -163,5 +168,15 @@ describe('saving a level in the middle', () => {
     expect([b2.ice[3], b2.crate[4], b2.lock[5], b2.item[6]]).toEqual([1, 1, 1, 2]);
     expect(back.journey!.collected).toBe(1);
     expect(validSaved({ ...sv, layers: { ...sv.layers, ice: [1] } })).toBeNull();
+  });
+});
+
+describe('the difficulty curve (medians of scripts/blocks-sim.ts)', () => {
+  it('no medium level needs more trays than the "hard" level that follows it', () => {
+    for (const w of [0, 15, 30, 45]) {
+      for (const [mediums, hard] of [[[6, 7, 8], 9], [[11, 12, 13], 14]] as const) {
+        for (const m of mediums) expect(STAR_TARGETS[w + m].three, `level ${w + m} vs ${w + hard}`).toBeLessThanOrEqual(STAR_TARGETS[w + hard].three);
+      }
+    }
   });
 });

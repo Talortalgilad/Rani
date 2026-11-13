@@ -12,7 +12,7 @@ import { pieceById, turned } from './pieces';
 import { Run, startBoard, wave, ITEMS, type GoalView, type Level } from './journey';
 import { STAR_TARGETS } from './starTargets';
 import { pieceByArt } from './levels';
-import type { BlockStyle } from './render/blockSprites';
+import { makeStone, type BlockStyle } from './render/blockSprites';
 import { PALETTE, makeSprites, type Sprite } from './render/blockSprites';
 import { Particles } from './render/particles';
 
@@ -115,6 +115,10 @@ export class BlockGame {
   run: Run | null = null;
   private skin: BlockStyle = 'jelly';
   private imgs = new Map<string, HTMLImageElement>();
+  /** the part of a picture that is not transparent, so that an obstacle fills its whole cell */
+  private boxes = new Map<string, { sx: number; sy: number; sw: number; sh: number }>();
+  private stone: Sprite | null = null;
+  private bounce = new Float64Array(N * N).fill(-1e9);
   private flies: Fly[] = [];
   private finishing = false;
   private wand: { t0: number; x: number; y: number } | null = null;
@@ -216,6 +220,7 @@ export class BlockGame {
     if (this.spriteCell !== cell * this.dpr) {
       this.spriteCell = cell * this.dpr;
       this.sprites = makeSprites(Math.round(cell * this.dpr), this.skin);
+      this.stone = makeStone(Math.round(cell * this.dpr));
     }
     this.trayTop = top + board + GAP_CELLS * cell;
     this.trayH = TRAY_ROWS * cell;
@@ -236,11 +241,37 @@ export class BlockGame {
     let im = this.imgs.get(name);
     if (!im) {
       im = new Image();
-      im.onload = () => (this.dirty = true);
+      const loaded = im;
+      im.onload = () => {
+        this.boxes.set(name, trimBox(loaded));
+        this.dirty = true;
+      };
       im.src = import.meta.env.BASE_URL + SRC(name);
       this.imgs.set(name, im);
     }
     return im.complete && im.naturalWidth ? im : null;
+  }
+
+  /** A picture drawn over a whole cell (its transparent margin cut off). */
+  private drawFull(name: string, x: number, y: number, size: number, alpha = 1, inset = 0): void {
+    const im = this.img(name);
+    const b = this.boxes.get(name);
+    if (!im || !b) return;
+    const g = this.g;
+    g.globalAlpha = alpha;
+    g.drawImage(im, b.sx, b.sy, b.sw, b.sh, x + inset, y + inset, size - inset * 2, size - inset * 2);
+    g.globalAlpha = 1;
+  }
+
+  private drawStone(x: number, y: number, size: number, alpha = 1): void {
+    if (!this.stone) return;
+    const k = size / this.geo.cell;
+    const s = this.stone;
+    const g = this.g;
+    g.globalAlpha = alpha;
+    g.drawImage(s.canvas as CanvasImageSource, x - (s.pad / this.dpr) * k, y - (s.pad / this.dpr) * k, (s.canvas.width / this.dpr) * k, (s.canvas.height / this.dpr) * k);
+    g.globalAlpha = 1;
+    this.drawFull('padlock', x + size * 0.2, y + size * 0.2, size * 0.6, alpha);
   }
 
   private newTray(now: number, forced?: Piece[]): void {
@@ -491,7 +522,10 @@ export class BlockGame {
     this.drag = null;
     const slot = this.tray[d.slot]!;
     if (d.landing) this.place(d.slot, slot, d.landing.r, d.landing.c);
-    else this.sendBack(d, slot);
+    else {
+      this.bumpObstacles(d, slot);
+      this.sendBack(d, slot);
+    }
   };
 
   private onCancel = (): void => {
@@ -500,6 +534,22 @@ export class BlockGame {
     this.drag = null;
     this.sendBack(d, this.tray[d.slot]!);
   };
+
+  /** A shape let down on obstacles does not stay: the obstacles it would have covered jump a little. */
+  private bumpObstacles(d: Drag, slot: Slot): void {
+    const a = floatingAnchor(this.geo, slot.piece, d.px, d.py);
+    const r0 = Math.round(a.r);
+    const c0 = Math.round(a.c);
+    const now = performance.now();
+    for (const [dr, dc] of slot.piece.cells) {
+      const r = r0 + dr;
+      const c = c0 + dc;
+      if (r < 0 || c < 0 || r >= N || c >= N) continue;
+      const i = idx(r, c);
+      if (this.board.crate[i] || this.board.lock[i] || this.board.ice[i]) this.bounce[i] = now;
+    }
+    this.dirty = true;
+  }
 
   /** A shape let go where it cannot land goes back to the tray softly (no sound, no penalty). */
   private sendBack(d: Drag, slot: Slot): void {
@@ -578,7 +628,6 @@ export class BlockGame {
   /** The ice that cracks or breaks and the crates that fall apart. */
   private obstacleFx(ev: import('./board').ClearEvents | undefined, at: number): void {
     if (!ev) return;
-    ev.iceBroken.forEach((i) => this.blasts.push({ i, color: -1, at, done: false, kind: 'ice' }));
     ev.iceCracked.forEach((i) => {
       const p = this.cellCenter(i % N, Math.floor(i / N));
       window.setTimeout(() => this.particles.burst(p.x, p.y, '#bfe9ff', this.geo.cell, 5), Math.max(0, at - performance.now()));
@@ -678,7 +727,7 @@ export class BlockGame {
         if (v < 0) continue;
         const age = t - this.pop[idx(r, c)];
         const sq = age < POP_MS && !this.reduced ? 1 + 0.08 * (1 - ease(age / POP_MS)) : 1;
-        this.spriteAt(v, bx + c * cell, by + r * cell, cell, 1, sq);
+        this.spriteAt(v, bx + c * cell, by + r * cell + this.lift(idx(r, c), t), cell, 1, sq);
       }
     }
 
@@ -733,12 +782,10 @@ export class BlockGame {
       const grow = 1 + 0.25 * k;
       const alpha = 1 - k;
       if (b.kind) {
-        const im = this.img(b.kind === 'lock' ? 'padlock' : b.kind);
-        if (im) {
-          g.globalAlpha = alpha;
-          g.drawImage(im, x - (cell * (grow - 1)) / 2, y - (cell * (grow - 1)) / 2, cell * grow, cell * grow);
-          g.globalAlpha = 1;
-        }
+        const sz = cell * grow;
+        const o = (cell * (grow - 1)) / 2;
+        if (b.kind === 'lock') this.drawStone(x - o, y - o, sz, alpha);
+        else this.drawFull(b.kind, x - o, y - o, sz, alpha);
         continue;
       }
       if (t < b.at) {
@@ -789,34 +836,27 @@ export class BlockGame {
     }
   }
 
-  /** Ice, crates, chains and items lie over the cells. */
+  /** How far an obstacle that was bumped is lifted (px). */
+  private lift(i: number, t: number): number {
+    const k = (t - this.bounce[i]) / 360;
+    return k >= 0 && k < 1 ? -Math.sin(k * Math.PI) * this.geo.cell * 0.22 : 0;
+  }
+
+  /** Ice, crates, chains and items lie over the cells; each obstacle fills its whole cell. */
   private drawLayers(t: number): void {
     const g = this.g;
     const { x: bx, y: by, cell } = this.geo;
     for (let i = 0; i < N * N; i++) {
       const x = bx + (i % N) * cell;
-      const y = by + Math.floor(i / N) * cell;
+      const y = by + Math.floor(i / N) * cell + this.lift(i, t);
       const b = this.board;
-      if (b.lock[i]) {
-        g.fillStyle = 'rgba(80, 60, 20, .25)';
-        g.beginPath();
-        g.roundRect(x + 2, y + 2, cell - 4, cell - 4, cell * 0.22);
-        g.fill();
-        const im = this.img('padlock');
-        if (im) g.drawImage(im, x + cell * 0.05, y + cell * 0.05, cell * 0.9, cell * 0.9);
-      }
-      if (b.crate[i]) {
-        const im = this.img('crate');
-        if (im) g.drawImage(im, x, y, cell, cell);
-      }
+      if (b.lock[i]) this.drawStone(x, y, cell);
+      if (b.crate[i]) this.drawFull('crate', x, y, cell);
       if (b.item[i] >= 0) this.drawItem(b.item[i], x, y);
       if (b.ice[i] > 0) {
-        const im = this.img('ice');
-        g.globalAlpha = b.ice[i] === 2 ? 0.8 : 0.55;
-        if (im) g.drawImage(im, x + 1, y + 1, cell - 2, cell - 2);
-        g.globalAlpha = 1;
+        // the coloured block is under a layer of ice as big as the cell; after the first clear the ice is cracked
+        this.drawFull('ice', x, y, cell, b.ice[i] === 2 ? 0.9 : 0.65, -cell * 0.06);
         if (b.ice[i] === 1) {
-          // cracked: white lines
           g.strokeStyle = 'rgba(255, 255, 255, .95)';
           g.lineWidth = Math.max(2, cell * 0.06);
           g.lineCap = 'round';
@@ -831,7 +871,6 @@ export class BlockGame {
         }
       }
     }
-    void t;
   }
 
   /** An item (candy, ladybug...) on a block. */
@@ -863,22 +902,25 @@ export class BlockGame {
     const home = this.slotPos(0, p);
     const from = { x: home.x + (p.w * cell * home.s) / 2, y: home.y + (p.h * cell * home.s) / 2 };
     const to = { x: this.geo.x + (goal[1] + p.w / 2) * cell, y: this.geo.y + (goal[0] + p.h / 2) * cell };
-    const T = 2600;
+    const T = 2800;
     const k = (t % T) / T;
-    const move = k < 0.15 ? 0 : k < 0.65 ? ease((k - 0.15) / 0.5) : 1;
+    const move = k < 0.12 ? 0 : k < 0.62 ? ease((k - 0.12) / 0.5) : 1;
     const x = from.x + (to.x - from.x) * move;
     const y = from.y + (to.y - from.y) * move;
-    // the shape follows the finger for the demonstration
-    g.save();
-    g.globalAlpha = 0.55;
-    // the shape floats 1.5 cells above the finger, as in a real drag
-    if (move > 0) this.drawPiece({ piece: p, color: 4 }, x - (p.w * cell) / 2, y - (p.h * cell) / 2, 1, 1);
-    g.restore();
+    const s = home.s + (1 - home.s) * move;
+    // the shape is carried from the tray to its place, floating over the finger like in a real drag
+    if (k >= 0.12) {
+      g.save();
+      g.globalAlpha = (k > 0.9 ? 1 - (k - 0.9) * 10 : 1) * 0.7;
+      this.drawPiece({ piece: p, color: 4 }, x - (p.w * cell * s) / 2, y - (p.h * cell * s) / 2, s, 1);
+      g.restore();
+    }
     g.font = `${Math.round(cell * 1.5)}px system-ui, sans-serif`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.globalAlpha = k > 0.9 ? 1 - (k - 0.9) * 10 : 1;
-    g.fillText('👆', x, y + (p.h / 2 + 1.5) * cell + cell * 0.6 + (k >= 0.65 && k < 0.9 ? Math.sin((k - 0.65) * 60) * cell * 0.06 : 0));
+    const tap = k < 0.12 || (k >= 0.62 && k < 0.9) ? Math.sin(k * 60) * cell * 0.07 : 0;
+    g.fillText('👆', x, y + (p.h / 2 + 1.5) * cell * s + cell * 0.6 + tap);
     g.globalAlpha = 1;
   }
 
@@ -918,7 +960,18 @@ export class BlockGame {
         y = home.y + (1 - easeBack(k)) * (this.H - home.y);
       }
       const fits = this.board.fits(slot.piece);
-      this.drawPiece(slot, home.x, y, home.s, fits ? 1 : 0.4);
+      if (i === 0 && this.handShown()) {
+        // the right shape of the lesson blinks gently
+        const k = 1 + 0.1 * Math.sin(t / 170);
+        const c = this.geo.cell * home.s;
+        const w = slot.piece.w * c;
+        const h = slot.piece.h * c;
+        this.g.save();
+        this.g.shadowColor = 'rgba(255, 255, 255, .95)';
+        this.g.shadowBlur = this.geo.cell * (0.35 + 0.3 * Math.sin(t / 170));
+        this.drawPiece(slot, home.x + (w * (1 - k)) / 2, y + (h * (1 - k)) / 2, home.s * k, 1);
+        this.g.restore();
+      } else this.drawPiece(slot, home.x, y, home.s, fits ? 1 : 0.4);
     });
   }
 
@@ -993,3 +1046,27 @@ function shuffledColors(n: number): number[] {
 }
 
 export { LIFT_CELLS };
+
+/** The box of a picture that holds its pixels (not the transparent margin). */
+function trimBox(im: HTMLImageElement): { sx: number; sy: number; sw: number; sh: number } {
+  const w = im.naturalWidth;
+  const h = im.naturalHeight;
+  try {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const g = c.getContext('2d')!;
+    g.drawImage(im, 0, 0);
+    const d = g.getImageData(0, 0, w, h).data;
+    let x0 = w, y0 = h, x1 = 0, y1 = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 <= x0 || y1 <= y0) return { sx: 0, sy: 0, sw: w, sh: h };
+    // square, so that the picture is not stretched
+    const side = Math.max(x1 - x0 + 1, y1 - y0 + 1);
+    const cx = (x0 + x1 + 1) / 2;
+    const cy = (y0 + y1 + 1) / 2;
+    return { sx: Math.max(0, cx - side / 2), sy: Math.max(0, cy - side / 2), sw: Math.min(side, w), sh: Math.min(side, h) };
+  } catch {
+    return { sx: 0, sy: 0, sw: w, sh: h };
+  }
+}

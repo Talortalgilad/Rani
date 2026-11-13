@@ -23,7 +23,7 @@ export interface Level {
   hard: 1 | 2 | 3;
   boss?: boolean;
   seed: number;
-  /** a start board drawn by hand (9 rows of 9: . empty, 0-6 a block, o an item on a block, g a gem on a block, i ice, I ice on a block, c crate, k chain) */
+  /** a start board drawn by hand (9 rows of 9: . empty, 0-6 a block, o an item on a block, g a gem on a block, i or I a block in ice, c crate, k chain) */
   rows?: string[];
   /** otherwise: a scattered start board */
   gen?: { density: number; items: number; ice: number; crates: number; locks: number };
@@ -47,8 +47,7 @@ export function startBoard(level: Level): Board {
     else if (ch === 'o' || ch === 'g') {
       b.cells[i] = Math.floor(rnd() * 7);
       b.item[i] = ch === 'g' ? itemIndex('gem') : goalItem;
-    } else if (ch === 'i') b.ice[i] = 2;
-    else if (ch === 'I') {
+    } else if (ch === 'i' || ch === 'I') {
       b.cells[i] = Math.floor(rnd() * 7);
       b.ice[i] = 2;
     } else if (ch === 'c') b.crate[i] = 1;
@@ -73,7 +72,12 @@ function scatter(b: Board, level: Level, rnd: () => number): void {
     b.cells[i] = Math.floor(rnd() * 7);
     b.item[i] = goalItem;
   }
-  for (let n = 0; n < g.ice; n++) b.ice[take()] = 2;
+  for (let n = 0; n < g.ice; n++) {
+    // ice always holds a coloured block
+    const i = take();
+    b.cells[i] = Math.floor(rnd() * 7);
+    b.ice[i] = 2;
+  }
   for (let n = 0; n < g.crates; n++) b.crate[take()] = 1;
   for (let n = 0; n < g.locks; n++) b.lock[take()] = 1;
   // nothing may start full: take a plain block off a full unit

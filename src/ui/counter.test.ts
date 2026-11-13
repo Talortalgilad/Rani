@@ -11,3 +11,14 @@ describe('counters with numbers', () => {
     expect(bdiNumbers('1 2 3').match(/\d+/g)).toEqual(['1', '2', '3']);
   });
 });
+
+import { fraction } from './counter';
+describe('fraction (goal counters: progress/target)', () => {
+  it('writes the progress first and the target second, in a left-to-right box', () => {
+    const html = fraction(0, 1);
+    expect(html).toContain('dir="ltr"');
+    expect(html.replace(/<[^>]+>/g, '')).toBe('0/1');
+    expect(fraction(3, 5).replace(/<[^>]+>/g, '')).toBe('3/5');
+    expect(html.indexOf('>0<')).toBeLessThan(html.indexOf('>1<'));
+  });
+});

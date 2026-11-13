@@ -121,12 +121,21 @@ export class Board {
   clearFull(): Clears {
     const c = this.fullUnits();
     const ev = noEvents();
+    const stayed = new Set<number>();
     for (const i of c.cells) {
+      // ice holds its block: the first clear only cracks the ice (the block stays), the second one frees the cell
+      if (this.ice[i] === 2 && this.cells[i] !== EMPTY) {
+        this.ice[i] = 1;
+        ev.iceCracked.push(i);
+        stayed.add(i);
+        continue;
+      }
       this.cells[i] = EMPTY;
       if (this.lock[i]) { this.lock[i] = 0; ev.unlocked.push(i); }
-      if (this.ice[i] > 0) { this.ice[i]--; (this.ice[i] === 0 ? ev.iceBroken : ev.iceCracked).push(i); }
+      if (this.ice[i] > 0) { this.ice[i] = 0; ev.iceBroken.push(i); }
       if (this.item[i] >= 0) { ev.collected.push(this.item[i]); this.item[i] = -1; }
     }
+    if (stayed.size) c.cells = c.cells.filter((i) => !stayed.has(i));
     // a crate falls apart when a cleared cell is next to it
     if (c.cells.length) {
       const gone = new Set(c.cells);

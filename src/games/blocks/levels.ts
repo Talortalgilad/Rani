@@ -25,7 +25,7 @@ const BOSS: Record<number, string[]> = {
   4: hand(['....4....', '...444...', '...4g4...', '...444...', '...4c4...', '..44444..', '.g.444.g.', '...k.k...']),
 };
 
-const KINDS_W1 = ['t', 't', 't', 'score', 'clears', 'collect', 'score', 'clears', 'collect', 'score', 'clears', 'collect', 'score', 'collect', 'boss'] as const;
+const KINDS_W1 = ['t', 't', 't', 'score', 'clears', 'collect', 'score', 'clears', 'clears', 'score', 'clears', 'collect', 'score', 'score', 'boss'] as const;
 const KINDS = ['collect', 'clears', 'obstacles', 'score', 'collect', 'obstacles', 'clears', 'collect', 'obstacles', 'score', 'collect', 'obstacles', 'clears', 'obstacles', 'boss'] as const;
 /** The curve (4.3): 1-5 very easy, three medium, one hard (purple), one easy to recover, three medium, one hard, the boss. */
 const HARD: (1 | 2 | 3)[] = [1, 1, 1, 1, 1, 2, 2, 2, 3, 1, 2, 2, 2, 3, 3];
@@ -46,22 +46,22 @@ function make(world: 1 | 2 | 3 | 4, n: number): Level {
   }
   if (kind === 'boss') return { ...base, boss: true, goal: { kind: 'collect', item: 'gem', target: 3 }, rows: BOSS[world] };
   const w = world - 1;
-  const scale = 1 + 0.3 * w + n * 0.04;
+  const scale = 1 + 0.15 * w + n * 0.02;
   let goal: Goal;
   let items = 0;
-  if (kind === 'score') goal = { kind: 'score', target: Math.round(([150, 300, 500][k] * scale) / 10) * 10 };
-  else if (kind === 'clears') goal = { kind: 'clears', target: [3, 5, 8][k] + w };
+  if (kind === 'score') goal = { kind: 'score', target: Math.round(([100, 112, 230][k] * scale) / 10) * 10 };
+  else if (kind === 'clears') goal = { kind: 'clears', target: [3, 4, 7][k] + (w >= 2 ? 1 : 0) };
   else if (kind === 'collect') {
-    const target = Math.min(6, [2, 3, 5][k] + (w > 1 ? 1 : 0));
+    const target = Math.min(6, [2, 3, 6][k] + (w > 1 && k < 2 ? 1 : 0));
     goal = { kind: 'collect', item: item(world, n), target };
     items = target + 1;
   } else goal = { kind: 'obstacles' };
   const ob = kind === 'obstacles' ? 1 : 0.5;
   const cnt = (a: number[]): number => Math.max(world >= 2 && kind !== 'obstacles' ? 1 : 0, Math.round(a[k] * ob));
-  const ice = world === 2 ? cnt([3, 5, 7]) : world === 3 ? cnt([2, 3, 4]) : world === 4 ? cnt([1, 2, 3]) : 0;
-  const crates = world === 3 ? cnt([2, 3, 4]) : world === 4 ? cnt([1, 2, 3]) : 0;
-  const locks = world === 4 ? cnt([2, 3, 4]) : 0;
-  return { ...base, goal, gen: { density: [0.14, 0.24, 0.34][k], items, ice, crates, locks } };
+  const ice = world === 2 ? cnt([2, 2, 3]) : world === 3 ? cnt([1, 1, 2]) : world === 4 ? cnt([1, 1, 1]) : 0;
+  const crates = world === 3 ? cnt([2, 2, 3]) : world === 4 ? cnt([1, 1, 1]) : 0;
+  const locks = world === 4 ? cnt([2, 2, 3]) : 0;
+  return { ...base, goal, gen: { density: [0.1, 0.17, world === 1 ? 0.32 : 0.26][k] * (kind === 'obstacles' ? 0.6 : 1), items, ice, crates, locks } };
 }
 
 export const LEVELS: Level[] = WORLDS.flatMap((w) => Array.from({ length: 15 }, (_, i) => make(w.id, i + 1)));
