@@ -11,7 +11,9 @@ export type SoundName =
   // a vehicle that hops over another on the road
   | 'boing'
   // block puzzle: a block lands, a block bursts (pitch rises with every block), a combo arpeggio, a streak step (pitch), a new tray, a clean board, a soft happy tune for a full board
-  | 'thock' | 'blast' | 'arpeggio' | 'streak' | 'trayin' | 'fanfare' | 'gentle';
+  | 'thock' | 'blast' | 'arpeggio' | 'streak' | 'trayin' | 'fanfare' | 'gentle'
+  // roller coaster: the chain on the way up (a tick), the wind (pitch = how fast), the passengers' "wheee" on the way down, a star collected
+  | 'chain' | 'wind' | 'wheee' | 'starpop';
 
 export interface SoundApi {
   /** `pitch` (Hz) applies to 'pop', 'bell' and 'tick'. */
@@ -130,6 +132,16 @@ export const sound: SoundApi = {
           tone(900, 0, 0.28, 'sawtooth', 0.06, 160);
           tone(1500, 0.06, 0.25, 'sine', 0.06, 700);
           break;
+        case 'chain': tone(150, 0, 0.035, 'square', 0.07, 110); break;
+        case 'wind': {
+          // a soft rushing: two detuned saws, louder and higher the faster the car goes
+          const f = Math.min(900, Math.max(120, pitch ?? 300));
+          tone(f, 0, 0.18, 'sawtooth', 0.025, f * 1.08);
+          tone(f * 1.5, 0, 0.18, 'triangle', 0.02, f * 1.4);
+          break;
+        }
+        case 'wheee': tone(420, 0, 0.55, 'sine', 0.2, 1100); tone(630, 0.05, 0.5, 'triangle', 0.1, 1500); break;
+        case 'starpop': tone(880, 0, 0.12, 'sine', 0.25, 1760); tone(1320, 0.07, 0.15, 'triangle', 0.15); break;
         case 'thock':
           tone(210, 0, 0.08, 'sine', 0.26, 120);
           tone(520, 0, 0.03, 'triangle', 0.07);

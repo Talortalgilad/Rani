@@ -1,5 +1,6 @@
 import { ACCESSORIES } from '../art/accessories';
 import { BLOCKS_LINES } from '../../blocks/lines';
+import { PARK_LINES } from '../../park/lines';
 import { FAMILY_NAMES, MEMORY_LINES } from '../../memory/lines';
 import { ISLANDS, LETTERS } from '../letters/journey';
 import { COLORS } from './colors';
@@ -68,6 +69,7 @@ export const HE_LINES: HeLine[] = [
   ...MEMORY_LINES.map((l): HeLine => ({ id: l.id, world: 0, parts: l.parts })),
   // the block game
   ...BLOCKS_LINES.map((l): HeLine => ({ id: l.id, world: 0, parts: l.parts })),
+  ...PARK_LINES.map((l): HeLine => ({ id: l.id, world: 0, parts: l.parts })),
   { id: 'my_letters', world: 0, parts: [he.myLetters] },
   { id: 'abc_song', world: 0, parts: [he.abcSong] },
   { id: 'abc_done', world: 0, parts: [he.abcDone] },
