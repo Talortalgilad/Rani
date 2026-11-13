@@ -286,3 +286,68 @@ describe('the capital M and N start from the top (SPEC: how they are taught at s
     expect(evaluateStroke(n[0], [...n[0]].reverse()).ok).toBe(false);
   });
 });
+
+import { abcTimeline, ABC_GROUPS, alphabet, ABC_ENDING } from './abc';
+import { gateKinds, letterGateQuestion } from './gate';
+import { addConfusion, learnedLetters, letterState, letterStats, pairKey } from './stats';
+
+const seenL = (...ids: string[]) => Object.fromEntries(ids.map((id) => [`l:${id}`, { level: 1, due: 0, seen: true }]));
+
+describe('my letters, and what the parents see', () => {
+  it('a letter is new until its card was seen, then in learning, then known from level 4', () => {
+    expect(letterState({}, 's')).toBe('new');
+    expect(letterState(seenL('s'), 's')).toBe('learning');
+    expect(letterState({ 'l:s': { level: 4, due: 0, seen: true } }, 's')).toBe('known');
+    expect(letterState({ 'l:s': { level: 1, due: 0, seen: true, known: true } }, 's')).toBe('known');
+    expect(learnedLetters(seenL('a', 't', 'p', 'q'))).toEqual(['a', 't', 'p', 'q']);
+  });
+  it('the mix-ups are counted by pair (b for d and d for b are one), and the same letter is no mix-up', () => {
+    let c = addConfusion({}, 'b', 'd');
+    c = addConfusion(c, 'D', 'B');
+    c = addConfusion(c, 'p', 'q');
+    c = addConfusion(c, 'b', 'b');
+    expect(c).toEqual({ 'b/d': 2, 'p/q': 1 });
+    expect(pairKey('d', 'b')).toBe('b/d');
+  });
+  it('the numbers for the parents: learned, in learning, known, written, b and d, and the others most mixed up', () => {
+    const words = { ...seenL('s', 'a'), 'l:t': { level: 5, due: 0, seen: true } };
+    const st = letterStats(words, ['s', 's', 'a'], { 'b/d': 3, 'p/q': 2, 'm/n': 5 });
+    expect(st).toMatchObject({ learned: 3, learning: 2, known: 1, written: 2, total: 26, bd: 3 });
+    expect(st.top).toEqual([['m/n', 5], ['p/q', 2]]);
+  });
+});
+
+describe('letters in the gate', () => {
+  it('none until three letters were learned; then three different learned letters with the answer among them', () => {
+    expect(letterGateQuestion({})).toBeNull();
+    expect(letterGateQuestion(seenL('s', 'a'))).toBeNull();
+    for (let i = 0; i < 40; i++) {
+      const q = letterGateQuestion(seenL('s', 'a', 't', 'p', 'm'))!;
+      expect(new Set(q.choices).size).toBe(3);
+      expect(q.choices).toContain(q.letter);
+      for (const c of q.choices) expect('satpm').toContain(c);
+    }
+  });
+  it('what each setting asks, in turn ("both" is maths and English as before)', () => {
+    expect(gateKinds('math')).toEqual(['math']);
+    expect(gateKinds('english')).toEqual(['english']);
+    expect(gateKinds('letters')).toEqual(['letters']);
+    expect(gateKinds('both')).toEqual(['math', 'english']);
+    expect(gateKinds('all')).toEqual(['math', 'english', 'letters']);
+    expect(gateKinds('anything else')).toEqual(['math']);
+  });
+});
+
+describe('the ABC song', () => {
+  it('every letter once, in the order of the alphabet, in the groups of the tune, then the ending', () => {
+    expect(ABC_GROUPS.flat().join('')).toBe('abcdefghijklmnopqrstuvwxyz');
+    expect(alphabet().join('')).toBe('abcdefghijklmnopqrstuvwxyz');
+    const t = abcTimeline();
+    expect(t.filter((x) => x.letter).map((x) => x.letter).join('')).toBe('abcdefghijklmnopqrstuvwxyz');
+    expect(t[t.length - 1].text).toBe(ABC_ENDING);
+    for (let i = 1; i < t.length; i++) expect(t[i].at).toBeGreaterThan(t[i - 1].at);
+    // a rest between groups: the gap after g is longer than the gap after a
+    const at = (l: string): number => t.find((x) => x.letter === l)!.at;
+    expect(at('h') - at('g')).toBeGreaterThan(at('b') - at('a'));
+  });
+});

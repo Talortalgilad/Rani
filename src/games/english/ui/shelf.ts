@@ -2,6 +2,7 @@ import { ACCESSORIES, accessorySvg, type Accessory } from '../art/accessories';
 import { cheesyUrl } from '../art/cheesy';
 import { SQUISHIES, squishyImg } from '../art/squishies';
 import { he } from '../content/lines';
+import { counter } from '../../../ui/counter';
 import { speakEn } from '../voice';
 import type { SoundApi } from '../../../sound';
 
@@ -31,7 +32,7 @@ export function showShelf(root: HTMLElement, o: ShelfOptions): () => void {
     <div class="en-screen en-shelf">
       <div class="en-sky"></div>
       <header class="q-top"><button class="q-home" id="sb" type="button" aria-label="${he.home}">⬅️</button><h1 class="map-title" data-say="shelf_title">🧸 ${he.shelfTitle}</h1><span class="q-say" style="visibility:hidden"></span></header>
-      <div class="shelf-count">${he.squishyCount(o.rescued.length, SQUISHIES.length)}</div>
+      <div class="shelf-count">${counter(he.squishyCount(o.rescued.length, SQUISHIES.length))}</div>
       <div class="shelf-grid">
         <div class="shelf-slot have cheesy-slot ${o.buddy === null ? 'buddy' : ''}">
           <button class="shelf-sq" data-name="Cheesy" type="button" aria-label="Cheesy"><span class="cheesy-wrap"><img class="squishy-img" src="${cheesyUrl('happy')}" alt="" draggable="false">${o.buddy === null && o.accessory ? accessorySvg(ACCESSORIES.find((a) => a.id === o.accessory)!) : ''}</span></button>
@@ -60,7 +61,7 @@ export function showShelf(root: HTMLElement, o: ShelfOptions): () => void {
             const got = wearing(a.id);
             return `<button class="acc ${got ? '' : 'locked'} ${o.accessory === a.id ? 'on' : ''}" data-acc="${a.id}" data-say="${got ? `acc_${a.id}` : `acc_locked_${a.world}`}" type="button" aria-label="${a.he}" ${got ? '' : 'aria-disabled="true"'}>
               ${got ? `<span class="acc-prev">${accessorySvg(a)}<img src="${cheesyUrl('happy')}" alt="" draggable="false"></span>` : '<span class="acc-lock">🔒</span>'}
-              <small>${got ? a.he : he.accessoryLocked(a.world)}</small>
+              <small>${got ? a.he : counter(he.accessoryLocked(a.world))}</small>
             </button>`;
           }).join('')}
         </div>

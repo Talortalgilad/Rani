@@ -18,6 +18,8 @@ export interface TaskEnv {
   sayHe(id: string): void;
   /** the sound that a letter makes (/s/): her recording, or the phone says "s... sun" until it is recorded */
   sayLetter(letter: string): void;
+  /** a letter was tapped (or dropped) where another one was asked for: for the parents' list of what is mixed up */
+  confused(target: string, picked: string): void;
 }
 
 export interface TaskHandle {

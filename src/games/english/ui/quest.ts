@@ -20,6 +20,7 @@ import { sayTask } from '../tasks/say';
 import { songTask } from '../tasks/song';
 import { tapTask } from '../tasks/tap';
 import { whereTask, whereText } from '../tasks/where';
+import { abcTask } from '../letters/tasks/abc';
 import { bdTask } from '../letters/tasks/bd';
 import { caseTask } from '../letters/tasks/case';
 import { huntTask } from '../letters/tasks/hunt';
@@ -40,6 +41,12 @@ export interface QuestDeps {
   accent?: string;
   /** a room to use instead of the one of the world (letters journey) */
   bg?: number;
+  /** the squishy letters that were rescued (they dance in the ABC song) */
+  crew?: string[];
+  /** a letter was mixed up with another (the parents see which) */
+  onConfuse?(target: string, picked: string): void;
+  /** the letter was written (all four passes) */
+  onWritten?(letter: string): void;
   steps: Step[];
   sound: SoundApi;
   /** how many times each verb was done right already (the Hebrew help goes away after 3) */
@@ -57,7 +64,7 @@ export interface QuestDeps {
 /** The word of the instruction that has a Hebrew help the first times: find, color, how many, big, on... */
 export function verbOf(s: Step): string | null {
   switch (s.kind) {
-    case 'card': case 'colorcard': case 'listen': case 'song': case 'say': case 'lmeet': case 'ltrace': case 'lsound': case 'lfirst': case 'lcase': case 'lhunt': case 'lbuild': case 'lread': case 'lbd': return null;
+    case 'card': case 'colorcard': case 'listen': case 'song': case 'say': case 'lmeet': case 'ltrace': case 'lsound': case 'lfirst': case 'lcase': case 'lhunt': case 'lbuild': case 'lread': case 'lbd': case 'labc': return null;
     case 'put': return 'put';
     case 'count': return 'count';
     case 'bigsmall': return s.which;
@@ -94,6 +101,7 @@ export function instruction(s: Step): { text: string; html: string } {
     case 'lcase': return { text: 'Match big and small!', html: 'Match big and small!' };
     case 'lhunt': return { text: `Find all the ${s.letter.toUpperCase()}!`, html: `Find all the <b>${s.letter.toUpperCase()}</b>!` };
     case 'lbuild': return s.missing === null ? { text: `Let's build ${s.word}!`, html: `Let’s build <b>${s.word}</b>!` } : { text: 'Which letter is missing?', html: 'Which letter is missing?' };
+    case 'labc': return { text: 'Let’s sing the ABC!', html: 'Let’s sing the <b>ABC</b>!' };
     case 'lbd': return { text: '', html: '<b>b</b> or <b>d</b>?' };
     case 'lread': return { text: 'Read the word!', html: 'Read the word!' };
     case 'say': return { text: `Say ${labelOf(s.right)}!`, html: `Say <b>${labelOf(s.right)}</b>!` };
@@ -169,6 +177,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
     say: (text, word) => void (word ? speakWord(text) : speakEn(text)),
     sayHe: (id) => void sayLine(id),
     sayLetter: (letter) => void speakLetterSound(letter, letterById(letter).label),
+    confused: (target, picked) => d.onConfuse?.(target, picked),
   };
 
   const start = (s: Step): void => {
@@ -216,6 +225,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       case 'lhunt': handle = huntTask(env, s.letter, s.pool, index + 8); break;
       case 'lbuild': handle = buildTask(env, s.word, s.missing, s.pool, index + 9); break;
       case 'lbd': handle = bdTask(env); break;
+      case 'labc': handle = abcTask(env, d.crew); break;
       case 'lread': handle = readTask(env, s.word, s.options, index + 10); break;
       case 'song': handle = songTask(env, s.world); break;
     }
@@ -228,6 +238,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       if (v && mistakesInTask < 3) d.onVerb(v);
       if (prev.kind === 'card') d.onSeen(prev.word);
       else if (prev.kind === 'lmeet') d.onSeen(`l:${prev.letter}`);
+      else if (prev.kind === 'ltrace') d.onWritten?.(prev.letter);
       else if (prev.kind === 'colorcard') d.onSeen(`color:${prev.color}`);
       if (prev.score.length) {
         d.onScore(prev.score, mistakesInTask === 0);

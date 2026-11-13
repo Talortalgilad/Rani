@@ -5,7 +5,10 @@ import { sound } from '../sound';
 import { speak, stopSpeaking } from '../speech';
 import { go } from '../router';
 import { renderHint } from './hints';
+import { counter } from './counter';
 import { englishGateQuestion } from '../games/english/gate';
+import { gateKinds, letterGateQuestion } from '../games/english/letters/gate';
+import { speakLetterSound } from '../games/english/voice';
 import { imageUrl } from '../games/english/art/images';
 import { speakWord } from '../games/english/voice';
 import type { Words } from '../games/english/engine/progress';
@@ -41,7 +44,8 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
 
   let current: Question | null = null;
   let english: { say: string } | null = null;
-  sayBtn.addEventListener('click', () => (english ? void speakWord(english.say) : current && speak(current.speech)));
+  let letterRepeat: (() => void) | null = null;
+  sayBtn.addEventListener('click', () => (letterRepeat ? letterRepeat() : english ? void speakWord(english.say) : current && speak(current.speech)));
 
   function intro() {
     paintProgress();
@@ -49,7 +53,7 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
     body.innerHTML = `
       <div class="intro">
         <div class="intro-emoji">🎮</div>
-        <h2>פותרים ${total === 1 ? 'תרגיל אחד' : `${total} תרגילים`} ומשחקים!</h2>
+        <h2>פותרים ${total === 1 ? 'תרגיל אחד' : counter(`${total} תרגילים`)} ומשחקים!</h2>
         <button class="btn big" id="start">יאללה!</button>
       </div>`;
     body.querySelector('#start')!.addEventListener('click', nextQuestion);
@@ -59,11 +63,16 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
     if (solved >= total) return finish();
     sayBtn.style.visibility = 'visible';
     english = null;
-    const subject = getState().settings.gateSubject;
-    // English (or every second question for "both"): "what did you hear?"; maths when she has not met three words yet
-    if (subject === 'english' || (subject === 'both' && solved % 2 === 1)) {
-      const eq = englishGateQuestion(gameStore('english').load<Words>('words', {}));
+    // what is asked (SPEC: maths, English, letters, or several in turn): English and letters only when she has learned enough, else maths
+    const kinds = gateKinds(getState().settings.gateSubject);
+    const kind = kinds[solved % kinds.length];
+    const learnt = gameStore('english').load<Words>('words', {});
+    if (kind === 'english') {
+      const eq = englishGateQuestion(learnt);
       if (eq) return englishQuestion(eq);
+    } else if (kind === 'letters') {
+      const lq = letterGateQuestion(learnt);
+      if (lq) return letterQuestion(lq);
     }
     const q = (current = generator.next(activeLevel(), getState().settings.enabledTypes));
     let attempts = 0;
@@ -111,6 +120,45 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
         }
       });
     });
+  }
+
+  /** "Which letter says this sound?": the sound is played, three big letters, one tap. */
+  function letterQuestion(lq: NonNullable<ReturnType<typeof letterGateQuestion>>) {
+    english = null;
+    current = null;
+    let locked = false;
+    const playSound = (): void => void speakLetterSound(lq.letter, lq.word);
+    letterRepeat = playSound;
+    body.innerHTML = `
+      <div class="en-gate-head">
+        <button class="en-gate-speaker" id="enSay" type="button" aria-label="שמעי שוב">🔊</button>
+        <div class="en-gate-q" dir="ltr">Which letter says this sound?</div>
+      </div>
+      <div class="choices english-gate">
+        ${lq.choices.map((c) => `<button class="choice" data-v="${c}" aria-label="${c}"><b class="toy-letter" dir="ltr">${c.toUpperCase()}${c}</b></button>`).join('')}
+      </div>`;
+    body.querySelector('#enSay')!.addEventListener('click', playSound);
+    playSound();
+    body.querySelectorAll<HTMLButtonElement>('.choice').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        if (locked) return;
+        if (btn.dataset.v === lq.letter) {
+          locked = true;
+          btn.classList.add('right');
+          body.querySelectorAll<HTMLButtonElement>('.choice').forEach((b) => (b.disabled = b !== btn));
+          sound.play('correct');
+          solved++;
+          paintProgress();
+          progress.children[solved - 1]?.classList.add('pop');
+          later(nextQuestion, 900);
+        } else {
+          btn.classList.add('wrong');
+          btn.disabled = true;
+          sound.play('oops');
+          later(playSound, 500);
+        }
+      }),
+    );
   }
 
   /** "What did you hear?": the word is said, three pictures, one tap. */

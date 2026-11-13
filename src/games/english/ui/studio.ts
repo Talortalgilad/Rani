@@ -4,6 +4,7 @@ import { allClips, canonicalClip, clipsOfTrack, soundClips, type Clip, type Trac
 import { resetRecorded, speakWord } from '../voice';
 import { clipIds, getClip, putClip } from '../voiceStore';
 import { gameStore } from '../../../storage';
+import { counter } from '../../../ui/counter';
 
 /**
  * The recording studio (parents' area): the sentences of the game one by one, big, with a microphone to hold while speaking.
@@ -123,18 +124,18 @@ export function openStudio(root: HTMLElement, onBack: () => void): () => void {
         const resume = p[t.id] > 0 && p[t.id] < list.length;
         return `<section class="p-card st-track ${t.id === 'important' ? 'first' : ''}">
           <h2>${t.title} <small>${esc(t.hint)}</small></h2>
-          <div class="st-count">הוקלטו ${n} מתוך ${list.length}</div>
+          <div class="st-count">${counter(`הוקלטו ${n} מתוך ${list.length}`)}</div>
           <div class="st-bar"><i style="width:${(100 * n) / Math.max(1, list.length)}%"></i></div>
           <div class="p-row">
             <button class="btn big" data-start="${t.id}" data-at="${first < 0 ? 0 : first}">${n === 0 ? 'מתחילים' : first < 0 ? 'לעבור על הכל' : 'ההקלטה הבאה'}</button>
-            ${resume ? `<button class="btn alt" data-start="${t.id}" data-at="${p[t.id]}">המשך מאיפה שעצרתי (${p[t.id] + 1})</button>` : ''}
+            ${resume ? `<button class="btn alt" data-start="${t.id}" data-at="${p[t.id]}">${counter(`המשך מאיפה שעצרתי (${p[t.id] + 1})`)}</button>` : ''}
           </div>
         </section>`;
       }).join('')}
       <section class="p-card">
         <h2>גיבוי</h2>
         <div class="p-sub">ייצוא מוריד קובץ zip עם קובץ mp3 לכל משפט, בשם ה-id שלו. ייבוא מחזיר אותם (למשל לטלפון אחר), ואפשר גם להכניס אותם לריפו.</div>
-        <div class="p-row"><button class="btn alt" id="export">⬇ ייצוא הקלטות (${done.size})</button><button class="btn alt" id="import">⬆ ייבוא</button></div>
+        <div class="p-row"><button class="btn alt" id="export">${counter(`⬇ ייצוא הקלטות (${done.size})`)}</button><button class="btn alt" id="import">⬆ ייבוא</button></div>
         <input type="file" id="file" accept=".zip,application/zip" hidden />
       </section>`);
     note = '';
@@ -206,7 +207,7 @@ export function openStudio(root: HTMLElement, onBack: () => void): () => void {
     const c = list[idx];
     const ok = isDone(c);
     shell(`
-      <header class="p-head"><button class="btn alt" id="list">⬅ רשימה</button><h1>${TRACKS.find((t) => t.id === track)!.title}</h1><span class="st-pos">${idx + 1} מתוך ${list.length}</span></header>
+      <header class="p-head"><button class="btn alt" id="list">⬅ רשימה</button><h1>${TRACKS.find((t) => t.id === track)!.title}</h1><span class="st-pos">${counter(`${idx + 1} מתוך ${list.length}`)}</span></header>
       <div class="st-strip" id="strip">${list.map((x, i) => `<button class="st-chip ${i === idx ? 'now' : ''} ${isDone(x) ? 'ok' : ''}" data-i="${i}" type="button" aria-label="${i + 1}">${isDone(x) ? '✓' : i + 1}</button>`).join('')}</div>
       <section class="st-card">
         <div class="st-id" dir="ltr">${esc(c.id)}</div>

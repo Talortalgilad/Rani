@@ -100,6 +100,7 @@ export function buildTask(env: TaskEnv, word: string, missing: number | null, po
         b.style.translate = '0 0';
         window.setTimeout(() => b.classList.remove('slide-back'), 400);
         if (at >= 0 && !filled.has(at)) {
+          env.confused(letters[at], l);
           env.mistake();
           env.sound('oops');
           env.face('cheer', 'Hmm, try again!');
