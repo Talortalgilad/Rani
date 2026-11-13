@@ -1128,5 +1128,582 @@
     "text": "פארק הנינג׳ה"
    }
   ]
+ },
+ {
+  "take": 108,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_185125_b19ef9f6-fc80-4bad-9503-72cd63893931.mp3",
+  "lines": [
+   {
+    "id": "world_12",
+    "text": "ההופעה הגדולה"
+   },
+   {
+    "id": "c_red",
+    "text": "אדום"
+   },
+   {
+    "id": "c_blue",
+    "text": "כחול"
+   },
+   {
+    "id": "c_yellow",
+    "text": "צהוב"
+   },
+   {
+    "id": "c_pink",
+    "text": "ורוד"
+   },
+   {
+    "id": "c_purple",
+    "text": "סגול"
+   },
+   {
+    "id": "c_green",
+    "text": "ירוק"
+   },
+   {
+    "id": "w_phone",
+    "text": "טלפון"
+   },
+   {
+    "id": "w_tv",
+    "text": "טלוויזיה"
+   },
+   {
+    "id": "w_ball",
+    "text": "כדור"
+   },
+   {
+    "id": "w_doll",
+    "text": "בובה"
+   },
+   {
+    "id": "w_bed",
+    "text": "מיטה"
+   },
+   {
+    "id": "w_book",
+    "text": "ספר"
+   },
+   {
+    "id": "w_box",
+    "text": "קופסה"
+   },
+   {
+    "id": "w_lamp",
+    "text": "מנורה"
+   },
+   {
+    "id": "w_chair",
+    "text": "כיסא"
+   },
+   {
+    "id": "w_pizza",
+    "text": "פיצה"
+   },
+   {
+    "id": "w_cheese",
+    "text": "גבינה"
+   },
+   {
+    "id": "w_pasta",
+    "text": "פסטה"
+   },
+   {
+    "id": "w_meat",
+    "text": "בשר"
+   }
+  ]
+ },
+ {
+  "take": 109,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_185723_b59947e3-e7e7-4e93-9d2b-11f53a4a4b67.mp3",
+  "lines": [
+   {
+    "id": "w_apple",
+    "text": "תפוח"
+   },
+   {
+    "id": "w_banana",
+    "text": "בננה"
+   },
+   {
+    "id": "w_milk",
+    "text": "חלב"
+   },
+   {
+    "id": "w_cake",
+    "text": "עוגה"
+   },
+   {
+    "id": "w_egg",
+    "text": "ביצה"
+   },
+   {
+    "id": "w_slide",
+    "text": "מגלשה"
+   },
+   {
+    "id": "w_swing",
+    "text": "נדנדה"
+   },
+   {
+    "id": "w_tree",
+    "text": "עץ"
+   },
+   {
+    "id": "w_bike",
+    "text": "אופניים"
+   },
+   {
+    "id": "w_skates",
+    "text": "גלגיליות"
+   },
+   {
+    "id": "w_helmet",
+    "text": "קסדה"
+   },
+   {
+    "id": "w_flower",
+    "text": "פרח"
+   },
+   {
+    "id": "w_bench",
+    "text": "ספסל"
+   },
+   {
+    "id": "w_kite",
+    "text": "עפיפון"
+   },
+   {
+    "id": "w_pencil",
+    "text": "עיפרון"
+   },
+   {
+    "id": "w_brush",
+    "text": "מכחול"
+   },
+   {
+    "id": "w_crayons",
+    "text": "צבעי שעווה"
+   },
+   {
+    "id": "w_paper",
+    "text": "נייר"
+   },
+   {
+    "id": "w_palette",
+    "text": "פלטת צבעים"
+   },
+   {
+    "id": "w_scissors",
+    "text": "מספריים"
+   }
+  ]
+ },
+ {
+  "take": 110,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_190837_f90f7449-80dd-460a-9171-aa02ec553732.mp3",
+  "lines": [
+   {
+    "id": "w_glue",
+    "text": "דבק"
+   },
+   {
+    "id": "w_picture",
+    "text": "תמונה"
+   },
+   {
+    "id": "w_easel",
+    "text": "כן ציור"
+   },
+   {
+    "id": "w_candy",
+    "text": "סוכרייה"
+   },
+   {
+    "id": "w_lollipop",
+    "text": "סוכריה על מקל"
+   },
+   {
+    "id": "w_cupcake",
+    "text": "קאפקייק"
+   },
+   {
+    "id": "w_icecream",
+    "text": "גלידה"
+   },
+   {
+    "id": "w_cookie",
+    "text": "עוגייה"
+   },
+   {
+    "id": "w_donut",
+    "text": "סופגנייה"
+   },
+   {
+    "id": "w_chocolate",
+    "text": "שוקולד"
+   },
+   {
+    "id": "w_balloon",
+    "text": "בלון"
+   },
+   {
+    "id": "w_gift",
+    "text": "מתנה"
+   },
+   {
+    "id": "w_brother",
+    "text": "אח"
+   },
+   {
+    "id": "w_sister",
+    "text": "אחות"
+   },
+   {
+    "id": "w_baby",
+    "text": "תינוק"
+   },
+   {
+    "id": "w_grandma",
+    "text": "סבתא"
+   },
+   {
+    "id": "w_grandpa",
+    "text": "סבא"
+   },
+   {
+    "id": "w_family",
+    "text": "משפחה"
+   },
+   {
+    "id": "w_friends",
+    "text": "חברים"
+   },
+   {
+    "id": "w_shirt",
+    "text": "חולצה"
+   }
+  ]
+ },
+ {
+  "take": 111,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_191614_ecaafee9-3111-49c8-b2ec-bad857db2683.mp3",
+  "lines": [
+   {
+    "id": "w_shorts",
+    "text": "מכנסיים קצרים"
+   },
+   {
+    "id": "w_dress",
+    "text": "שמלה"
+   },
+   {
+    "id": "w_skirt",
+    "text": "חצאית"
+   },
+   {
+    "id": "w_shoes",
+    "text": "נעליים"
+   },
+   {
+    "id": "w_socks",
+    "text": "גרביים"
+   },
+   {
+    "id": "w_hat",
+    "text": "כובע"
+   },
+   {
+    "id": "w_jacket",
+    "text": "מעיל"
+   },
+   {
+    "id": "w_jump",
+    "text": "לקפוץ"
+   },
+   {
+    "id": "w_clap",
+    "text": "למחוא כפיים"
+   },
+   {
+    "id": "w_dance",
+    "text": "לרקוד"
+   },
+   {
+    "id": "w_sing",
+    "text": "לשיר"
+   },
+   {
+    "id": "w_run",
+    "text": "לרוץ"
+   },
+   {
+    "id": "w_sleep",
+    "text": "לישון"
+   },
+   {
+    "id": "w_eat",
+    "text": "לאכול"
+   },
+   {
+    "id": "w_drink",
+    "text": "לשתות"
+   },
+   {
+    "id": "w_wave",
+    "text": "לנופף"
+   },
+   {
+    "id": "w_sun",
+    "text": "שמש"
+   },
+   {
+    "id": "w_cloud",
+    "text": "ענן"
+   },
+   {
+    "id": "w_rain",
+    "text": "גשם"
+   },
+   {
+    "id": "w_snowflake",
+    "text": "פתית שלג"
+   }
+  ]
+ },
+ {
+  "take": 112,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_192516_448cc3ff-90f5-4b93-bdca-ec7faf0eea5f.mp3",
+  "lines": [
+   {
+    "id": "w_wind",
+    "text": "רוח"
+   },
+   {
+    "id": "w_rainbow",
+    "text": "קשת"
+   },
+   {
+    "id": "w_umbrella",
+    "text": "מטרייה"
+   },
+   {
+    "id": "w_snowman",
+    "text": "איש שלג"
+   },
+   {
+    "id": "w_storm",
+    "text": "סערה"
+   },
+   {
+    "id": "w_cat",
+    "text": "חתול"
+   },
+   {
+    "id": "w_dog",
+    "text": "כלב"
+   },
+   {
+    "id": "w_lion",
+    "text": "אריה"
+   },
+   {
+    "id": "w_monkey",
+    "text": "קוף"
+   },
+   {
+    "id": "w_fish",
+    "text": "דג"
+   },
+   {
+    "id": "w_bird",
+    "text": "ציפור"
+   },
+   {
+    "id": "w_elephant",
+    "text": "פיל"
+   },
+   {
+    "id": "w_giraffe",
+    "text": "ג׳ירפה"
+   },
+   {
+    "id": "w_rabbit",
+    "text": "ארנב"
+   },
+   {
+    "id": "w_rope",
+    "text": "חבל"
+   },
+   {
+    "id": "w_wall",
+    "text": "קיר טיפוס"
+   },
+   {
+    "id": "w_beam",
+    "text": "קורת שיווי משקל"
+   },
+   {
+    "id": "w_bars",
+    "text": "מקבילים"
+   },
+   {
+    "id": "w_tunnel",
+    "text": "מנהרה"
+   },
+   {
+    "id": "w_crate",
+    "text": "ארגז"
+   }
+  ]
+ },
+ {
+  "take": 113,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_193347_19c68fe2-7d6b-42f6-a79f-1b4fcd837622.mp3",
+  "lines": [
+   {
+    "id": "w_bridge",
+    "text": "גשר"
+   },
+   {
+    "id": "w_mat",
+    "text": "מזרן"
+   },
+   {
+    "id": "w_ladder",
+    "text": "סולם"
+   },
+   {
+    "id": "w_stage",
+    "text": "במה"
+   },
+   {
+    "id": "w_microphone",
+    "text": "מיקרופון"
+   },
+   {
+    "id": "w_guitar",
+    "text": "גיטרה"
+   },
+   {
+    "id": "w_drum",
+    "text": "תוף"
+   },
+   {
+    "id": "w_piano",
+    "text": "פסנתר"
+   },
+   {
+    "id": "w_trumpet",
+    "text": "חצוצרה"
+   },
+   {
+    "id": "w_star",
+    "text": "כוכב"
+   },
+   {
+    "id": "w_crown",
+    "text": "כתר"
+   },
+   {
+    "id": "w_flowers",
+    "text": "זר פרחים"
+   },
+   {
+    "id": "name.cheesy",
+    "text": "צ׳יזי"
+   },
+   {
+    "id": "name.mozzi",
+    "text": "מוצי"
+   },
+   {
+    "id": "name.horiko",
+    "text": "חוריקו"
+   },
+   {
+    "id": "name.popcheese",
+    "text": "פופצ׳יז"
+   },
+   {
+    "id": "name.rani",
+    "text": "רני"
+   }
+  ]
+ },
+ {
+  "take": 114,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_194301_0b71cc92-f569-4e73-a464-4ecf600e1700.mp3",
+  "lines": [
+   {
+    "id": "blk_journey",
+    "text": "המסע"
+   },
+   {
+    "id": "blk_freePlay",
+    "text": "משחק חופשי"
+   },
+   {
+    "id": "blk_next",
+    "text": "הבא"
+   },
+   {
+    "id": "blk_again",
+    "text": "עוד פעם"
+   },
+   {
+    "id": "blk_map",
+    "text": "מפה"
+   },
+   {
+    "id": "blk_hard",
+    "text": "קשה!"
+   },
+   {
+    "id": "blk_boss",
+    "text": "שלב בוס"
+   },
+   {
+    "id": "blk_wave",
+    "text": "לוח נקי, ממשיכים!"
+   },
+   {
+    "id": "blk_tut_row",
+    "text": "גררי את הצורה כדי להשלים שורה!"
+   },
+   {
+    "id": "blk_tut_col",
+    "text": "עכשיו נשלים עמודה!"
+   },
+   {
+    "id": "blk_tut_square",
+    "text": "ועכשיו ריבוע של שלוש על שלוש!"
+   },
+   {
+    "id": "blk_prize",
+    "text": "קיבלת יהלום!"
+   },
+   {
+    "id": "blk_cheer",
+    "text": "את יכולה! עוד קצת!"
+   },
+   {
+    "id": "mm_player1",
+    "text": "שחקן אחד"
+   },
+   {
+    "id": "mm_player2",
+    "text": "שחקן שתיים"
+   }
+  ]
  }
 ]
