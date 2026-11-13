@@ -16,13 +16,13 @@ export const fromY = (v: View, py: number): number => (v.y0 - py) / v.s;
 
 /** The view of a canvas of W x H px: the ten units of height fill it; `overview` shows the whole world. */
 export function makeView(W: number, H: number, x0: number, overview: boolean): View {
-  const top = Math.max(76, H * 0.11);
-  const bottom = Math.max(124, H * 0.17);
-  const full = (H - top - bottom) / WORLD_H;
-  const s = overview ? Math.min(full, W / (WORLD_W + 2)) : full;
-  const y0 = overview ? H - bottom - (WORLD_H * (full - s)) / 2 : H - bottom;
-  return { x0: overview ? -1 : x0, s, y0: overview ? Math.max(y0, H * 0.7) : y0, W, H };
+  // about 11 units of the width are on the screen; the ground below the track is at most 12% of the height
+  const full = W / VISIBLE_W;
+  const groundH = H * 0.115;
+  const s = overview ? W / (WORLD_W + 2) : full;
+  return { x0: overview ? -1 : x0, s, y0: H - groundH, W, H };
 }
+export const VISIBLE_W = 11;
 
 export interface Look {
   /** the colour of the track */
@@ -279,11 +279,12 @@ export function drawTrain(g: CanvasRenderingContext2D, v: View, path: Path, s: n
     // the rider
     const img = look.riders[c];
     const down = p.th < -0.25 && speed > 1.5;
-    if (img && img.complete && img.naturalWidth) g.drawImage(img, -k * 0.34, -h - k * 0.72, k * 0.68, k * 0.68);
+    // the rider sits in the car: the lower part is behind the car's side, so that only the upper half is seen
+    if (img && img.complete && img.naturalWidth) g.drawImage(img, -k * 0.34, -h - k * 0.42, k * 0.68, k * 0.68);
     else {
       g.fillStyle = '#ffe9a8';
       g.beginPath();
-      g.arc(0, -h - k * 0.32, k * 0.3, 0, Math.PI * 2);
+      g.arc(0, -h - k * 0.05, k * 0.3, 0, Math.PI * 2);
       g.fill();
     }
     if (down) {
@@ -291,10 +292,10 @@ export function drawTrain(g: CanvasRenderingContext2D, v: View, path: Path, s: n
       g.lineWidth = Math.max(3, k * 0.08);
       g.lineCap = 'round';
       g.beginPath();
-      g.moveTo(-k * 0.3, -h - k * 0.2);
-      g.lineTo(-k * 0.42, -h - k * 0.7 - Math.sin(t * 14 + c) * k * 0.04);
-      g.moveTo(k * 0.3, -h - k * 0.2);
-      g.lineTo(k * 0.42, -h - k * 0.7 + Math.sin(t * 14 + c) * k * 0.04);
+      g.moveTo(-k * 0.26, -h);
+      g.lineTo(-k * 0.4, -h - k * 0.5 - Math.sin(t * 14 + c) * k * 0.04);
+      g.moveTo(k * 0.26, -h);
+      g.lineTo(k * 0.4, -h - k * 0.5 + Math.sin(t * 14 + c) * k * 0.04);
       g.stroke();
     }
     // the car: a round box in candy colours

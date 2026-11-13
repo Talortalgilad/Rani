@@ -19,6 +19,7 @@ let root: HTMLElement | null = null;
 let builder: Builder | null = null;
 let ride3d: Ride3D | null = null;
 let sayTimer = 0;
+let companionSrc = '';
 let lookBefore: ReturnType<typeof getLook> | null = null;
 const base = (): string => import.meta.env.BASE_URL;
 const TRACK_COLOR = '#ff5d8f';
@@ -37,6 +38,7 @@ function riders(): (HTMLImageElement | null)[] {
   lookBefore ??= { ...getLook() };
   setLook({ buddy: en?.buddy ?? null, accessory: null });
   const first = en?.buddy ? squishyUrl(en.buddy) : `${base()}english/cheesy/happy.webp`;
+  companionSrc = first;
   return [img(first), img(`${base()}english/words/mom.webp`), img(`${base()}english/words/dad.webp`)];
 }
 
@@ -112,6 +114,7 @@ async function go3d(): Promise<void> {
       calm: ctx.load<boolean>('calm', false),
       tier,
       color: TRACK_COLOR,
+      companionUrl: companionSrc,
       seed: Math.round(cur.path.s[cur.path.n - 1] * 100),
       sound: ctx.sound,
       onEnd: () => root?.classList.add('ride3d-done'),

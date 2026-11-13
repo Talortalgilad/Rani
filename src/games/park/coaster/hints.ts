@@ -11,6 +11,9 @@ export interface Diagnosis {
   /** the point where the car stopped (or where the track ends) */
   x: number;
   y: number;
+  /** the place to mark: the top of the hill that is too high (the stop for the loop, the end of the track when it is short) */
+  mx: number;
+  my: number;
   /** the highest the car could get at that point: the dashed line */
   capY: number;
   /** the control point at the top of the hill that is too high (for high and first) */
@@ -24,15 +27,21 @@ export function diagnose(t: Track, path: Path, ride: Ride): Diagnosis | null {
   const stop = at(path, stopS);
   if (ride.outcome === 'short') {
     const last = t.pts[t.pts.length - 1];
-    return { kind: 'short', x: last.x, y: last.y, capY: last.y, peak: null };
+    return { kind: 'short', x: last.x, y: last.y, mx: last.x, my: last.y, capY: last.y, peak: null };
   }
-  if (ride.outcome === 'loop') return { kind: 'loop', x: stop.x, y: stop.y, capY: stop.y, peak: null };
+  if (ride.outcome === 'loop') return { kind: 'loop', x: stop.x, y: stop.y, mx: stop.x, my: stop.y, capY: stop.y, peak: null };
   // the hill that the car could not climb: the next top ahead of the stop
   let k = path.ctrlS.findIndex((s) => s > stopS - 0.05);
   if (k < 0) k = t.pts.length - 1;
   while (k + 1 < t.pts.length && t.pts[k + 1].y >= t.pts[k].y) k++;
   const peak = k;
-  return { kind: t.pts[peak].y > CREST.y + 0.05 ? 'first' : 'high', x: stop.x, y: stop.y, capY: stop.y, peak };
+  // "the first hill must be the highest" only when the car already stops on the second hill (the first one that was drawn) and it is higher than the first
+  // hill (the crest of the lift); on any other hill the hint is just "this hill is too high"
+  let hills = 0;
+  for (let i = 1; i <= peak; i++) if (t.pts[i].y >= t.pts[i - 1].y && (i + 1 >= t.pts.length || t.pts[i + 1].y < t.pts[i].y)) hills++;
+  const second = hills <= 1;
+  const top = t.pts[peak];
+  return { kind: second && top.y > CREST.y + 0.05 ? 'first' : 'high', x: stop.x, y: stop.y, mx: top.x, my: top.y, capY: stop.y, peak };
 }
 
 /** Slopes that are too steep after a change are brought back, from the left to the right (the end station stays). */

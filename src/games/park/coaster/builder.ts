@@ -307,7 +307,12 @@ export class Builder {
     this.dirty = true;
   }
 
-  private carPose(): { s: number; v: number } {
+  /** the time of the ride now, in seconds (for the screenshots) */
+  get rideTime(): number {
+    return this.rideT;
+  }
+
+  carPose(): { s: number; v: number } {
     return this.ride ? sample(this.ride, this.rideT) : { s: 0, v: 0 };
   }
 
@@ -328,7 +333,7 @@ export class Builder {
       this.mode = 'build';
       this.hooks.onMode('build', true);
       if (this.diag) {
-        this.x0 = Math.max(0, this.diag.x - (this.W / this.view.s) * 0.5);
+        this.x0 = Math.max(-1.6, this.diag.mx - (this.W / this.view.s) * 0.5);
         this.updateView();
       }
     }
@@ -393,7 +398,7 @@ export class Builder {
     drawStations(g, v, this.path);
     drawTrack(g, v, this.path, this.look.track);
     if (this.mode === 'build') {
-      if (this.diag) drawStop(g, v, this.diag.x, this.diag.y, this.diag.capY, this.time);
+      if (this.diag) drawStop(g, v, this.diag.mx, this.diag.my, this.diag.capY, this.time);
       drawHandles(g, v, this.track, this.selected);
       if (this.track.pts.length <= 1) drawHand(g, v, this.time);
       // the end of the track that is being drawn: a ring to start from

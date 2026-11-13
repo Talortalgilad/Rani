@@ -4,7 +4,7 @@
  */
 export interface Pt { x: number; y: number }
 
-export const WORLD_W = 30;
+export const WORLD_W = 24;
 export const WORLD_H = 10;
 export const G = 9;
 /** the steepest slope of a track: 70 degrees */

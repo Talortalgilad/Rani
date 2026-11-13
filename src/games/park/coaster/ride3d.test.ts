@@ -4,7 +4,7 @@ import { buildPath, finish, newTrack, addLoop } from './track';
 
 describe('the bends of the 3D track', () => {
   const t = newTrack();
-  for (const [x, y] of [[8, 0.9], [11, 0.9], [16, 1.6], [21, 2.6], [24, 1.8], [26.4, 1.6]]) t.pts.push({ x, y });
+  for (const [x, y] of [[8, 0.9], [10.8, 0.9], [13, 1.6], [16, 2.6], [18.5, 1.8], [20.4, 1.6]]) t.pts.push({ x, y });
   addLoop(t, 8);
   finish(t);
   const p = buildPath(t);
@@ -12,7 +12,7 @@ describe('the bends of the 3D track', () => {
     let a = 0;
     for (let s = 0; s < p.s[p.n - 1]; s += 0.5) a = Math.max(a, Math.abs(sway(p, s, 7)));
     expect(a).toBeLessThan(6.5);
-    const m = p.loopS![1] + 14;
+    const m = (p.loopS![1] + p.endS) / 2;
     expect(sway(p, m, 7)).toBe(sway(p, m, 7));
     expect(sway(p, m, 7)).not.toBe(sway(p, m, 8));
   });

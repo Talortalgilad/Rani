@@ -16,6 +16,8 @@ export interface Ride3DOptions {
   /** the colour of the track and a number that makes the bends of the track always the same for it */
   color: string;
   seed: number;
+  /** the picture of the companion (the squishy she chose, or Cheesy): his top is seen at the bottom of the screen */
+  companionUrl?: string;
   sound: SoundApi;
   /** the ride is over (the car stopped at the station) */
   onEnd(): void;
@@ -27,6 +29,9 @@ export interface Ride3D {
   /** hands up and "wheee!" (a tap on the screen) */
   cheer(): void;
   dispose(): void;
+  /** jumps to a moment of the ride, in seconds (for the screenshots), and to the middle of the loop (false when there is no loop) */
+  seek(t: number): void;
+  seekLoop(fraction: number): boolean;
   /** for tests and the numbers of the display */
   stats(): { calls: number; triangles: number };
 }
@@ -135,7 +140,7 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   };
   scene.add(new T.Mesh(railGeo(-1), railMat), new T.Mesh(railGeo(1), railMat));
   const tieGeo = keep(new T.BoxGeometry(0.8, 0.05, 0.1));
-  const tieMat = keep(new T.MeshStandardMaterial({ color: '#5a3a6a', roughness: 0.8 }));
+  const tieMat = keep(new T.MeshStandardMaterial({ color: '#ffd9ec', roughness: 0.7 }));
   const ties = new T.InstancedMesh(tieGeo, tieMat, Math.ceil(n / 3));
   const m4 = new T.Matrix4();
   let nt = 0;
@@ -146,7 +151,7 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   ties.count = nt;
   scene.add(ties);
   const pillarGeo = keep(new T.CylinderGeometry(0.07, 0.09, 1, 6));
-  const pillarMat = keep(new T.MeshStandardMaterial({ color: '#8a6aa8', roughness: 0.7 }));
+  const pillarMat = keep(new T.MeshStandardMaterial({ color: '#e3d2f7', roughness: 0.7 }));
   const pillars: T.Matrix4[] = [];
   let lastX = -9;
   for (let i = 0; i < n; i += 4) {
@@ -169,50 +174,122 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
     return m;
   });
 
-  // ---- the land: the ground, hills, lollipop trees, clouds ----
-  const ground = new T.Mesh(keep(new T.PlaneGeometry(500, 500)), keep(new T.MeshStandardMaterial({ color: '#ffc4de', roughness: 1 })));
+  // ---- the front of the first car and the top of the companion, at the bottom of the view ----
+  const cockpit = new T.Group();
+  const nose = new T.Mesh(carGeo, keep(new T.MeshStandardMaterial({ color: carColors[0], roughness: 0.3 })));
+  nose.scale.set(1.15, 0.8, 1.3);
+  nose.position.set(0, -0.78, -1.15);
+  cockpit.add(nose);
+  if (o.companionUrl) {
+    const im = new Image();
+    im.onload = () => {
+      if (disposedFlag) return;
+      const c = document.createElement('canvas');
+      c.width = c.height = 256;
+      c.getContext('2d')!.drawImage(im, 0, 0, 256, 256);
+      const tex = keep(new T.CanvasTexture(c));
+      tex.colorSpace = T.SRGBColorSpace;
+      const sp = new T.Sprite(keep(new T.SpriteMaterial({ map: tex, transparent: true })));
+      sp.scale.set(0.42, 0.42, 1);
+      sp.position.set(0, -0.5, -1.0);
+      cockpit.add(sp);
+    };
+    im.src = o.companionUrl;
+  }
+  cam.add(cockpit);
+  scene.add(cam);
+  let disposedFlag = false;
+
+  // ---- the land: grass, hills far and near, candy trees on both sides of the track, clouds, and things that pass close by ----
+  const grassTex = ((): T.Texture => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const g = c.getContext('2d')!;
+    g.fillStyle = '#8fe07a';
+    g.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 90; i++) {
+      g.fillStyle = i % 2 ? 'rgba(190,255,150,.55)' : 'rgba(90,190,100,.35)';
+      g.beginPath();
+      g.ellipse(Math.random() * 128, Math.random() * 128, 4 + Math.random() * 7, 2 + Math.random() * 3, Math.random() * 3, 0, Math.PI * 2);
+      g.fill();
+    }
+    const tex = keep(new T.CanvasTexture(c));
+    tex.wrapS = tex.wrapT = T.RepeatWrapping;
+    tex.repeat.set(60, 60);
+    tex.colorSpace = T.SRGBColorSpace;
+    return tex;
+  })();
+  const ground = new T.Mesh(keep(new T.PlaneGeometry(500, 500)), keep(new T.MeshStandardMaterial({ map: grassTex, roughness: 1 })));
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
   const rnd = ((): (() => number) => {
     let a = o.seed + 17;
     return () => ((a = (a * 1664525 + 1013904223) >>> 0) / 4294967296);
   })();
+  const zAtX = (x: number): number => {
+    const i = Math.min(n - 1, Math.max(0, Math.round((x - P[0].x) / ((P[n - 1].x - P[0].x) / (n - 1)))));
+    return P[i].z;
+  };
   const hillGeo = keep(new T.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2));
-  const hillMat = keep(new T.MeshStandardMaterial({ color: '#c9f0dd', roughness: 1 }));
-  const hills = new T.InstancedMesh(hillGeo, hillMat, 14);
-  for (let i = 0; i < 14; i++) {
+  const hillMat = keep(new T.MeshStandardMaterial({ color: '#ffffff', roughness: 1 }));
+  const hills = new T.InstancedMesh(hillGeo, hillMat, 22);
+  const hillColors = ['#e7d4ff', '#c9f0dd', '#ffd6ea', '#d6e8ff'];
+  const colh = new T.Color();
+  for (let i = 0; i < 22; i++) {
     const side = i % 2 ? 1 : -1;
-    const sc = 5 + rnd() * 7;
-    hills.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(i * 2.4 - 4, 0, side * (22 + rnd() * 25)), new T.Quaternion(), new T.Vector3(sc * 1.6, sc * 0.8, sc)));
+    const far = i < 10;
+    const sc = far ? 14 + rnd() * 12 : 6 + rnd() * 6;
+    hills.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(-10 + (i / 22) * 70 + rnd() * 6, 0, side * (far ? 70 + rnd() * 40 : 24 + rnd() * 16)), new T.Quaternion(), new T.Vector3(sc * 1.7, sc * 0.75, sc)));
+    hills.setColorAt(i, colh.set(hillColors[i % hillColors.length]));
   }
   scene.add(hills);
   const stemGeo = keep(new T.CylinderGeometry(0.06, 0.06, 1, 5));
   const stemMat = keep(new T.MeshStandardMaterial({ color: '#ffffff' }));
   const popGeo = keep(new T.SphereGeometry(0.5, 10, 8));
   const popMat = keep(new T.MeshStandardMaterial({ color: '#ffffff', roughness: 0.4 }));
-  const trees = o.tier === 'high' ? 46 : 26;
+  const trees = o.tier === 'high' ? 90 : 48;
   const stems = new T.InstancedMesh(stemGeo, stemMat, trees);
   const pops = new T.InstancedMesh(popGeo, popMat, trees);
   const col = new T.Color();
   const palette = ['#ff5d8f', '#ffb84d', '#7ad7ff', '#b58cff', '#8fe36b'];
+  const x0 = P[0].x + 2, x1 = P[n - 1].x + 4;
   for (let i = 0; i < trees; i++) {
-    const x = rnd() * 32 - 2;
-    const z = (rnd() < 0.5 ? -1 : 1) * (4 + rnd() * 14);
-    const h = 1.2 + rnd() * 1.8;
+    const x = x0 + ((i + rnd() * 0.8) / trees) * (x1 - x0);
+    const z = zAtX(x) + (i % 2 ? 1 : -1) * (3.5 + rnd() * 11);
+    const h = 1.4 + rnd() * 2.2;
     stems.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(x, h / 2, z), new T.Quaternion(), new T.Vector3(1, h, 1)));
-    const r = 0.7 + rnd() * 0.5;
-    pops.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(x, h + r * 0.3, z), new T.Quaternion(), new T.Vector3(r, r, r)));
+    const r = 0.8 + rnd() * 0.7;
+    pops.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(x, h + r * 0.35, z), new T.Quaternion(), new T.Vector3(r, r, r)));
     pops.setColorAt(i, col.set(palette[i % palette.length]));
   }
   scene.add(stems, pops);
   const cloudGeo = keep(new T.SphereGeometry(1, 10, 8));
   const cloudMat = keep(new T.MeshStandardMaterial({ color: '#ffffff', roughness: 1 }));
-  const clouds = new T.InstancedMesh(cloudGeo, cloudMat, 18);
-  for (let i = 0; i < 18; i++) {
-    const cx = (i % 6) * 6 + rnd() * 3, cy = 13 + rnd() * 6, cz = (i < 9 ? -1 : 1) * (14 + rnd() * 12);
-    clouds.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(cx, cy, cz), new T.Quaternion(), new T.Vector3(3 + rnd() * 2, 1.1, 1.8)));
+  const clouds = new T.InstancedMesh(cloudGeo, cloudMat, 26);
+  for (let i = 0; i < 26; i++) {
+    const cx = -4 + (i % 13) * 3.4 + rnd() * 2, cy = 12 + rnd() * 9, cz = (i < 13 ? -1 : 1) * (14 + rnd() * 22);
+    clouds.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(cx, cy, cz), new T.Quaternion(), new T.Vector3(3 + rnd() * 2.5, 1.2, 1.9)));
   }
   scene.add(clouds);
+  // posts with flags close to the track, one every few units on both sides: they rush by and give the feeling of speed
+  const postGeo = keep(new T.CylinderGeometry(0.05, 0.05, 1, 5));
+  const flagGeo = keep(new T.BoxGeometry(0.75, 0.42, 0.03));
+  const posts: { x: number; z: number; h: number; c: string }[] = [];
+  for (let i = 3; i < n - 3; i += 22) {
+    const k = Math.min(path.n - 1, i * stride);
+    if (path.inLoop[k] || P[i].y < 0.2) continue;
+    for (const side of [-1, 1]) posts.push({ x: P[i].x + 0.0, z: P[i].z + side * 2.2, h: 1.6 + (i % 3) * 0.3, c: palette[(i + (side > 0 ? 2 : 0)) % palette.length] });
+  }
+  const postMesh = new T.InstancedMesh(postGeo, stemMat, Math.max(1, posts.length));
+  const flagMesh = new T.InstancedMesh(flagGeo, popMat, Math.max(1, posts.length));
+  posts.forEach((q, i) => {
+    const gy = 0;
+    postMesh.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(q.x, gy + q.h / 2, q.z), new T.Quaternion(), new T.Vector3(1, q.h, 1)));
+    flagMesh.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(q.x + 0.38, gy + q.h - 0.25, q.z), new T.Quaternion(), new T.Vector3(1, 1, 1)));
+    flagMesh.setColorAt(i, col.set(q.c));
+  });
+  postMesh.count = flagMesh.count = posts.length;
+  scene.add(postMesh, flagMesh);
   // the station banner at the end
   const banner = new T.Mesh(keep(new T.BoxGeometry(0.1, 2.4, 0.1)), keep(new T.MeshStandardMaterial({ color: '#ffffff' })));
   banner.position.set(END.x + 1.4, 1.2, 0);
@@ -224,6 +301,7 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   let endAt = -1;
   let hands = 0;
   let disposed = false;
+  const sampleFns = { dur: duration(ride) };
   let raf = 0;
   let last = performance.now();
   let tick = 0;
@@ -257,6 +335,7 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
       const m = new T.Matrix4().makeBasis(q.t, q.u, q.r);
       c.quaternion.setFromRotationMatrix(m);
       c.visible = camMode === 'side' || k > 0;
+      cockpit.visible = camMode === 'first';
     });
     const q = poseAt(s);
     const speed = Math.abs(v);
@@ -270,10 +349,10 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
       cam.up.copy(q.u);
       cam.lookAt(ahead.p.clone().addScaledVector(ahead.u, 0.45));
     } else {
-      cam.fov = 55;
+      cam.fov = 62;
       cam.updateProjectionMatrix();
       const target = q.p.clone();
-      cam.position.set(target.x - 2, target.y + 3.2, target.z + 11);
+      cam.position.set(target.x - 1.5, target.y + 2.2, target.z + 3.2);
       cam.up.set(0, 1, 0);
       cam.lookAt(target);
     }
@@ -299,6 +378,15 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
 
   return {
     setCamera: (c) => void (camMode = c),
+    seek: (x) => void (t = Math.min(sampleFns.dur, Math.max(0, x))),
+    seekLoop: (f) => {
+      if (!path.loopS) return false;
+      const target = path.loopS[0] + (path.loopS[1] - path.loopS[0]) * f;
+      let k = 0;
+      while (k < ride.s.length - 1 && ride.s[k] < target) k++;
+      t = ride.t[k];
+      return true;
+    },
     cheer: () => {
       hands = 1;
       o.sound.play('wheee');
@@ -306,10 +394,11 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
     stats: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles }),
     dispose: () => {
       disposed = true;
+      disposedFlag = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
       disposables.forEach((d) => d.dispose());
-      [hills, stems, pops, clouds, ties, pil].forEach((m) => m.dispose());
+      [hills, stems, pops, clouds, ties, pil, postMesh, flagMesh].forEach((m) => m.dispose());
       renderer.dispose();
       renderer.forceContextLoss();
       renderer.domElement.remove();

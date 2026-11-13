@@ -10,7 +10,7 @@ function make(points: [number, number][], loopAt: number | null = null): Track {
   finish(t);
   return t;
 }
-const EASY: [number, number][] = [[8, 3], [11, 0.8], [15, 3.5], [19, 0.8], [23, 3], [26.4, 1.6]];
+const EASY: [number, number][] = [[8.5, 3], [10.8, 0.8], [13.5, 3.5], [16, 0.8], [18.5, 3], [20.4, 1.6]];
 
 describe('drawing a track', () => {
   it('the points go only to the right, and the slope never passes 70 degrees', () => {
@@ -37,7 +37,7 @@ describe('drawing a track', () => {
   });
 
   it('the track is complete only when it reaches the station, and "delete" takes it back from a point to the end', () => {
-    const t = make([[8, 3], [11, 1]]);
+    const t = make([[8, 3], [10.5, 1]]);
     expect(t.complete).toBe(false);
     const u = make(EASY);
     expect(u.complete).toBe(true);
@@ -54,7 +54,7 @@ describe('drawing a track', () => {
     expect(pathLength(p)).toBeGreaterThan(30);
     let maxTurn = 0;
     for (let i = 2; i < p.n; i++) maxTurn = Math.max(maxTurn, Math.abs(p.th[i] - p.th[i - 1]));
-    expect(maxTurn).toBeLessThan(0.15);
+    expect(maxTurn).toBeLessThan(0.17);
   });
 });
 
@@ -88,7 +88,7 @@ describe('the ride', () => {
   });
 
   it('a hill that is too high: the car slows down, stops, rolls back into the valley, and nothing breaks', () => {
-    const p = buildPath(make([[8, 3], [11, 1], [15, 8.8], [19, 1], [23, 3], [26.4, 1.6]]));
+    const p = buildPath(make([[8, 3], [10, 1], [13, 8.8], [16.2, 1], [18.2, 3], [20.4, 1.6]]));
     const r = simulate(p);
     expect(r.outcome).toBe('stalled');
     expect(r.stopS).not.toBeNull();
@@ -99,18 +99,18 @@ describe('the ride', () => {
   });
 
   it('a loop without speed: the car climbs and rolls back; with a deep drop before it, it goes through', () => {
-    const slow = make([[7.5, 5.4], [12, 4.4], [15, 2.8], [19, 1.8], [26.4, 1.6]], 1);
+    const slow = make([[7.5, 5.4], [10.5, 4.4], [13, 2.8], [16, 1.8], [20.4, 1.6]], 1);
     expect(addLoop(slow, 7.5)).toBe(true);
     const s = simulate(buildPath(slow));
     expect(s.outcome).toBe('loop');
-    const fast = make([[7.5, 0.8], [13, 0.8], [17, 2], [26.4, 1.6]], 2);
-    expect(addLoop(fast, 7.5)).toBe(true);
+    const fast = make([[8.5, 0.8], [11.8, 0.8], [15, 2], [20.4, 1.6]], 2);
+    expect(addLoop(fast, 8.5)).toBe(true);
     const f = simulate(buildPath(fast));
     expect(f.outcome).toBe('finished');
   });
 
   it('a track that does not reach the station ends at its last point', () => {
-    const r = simulate(buildPath(make([[8, 3], [11, 1], [14, 3]])));
+    const r = simulate(buildPath(make([[8, 3], [10.5, 1], [13, 3]])));
     expect(r.outcome).toBe('short');
   });
 
@@ -137,34 +137,39 @@ describe('help when the car does not get to the end', () => {
   });
 
   it('a hill that is too high: the stop is marked on the climb, the dashed line is the height of the stop, and the hint is "too high"', () => {
-    const t = make([[8, 3], [11, 1], [15, 3.5], [19, 1], [22.5, 6], [24.8, 2.5], [26.4, 1.6]]);
+    const t = make([[8, 3], [10, 1], [12.3, 4], [14.5, 1], [17, 6.4], [19, 2.5], [20.4, 1.6]]);
     const { d, path, ride } = run(t);
     expect(d?.kind).toBe('high');
     expect(d!.capY).toBeCloseTo(d!.y, 6);
-    expect(d!.y).toBeLessThan(6);
-    expect(d!.x).toBeGreaterThan(19);
-    expect(d!.x).toBeLessThan(22.6);
+    expect(d!.y).toBeLessThan(6.4);
+    expect(d!.x).toBeGreaterThan(14.5);
+    expect(d!.x).toBeLessThan(17.1);
+    expect(d!.mx).toBeCloseTo(17, 6); // the top of the hill is marked, not the stop
+    expect(d!.my).toBeCloseTo(6.4, 6);
     expect(path.n).toBeGreaterThan(0);
     expect(ride.outcome).toBe('stalled');
   });
 
-  it('the hill that is higher than the first one gets "the first hill must be the highest"', () => {
-    const { d } = run(make([[8, 3], [11, 1], [15, 8.8], [19, 1], [23, 3], [26.4, 1.6]]));
+  it('on the second hill, when it is higher than the first one, the hint is "the first hill must be the highest"; on a later one it is just "too high"', () => {
+    const { d } = run(make([[8, 3], [10, 1], [13, 8.8], [16.2, 1], [18.2, 3], [20.4, 1.6]]));
     expect(d?.kind).toBe('first');
+    expect(d!.capY).toBeLessThan(d!.my);
+    // a later hill that is just as high is "too high", not "the first must be the highest"
+    expect(run(make([[8, 3], [10, 1], [12.3, 4], [14.5, 1], [17, 6.4], [19, 2.5], [20.4, 1.6]])).d?.kind).toBe('high');
   });
 
   it('not enough speed for the loop: the hint is about the swing before the loop', () => {
-    const t = make([[7.5, 5.4], [12, 4.4], [15, 2.8], [19, 1.8], [26.4, 1.6]], 1);
+    const t = make([[7.5, 5.4], [10.5, 4.4], [13, 2.8], [16, 1.8], [20.4, 1.6]], 1);
     addLoop(t, 7.5);
     expect(run(t).d?.kind).toBe('loop');
   });
 
   it('a track that stops short of the station: the hint is about the station', () => {
-    expect(run(make([[8, 3], [11, 1], [14, 3]])).d?.kind).toBe('short');
+    expect(run(make([[8, 3], [10.5, 1], [13, 3]])).d?.kind).toBe('short');
   });
 
   it('"fix it for me" lowers the hill that is too high, and then the car gets to the end', () => {
-    for (const pts of [[[8, 3], [11, 1], [15, 3.5], [19, 1], [22.5, 6], [24.8, 2.5], [26.4, 1.6]], [[8, 3], [11, 1], [15, 8.8], [19, 1], [23, 3], [26.4, 1.6]]] as [number, number][][]) {
+    for (const pts of [[[8, 3], [10, 1], [12.3, 4], [14.5, 1], [17, 6.4], [19, 2.5], [20.4, 1.6]], [[8, 3], [10, 1], [13, 8.8], [16.2, 1], [18.2, 3], [20.4, 1.6]]] as [number, number][][]) {
       const t = make(pts);
       for (let k = 0; k < 4; k++) {
         const { d } = run(t);
@@ -176,7 +181,7 @@ describe('help when the car does not get to the end', () => {
   });
 
   it('"fix it for me" gives the loop a deeper drop, and a short track a way down to the station', () => {
-    const t = make([[7.5, 5.4], [12, 4.4], [15, 2.8], [19, 1.8], [26.4, 1.6]], 1);
+    const t = make([[7.5, 5.4], [10.5, 4.4], [13, 2.8], [16, 1.8], [20.4, 1.6]], 1);
     addLoop(t, 7.5);
     for (let k = 0; k < 5; k++) {
       const { d } = run(t);
@@ -184,7 +189,7 @@ describe('help when the car does not get to the end', () => {
       fix(t, d);
     }
     expect(run(t).d).toBeNull();
-    const u = make([[8, 3], [11, 1], [14, 3]]);
+    const u = make([[8, 3], [10.5, 1], [13, 3]]);
     const { d } = run(u);
     expect(fix(u, d!)).toBe(true);
     expect(u.complete).toBe(true);
