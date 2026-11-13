@@ -2048,1059 +2048,3883 @@
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_12",
   "text": "ההופעה הגדולה",
-  "lang": "he",
   "take": 108,
   "dur": 1.51,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "c_red",
   "text": "אדום",
-  "lang": "he",
   "take": 108,
   "dur": 1.16,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "c_blue",
   "text": "כחול",
-  "lang": "he",
   "take": 108,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "c_yellow",
   "text": "צהוב",
-  "lang": "he",
   "take": 108,
   "dur": 0.96,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "c_pink",
   "text": "ורוד",
-  "lang": "he",
   "take": 108,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "c_purple",
   "text": "סגול",
-  "lang": "he",
   "take": 108,
   "dur": 1.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "c_green",
   "text": "ירוק",
-  "lang": "he",
   "take": 108,
   "dur": 1.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_phone",
   "text": "טלפון",
-  "lang": "he",
   "take": 108,
   "dur": 1.06,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_tv",
   "text": "טלוויזיה",
-  "lang": "he",
   "take": 108,
   "dur": 1.18,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_ball",
   "text": "כדור",
-  "lang": "he",
   "take": 108,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_doll",
   "text": "בובה",
-  "lang": "he",
   "take": 108,
   "dur": 0.88,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_bed",
   "text": "מיטה",
-  "lang": "he",
   "take": 108,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_book",
   "text": "ספר",
-  "lang": "he",
   "take": 108,
   "dur": 1.09,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_box",
   "text": "קופסה",
-  "lang": "he",
   "take": 108,
   "dur": 0.96,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_lamp",
   "text": "מנורה",
-  "lang": "he",
   "take": 108,
   "dur": 0.92,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_chair",
   "text": "כיסא",
-  "lang": "he",
   "take": 108,
   "dur": 0.92,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_pizza",
   "text": "פיצה",
-  "lang": "he",
   "take": 108,
   "dur": 0.78,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_cheese",
   "text": "גבינה",
-  "lang": "he",
   "take": 108,
   "dur": 0.96,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_pasta",
   "text": "פסטה",
-  "lang": "he",
   "take": 108,
   "dur": 0.95,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_meat",
   "text": "בשר",
-  "lang": "he",
   "take": 108,
   "dur": 0.93,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_apple",
   "text": "תפוח",
-  "lang": "he",
   "take": 109,
   "dur": 1.1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_banana",
   "text": "בננה",
-  "lang": "he",
   "take": 109,
   "dur": 0.94,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_milk",
   "text": "חלב",
-  "lang": "he",
   "take": 109,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_cake",
   "text": "עוגה",
-  "lang": "he",
   "take": 109,
   "dur": 0.74,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_egg",
   "text": "ביצה",
-  "lang": "he",
   "take": 109,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_slide",
   "text": "מגלשה",
-  "lang": "he",
   "take": 109,
   "dur": 1.05,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_swing",
   "text": "נדנדה",
-  "lang": "he",
   "take": 109,
   "dur": 1.04,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_tree",
   "text": "עץ",
-  "lang": "he",
   "take": 109,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_bike",
   "text": "אופניים",
-  "lang": "he",
   "take": 109,
   "dur": 1.05,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_skates",
   "text": "גלגיליות",
-  "lang": "he",
   "take": 109,
   "dur": 1.3,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_helmet",
   "text": "קסדה",
-  "lang": "he",
   "take": 109,
   "dur": 0.85,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_flower",
   "text": "פרח",
-  "lang": "he",
   "take": 109,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_bench",
   "text": "ספסל",
-  "lang": "he",
   "take": 109,
   "dur": 1.11,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_kite",
   "text": "עפיפון",
-  "lang": "he",
   "take": 109,
   "dur": 1.06,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_pencil",
   "text": "עיפרון",
-  "lang": "he",
   "take": 109,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_brush",
   "text": "מכחול",
-  "lang": "he",
   "take": 109,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_crayons",
   "text": "צבעי שעווה",
-  "lang": "he",
   "take": 109,
   "dur": 1.45,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_paper",
   "text": "נייר",
-  "lang": "he",
   "take": 109,
   "dur": 0.9,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_palette",
   "text": "פלטת צבעים",
-  "lang": "he",
   "take": 109,
   "dur": 1.53,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_scissors",
   "text": "מספריים",
-  "lang": "he",
   "take": 109,
   "dur": 1.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_glue",
   "text": "דבק",
-  "lang": "he",
   "take": 110,
   "dur": 0.88,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_picture",
   "text": "תמונה",
-  "lang": "he",
   "take": 110,
   "dur": 0.75,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_easel",
   "text": "כן ציור",
-  "lang": "he",
   "take": 110,
   "dur": 1.42,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_candy",
   "text": "סוכרייה",
-  "lang": "he",
   "take": 110,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_lollipop",
   "text": "סוכריה על מקל",
-  "lang": "he",
   "take": 110,
   "dur": 1.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_cupcake",
   "text": "קאפקייק",
-  "lang": "he",
   "take": 110,
   "dur": 0.95,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_icecream",
   "text": "גלידה",
-  "lang": "he",
   "take": 110,
   "dur": 0.75,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_cookie",
   "text": "עוגייה",
-  "lang": "he",
   "take": 110,
   "dur": 0.7,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_donut",
   "text": "סופגנייה",
-  "lang": "he",
   "take": 110,
   "dur": 1.04,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_chocolate",
   "text": "שוקולד",
-  "lang": "he",
   "take": 110,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_balloon",
   "text": "בלון",
-  "lang": "he",
   "take": 110,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_gift",
   "text": "מתנה",
-  "lang": "he",
   "take": 110,
   "dur": 0.78,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_brother",
   "text": "אח",
-  "lang": "he",
   "take": 110,
   "dur": 0.71,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_sister",
   "text": "אחות",
-  "lang": "he",
   "take": 110,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_baby",
   "text": "תינוק",
-  "lang": "he",
   "take": 110,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_grandma",
   "text": "סבתא",
-  "lang": "he",
   "take": 110,
   "dur": 0.85,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_grandpa",
   "text": "סבא",
-  "lang": "he",
   "take": 110,
   "dur": 0.75,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_family",
   "text": "משפחה",
-  "lang": "he",
   "take": 110,
   "dur": 0.95,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_friends",
   "text": "חברים",
-  "lang": "he",
   "take": 110,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_shirt",
   "text": "חולצה",
-  "lang": "he",
   "take": 110,
   "dur": 2.13,
   "flag": "long"
  },
  {
+  "lang": "he",
   "id": "w_shorts",
   "text": "מכנסיים קצרים",
-  "lang": "he",
   "take": 111,
   "dur": 1.55,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_dress",
   "text": "שמלה",
-  "lang": "he",
   "take": 111,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_skirt",
   "text": "חצאית",
-  "lang": "he",
   "take": 111,
   "dur": 1.01,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_shoes",
   "text": "נעליים",
-  "lang": "he",
   "take": 111,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_socks",
   "text": "גרביים",
-  "lang": "he",
   "take": 111,
   "dur": 1.05,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_hat",
   "text": "כובע",
-  "lang": "he",
   "take": 111,
   "dur": 0.68,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_jacket",
   "text": "מעיל",
-  "lang": "he",
   "take": 111,
   "dur": 0.79,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_jump",
   "text": "לקפוץ",
-  "lang": "he",
   "take": 111,
   "dur": 1.08,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_clap",
   "text": "למחוא כפיים",
-  "lang": "he",
   "take": 111,
   "dur": 1.37,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_dance",
   "text": "לרקוד",
-  "lang": "he",
   "take": 111,
   "dur": 1.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_sing",
   "text": "לשיר",
-  "lang": "he",
   "take": 111,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_run",
   "text": "לרוץ",
-  "lang": "he",
   "take": 111,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_sleep",
   "text": "לישון",
-  "lang": "he",
   "take": 111,
   "dur": 0.93,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_eat",
   "text": "לאכול",
-  "lang": "he",
   "take": 111,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_drink",
   "text": "לשתות",
-  "lang": "he",
   "take": 111,
   "dur": 1.08,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_wave",
   "text": "לנופף",
-  "lang": "he",
   "take": 111,
   "dur": 1.12,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_sun",
   "text": "שמש",
-  "lang": "he",
   "take": 111,
   "dur": 1.09,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_cloud",
   "text": "ענן",
-  "lang": "he",
   "take": 111,
   "dur": 0.92,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_rain",
   "text": "גשם",
-  "lang": "he",
   "take": 111,
   "dur": 0.99,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_snowflake",
   "text": "פתית שלג",
-  "lang": "he",
   "take": 111,
   "dur": 1.55,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_wind",
   "text": "רוח",
-  "lang": "he",
   "take": 112,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_rainbow",
   "text": "קשת",
-  "lang": "he",
   "take": 112,
   "dur": 0.92,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_umbrella",
   "text": "מטרייה",
-  "lang": "he",
   "take": 112,
   "dur": 0.88,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_snowman",
   "text": "איש שלג",
-  "lang": "he",
   "take": 112,
   "dur": 1.52,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_storm",
   "text": "סערה",
-  "lang": "he",
   "take": 112,
   "dur": 0.9,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_cat",
   "text": "חתול",
-  "lang": "he",
   "take": 112,
   "dur": 0.93,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_dog",
   "text": "כלב",
-  "lang": "he",
   "take": 112,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_lion",
   "text": "אריה",
-  "lang": "he",
   "take": 112,
   "dur": 0.74,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_monkey",
   "text": "קוף",
-  "lang": "he",
   "take": 112,
   "dur": 0.79,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_fish",
   "text": "דג",
-  "lang": "he",
   "take": 112,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_bird",
   "text": "ציפור",
-  "lang": "he",
   "take": 112,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_elephant",
   "text": "פיל",
-  "lang": "he",
   "take": 112,
   "dur": 0.68,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_giraffe",
   "text": "ג׳ירפה",
-  "lang": "he",
   "take": 112,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_rabbit",
   "text": "ארנב",
-  "lang": "he",
   "take": 112,
   "dur": 0.94,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_rope",
   "text": "חבל",
-  "lang": "he",
   "take": 112,
   "dur": 0.9,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_wall",
   "text": "קיר טיפוס",
-  "lang": "he",
   "take": 112,
   "dur": 1.59,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_beam",
   "text": "קורת שיווי משקל",
-  "lang": "he",
   "take": 112,
   "dur": 1.9,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_bars",
   "text": "מקבילים",
-  "lang": "he",
   "take": 112,
   "dur": 1.2,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_tunnel",
   "text": "מנהרה",
-  "lang": "he",
   "take": 112,
   "dur": 0.93,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_crate",
   "text": "ארגז",
-  "lang": "he",
   "take": 112,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_bridge",
   "text": "גשר",
-  "lang": "he",
   "take": 113,
   "dur": 0.93,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_mat",
   "text": "מזרן",
-  "lang": "he",
   "take": 113,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_ladder",
   "text": "סולם",
-  "lang": "he",
   "take": 113,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_stage",
   "text": "במה",
-  "lang": "he",
   "take": 113,
   "dur": 0.79,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_microphone",
   "text": "מיקרופון",
-  "lang": "he",
   "take": 113,
   "dur": 1.08,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_guitar",
   "text": "גיטרה",
-  "lang": "he",
   "take": 113,
   "dur": 1.01,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_drum",
   "text": "תוף",
-  "lang": "he",
   "take": 113,
   "dur": 0.75,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_piano",
   "text": "פסנתר",
-  "lang": "he",
   "take": 113,
   "dur": 1.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_trumpet",
   "text": "חצוצרה",
-  "lang": "he",
   "take": 113,
   "dur": 1.05,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_star",
   "text": "כוכב",
-  "lang": "he",
   "take": 113,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_crown",
   "text": "כתר",
-  "lang": "he",
   "take": 113,
   "dur": 0.84,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "w_flowers",
   "text": "זר פרחים",
-  "lang": "he",
   "take": 113,
   "dur": 3.24,
   "flag": "long"
  },
  {
+  "lang": "he",
   "id": "name.cheesy",
   "text": "צ׳יזי",
-  "lang": "he",
   "take": 113,
   "dur": 0.78,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "name.mozzi",
   "text": "מוצי",
-  "lang": "he",
   "take": 113,
   "dur": 0.83,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "name.horiko",
   "text": "חוריקו",
-  "lang": "he",
   "take": 113,
   "dur": 0.99,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "name.popcheese",
   "text": "פופצ׳יז",
-  "lang": "he",
   "take": 113,
   "dur": 1.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "name.rani",
   "text": "רני",
-  "lang": "he",
   "take": 113,
   "dur": 0.76,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_journey",
   "text": "המסע",
-  "lang": "he",
   "take": 114,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_freePlay",
   "text": "משחק חופשי",
-  "lang": "he",
   "take": 114,
   "dur": 1.67,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_next",
   "text": "הבא",
-  "lang": "he",
   "take": 114,
   "dur": 0.63,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_again",
   "text": "עוד פעם",
-  "lang": "he",
   "take": 114,
   "dur": 0.88,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_map",
   "text": "מפה",
-  "lang": "he",
   "take": 114,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_hard",
   "text": "קשה!",
-  "lang": "he",
   "take": 114,
   "dur": 1.08,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_boss",
   "text": "שלב בוס",
-  "lang": "he",
   "take": 114,
   "dur": 1.72,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_wave",
   "text": "לוח נקי, ממשיכים!",
-  "lang": "he",
   "take": 114,
   "dur": 2.27,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_tut_row",
   "text": "גררי את הצורה כדי להשלים שורה!",
-  "lang": "he",
   "take": 114,
   "dur": 3.12,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_tut_col",
   "text": "עכשיו נשלים עמודה!",
-  "lang": "he",
   "take": 114,
   "dur": 2.06,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_tut_square",
   "text": "ועכשיו ריבוע של שלוש על שלוש!",
-  "lang": "he",
   "take": 114,
   "dur": 3.12,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_prize",
   "text": "קיבלת יהלום!",
-  "lang": "he",
   "take": 114,
   "dur": 1.25,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_cheer",
   "text": "את יכולה! עוד קצת!",
-  "lang": "he",
   "take": 114,
   "dur": 2.17,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_player1",
   "text": "שחקן אחד",
-  "lang": "he",
   "take": 114,
   "dur": 1.42,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_player2",
   "text": "שחקן שתיים",
-  "lang": "he",
   "take": 114,
   "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "id": "let_s_go",
+  "text": "Let's go!",
+  "lang": "en",
+  "take": 200,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "help_help",
+  "text": "Help! Help!",
+  "lang": "en",
+  "take": 200,
+  "dur": 2.12,
+  "flag": ""
+ },
+ {
+  "id": "great_job",
+  "text": "Great job!",
+  "lang": "en",
+  "take": 200,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "hmm_try_again",
+  "text": "Hmm, try again!",
+  "lang": "en",
+  "take": 200,
+  "dur": 1.6,
+  "flag": ""
+ },
+ {
+  "id": "almost_try_again",
+  "text": "Almost! Try again!",
+  "lang": "en",
+  "take": 200,
+  "dur": 2.29,
+  "flag": ""
+ },
+ {
+  "id": "great_try",
+  "text": "Great try!",
+  "lang": "en",
+  "take": 200,
+  "dur": 1.45,
+  "flag": ""
+ },
+ {
+  "id": "can_you_say_it_again",
+  "text": "Can you say it again?",
+  "lang": "en",
+  "take": 200,
+  "dur": 1.32,
+  "flag": ""
+ },
+ {
+  "id": "make_the_sentence",
+  "text": "Make the sentence!",
+  "lang": "en",
+  "take": 200,
+  "dur": 1.3,
+  "flag": ""
+ },
+ {
+  "id": "which_letter",
+  "text": "Which letter?",
+  "lang": "en",
+  "take": 200,
+  "dur": 1.53,
+  "flag": ""
+ },
+ {
+  "id": "which_letter_says_this_sound",
+  "text": "Which letter says this sound?",
+  "lang": "en",
+  "take": 200,
+  "dur": 3.73,
+  "flag": ""
+ },
+ {
+  "id": "what_starts_with_this_sound",
+  "text": "What starts with this sound?",
+  "lang": "en",
+  "take": 200,
+  "dur": 2.82,
+  "flag": ""
+ },
+ {
+  "id": "match_big_and_small",
+  "text": "Match big and small!",
+  "lang": "en",
+  "take": 200,
+  "dur": 3.16,
+  "flag": ""
+ },
+ {
+  "id": "let_s_sing_the_abc",
+  "text": "Let's sing the ABC!",
+  "lang": "en",
+  "take": 200,
+  "dur": 2.45,
+  "flag": ""
+ },
+ {
+  "id": "read_the_word",
+  "text": "Read the word!",
+  "lang": "en",
+  "take": 200,
+  "dur": 1.17,
+  "flag": ""
+ },
+ {
+  "id": "let_s_sing",
+  "text": "Let's sing!",
+  "lang": "en",
+  "take": 200,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "hello_i_m_your_friend_let_s_play",
+  "text": "Hello! I'm your friend. Let's play!",
+  "lang": "en",
+  "take": 200,
+  "dur": 3.67,
+  "flag": ""
+ },
+ {
+  "id": "i_m_bunny",
+  "text": "I'm Bunny!",
+  "lang": "en",
+  "take": 200,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "id": "which_letter_is_missing",
+  "text": "Which letter is missing?",
+  "lang": "en",
+  "take": 200,
+  "dur": 2.04,
+  "flag": ""
+ },
+ {
+  "id": "now_i_know_my_abc",
+  "text": "Now I know my ABC!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "i_m_pizza",
+  "text": "I'm Pizza!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "i_m_leafy",
+  "text": "I'm Leafy!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.03,
+  "flag": ""
+ },
+ {
+  "id": "i_m_rainbow",
+  "text": "I'm Rainbow!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "i_m_cookie",
+  "text": "I'm Cookie!",
+  "lang": "en",
+  "take": 201,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "i_m_cloud",
+  "text": "I'm Cloud!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "i_m_panda",
+  "text": "I'm Panda!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.07,
+  "flag": ""
+ },
+ {
+  "id": "i_m_disco_ball",
+  "text": "I'm Disco Ball!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.4,
+  "flag": ""
+ },
+ {
+  "id": "i_m_sunny",
+  "text": "I'm Sunny!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "i_m_kitty",
+  "text": "I'm Kitty!",
+  "lang": "en",
+  "take": 201,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "i_m_ninja_cat",
+  "text": "I'm Ninja Cat!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.39,
+  "flag": ""
+ },
+ {
+  "id": "i_m_unicorn",
+  "text": "I'm Unicorn!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.36,
+  "flag": ""
+ },
+ {
+  "id": "pop_cheese",
+  "text": "Pop Cheese",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "verb_count",
+  "text": "How many!",
+  "lang": "en",
+  "take": 201,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "verb_sentence",
+  "text": "Make a sentence!",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_love_mom",
+  "text": "I love mom.",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.32,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_love_dad",
+  "text": "I love dad.",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.22,
+  "flag": ""
+ },
+ {
+  "id": "sentence_ray_is_my_brother",
+  "text": "Ray is my brother.",
+  "lang": "en",
+  "take": 201,
+  "dur": 1.53,
+  "flag": ""
+ },
+ {
+  "id": "sentence_this_is_my_family",
+  "text": "This is my family.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.91,
+  "flag": ""
+ },
+ {
+  "id": "sentence_we_are_friends",
+  "text": "We are friends.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.83,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_like_my_dress",
+  "text": "I like my dress.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.65,
+  "flag": ""
+ },
+ {
+  "id": "sentence_the_hat_is_yellow",
+  "text": "The hat is yellow.",
+  "lang": "en",
+  "take": 202,
+  "dur": 2.13,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_can_dance",
+  "text": "I can dance.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.6,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_can_sing",
+  "text": "I can sing.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.5,
+  "flag": ""
+ },
+ {
+  "id": "sentence_the_sun_is_hot",
+  "text": "The sun is hot.",
+  "lang": "en",
+  "take": 202,
+  "dur": 2.06,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_like_cats",
+  "text": "I like cats.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.67,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_can_jump",
+  "text": "I can jump.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.46,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_like_pizza",
+  "text": "I like pizza.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.66,
+  "flag": ""
+ },
+ {
+  "id": "sentence_i_ride_my_bike",
+  "text": "I ride my bike.",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.85,
+  "flag": ""
+ },
+ {
+  "id": "ice_creams",
+  "text": "ice creams",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.18,
+  "flag": ""
+ },
+ {
+  "id": "climbing_walls",
+  "text": "climbing walls",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.79,
+  "flag": ""
+ },
+ {
+  "id": "balance_beams",
+  "text": "balance beams",
+  "lang": "en",
+  "take": 202,
+  "dur": 1.35,
+  "flag": ""
+ },
+ {
+  "id": "match",
+  "text": "Match!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "cheesy",
+  "text": "Cheesy",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "mozzi",
+  "text": "Mozzi",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "horiko",
+  "text": "Horiko",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.72,
+  "flag": ""
+ },
+ {
+  "id": "verb_find",
+  "text": "Find!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "verb_color",
+  "text": "Color!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.67,
+  "flag": ""
+ },
+ {
+  "id": "verb_big",
+  "text": "Big!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.74,
+  "flag": ""
+ },
+ {
+  "id": "verb_small",
+  "text": "Small!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "verb_on",
+  "text": "On!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "verb_over",
+  "text": "Over!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.77,
+  "flag": ""
+ },
+ {
+  "id": "verb_in",
+  "text": "In!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.76,
+  "flag": "long"
+ },
+ {
+  "id": "verb_under",
+  "text": "Under!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "verb_circle",
+  "text": "Circle!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "verb_tap",
+  "text": "Tap!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.49,
+  "flag": "short"
+ },
+ {
+  "id": "verb_put",
+  "text": "Put!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.64,
+  "flag": ""
+ },
+ {
+  "id": "verb_match",
+  "text": "Match!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "verb_listen",
+  "text": "Listen!",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "number_1",
+  "text": "One",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "number_2",
+  "text": "Two",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "number_3",
+  "text": "Three",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "number_4",
+  "text": "Four",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "number_5",
+  "text": "Five",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "number_6",
+  "text": "Six",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "number_7",
+  "text": "Seven",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "number_8",
+  "text": "Eight",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.7,
+  "flag": ""
+ },
+ {
+  "id": "number_9",
+  "text": "Nine",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "number_10",
+  "text": "Ten",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.71,
+  "flag": ""
+ },
+ {
+  "id": "red",
+  "text": "Red",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.77,
+  "flag": ""
+ },
+ {
+  "id": "blue",
+  "text": "Blue",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "yellow",
+  "text": "Yellow",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.81,
+  "flag": ""
+ },
+ {
+  "id": "pink",
+  "text": "Pink",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "purple",
+  "text": "Purple",
+  "lang": "en",
+  "take": 203,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "green",
+  "text": "Green",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "letter_s",
+  "text": "S",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.7,
+  "flag": "long"
+ },
+ {
+  "id": "letter_a",
+  "text": "A",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.76,
+  "flag": "long"
+ },
+ {
+  "id": "letter_t",
+  "text": "T",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.79,
+  "flag": "long"
+ },
+ {
+  "id": "letter_p",
+  "text": "P",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.8,
+  "flag": "long"
+ },
+ {
+  "id": "letter_i",
+  "text": "I",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.81,
+  "flag": "long"
+ },
+ {
+  "id": "igloo",
+  "text": "igloo",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "letter_n",
+  "text": "N",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.73,
+  "flag": "long"
+ },
+ {
+  "id": "nest",
+  "text": "nest",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "letter_m",
+  "text": "M",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.72,
+  "flag": "long"
+ },
+ {
+  "id": "letter_d",
+  "text": "D",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.89,
+  "flag": "long"
+ },
+ {
+  "id": "letter_g",
+  "text": "G",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.86,
+  "flag": "long"
+ },
+ {
+  "id": "letter_o",
+  "text": "O",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.76,
+  "flag": "long"
+ },
+ {
+  "id": "octopus",
+  "text": "octopus",
+  "lang": "en",
+  "take": 204,
+  "dur": 1.1,
+  "flag": ""
+ },
+ {
+  "id": "letter_c",
+  "text": "C",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.91,
+  "flag": "long"
+ },
+ {
+  "id": "letter_k",
+  "text": "K",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.9,
+  "flag": "long"
+ },
+ {
+  "id": "letter_e",
+  "text": "E",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.79,
+  "flag": "long"
+ },
+ {
+  "id": "letter_u",
+  "text": "U",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.92,
+  "flag": "long"
+ },
+ {
+  "id": "letter_r",
+  "text": "R",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.85,
+  "flag": "long"
+ },
+ {
+  "id": "letter_h",
+  "text": "H",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.83,
+  "flag": "long"
+ },
+ {
+  "id": "letter_b",
+  "text": "B",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.93,
+  "flag": "long"
+ },
+ {
+  "id": "letter_f",
+  "text": "F",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.67,
+  "flag": "long"
+ },
+ {
+  "id": "letter_l",
+  "text": "L",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.83,
+  "flag": "long"
+ },
+ {
+  "id": "letter_j",
+  "text": "J",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.95,
+  "flag": "long"
+ },
+ {
+  "id": "jam",
+  "text": "jam",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "letter_v",
+  "text": "V",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.85,
+  "flag": "long"
+ },
+ {
+  "id": "van",
+  "text": "van",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "letter_w",
+  "text": "W",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.99,
+  "flag": "long"
+ },
+ {
+  "id": "web",
+  "text": "web",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "letter_x",
+  "text": "X",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.72,
+  "flag": "long"
+ },
+ {
+  "id": "fox",
+  "text": "fox",
+  "lang": "en",
+  "take": 204,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "letter_y",
+  "text": "Y",
+  "lang": "en",
+  "take": 204,
+  "dur": 1.49,
+  "flag": "long"
+ },
+ {
+  "id": "yoyo",
+  "text": "yo-yo",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "letter_z",
+  "text": "Z",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.72,
+  "flag": "long"
+ },
+ {
+  "id": "zebra",
+  "text": "zebra",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "letter_q",
+  "text": "Q",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.71,
+  "flag": "long"
+ },
+ {
+  "id": "queen",
+  "text": "queen",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.81,
+  "flag": ""
+ },
+ {
+  "id": "tap",
+  "text": "tap",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.73,
+  "flag": ""
+ },
+ {
+  "id": "sat",
+  "text": "sat",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "pat",
+  "text": "pat",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.79,
+  "flag": ""
+ },
+ {
+  "id": "pan",
+  "text": "pan",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "pin",
+  "text": "pin",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "map",
+  "text": "map",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "man",
+  "text": "man",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "tin",
+  "text": "tin",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "nap",
+  "text": "nap",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "pig",
+  "text": "pig",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.72,
+  "flag": ""
+ },
+ {
+  "id": "hen",
+  "text": "hen",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "bus",
+  "text": "bus",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "bat",
+  "text": "bat",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "cup",
+  "text": "cup",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.69,
+  "flag": ""
+ },
+ {
+  "id": "mug",
+  "text": "mug",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.69,
+  "flag": ""
+ },
+ {
+  "id": "net",
+  "text": "net",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "bounce",
+  "text": "bounce",
+  "lang": "en",
+  "take": 205,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "the",
+  "text": "the",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "read",
+  "text": "read",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "time",
+  "text": "time",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "for",
+  "text": "for",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "yummy",
+  "text": "yummy",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "yum",
+  "text": "yum",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "and",
+  "text": "and",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "sweet",
+  "text": "sweet",
+  "lang": "en",
+  "take": 205,
+  "dur": 1.03,
+  "flag": ""
+ },
+ {
+  "id": "cold",
+  "text": "cold",
+  "lang": "en",
+  "take": 205,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "white",
+  "text": "white",
+  "lang": "en",
+  "take": 205,
+  "dur": 2.19,
+  "flag": "long"
+ },
+ {
+  "id": "up",
+  "text": "up",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.78,
+  "flag": "long"
+ },
+ {
+  "id": "down",
+  "text": "down",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "ride",
+  "text": "ride",
+  "lang": "en",
+  "take": 206,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "around",
+  "text": "around",
+  "lang": "en",
+  "take": 206,
+  "dur": 1.09,
+  "flag": ""
+ },
+ {
+  "id": "wheee",
+  "text": "wheee",
+  "lang": "en",
+  "take": 206,
+  "dur": 1.45,
+  "flag": ""
+ },
+ {
+  "id": "in",
+  "text": "in",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.88,
+  "flag": "long"
+ },
+ {
+  "id": "park",
+  "text": "park",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "draw",
+  "text": "draw",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "a",
+  "text": "a",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.85,
+  "flag": "long"
+ },
+ {
+  "id": "line",
+  "text": "line",
+  "lang": "en",
+  "take": 206,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "paint",
+  "text": "Paint",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "with",
+  "text": "with",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "what",
+  "text": "what",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "one",
+  "text": "One",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "two",
+  "text": "two",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "three",
+  "text": "three",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "four",
+  "text": "four",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "five",
+  "text": "five",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "nice",
+  "text": "nice",
+  "lang": "en",
+  "take": 206,
+  "dur": 1.14,
+  "flag": ""
+ },
+ {
+  "id": "ice",
+  "text": "Ice",
+  "lang": "en",
+  "take": 206,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "cream",
+  "text": "cream",
+  "lang": "en",
+  "take": 206,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "as",
+  "text": "as",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.97,
+  "flag": "long"
+ },
+ {
+  "id": "i",
+  "text": "I",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.83,
+  "flag": "long"
+ },
+ {
+  "id": "love",
+  "text": "love",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "you",
+  "text": "you",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "ray",
+  "text": "Ray",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "is",
+  "text": "is",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.83,
+  "flag": "long"
+ },
+ {
+  "id": "my",
+  "text": "my",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.95,
+  "flag": "long"
+ },
+ {
+  "id": "hooray",
+  "text": "hooray",
+  "lang": "en",
+  "take": 206,
+  "dur": 1.37,
+  "flag": ""
+ },
+ {
+  "id": "on",
+  "text": "on",
+  "lang": "en",
+  "take": 206,
+  "dur": 1.01,
+  "flag": "long"
+ },
+ {
+  "id": "head",
+  "text": "head",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "feet",
+  "text": "feet",
+  "lang": "en",
+  "take": 206,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "twirl",
+  "text": "twirl",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "spin",
+  "text": "spin",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "look",
+  "text": "look",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.68,
+  "flag": ""
+ },
+ {
+  "id": "great",
+  "text": "great",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.68,
+  "flag": ""
+ },
+ {
+  "id": "high",
+  "text": "high",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "your",
+  "text": "your",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "hands",
+  "text": "hands",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "me",
+  "text": "me",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.66,
+  "flag": ""
+ },
+ {
+  "id": "song",
+  "text": "song",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "hot",
+  "text": "hot",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.68,
+  "flag": ""
+ },
+ {
+  "id": "bright",
+  "text": "bright",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "drip",
+  "text": "drip",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.6,
+  "flag": ""
+ },
+ {
+  "id": "drop",
+  "text": "drop",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.48,
+  "flag": "short"
+ },
+ {
+  "id": "hello",
+  "text": "hello",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "roar",
+  "text": "roar",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "big",
+  "text": "big",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.64,
+  "flag": ""
+ },
+ {
+  "id": "gray",
+  "text": "gray",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.73,
+  "flag": ""
+ },
+ {
+  "id": "ninja",
+  "text": "Ninja",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "climb",
+  "text": "climb",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "over",
+  "text": "Over",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.81,
+  "flag": ""
+ },
+ {
+  "id": "hop",
+  "text": "hop",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.5,
+  "flag": "short"
+ },
+ {
+  "id": "under",
+  "text": "Under",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.81,
+  "flag": ""
+ },
+ {
+  "id": "shh",
+  "text": "shh",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "did",
+  "text": "did",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.67,
+  "flag": ""
+ },
+ {
+  "id": "it",
+  "text": "it",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.62,
+  "flag": ""
+ },
+ {
+  "id": "alien",
+  "text": "alien",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "anchor",
+  "text": "anchor",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.81,
+  "flag": ""
+ },
+ {
+  "id": "asteroid",
+  "text": "asteroid",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "astronaut",
+  "text": "astronaut",
+  "lang": "en",
+  "take": 207,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "barn",
+  "text": "barn",
+  "lang": "en",
+  "take": 207,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "cakeslice",
+  "text": "cake slice",
+  "lang": "en",
+  "take": 207,
+  "dur": 1.14,
+  "flag": ""
+ },
+ {
+  "id": "candycane",
+  "text": "candy cane",
+  "lang": "en",
+  "take": 207,
+  "dur": 1.07,
+  "flag": ""
+ },
+ {
+  "id": "candyjar",
+  "text": "candy jar",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.1,
+  "flag": ""
+ },
+ {
+  "id": "chick",
+  "text": "chick",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.61,
+  "flag": ""
+ },
+ {
+  "id": "clownfish",
+  "text": "clownfish",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "comet",
+  "text": "comet",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "cottoncandy",
+  "text": "cotton candy",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "cow",
+  "text": "cow",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.67,
+  "flag": ""
+ },
+ {
+  "id": "crab",
+  "text": "crab",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.74,
+  "flag": ""
+ },
+ {
+  "id": "dolphin",
+  "text": "dolphin",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "donkey",
+  "text": "donkey",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.68,
+  "flag": ""
+ },
+ {
+  "id": "duck",
+  "text": "duck",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.69,
+  "flag": ""
+ },
+ {
+  "id": "earth",
+  "text": "earth",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "goat",
+  "text": "goat",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.73,
+  "flag": ""
+ },
+ {
+  "id": "gummybear",
+  "text": "gummy bear",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "horse",
+  "text": "horse",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "jellyfish",
+  "text": "jellyfish",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.03,
+  "flag": ""
+ },
+ {
+  "id": "lighthouse",
+  "text": "lighthouse",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "lobster",
+  "text": "lobster",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "macaron",
+  "text": "macaron",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "mars",
+  "text": "mars",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "moon",
+  "text": "moon",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "muffin",
+  "text": "muffin",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.72,
+  "flag": ""
+ },
+ {
+  "id": "nightsky",
+  "text": "night sky",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "id": "popsicle",
+  "text": "popsicle",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "pufferfish",
+  "text": "puffer fish",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "robot",
+  "text": "robot",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "rocket",
+  "text": "rocket",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "rover",
+  "text": "rover",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.79,
+  "flag": ""
+ },
+ {
+  "id": "sailboat",
+  "text": "sailboat",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "satellite",
+  "text": "satellite",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "saturn",
+  "text": "saturn",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "seahorse",
+  "text": "seahorse",
+  "lang": "en",
+  "take": 208,
+  "dur": 1.09,
+  "flag": ""
+ },
+ {
+  "id": "seal",
+  "text": "seal",
+  "lang": "en",
+  "take": 208,
+  "dur": 0.69,
+  "flag": ""
+ },
+ {
+  "id": "shark",
+  "text": "shark",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "sheep",
+  "text": "sheep",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "shell",
+  "text": "shell",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "shootingstar",
+  "text": "shooting star",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.29,
+  "flag": ""
+ },
+ {
+  "id": "starfish",
+  "text": "starfish",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.17,
+  "flag": ""
+ },
+ {
+  "id": "station",
+  "text": "station",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "submarine",
+  "text": "submarine",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.12,
+  "flag": ""
+ },
+ {
+  "id": "telescope",
+  "text": "telescope",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.07,
+  "flag": ""
+ },
+ {
+  "id": "tractor",
+  "text": "tractor",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "treasure",
+  "text": "treasure",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "turtle",
+  "text": "turtle",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.74,
+  "flag": ""
+ },
+ {
+  "id": "ufo",
+  "text": "U.F.O",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.12,
+  "flag": "long"
+ },
+ {
+  "id": "waffle",
+  "text": "waffle",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "whale",
+  "text": "whale",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.79,
+  "flag": ""
+ },
+ {
+  "id": "car",
+  "text": "car",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "house",
+  "text": "house",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "butterfly",
+  "text": "butterfly",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "heart",
+  "text": "heart",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.73,
+  "flag": ""
+ },
+ {
+  "id": "phones",
+  "text": "phones",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "tvs",
+  "text": "TVs",
+  "lang": "en",
+  "take": 209,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "balls",
+  "text": "balls",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "dolls",
+  "text": "dolls",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "beds",
+  "text": "beds",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "books",
+  "text": "books",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.74,
+  "flag": ""
+ },
+ {
+  "id": "boxes",
+  "text": "boxes",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "lamps",
+  "text": "lamps",
+  "lang": "en",
+  "take": 209,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "chairs",
+  "text": "chairs",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "pizzas",
+  "text": "pizzas",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "cheeses",
+  "text": "cheeses",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "pastas",
+  "text": "pastas",
+  "lang": "en",
+  "take": 209,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "meats",
+  "text": "meats",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "apples",
+  "text": "apples",
+  "lang": "en",
+  "take": 209,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "bananas",
+  "text": "bananas",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "milks",
+  "text": "milks",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "cakes",
+  "text": "cakes",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "eggs",
+  "text": "eggs",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "slides",
+  "text": "slides",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.23,
+  "flag": ""
+ },
+ {
+  "id": "swings",
+  "text": "swings",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "trees",
+  "text": "trees",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "bikes",
+  "text": "bikes",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "helmets",
+  "text": "helmets",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.03,
+  "flag": ""
+ },
+ {
+  "id": "benches",
+  "text": "benches",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.07,
+  "flag": ""
+ },
+ {
+  "id": "kites",
+  "text": "kites",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "pencils",
+  "text": "pencils",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.07,
+  "flag": ""
+ },
+ {
+  "id": "brushes",
+  "text": "brushes",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "papers",
+  "text": "papers",
+  "lang": "en",
+  "take": 210,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "palettes",
+  "text": "palettes",
+  "lang": "en",
+  "take": 210,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "glues",
+  "text": "glues",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "pictures",
+  "text": "pictures",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "easels",
+  "text": "easels",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "candies",
+  "text": "candies",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.07,
+  "flag": ""
+ },
+ {
+  "id": "lollipops",
+  "text": "lollipops",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.22,
+  "flag": ""
+ },
+ {
+  "id": "cupcakes",
+  "text": "cupcakes",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.16,
+  "flag": ""
+ },
+ {
+  "id": "cookies",
+  "text": "cookies",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "donuts",
+  "text": "donuts",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.07,
+  "flag": ""
+ },
+ {
+  "id": "chocolates",
+  "text": "chocolates",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "id": "balloons",
+  "text": "balloons",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.1,
+  "flag": ""
+ },
+ {
+  "id": "gifts",
+  "text": "gifts",
+  "lang": "en",
+  "take": 210,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "moms",
+  "text": "moms",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "dads",
+  "text": "dads",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "brothers",
+  "text": "brothers",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "sisters",
+  "text": "sisters",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "babies",
+  "text": "babies",
+  "lang": "en",
+  "take": 210,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "grandmas",
+  "text": "grandmas",
+  "lang": "en",
+  "take": 210,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "grandpas",
+  "text": "grandpas",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.03,
+  "flag": ""
+ },
+ {
+  "id": "families",
+  "text": "families",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "shirts",
+  "text": "shirts",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "dresses",
+  "text": "dresses",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "skirts",
+  "text": "skirts",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "hats",
+  "text": "hats",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "jackets",
+  "text": "jackets",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "jumps",
+  "text": "jumps",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.81,
+  "flag": ""
+ },
+ {
+  "id": "claps",
+  "text": "claps",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "dances",
+  "text": "dances",
+  "lang": "en",
+  "take": 211,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "sings",
+  "text": "sings",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "runs",
+  "text": "runs",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "sleeps",
+  "text": "sleeps",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "eats",
+  "text": "eats",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "drinks",
+  "text": "drinks",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "waves",
+  "text": "waves",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "suns",
+  "text": "suns",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "clouds",
+  "text": "clouds",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "rains",
+  "text": "rains",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "snowflakes",
+  "text": "snowflakes",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.14,
+  "flag": ""
+ },
+ {
+  "id": "winds",
+  "text": "winds",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "rainbows",
+  "text": "rainbows",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "umbrellas",
+  "text": "umbrellas",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.03,
+  "flag": ""
+ },
+ {
+  "id": "snowmans",
+  "text": "snowmen",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "storms",
+  "text": "storms",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "id": "cats",
+  "text": "cats",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "dogs",
+  "text": "dogs",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "lions",
+  "text": "lions",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "monkeys",
+  "text": "monkeys",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "birds",
+  "text": "birds",
+  "lang": "en",
+  "take": 211,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "elephants",
+  "text": "elephants",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "giraffes",
+  "text": "giraffes",
+  "lang": "en",
+  "take": 211,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "rabbits",
+  "text": "rabbits",
+  "lang": "en",
+  "take": 212,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "ropes",
+  "text": "ropes",
+  "lang": "en",
+  "take": 212,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "tunnels",
+  "text": "tunnels",
+  "lang": "en",
+  "take": 212,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "crates",
+  "text": "crates",
+  "lang": "en",
+  "take": 212,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "id": "bridges",
+  "text": "bridges",
+  "lang": "en",
+  "take": 212,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "mats",
+  "text": "mats",
+  "lang": "en",
+  "take": 212,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "ladders",
+  "text": "ladders",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "stages",
+  "text": "stages",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.15,
+  "flag": ""
+ },
+ {
+  "id": "microphones",
+  "text": "microphones",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.27,
+  "flag": ""
+ },
+ {
+  "id": "guitars",
+  "text": "guitars",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.16,
+  "flag": ""
+ },
+ {
+  "id": "drums",
+  "text": "drums",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "pianos",
+  "text": "pianos",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.16,
+  "flag": ""
+ },
+ {
+  "id": "trumpets",
+  "text": "trumpets",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "stars",
+  "text": "stars",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.09,
+  "flag": ""
+ },
+ {
+  "id": "crowns",
+  "text": "crowns",
+  "lang": "en",
+  "take": 212,
+  "dur": 1.06,
   "flag": ""
  }
 ]

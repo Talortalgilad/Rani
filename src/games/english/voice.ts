@@ -1,6 +1,7 @@
 import { getState } from '../../storage';
 import { clipIds, getClip } from './voiceStore';
 import { WORDS } from './content/words';
+import { EN_CLIPS } from './content/enClips';
 
 /** English (instructions, words) and Hebrew (story, encouragement) read aloud with the device's own voices. Works offline. */
 let voices: SpeechSynthesisVoice[] = [];
@@ -59,7 +60,7 @@ function say(text: string, lang: 'en' | 'he', rate: number): Promise<boolean> {
  */
 export const speakEn = (text: string, rate = 0.85): Promise<boolean> => {
   stopSpeech();
-  const id = wordIdOf(text);
+  const id = wordIdOf(text) ?? enClipIdOf(text);
   return id ? playWord(id).then((ok) => ok || say(text, 'en', rate)) : say(text, 'en', rate);
 };
 export const speakWord = (word: string): Promise<boolean> => speakEn(word, 0.75);
@@ -70,6 +71,13 @@ for (const w of WORDS) {
   WORD_IDS.set(wordKey(w.id), w.id);
   WORD_IDS.set(wordKey(w.label ?? w.id), w.id);
 }
+const clipKey = (s: string): string => {
+  const k = s.replace(/[^A-Za-z0-9]/g, '');
+  return k.length === 1 && /[A-Za-z]/.test(k) ? k : k.toLowerCase();
+};
+/** The id of the recording of anything else the game says in English (a fixed sentence, a name, a verb, a number, a colour, a letter, a word of a song, a sentence to build, a card of the memory game, a plural): by its text, or null. */
+export const enClipIdOf = (text: string): string | null => EN_CLIPS[clipKey(text)] ?? null;
+
 /** The id of the word that a text says ("Ice cream." and "ice cream" are icecream; "yo-yo" is yoyo), or null for anything else (a sentence, a name). */
 export const wordIdOf = (text: string): string | null => WORD_IDS.get(wordKey(text)) ?? null;
 /** Hebrew: false when the device has no Hebrew voice (the text stays in the speech bubble). */

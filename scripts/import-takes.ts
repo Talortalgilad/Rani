@@ -25,6 +25,9 @@ const onlyArg = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
 const wanted = (n: number): boolean => !onlyArg || onlyArg.split(',').some((p) => { const [a, b] = p.split('-').map(Number); return n >= a && n <= (b ?? a); });
 const MARGIN = 0.1;
 
+// What the voice really says where it is not the text of the file (the id stays): shown in the review page and used to find the clip by text
+const SAID: Record<string, string> = { cakeslice: 'cake slice', candycane: 'candy cane', candyjar: 'candy jar', cottoncandy: 'cotton candy', gummybear: 'gummy bear', nightsky: 'night sky', shootingstar: 'shooting star', pufferfish: 'puffer fish', ufo: 'U.F.O', snowmans: 'snowmen' };
+
 interface Take { take: number; lang: 'he' | 'en'; url: string; lines: { id: string; text: string }[] }
 interface Sil { start: number; end: number; dur: number }
 
@@ -146,6 +149,7 @@ async function main(): Promise<void> {
       problems.push(`take ${t.take}: fewer silences than ${t.lines.length - 1} even at -25dB/0.3s - not cut`);
       continue;
     }
+    if (used !== '-35dB/0.4s') problems.push(`take ${t.take}: needed a looser threshold (${used}) to find enough silences - check every cut by ear`);
     console.log(`take ${t.take} (${t.lang}, ${total.toFixed(1)}s): ${t.lines.length} lines, ${cut.candidates} silences >= ${used}, cuts at ${cut.cuts.map((c) => `${c.start.toFixed(1)}(${c.dur.toFixed(1)}s)`).join(' ')}`);
     const dir = OUT(t.lang);
     mkdirSync(dir, { recursive: true });
@@ -163,6 +167,7 @@ async function main(): Promise<void> {
     rateOf.set(lang, r[Math.floor(r.length / 2)] ?? 0.1);
   }
   for (const a of all) {
+    if (a.lang === 'en' && SAID[a.id]) a.text = SAID[a.id];
     const exp = rateOf.get(a.lang)! * a.letters;
     if (a.dur < 0.3) a.note = 'short';
     else if (a.dur > 2 * exp) a.note = 'long';
@@ -178,6 +183,19 @@ async function main(): Promise<void> {
     writeFileSync(mf, JSON.stringify({ ...cur, clips }, null, 1) + '\n');
     console.log(`${lang}/manifest.json: ${clips.length} recordings`);
   }
+  // the English clips by what the game says: src/games/english/content/enClips.ts (text of the line and its id -> id), written from all the English takes
+  const clipKey = (x: string): string => {
+    const k = x.replace(/[^A-Za-z0-9]/g, '');
+    return k.length === 1 && /[A-Za-z]/.test(k) ? k : k.toLowerCase();
+  };
+  const byText: Record<string, string> = {};
+  for (const t of takes.filter((x) => x.lang === 'en')) {
+    for (const l of t.lines) {
+      const num = /^number_(\d+)$/.exec(l.id);
+      for (const k of [clipKey(SAID[l.id] ?? l.text), clipKey(l.text), clipKey(l.id), num ? num[1] : '']) if (k && !(k in byText)) byText[k] = l.id;
+    }
+  }
+  writeFileSync(join(ROOT, 'src/games/english/content/enClips.ts'), `/** The English recordings by what the game says (written by scripts/import-takes.ts): letters and digits of the text only, lower case (a single letter keeps its case: "A" is the letter, "a" the word), to the id of the clip in public/english/voice/en. */\nexport const EN_CLIPS: Record<string, string> = ${JSON.stringify(byText, null, 1)};\n`);
   // the temporary review page in the parents area reads this (the lines of the takes that were not cut now are kept)
   mkdirSync(OUT('he'), { recursive: true });
   const reviewFile = join(OUT('he'), '_review.json');
