@@ -26,8 +26,8 @@ export function showWordbook(root: HTMLElement, o: { words: Words; map: MapProgr
   root.innerHTML = `
     <div class="en-screen en-book">
       <div class="en-sky"></div>
-      <header class="q-top"><button class="q-home" id="bb" type="button" aria-label="${he.home}">⬅️</button><h1 class="map-title">📖 ${he.wordbook}</h1><span class="q-say" style="visibility:hidden"></span></header>
-      <div class="book-tabs"><button class="book-tab ${tab === 'words' ? 'on' : ''}" data-t="words" type="button">🔤 ${he.wordCount(known, WORDS.length)}</button><button class="book-tab ${tab === 'songs' ? 'on' : ''}" data-t="songs" type="button">♪ ${he.songCount(songWorlds.length, WORLDS.length)}</button></div>
+      <header class="q-top"><button class="q-home" id="bb" type="button" aria-label="${he.home}">⬅️</button><h1 class="map-title" data-say="wordbook">📖 ${he.wordbook}</h1><span class="q-say" style="visibility:hidden"></span></header>
+      <div class="book-tabs"><button class="book-tab ${tab === 'words' ? 'on' : ''}" data-t="words" data-say="wordbook" type="button">🔤 ${he.wordCount(known, WORDS.length)}</button><button class="book-tab ${tab === 'songs' ? 'on' : ''}" data-t="songs" data-say="songs" type="button">♪ ${he.songCount(songWorlds.length, WORLDS.length)}</button></div>
       <div class="book-cheesy" id="bch"></div>
       ${
         tab === 'words'

@@ -22,9 +22,9 @@ export function showRescue(root: HTMLElement, name: string, squishy: Squishy, so
         <div class="bunny-out" id="bunny" hidden><div class="bunny-in" id="bunnyIn">${squishyImg(squishy.id)}</div></div>
       </div>
       <div class="rescue-actions" id="acts" hidden>
-        ${extra.prize ? `<div class="prize"><span class="prize-pic"><img src="${cheesyUrl('happy')}" alt="" draggable="false">${accessorySvg(extra.prize)}</span><b>${he.newAccessory(extra.prize.he)}</b></div>` : ''}
-        <button class="en-btn go" id="home" type="button">🏠 ${he.home}</button>
-        <button class="en-btn" id="shelf" type="button">🧸 ${he.shelf}</button>
+        ${extra.prize ? `<div class="prize"><span class="prize-pic"><img src="${cheesyUrl('happy')}" alt="" draggable="false">${accessorySvg(extra.prize)}</span><b data-say="new_acc_${extra.prize.id}">${he.newAccessory(extra.prize.he)}</b></div>` : ''}
+        <button class="en-btn go" id="home" data-say="home" type="button">🏠 ${he.home}</button>
+        <button class="en-btn" id="shelf" data-say="shelf" type="button">🧸 ${he.shelf}</button>
       </div>
       <div class="confetti" id="rc"></div>
     </div>`;

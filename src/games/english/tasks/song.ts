@@ -80,7 +80,7 @@ export function songTask(env: TaskEnv, world: number): TaskHandle {
       }, e.at),
     );
   });
-  timers.push(window.setTimeout(() => env.face('dance', 'כל הכבוד!'), total - beat));
+  timers.push(window.setTimeout(() => (env.face('dance', 'כל הכבוד!'), env.sayHe('great')), total - beat));
   timers.push(window.setTimeout(() => env.done(), total + 800));
   lineEl.textContent = 'Let’s sing!';
   return { repeat: () => undefined, destroy: () => (timers.forEach(clearTimeout), wrap.remove()) };

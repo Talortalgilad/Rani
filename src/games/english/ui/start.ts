@@ -14,7 +14,7 @@ export function showStart(root: HTMLElement, name: string, rescued: string[], so
       <h1 class="start-title">${mixed(he.islandTitle(name))}</h1>
       <div class="start-stage"><div class="cheesy-big" id="ch"></div><div class="bubble big" id="bub">${he.start}</div></div>
       <div class="start-world">🛏️ My room</div>
-      <button class="en-btn go huge" id="play" type="button">▶ ${he.start}</button>
+      <button class="en-btn go huge" id="play" data-say="start" type="button">▶ ${he.start}</button>
       <div class="start-shelf">${rescued.length ? `⭐ ${rescued.map((r) => r).join(', ')}` : ''}</div>
     </div>`;
   const c = mountCheesy(root.querySelector<HTMLElement>('#ch')!, 'happy', () => sound.play('pop', 520));

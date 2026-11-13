@@ -2,3 +2,7 @@ node_modules
 dist
 
 scripts/.cache/
+
+# raw phone recordings of the Hebrew voice (the converted mp3 files in public/ are committed)
+assets/voice-raw/*
+!assets/voice-raw/README.md

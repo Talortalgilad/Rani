@@ -56,7 +56,12 @@ export const speakWord = (word: string): Promise<boolean> => speakEn(word, 0.75)
 /** Hebrew: false when the device has no Hebrew voice (the text stays in the speech bubble). */
 export const speakHe = (text: string): Promise<boolean> => (stopSpeech(), say(text, 'he', 0.9));
 
-export function stopSpeech(): void {
+/** A label that was just pressed ("home") is let finish when the screen changes: until then a plain stopSpeech(false) leaves it alone. */
+let keepUntil = 0;
+/** True while a pressed label is still being said (a title that opens next stays quiet instead of cutting it). */
+export const labelBusy = (): boolean => Date.now() < keepUntil;
+export function stopSpeech(force = true): void {
+  if (!force && Date.now() < keepUntil) return;
   stopClip();
   try {
     synth()?.cancel();
@@ -161,8 +166,9 @@ export interface LinePiece { clip?: string; text: string; lang: 'he' | 'en' }
  * (English for a squishy's name). With no recording at all the whole sentence is read at once, which sounds smoother. False when
  * nothing could be heard (no Hebrew voice, sound off): the text stays in the speech bubble.
  */
-export async function speakHeLine(pieces: LinePiece[]): Promise<boolean> {
+export async function speakHeLine(pieces: LinePiece[], keep = false): Promise<boolean> {
   stopSpeech();
+  if (keep) keepUntil = Date.now() + 2500;
   if (!pieces.length) return false;
   const have = await recordedClips();
   if (!pieces.some((p) => p.clip && have.has(p.clip))) return say(pieces.map((p) => p.text).join(' '), 'he', 0.9);

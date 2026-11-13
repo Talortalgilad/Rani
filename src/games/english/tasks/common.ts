@@ -14,6 +14,8 @@ export interface TaskEnv {
   sound(n: 'correct' | 'oops' | 'pop' | 'bonus' | 'tick', pitch?: number): void;
   /** read a word or an instruction in English */
   say(text: string, word?: boolean): void;
+  /** a Hebrew line of the registry (content/heLines.ts), recorded or read by the phone */
+  sayHe(id: string): void;
 }
 
 export interface TaskHandle {

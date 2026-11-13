@@ -119,10 +119,14 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
     current = null;
     let locked = false;
     body.innerHTML = `
-      <div class="question"><div class="q-text" dir="ltr" style="font-size:36px;letter-spacing:0">What did you hear?</div></div>
+      <div class="en-gate-head">
+        <button class="en-gate-speaker" id="enSay" type="button" aria-label="שמעי שוב">🔊</button>
+        <div class="en-gate-q" dir="ltr">What did you hear?</div>
+      </div>
       <div class="choices english-gate">
         ${eq.choices.map((c) => `<button class="choice" data-v="${c}" aria-label="${c}"><img src="${imageUrl(c)}" alt="" draggable="false"></button>`).join('')}
       </div>`;
+    body.querySelector('#enSay')!.addEventListener('click', () => void speakWord(eq.say));
     void speakWord(eq.say);
     body.querySelectorAll<HTMLButtonElement>('.choice').forEach((btn) =>
       btn.addEventListener('click', () => {

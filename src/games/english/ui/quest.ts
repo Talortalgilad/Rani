@@ -136,11 +136,17 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   const env: TaskEnv = {
     stage,
     face,
-    mistake: () => ((mistakesInTask += 1), (mistakesTotal += 1), mistakesInTask),
+    mistake: () => {
+      mistakesInTask += 1;
+      mistakesTotal += 1;
+      if (mistakesInTask === 2) later(() => void sayLine('try_again'), 1400); // after the English "try again"
+      return mistakesInTask;
+    },
     done: () => void (!dead && next()),
     sparkle,
     sound: (n, pitch) => d.sound.play(n, pitch),
     say: (text, word) => void (word ? speakWord(text) : speakEn(text)),
+    sayHe: (id) => void sayLine(id),
   };
 
   const start = (s: Step): void => {
@@ -161,6 +167,8 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       note(he.verb(v.en, v.he));
       void speakEn(v.en, 0.85).then(() => sayLine(`verb_${verb}`)).then(speakInstr);
     } else later(speakInstr, 500);
+    // a new word or colour: the Hebrew hint is read to her
+    if (s.kind === 'card' || s.kind === 'colorcard') later(() => void sayLine('card_tap'), 700);
     const met = COLORS.map((c) => c.id);
     switch (s.kind) {
       case 'card': handle = wordCard(env, s.word); break;

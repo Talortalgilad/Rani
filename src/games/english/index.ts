@@ -11,10 +11,10 @@ import { songTaskStep } from './engine/steps';
 import { showShelf } from './ui/shelf';
 import { preloadCheesy, setLook } from './art/cheesy';
 import { planStation } from './engine/planner';
-import { preloadVoice } from './content/heLines';
+import { preloadVoice, sayLabel, sayLine } from './content/heLines';
 import { likeIds } from './content/likes';
 import { STATIONS_PER_WORLD, addPlay, dayNumber, emptyMap, finishStation, markSeen, review, type MapProgress, type Words } from './engine/progress';
-import { recognitionAvailable, stopSpeech } from './voice';
+import { labelBusy, recognitionAvailable, stopSpeech } from './voice';
 import { getState } from '../../storage';
 import { he } from './content/lines';
 import { preloadWorld } from './art/images';
@@ -49,7 +49,7 @@ const saveWords = (w: Words): void => ctx!.save('words', w);
 
 function swap(f: () => () => void): void {
   stop?.();
-  stopSpeech();
+  stopSpeech(false);
   stop = f();
 }
 
@@ -62,6 +62,9 @@ function enter(): void {
     }));
   } else showWorlds();
 }
+
+/** A screen says its title when it opens (not over a label that was just pressed). */
+const announce = (id: string, name = ''): void => void (!labelBusy() && sayLine(id, name));
 
 function showShelfScreen(): void {
   swap(() =>
@@ -76,10 +79,12 @@ function showShelfScreen(): void {
       onBack: showWorlds,
     }),
   );
+  announce('shelf_title');
 }
 
 function showBook(tab?: 'words' | 'songs'): void {
   swap(() => showWordbook(root!, { words: words(), map: mapState(), sound: ctx!.sound, onSong: singSong, onBack: showWorlds }, tab));
+  announce(tab === 'songs' ? 'songs' : 'wordbook');
 }
 
 /** A song of a finished world, sung again from the book. */
@@ -94,10 +99,12 @@ function singSong(world: number): void {
 function showWorlds(): void {
   const name = displayName();
   swap(() => showMap(root!, { name, openAll: openAll(), map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
+  announce('island_title', name);
 }
 
 function showStations(world: number): void {
   swap(() => showWorld(root!, { world, openAll: openAll(), map: mapState(), sound: ctx!.sound, onStation: (s) => playStation(world, s), onBack: showWorlds }));
+  announce(`world_${world}`);
 }
 
 /** The pictures of the world are fetched now, when it is entered; the service worker keeps them for offline. */
@@ -174,6 +181,11 @@ const mod: GameModule = {
     if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, displayName());
     root = document.createElement('div');
     root.className = 'english-root';
+    // anything with data-say is read when it is pressed (a button, a title, a hint): the recording of its text, or the phone's voice
+    root.addEventListener('pointerdown', (e) => {
+      const id = (e.target as HTMLElement).closest<HTMLElement>('[data-say]')?.dataset.say;
+      if (id) void sayLabel(id, ['island_title', 'i_am', 'proud', 'rescued'].includes(id) ? displayName() : '');
+    });
     c.container.appendChild(root);
     enter();
   },

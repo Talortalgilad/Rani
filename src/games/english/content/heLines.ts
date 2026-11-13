@@ -1,7 +1,9 @@
 import { ACCESSORIES } from '../art/accessories';
+import { COLORS } from './colors';
+import { WORLDS } from './worlds';
 import { clipUrl, recordedClips, speakHeLine } from '../voice';
 import { he, nameOptions } from './lines';
-import { VERBS } from './words';
+import { VERBS, WORDS } from './words';
 
 /**
  * Every Hebrew sentence that Cheesy says aloud, each with a fixed id (the file name of its recording: public/english/voice/he/<id>.mp3).
@@ -26,6 +28,33 @@ export const HE_LINES: HeLine[] = [
   { id: 'parent_test', world: 0, parts: ['שלום! בואי נשחק באנגלית.'] },
   ...ACCESSORIES.map((a): HeLine => ({ id: `new_acc_${a.id}`, world: 0, parts: [he.newAccessory(a.he)] })),
   ...Object.entries(VERBS).map(([key, v]): HeLine => ({ id: `verb_${key}`, world: VERB_WORLD[key] ?? 1, parts: [`זה ${v.he}!`] })),
+  // every other Hebrew text that a child sees: bubbles, hints, buttons and titles (she does not read well yet)
+  { id: 'new_words', world: 0, parts: [he.newWords] },
+  { id: 'card_tap', world: 0, parts: [he.cardTap] },
+  { id: 'try_again', world: 0, parts: [he.tryAgain] },
+  { id: 'show', world: 0, parts: [he.show] },
+  { id: 'great', world: 0, parts: [he.great] },
+  { id: 'next', world: 0, parts: [he.next] },
+  { id: 'home', world: 0, parts: [he.home] },
+  { id: 'ok', world: 0, parts: [he.ok] },
+  { id: 'other_name', world: 0, parts: [he.otherName] },
+  { id: 'type_name', world: 0, parts: [he.typeName] },
+  { id: 'name_confirm', world: 0, parts: ['זה השם שלי!'] },
+  { id: 'i_am', world: 0, parts: cut(he.iAm(NAME)) },
+  { id: 'island_title', world: 0, parts: cut(he.islandTitle(NAME)) },
+  { id: 'shelf', world: 0, parts: [he.shelf] },
+  { id: 'shelf_title', world: 0, parts: [he.shelfTitle] },
+  { id: 'buddy_pick', world: 0, parts: [he.buddyPick] },
+  { id: 'buddy_now', world: 0, parts: [he.buddyNow] },
+  { id: 'accessories_title', world: 0, parts: [he.accessories] },
+  { id: 'accessory_note', world: 0, parts: [he.accessoryNote] },
+  { id: 'wordbook', world: 0, parts: [he.wordbook] },
+  { id: 'songs', world: 0, parts: [he.songs] },
+  ...ACCESSORIES.map((a): HeLine => ({ id: `acc_${a.id}`, world: 0, parts: [a.he] })),
+  ...ACCESSORIES.map((a): HeLine => ({ id: `acc_locked_${a.world}`, world: 0, parts: [he.accessoryLocked(a.world)] })),
+  ...WORLDS.map((w): HeLine => ({ id: `world_${w.n}`, world: 0, parts: [w.he] })),
+  ...COLORS.map((c): HeLine => ({ id: `c_${c.id}`, world: 4, parts: [c.he] })),
+  ...WORDS.map((w): HeLine => ({ id: `w_${w.id}`, world: w.world, parts: [w.he] })),
 ];
 
 export const NAME_KEYS: Record<string, string> = { 'צ׳יזי': 'cheesy', 'מוצי': 'mozzi', 'חוריקו': 'horiko', 'פופצ׳יז': 'popcheese' };
@@ -69,8 +98,15 @@ export function toCsv(): string {
   return ['id,text', ...allClips().map((c) => `${c.id},${q(c.text)}`)].join('\n') + '\n';
 }
 
+/** The numbered list for recording: `number. id — text`. The number is the place in voice/he-lines.csv (the name of the recording: 01.m4a). */
+export function numberedList(): string {
+  return allClips().map((c, i) => `${i + 1}. ${c.id} — ${c.text}`).join('\n') + '\n';
+}
+
 /** Says a sentence of the registry aloud (recording or phone voice); `name` fills the place of the name. */
 export const sayLine = (id: string, name = ''): Promise<boolean> => speakHeLine(linePartsFor(id, name));
+/** The same for a button or a title that she pressed: it is let finish while the next screen opens. */
+export const sayLabel = (id: string, name = ''): Promise<boolean> => speakHeLine(linePartsFor(id, name), true);
 
 /** Fetches the recordings of a world (0: the ones of the game itself) so that the service worker keeps them for offline; the ones that do not exist are not asked for. */
 export async function preloadVoice(world: number): Promise<void> {

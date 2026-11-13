@@ -98,6 +98,7 @@ export function circleTask(env: TaskEnv, rightId: string, ids: string[], seed = 
     if (n >= 3) {
       locked = true;
       env.face('thinking', 'אני אראה לך!');
+      env.sayHe('show');
       pts = [];
       stroke();
       await showSolution(env.stage, pics.get(rightId)!);
