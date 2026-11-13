@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { composeLevel, maxNumberFor } from './compose';
-import { DECKS, DECK_IDS, LETTERS, artDrawing } from './decks';
+import { DECKS, DECK_IDS, LETTERS } from './decks';
 import { lettersArt } from './decks/letters';
+import { knownPicture, pictureUrl } from './decks/pictures';
+import { CARD_IMAGES } from './decks/cards';
 import { playLevel } from './bots';
 import { MemoryGame, starsFor, type Card, type Special } from './engine';
 import { cardWidth, fits, GAP, MIN_CARD } from './layout';
@@ -74,8 +76,8 @@ describe.each(LEVELS)('level $id board', (level) => {
         }
 
         // every picture exists
-        cards.filter((c) => !c.face).forEach((c) => expect(() => artDrawing(c.art)).not.toThrow());
-        cards.forEach((c) => c.face?.kind === 'word' && expect(() => artDrawing(c.face!.kind === 'word' ? (c.face as { art: string }).art : '')).not.toThrow());
+        cards.filter((c) => !c.face).forEach((c) => expect(knownPicture(c.art), c.art).toBe(true));
+        cards.forEach((c) => c.face?.kind === 'word' && expect(knownPicture((c.face as { art: string }).art)).toBe(true));
       }
     });
   }
@@ -88,7 +90,7 @@ describe('decks are never mixed', () => {
         const cards = composeLevel(level, mathMax, rng(seed + level.id * 100));
         const plain = cards.filter((c) => !c.face);
         expect(plain.length).toBeGreaterThan(0);
-        plain.forEach((c) => expect(c.art.startsWith(`${level.deck}:`)).toBe(true));
+        plain.forEach((c) => expect(c.art.startsWith(`${level.deck}:`) || c.art.startsWith('en:'), c.art).toBe(true));
       }
     }
   });
@@ -136,7 +138,7 @@ describe('learning pairs', () => {
     expect(new Set(LETTERS.map((x) => x.word)).size).toBe(22);
     for (const x of LETTERS) {
       expect(x.word.startsWith(x.letter) || x.word.includes(x.letter)).toBe(true);
-      expect(() => artDrawing(x.art)).not.toThrow();
+      expect(knownPicture(x.art), x.art).toBe(true);
     }
   });
 });
@@ -152,6 +154,15 @@ describe('art', () => {
       expect(Object.values(d.art).join('') + d.back).not.toMatch(/\p{Extended_Pictographic}/u);
     }
     expect(backs.size).toBe(4);
+    // the 3D pictures: every picture of a world has its file (the drawn SVG stays as a fallback for the ones that do not)
+    for (const id of DECK_IDS) {
+      const keys = DECKS[id].keys;
+      expect(new Set(keys).size).toBe(15);
+      for (const k of keys) {
+        const own = !k.includes(':');
+        expect(own ? CARD_IMAGES.includes(k) : pictureUrl(k) !== null, `${id}: ${k}`).toBe(true);
+      }
+    }
     expect(Object.values(lettersArt).join('')).not.toMatch(/\p{Extended_Pictographic}/u);
   });
 });

@@ -70,7 +70,7 @@ export const FAMILY_MAX = 15;
 /** The four decks of the journey, in the order of the worlds. */
 export const JOURNEY_DECKS: FreeDeck[] = WORLDS.map((w) => {
   const d = DECKS[w.deck as DeckId];
-  return { id: w.deck, he: w.deck === 'sweets' ? 'ממתקי המסע' : w.name, kind: 'journey' as const, color: w.to, frame: d.frame, back: d.back, keys: d.keys.map((k) => `${w.deck}:${k}`), cover: [`${w.deck}:${d.keys[0]}`, `${w.deck}:${d.keys[1]}`] };
+  return { id: w.deck, he: w.deck === 'sweets' ? 'ממתקי המסע' : w.name, kind: 'journey' as const, color: w.to, frame: d.frame, back: d.back, keys: d.keys.map((k) => (k.includes(':') ? k : `${w.deck}:${k}`)), cover: [`${w.deck}:${d.keys[0]}`, `${w.deck}:${d.keys[1]}`] };
 });
 
 export const ALL_FREE_DECKS: FreeDeck[] = [...JOURNEY_DECKS, ...ENGLISH_DECKS, FAMILY_DECK];

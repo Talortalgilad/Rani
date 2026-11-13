@@ -2,7 +2,7 @@ import type { GameContext, GameModule } from '../types';
 import { DECKS } from './decks';
 import { composeLevel } from './compose';
 import { freeDeckById, keysOf, type FreeDeck } from './decks/free';
-import { setFamilyUrls } from './decks/pictures';
+import { pictureUrl, setFamilyUrls } from './decks/pictures';
 import { MemoryGame, buildCards, type Card } from './engine';
 import { levelConfig } from '../../math/levels';
 import { activeLevel } from '../../math/adaptive';
@@ -173,6 +173,9 @@ async function play(spec: Spec, saved?: Session): Promise<void> {
   if (dead) return;
   const prep = prepare(spec);
   if (!prep) return void (spec.mode === 'journey' ? showMap() : showMenu());
+  // the pictures are fetched before the cards are dealt (and kept by the service worker for offline)
+  await Promise.all([...new Set(prep.cards.map((c) => (c.face ? null : pictureUrl(c.art))).filter((u): u is string => !!u))].map((u) => new Promise<void>((res) => { const im = new Image(); im.onload = im.onerror = () => res(); im.src = u; })));
+  if (dead) return;
   const restored = saved ? MemoryGame.restore(saved.game) : null;
   const versus = spec.mode === 'versus' ? (saved?.versus ? Versus.restore(saved.versus) : players ? new Versus(players) : null) : null;
   if (spec.mode === 'versus' && !versus) return void showMenu();

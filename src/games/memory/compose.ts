@@ -11,6 +11,9 @@ export function maxNumberFor(mathMax: number): number {
 }
 
 /** "deck:picture" keys for `n` picture groups, always from the level's own world deck. */
+/** Pictures that must not be plain cards on a board that has a special card with the same picture (the star card shows the star). */
+const LOOKS_LIKE: Record<Special, string[]> = { star: ['en:star', 'space:star'], peek: ['space:telescope'], shuffle: [] };
+
 function pictureKeys(deck: Level['deck'], n: number, rand: Rand, exclude: Set<string>): string[] {
   const keys = shuffle(deckKeys(deck), rand).filter((k) => !exclude.has(k));
   if (keys.length < n) throw new Error(`deck ${deck} has ${keys.length} pictures, level needs ${n}`);
@@ -28,7 +31,7 @@ export function composeLevel(level: Level, mathMax: number, rand: Rand = Math.ra
     parts.push(Array.from({ length: level.group }, () => ({ art: SPECIAL_KEY[sp], face: { kind: 'special' as const, special: sp } })));
   }
 
-  const used = new Set<string>();
+  const used = new Set<string>(specials.flatMap((s) => LOOKS_LIKE[s]));
   let edu = 0;
   if (level.edu === 'numqty') {
     const top = maxNumberFor(mathMax);

@@ -5,9 +5,34 @@ import { Materials, roundedBox } from '../../lobby3d/shapes';
 import { svgToTexture } from '../../lobby3d/textures';
 import type { LobbyIslandCtx, LobbyIslandHandle } from '../types';
 import { DECKS, artSvg } from './decks';
+import { pictureUrl } from './decks/pictures';
 
-// the 4 cards: cow, pig, sheep, pig. The two pigs are the pair that gets found.
-const ARTS = ['farm:cow', 'farm:pig', 'farm:sheep', 'farm:pig'];
+// the 4 cards: cow, pig, sheep, pig (the 3D pictures of the game). The two pigs are the pair that gets found.
+const ARTS = ['farm:cow', 'en:pig', 'farm:sheep', 'en:pig'];
+
+/** A 3D picture on a white card face as a texture (the drawn SVG is the fallback when a picture was not cut). */
+function pictureTexture(key: string, w: number, h: number): Promise<T.Texture> {
+  const url = pictureUrl(key);
+  if (!url) return svgToTexture(artSvg(key), w, h, '#ffffff');
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      const g = c.getContext('2d')!;
+      g.fillStyle = '#ffffff';
+      g.fillRect(0, 0, w, h);
+      const side = Math.min(w, h) * 0.86;
+      g.drawImage(im, (w - side) / 2, (h - side) / 2, side, side);
+      const tex = new T.CanvasTexture(c);
+      tex.colorSpace = T.SRGBColorSpace;
+      resolve(tex);
+    };
+    im.onerror = () => reject(new Error('picture failed'));
+    im.src = url;
+  });
+}
 const LOOP = 7; // seconds
 // [card, turns face up at, turns back at]
 const FLIPS: [number, number, number][] = [[0, 0.6, 2.6], [2, 1.4, 2.6], [1, 3.4, 6.2], [3, 4.0, 6.2]];
@@ -51,7 +76,7 @@ export function createLobbyIsland(ctx: LobbyIslandCtx): LobbyIslandHandle {
     m.needsUpdate = true;
   };
   svgToTexture(DECKS.farm.back, 128, 160).then((tex) => cards.forEach((c) => apply(c.back, tex))).catch(() => {});
-  ARTS.forEach((a, i) => svgToTexture(artSvg(a), 128, 160, '#ffffff').then((tex) => apply(cards[i].front, tex)).catch(() => {}));
+  ARTS.forEach((a, i) => pictureTexture(a, 128, 160).then((tex) => apply(cards[i].front, tex)).catch(() => {}));
 
   let lastTl = 0;
   return {
