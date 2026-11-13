@@ -1,0 +1,25 @@
+/* Block game. Everything is scoped under .bk so it can't touch other games. */
+.screen.game:has(> .bk) { padding: 0; height: 100%; min-height: 0; overflow: hidden; }
+.bk { position: relative; height: 100%; display: flex; flex-direction: column; background: linear-gradient(#fdf3dc, #f7dfb4); touch-action: none; user-select: none; -webkit-user-select: none; }
+.bk-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 4px calc(12px + env(safe-area-inset-left)); }
+.bk-home { width: 48px; height: 48px; border: 0; border-radius: 50%; background: #fff; font-size: 24px; box-shadow: 0 3px 8px rgba(90,50,20,.2); font-family: inherit; }
+.bk-score { font-size: 40px; font-weight: 800; color: #6b3f1d; line-height: 1; text-align: center; flex: 1; font-variant-numeric: tabular-nums; }
+.bk-best { min-width: 70px; text-align: center; font-weight: 800; color: #a86d2a; font-size: 18px; }
+.bk-streak { position: absolute; top: calc(60px + env(safe-area-inset-top)); inset-inline-start: 14px; background: #ff7a2c; color: #fff; border-radius: 16px; padding: 2px 10px; font-weight: 800; font-size: 18px; transform: scale(0); transition: transform .2s; }
+.bk-streak.on { transform: scale(1); }
+.bk-stage { flex: 1; min-height: 0; position: relative; }
+.bk-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.bk-combo { position: absolute; left: 0; right: 0; top: 30%; text-align: center; font-size: 64px; font-weight: 900; color: #fff; -webkit-text-stroke: 3px #e0568a; paint-order: stroke fill; text-shadow: 0 6px 0 #e0568a; pointer-events: none; opacity: 0; }
+.bk-combo.go { animation: bk-pop 1s ease-out; }
+.bk-combo.clean { font-size: 52px; -webkit-text-stroke-color: #2aa98f; text-shadow: 0 6px 0 #2aa98f; }
+@keyframes bk-pop { 0% { opacity: 0; transform: scale(.4); } 20% { opacity: 1; transform: scale(1.2); } 35% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-40px) scale(1); } }
+.bk-gain { direction: ltr; unicode-bidi: isolate; position: absolute; font-weight: 900; font-size: 28px; color: #fff; -webkit-text-stroke: 2px #c4701c; paint-order: stroke fill; pointer-events: none; animation: bk-gain .9s ease-out forwards; }
+@keyframes bk-gain { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -60px); } }
+.bk.shake .bk-stage { animation: bk-shake .3s; }
+@keyframes bk-shake { 0%, 100% { transform: none; } 20% { transform: translate(-5px, 2px); } 40% { transform: translate(5px, -2px); } 60% { transform: translate(-3px, 1px); } 80% { transform: translate(3px, -1px); } }
+@media (prefers-reduced-motion: reduce) { .bk.shake .bk-stage { animation: none; } .bk-combo.go { animation-duration: .01s; opacity: 1; } }
+.bk-over { position: absolute; inset: 0; background: rgba(253, 243, 220, .88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 24px; animation: bk-fade .3s; }
+@keyframes bk-fade { from { opacity: 0; } }
+.bk-over h2 { margin: 0; font-size: 34px; color: #6b3f1d; }
+.bk-over .big { font-size: 64px; font-weight: 900; color: #e0568a; }
+.bk-over .row { display: flex; gap: 12px; }
