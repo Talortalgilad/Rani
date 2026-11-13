@@ -33,5 +33,6 @@ export const bk = {
   tut_col: 'עכשיו נשלים עמודה!',
   tut_square: 'ועכשיו ריבוע של שלוש על שלוש!',
   prize: 'קיבלת יהלום!',
+  cheer: 'את יכולה! עוד קצת!',
 };
 export const BLOCKS_LINES: { id: string; parts: (string | null)[] }[] = ((Object.keys(bk) as (keyof typeof bk)[])).map((k) => ({ id: `blk_${k}`, parts: [bk[k]] }));

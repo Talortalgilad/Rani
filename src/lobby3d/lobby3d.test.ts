@@ -226,6 +226,7 @@ import { Birds } from './sky';
 import { games } from '../games/registry';
 import { createLobbyIsland as brickIsland } from '../games/brick-breaker/lobby-island';
 import { createLobbyIsland as memoryIsland } from '../games/memory/lobby-island';
+import { createLobbyIsland as blocksIsland } from '../games/blocks/lobby-island';
 
 describe('star jar', () => {
   it('holds 100 stars in layers: distinct slots, inside the glass, filled from the bottom', () => {
@@ -309,10 +310,12 @@ describe('game miniatures', () => {
   it('both games bring one, and a game without one is fine (it gets the basic island)', () => {
     expect(games.find((g) => g.id === 'brick-breaker')!.lobbyIsland).toBeTypeOf('function');
     expect(games.find((g) => g.id === 'memory')!.lobbyIsland).toBeTypeOf('function');
+    expect(games.find((g) => g.id === 'blocks')!.lobbyIsland).toBeTypeOf('function');
   });
   it.each([
     ['brick breaker', brickIsland],
     ['memory', memoryIsland],
+    ['blocks', blocksIsland],
   ])('%s: builds, animates for a minute, reacts to a tap and frees everything', (_n, make) => {
     for (const reduced of [false, true]) {
       const h = make({ shadows: true, reduced });
@@ -377,5 +380,31 @@ describe('carousel feel (spring tuning)', () => {
     expect(c.settled).toBe(false);
     for (let i = 0; i < 400; i++) c.update(1 / 60);
     expect(c.settled).toBe(true);
+  });
+});
+
+describe('the block game miniature: the budget of the lobby', () => {
+  const cost = (h: { object: { traverse(f: (o: unknown) => void): void } }): { calls: number; tris: number } => {
+    let calls = 0;
+    let tris = 0;
+    h.object.traverse((o) => {
+      const m = o as { isMesh?: boolean; geometry?: { index?: { count: number }; attributes: { position: { count: number } } }; count?: number };
+      if (m.isMesh && m.geometry) {
+        calls += 1;
+        tris += ((m.geometry.index?.count ?? m.geometry.attributes.position.count) / 3) * (m.count ?? 1);
+      }
+    });
+    return { calls, tris };
+  };
+  it('is four draw calls (tower, stars, shade, a loose block) and no more triangles than the brick breaker wall, and a block jumps and comes back', () => {
+    const h = blocksIsland({ shadows: true, reduced: false });
+    const mine = cost(h);
+    const wall = cost(brickIsland({ shadows: true, reduced: false }));
+    expect(mine.calls).toBeLessThanOrEqual(4);
+    expect(mine.tris).toBeLessThanOrEqual(wall.tris);
+    for (let i = 0; i < 60 * 20; i++) h.update(1 / 60, i / 60);
+    h.tap?.();
+    for (let i = 0; i < 60 * 2; i++) h.update(1 / 60, 20 + i / 60);
+    h.dispose();
   });
 });
