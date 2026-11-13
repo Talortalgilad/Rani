@@ -9,7 +9,8 @@
  * of that folder is updated. The order of priority does not change: a recording made on the device, then a file of the repo, then TTS.
  *
  *   npx vite-node scripts/import-takes.ts            downloads what is missing (assets/voice-raw/takes/take-<n>.mp3), cuts, reports
- *   options: --only=<take number>   --keep-review (the page of the parents area is fed by he/_review.json, written here)
+ *   options: --only=<takes: 5, 100-107, 3,5,100-107>   (the page of the parents area is fed by he/_review.json, written here; the lines of the takes that
+ *   are not cut now stay in it)
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -19,7 +20,9 @@ const ROOT = resolve(new URL('..', import.meta.url).pathname);
 const RAW = join(ROOT, 'assets/voice-raw');
 const TAKES = join(RAW, 'takes');
 const OUT = (lang: string): string => join(ROOT, 'public/english/voice', lang);
-const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
+// --only=100-107 or --only=3,5,100-107: the takes to cut (nothing: all of them)
+const onlyArg = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
+const wanted = (n: number): boolean => !onlyArg || onlyArg.split(',').some((p) => { const [a, b] = p.split('-').map(Number); return n >= a && n <= (b ?? a); });
 const MARGIN = 0.1;
 
 interface Take { take: number; lang: 'he' | 'en'; url: string; lines: { id: string; text: string }[] }
@@ -120,7 +123,7 @@ async function main(): Promise<void> {
   const problems: string[] = [];
   const all: { id: string; text: string; lang: string; take: number; from: number; to: number; dur: number; letters: number; note: string }[] = [];
   for (const t of takes) {
-    if (only !== undefined && Number(only) !== t.take) continue;
+    if (!wanted(t.take)) continue;
     const src = join(TAKES, `take-${t.take}.mp3`);
     if (!existsSync(src)) {
       const r = await fetch(t.url);
@@ -153,11 +156,14 @@ async function main(): Promise<void> {
     });
     if (cut.cuts.some((c) => c.dur < 0.8)) problems.push(`take ${t.take}: a cut at a silence shorter than 0.8 s (${cut.cuts.filter((c) => c.dur < 0.8).map((c) => `${c.start.toFixed(1)}s=${c.dur.toFixed(2)}`).join(', ')}) - check by ear`);
   }
-  // lines that look wrong: shorter than 0.3 s, or more than twice what the text asks for
-  const rates = all.map((a) => a.dur / a.letters).sort((a, b) => a - b);
-  const rate = rates[Math.floor(rates.length / 2)] ?? 0.1;
+  // lines that look wrong: shorter than 0.3 s, or more than twice what the text asks for (the speed of speaking is measured for each language)
+  const rateOf = new Map<string, number>();
+  for (const lang of ['he', 'en']) {
+    const r = all.filter((a) => a.lang === lang).map((a) => a.dur / a.letters).sort((x, y) => x - y);
+    rateOf.set(lang, r[Math.floor(r.length / 2)] ?? 0.1);
+  }
   for (const a of all) {
-    const exp = rate * a.letters;
+    const exp = rateOf.get(a.lang)! * a.letters;
     if (a.dur < 0.3) a.note = 'short';
     else if (a.dur > 2 * exp) a.note = 'long';
     if (a.note) problems.push(`take ${a.take}: ${a.id} ${a.note}: ${a.dur.toFixed(2)}s, the text asks for about ${exp.toFixed(2)}s ("${a.text}")`);
@@ -172,11 +178,16 @@ async function main(): Promise<void> {
     writeFileSync(mf, JSON.stringify({ ...cur, clips }, null, 1) + '\n');
     console.log(`${lang}/manifest.json: ${clips.length} recordings`);
   }
-  // the temporary review page in the parents area reads this
-  const he = all.filter((a) => a.lang === 'he');
+  // the temporary review page in the parents area reads this (the lines of the takes that were not cut now are kept)
   mkdirSync(OUT('he'), { recursive: true });
-  writeFileSync(join(OUT('he'), '_review.json'), JSON.stringify(he.map((a) => ({ id: a.id, text: a.text, take: a.take, dur: Math.round((a.dur + 2 * MARGIN) * 100) / 100, flag: a.note })), null, 1) + '\n');
-  console.log(`\n${all.length} lines cut. Median ${rate.toFixed(3)} s per letter.`);
+  const reviewFile = join(OUT('he'), '_review.json');
+  type Review = { id: string; text: string; lang: string; take: number; dur: number; flag: string };
+  const prev = existsSync(reviewFile) ? (JSON.parse(readFileSync(reviewFile, 'utf8')) as Review[]) : [];
+  const now: Review[] = all.map((a) => ({ id: a.id, text: a.text, lang: a.lang, take: a.take, dur: Math.round((a.dur + 2 * MARGIN) * 100) / 100, flag: a.note }));
+  const keep = prev.map((r) => ({ lang: 'he', ...r })).filter((r) => !now.some((n) => n.id === r.id && n.lang === r.lang));
+  writeFileSync(reviewFile, JSON.stringify([...keep, ...now], null, 1) + '\n');
+  const rate = rateOf.get('he')!;
+  console.log(`\n${all.length} lines cut. Median ${rate.toFixed(3)} s per letter (Hebrew), ${rateOf.get('en')!.toFixed(3)} (English).`);
   console.log(problems.length ? `\nTo check:\n  ${problems.join('\n  ')}` : '\nEvery take matched its lines, and no line looks wrong.');
 }
 
