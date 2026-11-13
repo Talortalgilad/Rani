@@ -30,7 +30,7 @@ export interface GameHooks {
   onShake(): void;
   best(): number;
   /** where the row of helpers goes (px in the stage) and the size of a cell: the board, the tray and the helpers are centred as one group */
-  onLayout(helpersTop: number, cell: number): void;
+  onLayout(helpersTop: number, cell: number, boardTop: number, boardX: number, boardW: number): void;
   /** a move is done (the game is saved) */
   onMoveDone(): void;
   /** the helper that waits for a tap on a shape or on a block (null: none) */
@@ -59,6 +59,7 @@ const SRC = (name: string): string => (name === 'candy' || name === 'star' ? `en
 const SLOT_SCALE = 0.7;
 const TRAY_ROWS = 3.2;
 const GAP_CELLS = 0.5;
+const COMP_ROWS = 1.1;
 const GROW_MS = 130;
 const POP_MS = 170;
 const FLASH_MS = 130;
@@ -118,6 +119,8 @@ export class BlockGame {
   /** the part of a picture that is not transparent, so that an obstacle fills its whole cell */
   private boxes = new Map<string, { sx: number; sy: number; sw: number; sh: number }>();
   private stone: Sprite | null = null;
+  /** the wooden tray and the empty cells, drawn once per size (shadow and gradients are slow to paint again and again) */
+  private boardLayer: HTMLCanvasElement | null = null;
   private bounce = new Float64Array(N * N).fill(-1e9);
   private flies: Fly[] = [];
   private finishing = false;
@@ -206,27 +209,29 @@ export class BlockGame {
     const r = this.canvas.getBoundingClientRect();
     this.W = Math.max(200, r.width);
     this.H = Math.max(260, r.height);
-    this.dpr = Math.min(3, window.devicePixelRatio || 1);
+    this.dpr = Math.min(2, window.devicePixelRatio || 1);
     this.canvas.width = Math.round(this.W * this.dpr);
     this.canvas.height = Math.round(this.H * this.dpr);
     // the board, the tray (half a cell below it) and the row of helpers are one group, centred up and down
     const helpersH = (c: number): number => Math.min(72, Math.max(52, c * 1.5));
     let cell = Math.floor((this.W * 0.92) / N);
-    const groupH = (c: number): number => (N + GAP_CELLS + TRAY_ROWS) * c + 0.35 * c + helpersH(c);
+    // a row above the board is the seat of the companion
+    const groupH = (c: number): number => (N + GAP_CELLS + TRAY_ROWS + COMP_ROWS) * c + 0.35 * c + helpersH(c);
     while (cell > 20 && groupH(cell) > this.H - 8) cell--;
     const board = cell * N;
     const top = Math.max(4, Math.round((this.H - groupH(cell)) / 2));
-    this.geo = { x: Math.round((this.W - board) / 2), y: top, cell };
+    this.geo = { x: Math.round((this.W - board) / 2), y: top + Math.round(COMP_ROWS * cell), cell };
     if (this.spriteCell !== cell * this.dpr) {
       this.spriteCell = cell * this.dpr;
       this.sprites = makeSprites(Math.round(cell * this.dpr), this.skin);
       this.stone = makeStone(Math.round(cell * this.dpr));
     }
-    this.trayTop = top + board + GAP_CELLS * cell;
+    this.trayTop = this.geo.y + board + GAP_CELLS * cell;
     this.trayH = TRAY_ROWS * cell;
     const sw = this.W / 3;
     this.slotRects = [0, 1, 2].map((i) => ({ x: i * sw, y: this.trayTop, w: sw, h: this.trayH }));
-    this.hooks.onLayout(this.trayTop + this.trayH + 0.35 * cell, cell);
+    this.boardLayer = null;
+    this.hooks.onLayout(this.trayTop + this.trayH + 0.35 * cell, cell, this.geo.y, this.geo.x, cell * N);
     this.dirty = true;
   }
 
@@ -581,7 +586,8 @@ export class BlockGame {
     const lockBefore = Array.from(this.board.lock);
     const clears = this.board.clearFull();
     this.run?.onClears(clears);
-    const empty = this.board.isEmpty;
+    // a clean board has no blocks left (the obstacles of a level stay): 300 points, confetti, "לוח נקי!" (in the journey as well)
+    const empty = this.board.filled === 0;
     const res = this.score.move(cells.length, clears.units, empty);
     if (clears.units > 0) {
       const order = burstOrder(clears.cells);
@@ -717,7 +723,7 @@ export class BlockGame {
     const g = this.g;
     g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     g.clearRect(0, 0, this.W, this.H);
-    this.drawBoard();
+    this.blitBoard();
     const { x: bx, y: by, cell } = this.geo;
 
     // the blocks on the board
@@ -973,6 +979,25 @@ export class BlockGame {
         this.g.restore();
       } else this.drawPiece(slot, home.x, y, home.s, fits ? 1 : 0.4);
     });
+  }
+
+  private blitBoard(): void {
+    if (!this.boardLayer) {
+      const c = document.createElement('canvas');
+      c.width = this.canvas.width;
+      c.height = this.canvas.height;
+      const lg = c.getContext('2d')!;
+      lg.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      const real = this.g;
+      this.g = lg;
+      this.drawBoard();
+      this.g = real;
+      this.boardLayer = c;
+    }
+    this.g.save();
+    this.g.setTransform(1, 0, 0, 1, 0, 0);
+    this.g.drawImage(this.boardLayer, 0, 0);
+    this.g.restore();
   }
 
   private drawBoard(): void {
