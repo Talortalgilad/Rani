@@ -265,7 +265,10 @@ export function mountBoard(root: HTMLElement, cfg: BoardConfig, cards: Card[], d
       later(() => deps.onChange?.(), FLIP_MS + 50);
       if (game.done) {
         finishing = true;
-        later(() => deps.onFinish({ stars: starsFor(game.attempts, game.pairs, cfg.group), attempts: game.attempts, bestStreak: game.bestStreak, ...(versus ? { winner: versus.winner() } : {}) }), FLIP_MS + (versus ? 2100 : 1500));
+        later(() => {
+          comboEl.hidden = true; // the "×3" must not stay over the window of the end screen
+          deps.onFinish({ stars: starsFor(game.attempts, game.pairs, cfg.group), attempts: game.attempts, bestStreak: game.bestStreak, ...(versus ? { winner: versus.winner() } : {}) });
+        }, FLIP_MS + (versus ? 2100 : 1500));
       } else if (res.special === 'peek') later(peek, FLIP_MS + 900);
       else if (res.special === 'shuffle') later(shuffleCards, FLIP_MS + 900);
       hold(FLIP_MS + (versus ? 1500 : 900));

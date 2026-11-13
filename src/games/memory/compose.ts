@@ -1,4 +1,5 @@
 import { LETTERS, deckKeys } from './decks';
+import { QTY_MAX } from './ui/faces';
 import { shuffle, type Card, type Face, type Rand, type Special } from './engine';
 import { groupsOf, type Level } from './levels';
 
@@ -7,7 +8,7 @@ const MAX_EDU = 6;
 
 /** Highest number used on number ↔ quantity cards, from the child's maths level. */
 export function maxNumberFor(mathMax: number): number {
-  return Math.max(5, Math.min(20, mathMax));
+  return Math.max(5, Math.min(QTY_MAX, mathMax));
 }
 
 /** "deck:picture" keys for `n` picture groups, always from the level's own world deck. */

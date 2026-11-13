@@ -118,7 +118,7 @@ describe('learning pairs', () => {
         expect(n).toBeLessThanOrEqual(maxNumberFor(mathMax));
       });
     }
-    expect([maxNumberFor(5), maxNumberFor(10), maxNumberFor(20)]).toEqual([5, 10, 20]);
+    expect([maxNumberFor(5), maxNumberFor(10), maxNumberFor(20)]).toEqual([5, 8, 8]); // a quantity has to be countable: at most 8 pictures
   });
   it('letter ↔ word: 6 pairs, each letter matches its own word', () => {
     const l = LEVELS.find((x) => x.edu === 'letters')!;

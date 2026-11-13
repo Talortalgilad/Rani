@@ -7,12 +7,28 @@ const FONT = `font-family="Rubik, system-ui, sans-serif" font-weight="800" text-
 const wrap = (inner: string, bg: string) =>
   `<svg viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect width="100" height="125" fill="${bg}"/>${inner}</svg>`;
 
-/** Pictures that are repeated on the quantity cards (7 apples, 4 balls...): one picture, as many times as the number says. */
+/** Pictures that are repeated on the quantity cards (7 apples, 4 balls...): one 3D picture of the English game, as many times as the number says. */
 const QTY_PICS = ['apple', 'banana', 'ball', 'cookie', 'balloon', 'star', 'donut', 'cupcake'];
+
+/**
+ * Where the pictures sit on a quantity card, like the dots of a dice: size and centres in % of the card's width (the card is 125 high).
+ * Every picture is at least 28% of the width, so that they can be counted: up to 6 like a dice, 7 and 8 in two rows of four.
+ */
+export const QTY_LAYOUT: Record<number, { size: number; pts: [number, number][] }> = {
+  1: { size: 56, pts: [[50, 62]] },
+  2: { size: 40, pts: [[30, 36], [70, 89]] },
+  3: { size: 36, pts: [[28, 28], [50, 62], [72, 96]] },
+  4: { size: 36, pts: [[30, 36], [70, 36], [30, 88], [70, 88]] },
+  5: { size: 30, pts: [[26, 30], [74, 30], [50, 62], [26, 94], [74, 94]] },
+  6: { size: 32, pts: [[30, 26], [70, 26], [30, 62], [70, 62], [30, 98], [70, 98]] },
+  7: { size: 28, pts: [[17, 44], [39, 44], [61, 44], [83, 44], [28, 82], [50, 82], [72, 82]] },
+  8: { size: 28, pts: [[17, 44], [39, 44], [61, 44], [83, 44], [17, 82], [39, 82], [61, 82], [83, 82]] },
+};
+export const QTY_MAX = 8;
 function qty(n: number): string {
   const id = QTY_PICS[(n - 1) % QTY_PICS.length];
-  const cols = n <= 4 ? 2 : n <= 9 ? 3 : 4;
-  return `<div class="mm-qty" style="--cols:${cols}" aria-label="${n}">${Array.from({ length: n }, () => `<img src="${enUrl(id)}" alt="" draggable="false">`).join('')}</div>`;
+  const { size, pts } = QTY_LAYOUT[Math.max(1, Math.min(QTY_MAX, n))];
+  return `<div class="mm-qty" aria-label="${n}">${pts.map(([x, y]) => `<img src="${enUrl(id)}" alt="" draggable="false" style="width:${size}%;left:${x - size / 2}%;top:${(y - size / 2) / 1.25}%">`).join('')}</div>`;
 }
 
 /** A special card with a 3D picture: the picture on a coloured ground (the frame tells it from a plain card). */

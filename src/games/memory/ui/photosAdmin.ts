@@ -10,6 +10,7 @@ export const photosCardHtml = (): string => `
   <section class="p-card" id="mem-photos">
     <h2>זיכרון: המשפחה שלי</h2>
     <div class="p-sub">תמונות של המשפחה לערכת הקלפים. הערכה נפתחת במשחק כשיש לפחות ${FAMILY_MIN} תמונות (עד ${FAMILY_MAX}). התמונות נשמרות רק בטלפון הזה ולא יוצאות ממנו.</div>
+    <div class="p-sub">אם מוחקים את האפליקציה או את נתוני הדפדפן, התמונות יימחקו. המקור נשאר בגלריה שלך.</div>
     <div id="mem-photos-body"></div>
   </section>`;
 
@@ -35,7 +36,8 @@ export async function bindPhotosCard(root: HTMLElement): Promise<void> {
     const room = FAMILY_MAX - photos.length;
     body!.innerHTML = `
       <div class="p-kpis"><div><b style="font-size:20px">${counter(`${photos.length} מתוך ${FAMILY_MAX}`)}</b><span>תמונות בערכה</span></div>
-      <div><b>${photos.length >= FAMILY_MIN ? '✓' : '🔒'}</b><span>${photos.length >= FAMILY_MIN ? 'הערכה פתוחה' : `חסרות ${FAMILY_MIN - photos.length} לפתיחה`}</span></div><div></div></div>
+      <div><b>${photos.length >= FAMILY_MIN ? '✓' : '🔒'}</b><span>${photos.length >= FAMILY_MIN ? 'הערכה פתוחה' : `חסרות ${FAMILY_MIN - photos.length} לפתיחה`}</span></div>
+      <div><b>${room}</b><span>מקומות פנויים</span></div></div>
       ${flash ? `<div class="p-flash">${flash}</div>` : ''}
       ${
         pending

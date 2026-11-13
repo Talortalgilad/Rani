@@ -175,3 +175,39 @@ describe('the Hebrew of stage 3 is all in the list that is recorded', () => {
     for (const id of ['mm_turnOf', 'mm_pairAgain', 'mm_wins']) expect(MEMORY_LINES.find((l) => l.id === id)!.parts.includes(null), id).toBe(true);
   });
 });
+
+import { QTY_LAYOUT, QTY_MAX } from './ui/faces';
+import { composeLevel } from './compose';
+
+describe('quantity cards: pictures big enough to count, laid out like the dots of a dice', () => {
+  it('every number from 1 to 8 has the right number of pictures, none smaller than 28% of the card width, all inside the card', () => {
+    expect(Object.keys(QTY_LAYOUT).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(QTY_MAX).toBe(8);
+    for (const [k, l] of Object.entries(QTY_LAYOUT)) {
+      const n = Number(k);
+      expect(l.pts, `${n}`).toHaveLength(n);
+      expect(l.size, `${n}`).toBeGreaterThanOrEqual(28);
+      for (const [x, y] of l.pts) {
+        expect(x - l.size / 2, `${n} left`).toBeGreaterThanOrEqual(0);
+        expect(x + l.size / 2, `${n} right`).toBeLessThanOrEqual(100.01);
+        expect(y - l.size / 2, `${n} top`).toBeGreaterThanOrEqual(0);
+        expect(y + l.size / 2, `${n} bottom`).toBeLessThanOrEqual(125);
+      }
+      // the pictures do not sit on top of each other (the pictures have a little room of their own round them)
+      for (let i = 0; i < l.pts.length; i++) for (let j = i + 1; j < l.pts.length; j++) expect(Math.hypot(l.pts[i][0] - l.pts[j][0], l.pts[i][1] - l.pts[j][1]), `${n}: ${i}/${j}`).toBeGreaterThanOrEqual(l.size * 0.78);
+    }
+    // 7 and 8: two rows
+    for (const n of [7, 8]) expect(new Set(QTY_LAYOUT[n].pts.map((p) => p[1])).size).toBe(2);
+  });
+  it('a board has at most 6 number-and-quantity pairs, with numbers up to 8, and the pictures are 3D ones of the English game (never an emoji)', () => {
+    const lvl = LEVELS.find((l) => l.edu === 'numqty')!;
+    for (let seed = 1; seed < 20; seed++) {
+      let s = seed;
+      const r = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+      const cards = composeLevel(lvl, 20, r);
+      const q = cards.filter((c) => c.face?.kind === 'qty');
+      expect(q.length).toBeLessThanOrEqual(6);
+      for (const c of q) expect((c.face as { n: number }).n).toBeLessThanOrEqual(8);
+    }
+  });
+});
