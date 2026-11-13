@@ -13,10 +13,11 @@ import { boardStars } from './stars';
 import { LEVELS, levelById, worldOf } from './levels';
 import { ITEMS, type GoalView, type Level } from './journey';
 import { STAR_TARGETS } from './starTargets';
-import { getLook, mountCheesy, setLook, type Expression } from '../english/art/cheesy';
+import { cheesyImg, getLook, mountCheesy, setLook, type Expression } from '../english/art/cheesy';
 import { emptyProgress, isUnlocked, renderMap, type Progress } from './ui/map';
 import './ui/blocks.css';
 
+const esc = (t: string): string => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const dayKey = (d = new Date()): string => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 
 let game: BlockGame | null = null;
@@ -116,7 +117,9 @@ function say(id: string): void {
   const el = root?.querySelector<HTMLElement>('.bk-say');
   if (!el) return;
   const key = id.replace(/^blk_/, '') as keyof typeof bk;
-  el.textContent = bk[key] ?? '';
+  // in the rescue the companion Rani chose speaks (her own picture, not an emoji)
+  const who = id === 'blk_idea' ? `<span class="bk-say-who">${cheesyImg('surprised')}</span>` : '';
+  el.innerHTML = `${who}<span>${esc(bk[key] ?? '')}</span>`;
   el.classList.remove('on');
   void el.offsetWidth;
   el.classList.add('on');

@@ -103,3 +103,6 @@
 .bk-over .who { width: 120px; height: 114px; }
 @media (prefers-reduced-motion: reduce) { .bk-comp { transition: none; } }
 
+
+.bk-say { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.bk-say-who { flex: none; width: 46px; height: 44px; margin: -6px 0; }
