@@ -13,6 +13,7 @@ import { boardStars } from './stars';
 import { LEVELS, levelById, worldOf } from './levels';
 import { ITEMS, type GoalView, type Level } from './journey';
 import { STAR_TARGETS } from './starTargets';
+import { getLook, mountCheesy, setLook, type Expression } from '../english/art/cheesy';
 import { emptyProgress, isUnlocked, renderMap, type Progress } from './ui/map';
 import './ui/blocks.css';
 
@@ -30,9 +31,14 @@ let fresh = true;
 /** The game on the table is over (a level done or a full board): it is not saved any more. */
 let over = false;
 let level: Level | null = null;
+/** the companion Rani chose in the English game (a squishy friend, or Cheesy), sitting on the corner of the board */
+let comp: { set(e: Expression): void; squish(): void; hop(): void } | null = null;
+let compTimer = 0;
+let tense = false;
+let lookBefore: ReturnType<typeof getLook> | null = null;
 const base = (): string => import.meta.env.BASE_URL;
 
-const icon = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="22" fill="#f6dfb2"/><rect x="14" y="14" width="34" height="34" rx="9" fill="#ff5a6a"/><rect x="52" y="14" width="34" height="34" rx="9" fill="#58b8ff"/><rect x="14" y="52" width="34" height="34" rx="9" fill="#ffd23c"/><rect x="52" y="52" width="34" height="34" rx="9" fill="#7ed957"/></svg>`;
+const icon = `<svg viewBox="0 0 100 100" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#f6dfb2"/><rect x="14" y="14" width="34" height="34" rx="9" fill="#ff5a6a"/><rect x="52" y="14" width="34" height="34" rx="9" fill="#58b8ff"/><rect x="14" y="52" width="34" height="34" rx="9" fill="#ffd23c"/><rect x="52" y="52" width="34" height="34" rx="9" fill="#7ed957"/></svg>`;
 const HELPER_ICON: Record<Helper, string> = {
   swap: '<svg viewBox="0 0 48 48"><g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20a14 14 0 0 1 24-7l4 4"/><path d="M38 8v9h-9"/><path d="M38 28a14 14 0 0 1-24 7l-4-4"/><path d="M10 40v-9h9"/></g></svg>',
   rotate: '<svg viewBox="0 0 48 48"><g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M38 24a14 14 0 1 1-5-10.7"/><path d="M36 6v10H26"/></g></svg>',
@@ -48,6 +54,37 @@ function save(): void {
 }
 const onHide = (): void => save();
 
+// ---- the companion ----
+
+/** The look of the companion: the squishy friend she chose in the English game, or Cheesy (read, never written, there). */
+function applyCompanionLook(): void {
+  const en = getState().games.english as { buddy?: string | null } | undefined;
+  lookBefore ??= { ...getLook() };
+  setLook({ buddy: en?.buddy ?? null, accessory: null });
+}
+
+/** A mood for a moment, then back to waiting (worried while the board is over 70% full, happy otherwise). */
+function mood(e: Expression, ms = 1600): void {
+  comp?.set(e);
+  comp?.hop();
+  window.clearTimeout(compTimer);
+  compTimer = window.setTimeout(() => comp?.set(tense ? 'thinking' : 'happy'), ms);
+}
+
+/** The companion comes to the middle for the rescue, and bows out. */
+function compStage(e: Expression, ms: number): void {
+  const el = root?.querySelector<HTMLElement>('.bk-comp');
+  if (!el) return;
+  el.classList.add('center');
+  mood(e, ms);
+  window.setTimeout(() => el.classList.remove('center'), ms);
+}
+
+/** A companion inside an end window. */
+function compIn(el: HTMLElement | null, e: Expression): void {
+  if (el) mountCheesy(el, e);
+}
+
 // ---- the effects over the stage ----
 
 function showCombo(text: string, kind: 'combo' | 'clean'): void {
@@ -55,6 +92,7 @@ function showCombo(text: string, kind: 'combo' | 'clean'): void {
   if (!el) return;
   el.textContent = text;
   el.className = `bk-combo ${kind === 'clean' ? 'clean' : ''}`;
+  mood(kind === 'clean' || text === 'קסם!' || text === 'וואו!' ? 'dance' : 'cheer', kind === 'clean' ? 2800 : 1800);
   void el.offsetWidth;
   el.classList.add('go');
   window.clearTimeout(comboTimer);
@@ -78,14 +116,26 @@ function say(id: string): void {
   const el = root?.querySelector<HTMLElement>('.bk-say');
   if (!el) return;
   const key = id.replace(/^blk_/, '') as keyof typeof bk;
-  const avatar = id === 'blk_idea' ? `${getState().profile.avatar || '🦄'} ` : '';
-  el.textContent = `${avatar}${bk[key] ?? ''}`;
+  el.textContent = bk[key] ?? '';
   el.classList.remove('on');
   void el.offsetWidth;
   el.classList.add('on');
   window.clearTimeout(sayTimer);
   sayTimer = window.setTimeout(() => el.classList.remove('on'), id === 'blk_idea' || id.startsWith('blk_tut') ? 3200 : 2000);
   void sayLine(id);
+  if (id === 'blk_idea') compStage('surprised', 2600);
+}
+
+/** Over 70% full she is worried and encourages once; under 60% she is calm again. */
+function watchBoard(fullness: number): void {
+  if (!tense && fullness > 0.7) {
+    tense = true;
+    comp?.set('thinking');
+    say('blk_cheer');
+  } else if (tense && fullness < 0.6) {
+    tense = false;
+    comp?.set('happy');
+  }
 }
 
 function setScore(total: number, mult: number): void {
@@ -154,12 +204,13 @@ function showFull(score: number): void {
   const [l1, l2] = bk.full.split(/,\s*/);
   const o = document.createElement('div');
   o.className = 'bk-over';
-  o.innerHTML = `<div class="who">${getState().profile.avatar || '🦄'}</div><h2 data-say="blk_full"><span class="l1">${l1},</span><span class="l2">${l2}</span></h2>
+  o.innerHTML = `<div class="who"></div><h2 data-say="blk_full"><span class="l1">${l1},</span><span class="l2">${l2}</span></h2>
     <div class="big">${counter(String(score))}</div>
     ${broke ? `<div class="newbest" data-say="blk_best">👑 ${bk.best}</div>` : ''}
     ${stars > 0 ? `<div class="earned">${'⭐'.repeat(stars)}</div>` : ''}
     <div class="row"><button class="bk-btn" id="bk-new" data-say="blk_newBoard" type="button">${bk.newBoard}</button><button class="bk-btn round" id="bk-menu" type="button" aria-label="menu">☰</button></div>`;
   root.querySelector('.bk-stage')!.appendChild(o);
+  compIn(o.querySelector('.who'), 'cheer');
   void sayLine(broke ? 'blk_best' : 'blk_full');
   o.querySelector('#bk-new')!.addEventListener('click', () => ctx!.requestRound(() => startFree()));
   o.querySelector('#bk-menu')!.addEventListener('click', showMenu);
@@ -181,10 +232,11 @@ function showLevelDone(r: { stars: 1 | 2 | 3; trays: number; score: number }): v
   const next = LEVELS.find((l) => l.id === lv.id + 1);
   const o = document.createElement('div');
   o.className = 'bk-over';
-  o.innerHTML = `${lv.boss ? `<img class="prize" src="${itemUrl('gem')}" alt="" data-say="blk_prize">` : ''}<h2 data-say="blk_levelDone">${bk.levelDone}</h2>
+  o.innerHTML = `<div class="who"></div>${lv.boss ? `<img class="prize" src="${itemUrl('gem')}" alt="" data-say="blk_prize">` : ''}<h2 data-say="blk_levelDone">${bk.levelDone}</h2>
     <div class="bigstars">${[1, 2, 3].map((s) => `<span class="${s <= r.stars ? 'on' : ''}">⭐</span>`).join('')}</div>
     <div class="row">${next ? `<button class="bk-btn" id="bk-next" data-say="blk_next" type="button">${bk.next}</button>` : ''}<button class="bk-btn round" id="bk-again" data-say="blk_again" type="button" aria-label="${bk.again}">↻</button><button class="bk-btn round" id="bk-map" data-say="blk_map" type="button" aria-label="${bk.map}">🗺️</button></div>`;
   root.querySelector('.bk-stage')!.appendChild(o);
+  compIn(o.querySelector('.who'), 'dance');
   void sayLine(lv.boss ? 'blk_prize' : 'blk_levelDone');
   o.querySelector('#bk-next')?.addEventListener('click', () => begin(next!));
   o.querySelector('#bk-again')!.addEventListener('click', () => begin(lv));
@@ -219,6 +271,7 @@ function showMap(): void {
 }
 
 function teardownGame(): void {
+  comp = null;
   game?.destroy();
   game = null;
   over = true;
@@ -257,9 +310,14 @@ function play(lv: Level | null, saved: SavedGame | null): void {
   r.style.setProperty('--bk-bg', `url(${base()}blocks/bg/${bg}.webp)`);
   const mid = lv ? `<div class="bk-goal"></div>` : `<div class="bk-best"></div>`;
   r.innerHTML = `<div class="bk-top"><button class="bk-home" type="button" aria-label="home">🏠</button><div class="bk-score">0</div>${mid}</div>
-      <div class="bk-streak"></div><div class="bk-stage"><canvas class="bk-canvas"></canvas><div class="bk-combo"></div><div class="bk-say"></div><div class="bk-helpers">${buildHelpers()}</div></div>`;
+      <div class="bk-streak"></div><div class="bk-stage"><canvas class="bk-canvas"></canvas><div class="bk-combo"></div><div class="bk-say"></div><div class="bk-comp"></div><div class="bk-helpers">${buildHelpers()}</div></div>`;
   r.querySelector('.bk-home')!.addEventListener('click', () => c.onExit());
-  r.querySelectorAll<HTMLElement>('.bk-help').forEach((b) => b.addEventListener('click', () => game?.useHelper(b.dataset.h as Helper)));
+  r.querySelectorAll<HTMLElement>('.bk-help').forEach((b) =>
+    b.addEventListener('click', () => {
+      void sayLabel(`blk_${b.dataset.h}`, '');
+      game?.useHelper(b.dataset.h as Helper);
+    }),
+  );
   game = new BlockGame(
     r.querySelector('canvas')!,
     {
@@ -275,14 +333,25 @@ function play(lv: Level | null, saved: SavedGame | null): void {
         r.classList.add('shake');
       },
       best: () => best,
-      onLayout: (top, cell) => {
+      onLayout: (top, cell, boardTop, boardX, boardW) => {
+        const cp = r.querySelector<HTMLElement>('.bk-comp');
+        if (cp) {
+          // she sits on the top edge of the board, at the right corner
+          cp.style.width = `${cell * 1.35}px`;
+          cp.style.height = `${cell * 1.28}px`;
+          cp.style.top = `${boardTop - cell * 1.22}px`;
+          cp.style.left = `${boardX + boardW - cell * 1.5}px`;
+        }
         const h = r.querySelector<HTMLElement>('.bk-helpers')!;
         h.style.top = `${top}px`;
         h.style.setProperty('--cell', `${cell}px`);
       },
       onMoveDone: () => {
         save();
-        if (game) paintHelpers(game.free);
+        if (game) {
+          paintHelpers(game.free);
+          watchBoard(game.board.fullness);
+        }
       },
       onMode: (m) => r.querySelectorAll('.bk-help').forEach((b) => b.classList.toggle('active', (b as HTMLElement).dataset.h === m)),
       onHelpers: (f) => paintHelpers(f),
@@ -304,6 +373,9 @@ function play(lv: Level | null, saved: SavedGame | null): void {
     saved,
     lv,
   );
+  tense = false;
+  const cel = r.querySelector<HTMLElement>('.bk-comp');
+  comp = cel ? mountCheesy(cel, 'happy') : null;
   setScore(saved?.score.total ?? 0, game.score.multiplier);
   paintHelpers(game.free);
   if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bk = { game, PIECES, pieceById, STAR_TARGETS, ITEMS, levelById };
@@ -319,6 +391,7 @@ const blocks: GameModule = {
 
   mount(c: GameContext) {
     ctx = c;
+    applyCompanionLook();
     best = c.load<number>('best', 0);
     bestAtStart = best;
     fresh = true;
@@ -356,6 +429,10 @@ const blocks: GameModule = {
     game = null;
     stopSpeech();
     window.clearTimeout(sayTimer);
+    window.clearTimeout(compTimer);
+    comp = null;
+    if (lookBefore) setLook(lookBefore);
+    lookBefore = null;
     root?.remove();
     root = null;
     ctx = null;
