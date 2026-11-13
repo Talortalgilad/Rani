@@ -255,3 +255,34 @@ describe('all six islands', () => {
     }
   });
 });
+
+describe('the capital M and N start from the top (SPEC: how they are taught at school)', () => {
+  const top = (st: Stroke): number => st[0].y;
+  it('M: the left line down, the diagonal from the top left to the middle, from there to the top right, the right line down', () => {
+    const m = STROKES.m.upper;
+    expect(m).toHaveLength(4);
+    expect(top(m[0])).toBe(10);
+    expect(m[0][m[0].length - 1].y).toBe(75);
+    expect(m[1][0]).toEqual({ x: 30, y: 10 });
+    expect(m[1][m[1].length - 1]).toEqual({ x: 50, y: 50 });
+    expect(m[2][0]).toEqual({ x: 50, y: 50 });
+    expect(m[2][m[2].length - 1]).toEqual({ x: 70, y: 10 });
+    expect(top(m[3])).toBe(10);
+    expect(m[3][m[3].length - 1].y).toBe(75);
+    // writing it from the bottom (the old way) is no longer right
+    expect(evaluateStroke(m[0], [...m[0]].reverse()).ok).toBe(false);
+  });
+  it('N: the left line down, the diagonal from the top left to the bottom right, the right line up', () => {
+    const n = STROKES.n.upper;
+    expect(n).toHaveLength(3);
+    expect(top(n[0])).toBe(10);
+    expect(n[0][n[0].length - 1].y).toBe(75);
+    expect(n[1][0]).toEqual({ x: 34, y: 10 });
+    expect(n[1][n[1].length - 1]).toEqual({ x: 66, y: 75 });
+    expect(n[2][0].y).toBe(75);
+    expect(n[2][n[2].length - 1].y).toBe(10);
+    // the right line written downwards fails, and so does starting the left line at the bottom
+    expect(evaluateStroke(n[2], [...n[2]].reverse()).ok).toBe(false);
+    expect(evaluateStroke(n[0], [...n[0]].reverse()).ok).toBe(false);
+  });
+});
