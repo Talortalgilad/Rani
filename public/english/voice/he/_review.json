@@ -1,0 +1,632 @@
+[
+ {
+  "id": "ask_name",
+  "text": "היי! עוד אין לי שם... איך תקראי לי?",
+  "take": 0,
+  "dur": 2.83,
+  "flag": ""
+ },
+ {
+  "id": "start",
+  "text": "בואי נתחיל!",
+  "take": 0,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "help_call",
+  "text": "שמעת? מישהו קורא לעזרה!",
+  "take": 0,
+  "dur": 2.39,
+  "flag": ""
+ },
+ {
+  "id": "proud.1",
+  "text": "גאה בך!",
+  "take": 0,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "rescued.0",
+  "text": "הצלת אותי! תודה!",
+  "take": 0,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "rescued.2",
+  "text": "ואני עכשיו חברים.",
+  "take": 0,
+  "dur": 2.66,
+  "flag": ""
+ },
+ {
+  "id": "parent_test",
+  "text": "שלום! בואי נשחק באנגלית.",
+  "take": 0,
+  "dur": 2.48,
+  "flag": ""
+ },
+ {
+  "id": "new_acc_hat",
+  "text": "קיבלת אביזר חדש: כובע מסיבה!",
+  "take": 0,
+  "dur": 2.89,
+  "flag": ""
+ },
+ {
+  "id": "new_acc_glasses",
+  "text": "קיבלת אביזר חדש: משקפיים!",
+  "take": 0,
+  "dur": 2.78,
+  "flag": ""
+ },
+ {
+  "id": "new_acc_bow",
+  "text": "קיבלת אביזר חדש: פפיון!",
+  "take": 0,
+  "dur": 2.62,
+  "flag": ""
+ },
+ {
+  "id": "new_acc_crown",
+  "text": "קיבלת אביזר חדש: כתר זהב!",
+  "take": 0,
+  "dur": 2.91,
+  "flag": ""
+ },
+ {
+  "id": "verb_find",
+  "text": "זה למצוא!",
+  "take": 0,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "verb_color",
+  "text": "זה לצבוע!",
+  "take": 0,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "verb_count",
+  "text": "זה כמה יש!",
+  "take": 0,
+  "dur": 1.41,
+  "flag": ""
+ },
+ {
+  "id": "verb_big",
+  "text": "זה גדול!",
+  "take": 0,
+  "dur": 1.17,
+  "flag": ""
+ },
+ {
+  "id": "verb_small",
+  "text": "זה קטן!",
+  "take": 1,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "verb_on",
+  "text": "זה על!",
+  "take": 1,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "id": "verb_over",
+  "text": "זה מעל!",
+  "take": 1,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "verb_in",
+  "text": "זה בתוך!",
+  "take": 1,
+  "dur": 1.29,
+  "flag": ""
+ },
+ {
+  "id": "verb_under",
+  "text": "זה מתחת!",
+  "take": 1,
+  "dur": 1.32,
+  "flag": ""
+ },
+ {
+  "id": "verb_sentence",
+  "text": "זה לבנות משפט!",
+  "take": 1,
+  "dur": 1.81,
+  "flag": ""
+ },
+ {
+  "id": "verb_circle",
+  "text": "זה להקיף בעיגול!",
+  "take": 1,
+  "dur": 1.78,
+  "flag": ""
+ },
+ {
+  "id": "verb_tap",
+  "text": "זה להקיש!",
+  "take": 1,
+  "dur": 1.27,
+  "flag": ""
+ },
+ {
+  "id": "verb_put",
+  "text": "זה לשים!",
+  "take": 1,
+  "dur": 1.12,
+  "flag": ""
+ },
+ {
+  "id": "verb_match",
+  "text": "זה לחבר!",
+  "take": 1,
+  "dur": 1.2,
+  "flag": ""
+ },
+ {
+  "id": "verb_listen",
+  "text": "זה להקשיב!",
+  "take": 1,
+  "dur": 1.24,
+  "flag": ""
+ },
+ {
+  "id": "new_words",
+  "text": "שלוש מילים חדשות! הקישי על הקלף.",
+  "take": 1,
+  "dur": 4.3,
+  "flag": ""
+ },
+ {
+  "id": "card_tap",
+  "text": "הקישי על הקלף כדי לשמוע",
+  "take": 1,
+  "dur": 3.17,
+  "flag": ""
+ },
+ {
+  "id": "try_again",
+  "text": "כמעט! עוד פעם",
+  "take": 1,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "show",
+  "text": "אני אראה לך!",
+  "take": 1,
+  "dur": 2.2,
+  "flag": ""
+ },
+ {
+  "id": "great",
+  "text": "כל הכבוד!",
+  "take": 2,
+  "dur": 1.21,
+  "flag": ""
+ },
+ {
+  "id": "next",
+  "text": "הלאה",
+  "take": 2,
+  "dur": 0.65,
+  "flag": ""
+ },
+ {
+  "id": "home",
+  "text": "בית",
+  "take": 2,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "ok",
+  "text": "אישור",
+  "take": 2,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "other_name",
+  "text": "שם אחר",
+  "take": 2,
+  "dur": 1.27,
+  "flag": ""
+ },
+ {
+  "id": "type_name",
+  "text": "איזה שם תרצי?",
+  "take": 2,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "name_confirm",
+  "text": "זה השם שלי!",
+  "take": 2,
+  "dur": 1.31,
+  "flag": ""
+ },
+ {
+  "id": "i_am.0",
+  "text": "אני",
+  "take": 2,
+  "dur": 0.69,
+  "flag": ""
+ },
+ {
+  "id": "island_title.0",
+  "text": "ההרפתקאות של",
+  "take": 2,
+  "dur": 2.25,
+  "flag": ""
+ },
+ {
+  "id": "shelf",
+  "text": "המדף",
+  "take": 2,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "shelf_title",
+  "text": "מדף הסקווישים",
+  "take": 2,
+  "dur": 1.63,
+  "flag": ""
+ },
+ {
+  "id": "buddy_pick",
+  "text": "חבר שלי",
+  "take": 2,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "buddy_now",
+  "text": "החבר שלי",
+  "take": 2,
+  "dur": 1.15,
+  "flag": ""
+ },
+ {
+  "id": "accessories_title",
+  "text": "אביזרים של צ׳יזי",
+  "take": 2,
+  "dur": 1.83,
+  "flag": ""
+ },
+ {
+  "id": "accessory_note",
+  "text": "האביזרים מוצגים על צ׳יזי",
+  "take": 2,
+  "dur": 2.99,
+  "flag": ""
+ },
+ {
+  "id": "wordbook",
+  "text": "ספר המילים",
+  "take": 3,
+  "dur": 1.35,
+  "flag": ""
+ },
+ {
+  "id": "songs",
+  "text": "שירים",
+  "take": 3,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "j_words",
+  "text": "מילים",
+  "take": 3,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "j_letters",
+  "text": "אותיות",
+  "take": 3,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "letters_title",
+  "text": "מסע האותיות",
+  "take": 3,
+  "dur": 1.67,
+  "flag": ""
+ },
+ {
+  "id": "words_station",
+  "text": "תחנת מילים",
+  "take": 3,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "l_new",
+  "text": "אות חדשה!",
+  "take": 3,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "l_trace_capital",
+  "text": "עכשיו האות הגדולה",
+  "take": 3,
+  "dur": 1.81,
+  "flag": ""
+ },
+ {
+  "id": "l_trace_dots",
+  "text": "עכשיו רק עם הנקודות",
+  "take": 3,
+  "dur": 1.81,
+  "flag": ""
+ },
+ {
+  "id": "l_trace_blur",
+  "text": "ועכשיו כמעט בלי עזרה",
+  "take": 3,
+  "dur": 2.15,
+  "flag": ""
+ },
+ {
+  "id": "l_trace_again",
+  "text": "נסי שוב, עקבי אחרי החץ",
+  "take": 3,
+  "dur": 2.94,
+  "flag": ""
+ },
+ {
+  "id": "soon",
+  "text": "בקרוב",
+  "take": 3,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "mm_title",
+  "text": "זיכרון",
+  "take": 3,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "mm_journey",
+  "text": "מסע",
+  "take": 3,
+  "dur": 0.7,
+  "flag": ""
+ },
+ {
+  "id": "mm_versus",
+  "text": "בשניים",
+  "take": 3,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "mm_decks",
+  "text": "ערכות",
+  "take": 4,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "mm_levels",
+  "text": "שלבים",
+  "take": 4,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "mm_again",
+  "text": "שוב",
+  "take": 4,
+  "dur": 0.71,
+  "flag": ""
+ },
+ {
+  "id": "mm_next",
+  "text": "השלב הבא",
+  "take": 4,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "mm_attempts",
+  "text": "ניסיונות",
+  "take": 4,
+  "dur": 1.12,
+  "flag": ""
+ },
+ {
+  "id": "mm_streak",
+  "text": "רצף ארוך",
+  "take": 4,
+  "dur": 1.33,
+  "flag": ""
+ },
+ {
+  "id": "mm_best",
+  "text": "שיא אישי",
+  "take": 4,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "mm_record",
+  "text": "שיא חדש!",
+  "take": 4,
+  "dur": 1.17,
+  "flag": ""
+ },
+ {
+  "id": "mm_resume",
+  "text": "המשך",
+  "take": 4,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "mm_pickDeck",
+  "text": "בחרי ערכה",
+  "take": 4,
+  "dur": 1.3,
+  "flag": ""
+ },
+ {
+  "id": "mm_pickSize",
+  "text": "בחרי גודל לוח",
+  "take": 4,
+  "dur": 2.09,
+  "flag": ""
+ },
+ {
+  "id": "mm_small",
+  "text": "קטן",
+  "take": 4,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "mm_medium",
+  "text": "בינוני",
+  "take": 4,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "mm_large",
+  "text": "גדול",
+  "take": 4,
+  "dur": 0.87,
+  "flag": ""
+ },
+ {
+  "id": "mm_locked",
+  "text": "נעול",
+  "take": 4,
+  "dur": 0.77,
+  "flag": ""
+ },
+ {
+  "id": "mm_lockWorld",
+  "text": "נפתח אחרי שמסיימים את העולם במסע",
+  "take": 5,
+  "dur": 2.72,
+  "flag": ""
+ },
+ {
+  "id": "mm_lockPhotos",
+  "text": "צריך לפחות שש תמונות. מוסיפים באזור ההורים",
+  "take": 5,
+  "dur": 4.49,
+  "flag": ""
+ },
+ {
+  "id": "mm_needPhotos",
+  "text": "צריך עוד תמונות בערכה",
+  "take": 5,
+  "dur": 2.74,
+  "flag": ""
+ },
+ {
+  "id": "mm_animals",
+  "text": "חיות",
+  "take": 5,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "mm_food",
+  "text": "אוכל",
+  "take": 5,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "mm_sweets",
+  "text": "ממתקים",
+  "take": 5,
+  "dur": 1.1,
+  "flag": ""
+ },
+ {
+  "id": "mm_toys",
+  "text": "צעצועים",
+  "take": 5,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "id": "mm_clothes",
+  "text": "בגדים",
+  "take": 5,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "mm_music",
+  "text": "מוזיקה",
+  "take": 5,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "mm_weather",
+  "text": "מזג אוויר",
+  "take": 5,
+  "dur": 1.15,
+  "flag": ""
+ },
+ {
+  "id": "mm_journeySweets",
+  "text": "ממתקי המסע",
+  "take": 5,
+  "dur": 1.36,
+  "flag": ""
+ },
+ {
+  "id": "mm_farm",
+  "text": "חווה",
+  "take": 5,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "mm_sea",
+  "text": "ים",
+  "take": 5,
+  "dur": 0.78,
+  "flag": "long"
+ },
+ {
+  "id": "mm_space",
+  "text": "חלל",
+  "take": 5,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "mm_family",
+  "text": "המשפחה שלי",
+  "take": 5,
+  "dur": 1.19,
+  "flag": ""
+ }
+]
