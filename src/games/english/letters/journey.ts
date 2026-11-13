@@ -17,11 +17,11 @@ export const letterById = (id: string): Letter => LETTERS.find((l) => l.id === i
 export interface Island { n: number; name: string; he: string; emoji: string; color: string; letters: string[]; words: string[]; /** built in this stage */ ready: boolean }
 export const ISLANDS: Island[] = [
   { n: 1, name: 'Sand island', he: 'אי החול', emoji: '🏝️', color: '#ffc83a', letters: ['s', 'a', 't', 'p'], words: ['tap', 'sat', 'pat'], ready: true },
-  { n: 2, name: 'Moon island', he: 'אי הירח', emoji: '🌙', color: '#9aa8ff', letters: ['i', 'n', 'm', 'd'], words: ['pan', 'pin', 'map', 'mat', 'man', 'tin', 'nap'], ready: false },
-  { n: 3, name: 'Forest island', he: 'אי היער', emoji: '🌲', color: '#4fbf6a', letters: ['g', 'o', 'c', 'k'], words: ['cat', 'dog', 'pig'], ready: false },
-  { n: 4, name: 'Rainbow island', he: 'אי הקשת', emoji: '🌈', color: '#ff8a5c', letters: ['e', 'u', 'r', 'h', 'b'], words: ['hen', 'bus', 'bed', 'sun', 'hat', 'bat', 'cup', 'mug', 'net'], ready: false },
-  { n: 5, name: 'Flower island', he: 'אי הפרחים', emoji: '🌸', color: '#ff7ad0', letters: ['f', 'l', 'j', 'v', 'w'], words: ['van', 'web', 'jam', 'lamp'], ready: false },
-  { n: 6, name: 'Star island', he: 'אי הכוכבים', emoji: '⭐', color: '#b58cff', letters: ['x', 'y', 'z', 'q'], words: ['fox', 'box'], ready: false },
+  { n: 2, name: 'Moon island', he: 'אי הירח', emoji: '🌙', color: '#9aa8ff', letters: ['i', 'n', 'm', 'd'], words: ['pan', 'pin', 'map', 'mat', 'man', 'tin', 'nap'], ready: true },
+  { n: 3, name: 'Forest island', he: 'אי היער', emoji: '🌲', color: '#4fbf6a', letters: ['g', 'o', 'c', 'k'], words: ['cat', 'dog', 'pig'], ready: true },
+  { n: 4, name: 'Rainbow island', he: 'אי הקשת', emoji: '🌈', color: '#ff8a5c', letters: ['e', 'u', 'r', 'h', 'b'], words: ['hen', 'bus', 'bed', 'sun', 'hat', 'bat', 'cup', 'mug', 'net'], ready: true },
+  { n: 5, name: 'Flower island', he: 'אי הפרחים', emoji: '🌸', color: '#ff7ad0', letters: ['f', 'l', 'j', 'v', 'w'], words: ['van', 'web', 'jam', 'lamp'], ready: true },
+  { n: 6, name: 'Star island', he: 'אי הכוכבים', emoji: '⭐', color: '#b58cff', letters: ['x', 'y', 'z', 'q'], words: ['fox', 'box'], ready: true },
 ];
 export const islandInfo = (n: number): Island => ISLANDS.find((i) => i.n === n) ?? ISLANDS[0];
 

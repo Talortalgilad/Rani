@@ -2,6 +2,7 @@ import { mulberry32 } from '../engine/planner';
 import type { Step } from '../engine/steps';
 import { buildableWords, exampleHasPicture, hasPicture } from './art';
 import { ISLANDS, islandInfo, letterById, lettersUpTo, wordsUpTo } from './journey';
+import { stationKind } from './progress';
 
 /** Pictures that are not the example word of a letter in island 1: for "what starts with /s/?" (a word with that first letter is never among them). */
 export const LETTER_PICTURES = ['ball', 'bed', 'book', 'cat', 'dog', 'fish', 'hat', 'lion', 'monkey', 'rabbit', 'egg', 'cake', 'cookie', 'milk', 'doll', 'kite', 'bike', 'flower', 'giraffe', 'elephant', 'umbrella', 'banana', 'phone', 'lamp'];
@@ -30,7 +31,9 @@ export function knownFor(island: number, station: number, learned: string[]): st
 export function planLetterStation(o: LetterPlan): Step[] {
   const r = mulberry32(o.seed * 7919 + o.island * 131 + o.station);
   const isl = islandInfo(o.island);
-  if (o.station >= 4) return planWordsStation(o, r);
+  const kind = stationKind(o.island, o.station);
+  if (kind === 'words') return planWordsStation(o, r);
+  if (kind === 'bd') return planBdStation(r);
   const id = isl.letters[o.station];
   const L = letterById(id);
   const known = knownFor(o.island, o.station, o.learned);
@@ -65,10 +68,29 @@ function planWordsStation(o: LetterPlan, r: () => number): Step[] {
   ];
 }
 
-/** The letters met before a station: the stations that are done (4 letters per island) and the islands before. */
-export function learnedBefore(island: number, done: number): string[] {
+/** The letters met before a station: the letters of the islands before and of the stations of this island that come first. */
+export function learnedBefore(island: number, station: number): string[] {
   const before = ISLANDS.filter((i) => i.n < island).flatMap((i) => i.letters);
-  return [...before, ...islandInfo(island).letters.slice(0, Math.min(done, 4))];
+  return [...before, ...islandInfo(island).letters.slice(0, station)];
+}
+
+/**
+ * The review of b and d (SPEC-letters.md 3.3): a card that shows how to tell them apart, then the sound, the first sound (ball and dog
+ * are side by side), finding each among the other, and big and small. Both letters are scored, so they come back more often.
+ */
+function planBdStation(r: () => number): Step[] {
+  const known = ['b', 'd', 'p'];
+  const sc = (...l: string[]): string[] => l.map((x) => `l:${x}`);
+  return [
+    { kind: 'lbd', score: [] },
+    { kind: 'lsound', letter: 'b', options: ['b', 'd', 'p'], score: sc('b') },
+    { kind: 'lsound', letter: 'd', options: ['d', 'b', 'p'], score: sc('d') },
+    { kind: 'lfirst', letter: 'b', ids: sample(r, ['ball', 'dog', 'cat'], 3), score: sc('b') },
+    { kind: 'lfirst', letter: 'd', ids: sample(r, ['dog', 'ball', 'hat'], 3), score: sc('d') },
+    { kind: 'lhunt', letter: 'b', pool: known, score: sc('b') },
+    { kind: 'lhunt', letter: 'd', pool: known, score: sc('d') },
+    { kind: 'lcase', letters: ['b', 'd'], score: sc('b', 'd') },
+  ];
 }
 
 

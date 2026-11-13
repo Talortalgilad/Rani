@@ -44,6 +44,8 @@ export const he = {
   traceBlur: 'ועכשיו כמעט בלי עזרה',
   traceAgain: 'נסי שוב, עקבי אחרי החץ',
   soon: 'בקרוב',
+  bdB: 'ב-b קודם יש גב, ואז בטן קדימה',
+  bdD: 'ב-d קודם יש בטן, ואז גב',
   letterShelf: 'סקווישי האותיות',
   squishyCount: (n: number, of: number) => `${n} מתוך ${of} סקווישים`,
   wordCount: (n: number, of: number) => `${n} מתוך ${of} מילים`,

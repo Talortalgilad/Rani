@@ -186,3 +186,71 @@ describe('words to build have a picture', () => {
     expect(hasPicture('pig')).toBe(false); // until sheet 14 is cut
   });
 });
+
+import { BD_ISLAND, SQUISHY_LETTER, islandDone, islandOpen, stationKind, stationOpenL, stationsOf } from './progress';
+import { emptyMap, finishStation } from '../engine/progress';
+
+describe('all six islands', () => {
+  it('every letter can be written: both shapes, strokes in the box, a perfect line works, the wrong way round does not', () => {
+    for (const l of LETTERS) {
+      expect(hasStrokes(l.id), l.id).toBe(true);
+      for (const g of [STROKES[l.id].lower, STROKES[l.id].upper]) {
+        expect(g.length, l.id).toBeGreaterThan(0);
+        for (const st of g) {
+          for (const p of st) (expect(p.x).toBeGreaterThanOrEqual(0), expect(p.x).toBeLessThanOrEqual(100), expect(p.y).toBeGreaterThanOrEqual(0), expect(p.y).toBeLessThanOrEqual(100));
+          expect(evaluateStroke(st, st).ok, `${l.id} perfect`).toBe(true);
+          if (lengthOf(st) > 20) expect(evaluateStroke(st, [...st].reverse()).ok, `${l.id} reversed`).toBe(false);
+        }
+      }
+    }
+  });
+  it('the dot of i and j is written with a tap, and a tap far from it is not', () => {
+    const dot = STROKES.i.lower[1];
+    expect(evaluateStroke(dot, [dot[0]]).ok).toBe(true);
+    expect(evaluateStroke(dot, [{ x: dot[0].x + 5, y: dot[0].y + 4 }]).ok).toBe(true);
+    expect(evaluateStroke(dot, [{ x: 80, y: 80 }]).ok).toBe(false);
+  });
+  it('islands: stations of letters, b and d review only on island 4, then the words station; they open one after the other', () => {
+    expect(ISLANDS.map((i) => stationsOf(i.n))).toEqual([5, 5, 5, 7, 6, 5]);
+    expect(stationKind(4, 5)).toBe('bd');
+    expect(stationKind(4, 6)).toBe('words');
+    expect(stationKind(1, 4)).toBe('words');
+    expect(BD_ISLAND).toBe(4);
+    expect(islandOpen(emptyMap(), 1)).toBe(true);
+    expect(islandOpen(emptyMap(), 2)).toBe(false);
+    let m = emptyMap();
+    for (let s = 0; s < 5; s++) m = finishStation(m, 1, s, 3);
+    expect(islandDone(m, 1)).toBe(true);
+    expect(islandOpen(m, 2)).toBe(true);
+    expect(stationOpenL(m, 2, 1)).toBe(false);
+    expect(stationOpenL(emptyMap(), 6, 0, true)).toBe(true);
+    expect(Object.values(SQUISHY_LETTER).join('')).toBe('smgrfz');
+  });
+  it('every station of every island plans: letter stations with their letter, the b and d station, the words station', () => {
+    for (const isl of ISLANDS) {
+      for (let station = 0; station < stationsOf(isl.n); station++) {
+        for (const seed of [1, 2]) {
+          const steps = planLetterStation({ island: isl.n, station, learned: learnedBefore(isl.n, station), seed });
+          expect(steps.length, `${isl.n}-${station}`).toBeGreaterThanOrEqual(5);
+          const k = stationKind(isl.n, station);
+          if (k === 'letter') {
+            expect(steps.some((s) => s.kind === 'ltrace' && s.letter === isl.letters[station])).toBe(true);
+            const hunt = steps.find((s) => s.kind === 'lhunt') as { pool: string[] };
+            for (const l of hunt.pool) expect(lettersUpTo(isl.n)).toContain(l);
+          }
+          if (k === 'bd') expect(steps[0].kind).toBe('lbd');
+          if (k === 'words') expect(steps.filter((s) => s.kind === 'lbuild').length).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+  it('b and d review: each of them is asked as a sound, a first sound and a hunt, and ball and dog are side by side', () => {
+    const steps = planLetterStation({ island: 4, station: 5, learned: learnedBefore(4, 5), seed: 1 });
+    for (const l of ['b', 'd']) {
+      expect(steps.some((s) => s.kind === 'lsound' && s.letter === l)).toBe(true);
+      expect(steps.some((s) => s.kind === 'lhunt' && s.letter === l)).toBe(true);
+      const f = steps.find((s) => s.kind === 'lfirst' && s.letter === l) as { ids: string[] };
+      expect(f.ids).toEqual(expect.arrayContaining(['ball', 'dog']));
+    }
+  });
+});

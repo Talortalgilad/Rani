@@ -20,6 +20,7 @@ import { sayTask } from '../tasks/say';
 import { songTask } from '../tasks/song';
 import { tapTask } from '../tasks/tap';
 import { whereTask, whereText } from '../tasks/where';
+import { bdTask } from '../letters/tasks/bd';
 import { caseTask } from '../letters/tasks/case';
 import { huntTask } from '../letters/tasks/hunt';
 import { buildTask, readTask } from '../letters/tasks/build';
@@ -56,7 +57,7 @@ export interface QuestDeps {
 /** The word of the instruction that has a Hebrew help the first times: find, color, how many, big, on... */
 export function verbOf(s: Step): string | null {
   switch (s.kind) {
-    case 'card': case 'colorcard': case 'listen': case 'song': case 'say': case 'lmeet': case 'ltrace': case 'lsound': case 'lfirst': case 'lcase': case 'lhunt': case 'lbuild': case 'lread': return null;
+    case 'card': case 'colorcard': case 'listen': case 'song': case 'say': case 'lmeet': case 'ltrace': case 'lsound': case 'lfirst': case 'lcase': case 'lhunt': case 'lbuild': case 'lread': case 'lbd': return null;
     case 'put': return 'put';
     case 'count': return 'count';
     case 'bigsmall': return s.which;
@@ -93,6 +94,7 @@ export function instruction(s: Step): { text: string; html: string } {
     case 'lcase': return { text: 'Match big and small!', html: 'Match big and small!' };
     case 'lhunt': return { text: `Find all the ${s.letter.toUpperCase()}!`, html: `Find all the <b>${s.letter.toUpperCase()}</b>!` };
     case 'lbuild': return s.missing === null ? { text: `Let's build ${s.word}!`, html: `Let’s build <b>${s.word}</b>!` } : { text: 'Which letter is missing?', html: 'Which letter is missing?' };
+    case 'lbd': return { text: '', html: '<b>b</b> or <b>d</b>?' };
     case 'lread': return { text: 'Read the word!', html: 'Read the word!' };
     case 'say': return { text: `Say ${labelOf(s.right)}!`, html: `Say <b>${labelOf(s.right)}</b>!` };
     case 'song': return { text: 'Let’s sing!', html: 'Let’s sing!' };
@@ -213,6 +215,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       case 'lcase': handle = caseTask(env, s.letters, index + 7); break;
       case 'lhunt': handle = huntTask(env, s.letter, s.pool, index + 8); break;
       case 'lbuild': handle = buildTask(env, s.word, s.missing, s.pool, index + 9); break;
+      case 'lbd': handle = bdTask(env); break;
       case 'lread': handle = readTask(env, s.word, s.options, index + 10); break;
       case 'song': handle = songTask(env, s.world); break;
     }

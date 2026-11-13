@@ -9,7 +9,8 @@ import { SQUISHIES, squishyOfWorld } from './art/squishies';
 import { showWordbook } from './ui/wordbook';
 import type { Journey } from './ui/journeyTabs';
 import { showIsland, showLettersMap } from './letters/ui/mapLetters';
-import { letterSquishy } from './letters/ui/glyph';
+import { letterSquishyArt } from './letters/ui/glyph';
+import { SQUISHY_LETTER, stationsOf } from './letters/progress';
 import { ISLANDS, islandInfo } from './letters/journey';
 import { learnedBefore, planLetterStation } from './letters/plan';
 import { songTaskStep } from './engine/steps';
@@ -82,7 +83,7 @@ function showShelfScreen(): void {
       buddy: buddy(),
       accessory: accessory(),
       unlocked: unlocked(),
-      letters: ISLANDS.map((i) => ({ id: i.letters[0], art: letterSquishy(i.letters[0], i.color), have: rescuedLetters().includes(i.letters[0]) })),
+      letters: ISLANDS.map((i) => ({ id: SQUISHY_LETTER[i.n], art: letterSquishyArt(SQUISHY_LETTER[i.n], i.color), have: rescuedLetters().includes(SQUISHY_LETTER[i.n]) })),
       sound: ctx!.sound,
       onBuddy: (id) => (ctx!.save('buddy', id), applyLook()),
       onAccessory: (id) => (ctx!.save('accessory', id), applyLook()),
@@ -164,7 +165,7 @@ function startLetterStation(island: number, station: number): void {
         ctx!.save('playlog', addPlay(ctx!.load('playlog', {}), today, Math.min(20, Math.max(1, Math.round((Date.now() - t0) / 60000)))));
         ctx!.onRoundEnd({ won: true, stars, score: stars });
         ctx!.save('lmap', finishStation(lmap(), island, station, stars));
-        swap(() => showBanner(root!, stars, name, ctx!.sound, () => (station === STATIONS_PER_WORLD - 1 ? rescueLetter(island, name) : showIslandStations(island))));
+        swap(() => showBanner(root!, stars, name, ctx!.sound, () => (station === stationsOf(island) - 1 ? rescueLetter(island, name) : showIslandStations(island))));
       },
     }),
   );
@@ -173,10 +174,10 @@ function startLetterStation(island: number, station: number): void {
 /** The squishy letter of an island is rescued at the end of its words station. */
 function rescueLetter(island: number, name: string): void {
   const isl = islandInfo(island);
-  const id = isl.letters[0];
+  const id = SQUISHY_LETTER[island];
   if (!rescuedLetters().includes(id)) ctx!.save('rescuedLetters', [...rescuedLetters(), id]);
   const sq = { id: `letter-${id}`, name: `${id.toUpperCase()}`, world: island, he: isl.he };
-  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : showLetters()), { art: letterSquishy(id, isl.color) }));
+  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : showLetters()), { art: letterSquishyArt(id, isl.color) }));
 }
 
 function showStations(world: number): void {
