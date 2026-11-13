@@ -9,6 +9,10 @@ import { fullestSquare } from './rescue';
 import { freshFree, hammer, priceOf, whyNot, type FreeUsed, type Helper } from './helpers';
 import { boardOf, type SavedGame } from './save';
 import { pieceById, turned } from './pieces';
+import { Run, startBoard, wave, ITEMS, type GoalView, type Level } from './journey';
+import { STAR_TARGETS } from './starTargets';
+import { pieceByArt } from './levels';
+import type { BlockStyle } from './render/blockSprites';
 import { PALETTE, makeSprites, type Sprite } from './render/blockSprites';
 import { Particles } from './render/particles';
 
@@ -38,7 +42,18 @@ export interface GameHooks {
   /** the stars of the jar, and paying with them */
   stars(): number;
   spend(n: number): void;
+  /** the goal of the level changed */
+  onGoal(v: GoalView): void;
+  /** the goal is reached */
+  onLevelDone(r: { stars: 1 | 2 | 3; trays: number; score: number }): void;
+  /** where the picture of the goal is on the canvas, for the items that fly to it */
+  goalPos(): { x: number; y: number } | null;
 }
+
+/** The set of blocks of each world (SPEC-blocks.md 2.2). */
+const SKIN: Record<number, BlockStyle> = { 1: 'candy', 2: 'garden', 3: 'art', 4: 'space' };
+interface Fly { x: number; y: number; item: number; t0: number }
+const SRC = (name: string): string => (name === 'candy' || name === 'star' ? `english/words/${name}.webp` : `blocks/items/${name}.webp`);
 
 /** the shapes of the tray are 70% of a cell of the board (SPEC-blocks.md 2.4, improved after the first look) */
 const SLOT_SCALE = 0.7;
@@ -48,7 +63,6 @@ const GROW_MS = 130;
 const POP_MS = 170;
 const FLASH_MS = 130;
 const STAGGER_MS = 25;
-const REST_MS = 220;
 const ease = (t: number): number => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 const easeBack = (t: number): number => {
   const c = 1.9;
@@ -56,7 +70,7 @@ const easeBack = (t: number): number => {
   return 1 + (c + 1) * x * x * x + c * x * x;
 };
 
-interface Blast { i: number; color: number; at: number; done: boolean }
+interface Blast { i: number; color: number; at: number; done: boolean; item?: number; kind?: 'crate' | 'lock' | 'ice' }
 interface Drag { slot: number; px: number; py: number; t0: number; landing: Landing | null; clears: Clears | null; back?: { t0: number; fx: number; fy: number; fs: number } }
 interface Enter { t0: number }
 
@@ -97,14 +111,29 @@ export class BlockGame {
   private trayTop = 0;
   private trayH = 0;
   private seed = 0;
+  readonly level: Level | null;
+  run: Run | null = null;
+  private skin: BlockStyle = 'jelly';
+  private imgs = new Map<string, HTMLImageElement>();
+  private flies: Fly[] = [];
+  private finishing = false;
+  private wand: { t0: number; x: number; y: number } | null = null;
+  private lastWandSpark = 0;
   private cleanedAt = -1e9;
   private reduced = false;
   private ro: ResizeObserver;
 
-  constructor(private canvas: HTMLCanvasElement, private hooks: GameHooks, seed = Date.now() % 1e9, saved: SavedGame | null = null) {
+  constructor(private canvas: HTMLCanvasElement, private hooks: GameHooks, seed = Date.now() % 1e9, saved: SavedGame | null = null, level: Level | null = null) {
     this.g = canvas.getContext('2d')!;
     this.seed = seed;
     this.gen = new Generator(seed);
+    this.level = level;
+    if (level) {
+      this.skin = SKIN[level.world];
+      this.board = startBoard(level);
+      this.run = new Run(level, this.board);
+      this.gen = new Generator(level.seed);
+    }
     this.reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(canvas);
@@ -115,7 +144,11 @@ export class BlockGame {
     canvas.addEventListener('pointercancel', this.onCancel);
     this.resize();
     if (saved) this.restoreSaved(saved);
-    else this.newTray(0);
+    else {
+      this.newTray(0, level?.forced?.map((a) => pieceByArt(a)));
+      this.reportGoal();
+      if (level?.tutorial) window.setTimeout(() => this.hooks.onSay(`blk_tut_${level.tutorial}`), 700);
+    }
     this.last = performance.now();
     this.raf = requestAnimationFrame(this.frame);
   }
@@ -182,7 +215,7 @@ export class BlockGame {
     this.geo = { x: Math.round((this.W - board) / 2), y: top, cell };
     if (this.spriteCell !== cell * this.dpr) {
       this.spriteCell = cell * this.dpr;
-      this.sprites = makeSprites(Math.round(cell * this.dpr));
+      this.sprites = makeSprites(Math.round(cell * this.dpr), this.skin);
     }
     this.trayTop = top + board + GAP_CELLS * cell;
     this.trayH = TRAY_ROWS * cell;
@@ -194,8 +227,24 @@ export class BlockGame {
 
   // ---- the tray ----
 
-  private newTray(now: number): void {
-    const pieces = this.gen.next(this.board);
+  private reportGoal(): void {
+    if (this.run) this.hooks.onGoal(this.run.view(this.board, this.score.total));
+  }
+
+  /** A picture of the game, loaded once (null while it is on its way). */
+  private img(name: string): HTMLImageElement | null {
+    let im = this.imgs.get(name);
+    if (!im) {
+      im = new Image();
+      im.onload = () => (this.dirty = true);
+      im.src = import.meta.env.BASE_URL + SRC(name);
+      this.imgs.set(name, im);
+    }
+    return im.complete && im.naturalWidth ? im : null;
+  }
+
+  private newTray(now: number, forced?: Piece[]): void {
+    const pieces = forced ?? this.gen.next(this.board);
     const colors = shuffledColors(pieces.length);
     this.tray = pieces.map((piece, i) => ({ piece, color: colors[i] }));
     this.enter = this.tray.map(() => ({ t0: now }));
@@ -227,10 +276,33 @@ export class BlockGame {
       this.rescue();
       return;
     }
+    if (this.run) {
+      this.waveClear();
+      return;
+    }
     this.ended = true;
     this.hooks.sound.play('gentle');
     window.setTimeout(() => this.hooks.onFull(this.score.total), 700);
     this.particles.confetti(this.W, PALETTE.map((p) => p.mid), 60);
+    this.dirty = true;
+  }
+
+  /** A second full board in the journey does not end the level: a wave of confetti clears the plain blocks (the items and the obstacles stay), and the game goes on (SPEC-blocks.md 3.6). */
+  private waveClear(): void {
+    this.locked = true;
+    this.run!.twice = true;
+    this.hooks.onSay('blk_wave');
+    const now = performance.now();
+    const before = Array.from(this.board.cells);
+    const gone = wave(this.board);
+    burstOrder(gone).forEach(({ i, rank }) => this.blasts.push({ i, color: before[i], at: now + 500 + rank * 12, done: false }));
+    this.hooks.sound.play('gentle');
+    this.particles.confetti(this.W, PALETTE.map((p) => p.mid), 90);
+    window.setTimeout(() => {
+      this.locked = false;
+      this.newTray(performance.now());
+      this.reportGoal();
+    }, 1700);
     this.dirty = true;
   }
 
@@ -239,7 +311,13 @@ export class BlockGame {
     this.rescued = true;
     this.locked = true;
     this.hooks.onSay('blk_idea');
-    const cells = fullestSquare(this.board).cells;
+    const sq = fullestSquare(this.board);
+    // the items stay (the goal must still be reachable)
+    const cells = sq.cells.filter((i) => this.board.item[i] < 0);
+    const r0 = Math.floor(sq.square / 3) * 3;
+    const c0 = (sq.square % 3) * 3;
+    const mid = this.cellCenter(c0 + 1, r0 + 1);
+    this.wand = { t0: performance.now(), x: mid.x, y: mid.y };
     window.setTimeout(() => {
       const now = performance.now();
       const order = burstOrder(cells);
@@ -334,11 +412,20 @@ export class BlockGame {
       rescued: this.rescued,
       free: { ...this.free },
       seed: this.seed,
+      layers: { ice: Array.from(this.board.ice), crate: Array.from(this.board.crate), lock: Array.from(this.board.lock), item: Array.from(this.board.item) },
+      journey: this.run && this.level ? { level: this.level.id, trays: this.run.trays, clears: this.run.clears, collected: this.run.collected, twice: this.run.twice } : undefined,
     };
   }
 
   private restoreSaved(sv: SavedGame): void {
     this.board = boardOf(sv);
+    if (this.level && sv.journey) {
+      this.run = new Run(this.level, startBoard(this.level));
+      this.run.trays = sv.journey.trays;
+      this.run.clears = sv.journey.clears;
+      this.run.collected = sv.journey.collected;
+      this.run.twice = sv.journey.twice;
+    }
     this.score = new Score();
     this.score.total = sv.score.total;
     this.score.streak = sv.score.streak;
@@ -350,6 +437,7 @@ export class BlockGame {
     this.tray = sv.tray.map((t) => (t ? { piece: pieceById(t.id), color: t.color } : null));
     this.hooks.onScore(this.score.total, this.score.multiplier, this.score.streak);
     this.hooks.onHelpers(this.free);
+    this.reportGoal();
     if (this.tray.every((t) => !t)) this.newTray(performance.now());
     else this.checkFull();
     this.dirty = true;
@@ -439,12 +527,16 @@ export class BlockGame {
     this.hooks.sound.play('thock');
     const colorAt = (k: number): number => this.board.cells[k];
     const before = Array.from(this.board.cells);
+    const itemBefore = Array.from(this.board.item);
+    const lockBefore = Array.from(this.board.lock);
     const clears = this.board.clearFull();
+    this.run?.onClears(clears);
     const empty = this.board.isEmpty;
     const res = this.score.move(cells.length, clears.units, empty);
     if (clears.units > 0) {
       const order = burstOrder(clears.cells);
-      order.forEach(({ i: k, rank }) => this.blasts.push({ i: k, color: before[k] >= 0 ? before[k] : colorAt(k), at: now + FLASH_MS + REST_MS * 0 + rank * STAGGER_MS, done: false }));
+      order.forEach(({ i: k, rank }) => this.blasts.push({ i: k, color: before[k] >= 0 ? before[k] : colorAt(k), at: now + FLASH_MS + rank * STAGGER_MS, done: false, item: itemBefore[k], kind: lockBefore[k] ? 'lock' : undefined }));
+      this.obstacleFx(clears.events, now + FLASH_MS + order.length * STAGGER_MS * 0.5);
       const p = this.cellCenter(c + slot.piece.w / 2 - 0.5 + 0.5 - 0.5, r);
       this.hooks.onGain(res.total, p.x, p.y, clears.units >= 2);
       const line = comboLine(clears.units);
@@ -468,12 +560,41 @@ export class BlockGame {
       this.hooks.onGain(res.total, p.x, p.y, false);
     }
     this.hooks.onScore(this.score.total, this.score.multiplier, this.score.streak);
+    this.reportGoal();
+    if (this.run && !this.finishing && this.run.view(this.board, this.score.total).done) {
+      this.finish(now);
+      return;
+    }
     if (this.tray.every((s) => !s)) {
+      if (this.run) this.run.trays++;
       this.score.endTray();
       this.hooks.onScore(this.score.total, this.score.multiplier, this.score.streak);
       this.nextTrayAt = now + 380;
     } else this.checkFull();
     if (!this.tray.every((s) => !s)) this.hooks.onMoveDone();
+    this.dirty = true;
+  }
+
+  /** The ice that cracks or breaks and the crates that fall apart. */
+  private obstacleFx(ev: import('./board').ClearEvents | undefined, at: number): void {
+    if (!ev) return;
+    ev.iceBroken.forEach((i) => this.blasts.push({ i, color: -1, at, done: false, kind: 'ice' }));
+    ev.iceCracked.forEach((i) => {
+      const p = this.cellCenter(i % N, Math.floor(i / N));
+      window.setTimeout(() => this.particles.burst(p.x, p.y, '#bfe9ff', this.geo.cell, 5), Math.max(0, at - performance.now()));
+    });
+    ev.crates.forEach((i) => this.blasts.push({ i, color: -1, at: at + 120, done: false, kind: 'crate' }));
+  }
+
+  /** The goal is reached: a celebration, and then the end-of-level window. */
+  private finish(now: number): void {
+    this.finishing = true;
+    this.locked = true;
+    this.hooks.sound.play('fanfare');
+    this.particles.confetti(this.W, PALETTE.map((p) => p.mid), 80);
+    const stars = this.run!.stars(STAR_TARGETS[this.level!.id]);
+    window.setTimeout(() => this.hooks.onLevelDone({ stars, trays: this.run!.trays, score: this.score.total }), 1500);
+    void now;
     this.dirty = true;
   }
 
@@ -499,7 +620,7 @@ export class BlockGame {
   };
 
   private animating(t: number): boolean {
-    return !!this.drag || this.returning.length > 0 || this.blasts.length > 0 || this.particles.count > 0 || this.enter.some((e) => e && t - e.t0 < 900) || Math.abs(this.shownScore - this.score.total) > 0.5 || t - this.cleanedAt < 1200 || t < this.nextTrayAt + 10 || this.nextTrayAt > 0;
+    return !!this.drag || this.returning.length > 0 || this.blasts.length > 0 || this.particles.count > 0 || this.flies.length > 0 || !!this.wand || this.handShown() || this.enter.some((e) => e && t - e.t0 < 900) || Math.abs(this.shownScore - this.score.total) > 0.5 || t - this.cleanedAt < 1200 || t < this.nextTrayAt + 10 || this.nextTrayAt > 0;
   }
 
   private step(t: number, dt: number): void {
@@ -509,12 +630,20 @@ export class BlockGame {
       if (!b.done && t >= b.at) {
         b.done = true;
         const p = this.cellCenter(b.i % N, Math.floor(b.i / N));
-        this.particles.burst(p.x, p.y, PALETTE[b.color % COLORS].mid, this.geo.cell, this.reduced ? 3 : 7);
+        const col = b.kind === 'crate' ? '#c98a45' : b.kind === 'ice' ? '#bfe9ff' : b.kind === 'lock' ? '#f2c94c' : PALETTE[Math.max(0, b.color) % COLORS].mid;
+        this.particles.burst(p.x, p.y, col, this.geo.cell, this.reduced ? 3 : 7);
+        if (b.item !== undefined && b.item >= 0) this.flies.push({ x: p.x, y: p.y, item: b.item, t0: t });
         this.hooks.sound.play('blast', 420 * Math.pow(2, Math.min(k, 14) / 12));
         k++;
       }
     }
     this.blasts = this.blasts.filter((b) => t < b.at + 260);
+    this.flies = this.flies.filter((f) => t - f.t0 < 700);
+    if (this.wand && t - this.wand.t0 > 2300) this.wand = null;
+    if (this.wand && t - this.lastWandSpark > 90) {
+      this.lastWandSpark = t;
+      this.particles.burst(this.wand.x + this.geo.cell * 1.1, this.wand.y - this.geo.cell * 0.9, '#ffe36a', this.geo.cell * 0.7, 3);
+    }
     this.particles.update(dt, this.geo.cell * 12);
     this.returning = this.returning.filter((r) => t - r.back.t0 < 220);
     this.enter = this.enter.map((e) => (e && t - e.t0 < 900 ? e : null));
@@ -552,6 +681,8 @@ export class BlockGame {
         this.spriteAt(v, bx + c * cell, by + r * cell, cell, 1, sq);
       }
     }
+
+    this.drawLayers(t);
 
     // the preview of what bursts: the full units glow, and their blocks take the colour of the shape that is dragged
     const d = this.drag;
@@ -598,6 +729,18 @@ export class BlockGame {
       const c = b.i % N;
       const x = bx + c * cell;
       const y = by + r * cell;
+      const k = t < b.at ? 0 : (t - b.at) / 260;
+      const grow = 1 + 0.25 * k;
+      const alpha = 1 - k;
+      if (b.kind) {
+        const im = this.img(b.kind === 'lock' ? 'padlock' : b.kind);
+        if (im) {
+          g.globalAlpha = alpha;
+          g.drawImage(im, x - (cell * (grow - 1)) / 2, y - (cell * (grow - 1)) / 2, cell * grow, cell * grow);
+          g.globalAlpha = 1;
+        }
+        continue;
+      }
       if (t < b.at) {
         this.spriteAt(b.color, x, y, cell);
         const f = Math.max(0, 1 - (b.at - t) / FLASH_MS);
@@ -605,14 +748,28 @@ export class BlockGame {
         g.beginPath();
         g.roundRect(x + 1, y + 1, cell - 2, cell - 2, cell * 0.24);
         g.fill();
+        if (b.item !== undefined && b.item >= 0) this.drawItem(b.item, x, y);
       } else {
-        const k = (t - b.at) / 260;
-        this.spriteAt(b.color, x + (cell * (1 - (1 - k * 0.8))) / 2 * 0, y, cell * (1 + 0.25 * k), 1 - k);
+        this.spriteAt(b.color, x, y, cell * grow, alpha);
       }
+    }
+
+    // the items that fly to the goal
+    const to = this.hooks.goalPos();
+    for (const f of this.flies) {
+      const k = ease((t - f.t0) / 650);
+      const tx = to?.x ?? this.W / 2;
+      const ty = to?.y ?? 0;
+      const x = f.x + (tx - f.x) * k;
+      const y = f.y + (ty - f.y) * k - Math.sin(k * Math.PI) * cell * 1.5;
+      const im = this.img(ITEMS[f.item]);
+      if (im) g.drawImage(im, x - cell * 0.5 * (1 - 0.4 * k), y - cell * 0.5 * (1 - 0.4 * k), cell * (1 - 0.4 * k), cell * (1 - 0.4 * k));
     }
 
     this.drawTray(t);
     this.particles.draw(g);
+    this.drawWand(t);
+    this.drawHand(t);
     // the shape that floats over the finger
     if (d && slotD) {
       const p = this.floatPos(d, slotD.piece, t);
@@ -630,6 +787,117 @@ export class BlockGame {
       const k = ease((t - rt.back.t0) / 220);
       this.drawPiece(slot, rt.back.fx + (home.x - rt.back.fx) * k, rt.back.fy + (home.y - rt.back.fy) * k, rt.back.fs + (home.s - rt.back.fs) * k, 1);
     }
+  }
+
+  /** Ice, crates, chains and items lie over the cells. */
+  private drawLayers(t: number): void {
+    const g = this.g;
+    const { x: bx, y: by, cell } = this.geo;
+    for (let i = 0; i < N * N; i++) {
+      const x = bx + (i % N) * cell;
+      const y = by + Math.floor(i / N) * cell;
+      const b = this.board;
+      if (b.lock[i]) {
+        g.fillStyle = 'rgba(80, 60, 20, .25)';
+        g.beginPath();
+        g.roundRect(x + 2, y + 2, cell - 4, cell - 4, cell * 0.22);
+        g.fill();
+        const im = this.img('padlock');
+        if (im) g.drawImage(im, x + cell * 0.05, y + cell * 0.05, cell * 0.9, cell * 0.9);
+      }
+      if (b.crate[i]) {
+        const im = this.img('crate');
+        if (im) g.drawImage(im, x, y, cell, cell);
+      }
+      if (b.item[i] >= 0) this.drawItem(b.item[i], x, y);
+      if (b.ice[i] > 0) {
+        const im = this.img('ice');
+        g.globalAlpha = b.ice[i] === 2 ? 0.8 : 0.55;
+        if (im) g.drawImage(im, x + 1, y + 1, cell - 2, cell - 2);
+        g.globalAlpha = 1;
+        if (b.ice[i] === 1) {
+          // cracked: white lines
+          g.strokeStyle = 'rgba(255, 255, 255, .95)';
+          g.lineWidth = Math.max(2, cell * 0.06);
+          g.lineCap = 'round';
+          g.beginPath();
+          g.moveTo(x + cell * 0.3, y + cell * 0.1);
+          g.lineTo(x + cell * 0.45, y + cell * 0.4);
+          g.lineTo(x + cell * 0.32, y + cell * 0.6);
+          g.lineTo(x + cell * 0.55, y + cell * 0.9);
+          g.moveTo(x + cell * 0.45, y + cell * 0.4);
+          g.lineTo(x + cell * 0.8, y + cell * 0.5);
+          g.stroke();
+        }
+      }
+    }
+    void t;
+  }
+
+  /** An item (candy, ladybug...) on a block. */
+  private drawItem(item: number, x: number, y: number): void {
+    const im = this.img(ITEMS[item]);
+    const cell = this.geo.cell;
+    const g = this.g;
+    g.fillStyle = 'rgba(255, 255, 255, .55)';
+    g.beginPath();
+    g.arc(x + cell / 2, y + cell / 2, cell * 0.38, 0, Math.PI * 2);
+    g.fill();
+    if (im) g.drawImage(im, x + cell * 0.1, y + cell * 0.1, cell * 0.8, cell * 0.8);
+  }
+
+  // ---- the hand of the lessons (SPEC-blocks.md 3.7) ----
+
+  /** The hand shows while a lesson waits for its first move. */
+  private handShown(): boolean {
+    return !!this.level?.tutorial && !this.drag && !this.finishing && !this.locked && !!this.tray[0];
+  }
+
+  private drawHand(t: number): void {
+    if (!this.handShown() || !this.level?.forced) return;
+    const p = pieceByArt(this.level.forced[0]);
+    const goal = this.board.placements(p).find(([r, c]) => this.board.preview(p, r, c).units > 0);
+    if (!goal) return;
+    const g = this.g;
+    const cell = this.geo.cell;
+    const home = this.slotPos(0, p);
+    const from = { x: home.x + (p.w * cell * home.s) / 2, y: home.y + (p.h * cell * home.s) / 2 };
+    const to = { x: this.geo.x + (goal[1] + p.w / 2) * cell, y: this.geo.y + (goal[0] + p.h / 2) * cell };
+    const T = 2600;
+    const k = (t % T) / T;
+    const move = k < 0.15 ? 0 : k < 0.65 ? ease((k - 0.15) / 0.5) : 1;
+    const x = from.x + (to.x - from.x) * move;
+    const y = from.y + (to.y - from.y) * move;
+    // the shape follows the finger for the demonstration
+    g.save();
+    g.globalAlpha = 0.55;
+    // the shape floats 1.5 cells above the finger, as in a real drag
+    if (move > 0) this.drawPiece({ piece: p, color: 4 }, x - (p.w * cell) / 2, y - (p.h * cell) / 2, 1, 1);
+    g.restore();
+    g.font = `${Math.round(cell * 1.5)}px system-ui, sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.globalAlpha = k > 0.9 ? 1 - (k - 0.9) * 10 : 1;
+    g.fillText('👆', x, y + (p.h / 2 + 1.5) * cell + cell * 0.6 + (k >= 0.65 && k < 0.9 ? Math.sin((k - 0.65) * 60) * cell * 0.06 : 0));
+    g.globalAlpha = 1;
+  }
+
+  /** The wand of the rescue: it waves over the square that is about to burst. */
+  private drawWand(t: number): void {
+    if (!this.wand) return;
+    const im = this.img('wand');
+    if (!im) return;
+    const g = this.g;
+    const cell = this.geo.cell;
+    const k = (t - this.wand.t0) / 2300;
+    g.save();
+    g.globalAlpha = k > 0.8 ? (1 - k) * 5 : Math.min(1, k * 6);
+    // the star of the wand is over the middle of the square
+    g.translate(this.wand.x + cell * 0.4, this.wand.y + cell * 0.5);
+    g.rotate(Math.sin(t / 90) * 0.3);
+    const s = cell * 2.8;
+    g.drawImage(im, -s * 0.5, -s * 0.5, s, s);
+    g.restore();
   }
 
   private drawPiece(slot: Slot, x: number, y: number, s: number, alpha: number): void {

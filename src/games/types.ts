@@ -32,6 +32,8 @@ export interface GameModule {
   mount(ctx: GameContext): void;
   /** The game is learning in itself: no maths gate before it. */
   noGate?: boolean;
+  /** A game saved less than 10 minutes ago (`session.savedAt`) goes on without the gate when the player comes back from the lobby too, not only after a reload. */
+  resumeWithoutGate?: boolean;
   /** True when a friendly full-screen message can appear without cutting off a move (ball stuck, round over, paused, menus). */
   canInterrupt?(): boolean;
   pause(): void;

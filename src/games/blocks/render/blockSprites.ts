@@ -36,7 +36,10 @@ const rr = (g: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, x: 
 export interface Sprite { canvas: Canvas2; /** the padding round the block for the shadow, in sprite px */ pad: number; size: number }
 
 /** One jelly block of `size` px (device pixels) in colour `color`. */
-export function makeSprite(color: number, size: number): Sprite {
+export type BlockStyle = 'jelly' | 'candy' | 'garden' | 'art' | 'space';
+
+/** One jelly block of `size` px (device pixels) in colour `color`, in the set of a world (SPEC-blocks.md 2.2): stripes (candy), matte (garden), a drop of paint (art), twinkles (space). */
+export function makeSprite(color: number, size: number, style: BlockStyle = 'jelly'): Sprite {
   const pal = PALETTE[color % PALETTE.length];
   const pad = Math.round(size * 0.1);
   const total = size + pad * 2;
@@ -80,23 +83,102 @@ export function makeSprite(color: number, size: number): Sprite {
   g.restore();
   // the oval highlight in the top third
   g.save();
-  g.globalAlpha = 0.55;
+  g.globalAlpha = style === 'garden' ? 0.16 : 0.55;
   g.fillStyle = '#fff';
   g.beginPath();
   g.ellipse(x + size * 0.5, y + size * 0.23, size * 0.34, size * 0.14, 0, 0, Math.PI * 2);
   g.fill();
   g.restore();
-  // a small shine dot, top left
-  g.fillStyle = 'rgba(255, 255, 255, .95)';
-  g.beginPath();
-  g.ellipse(x + size * 0.24, y + size * 0.2, size * 0.055, size * 0.045, -0.5, 0, Math.PI * 2);
-  g.fill();
+  // a small shine dot, top left (not on the matte leaves)
+  if (style !== 'garden') {
+    g.fillStyle = 'rgba(255, 255, 255, .95)';
+    g.beginPath();
+    g.ellipse(x + size * 0.24, y + size * 0.2, size * 0.055, size * 0.045, -0.5, 0, Math.PI * 2);
+    g.fill();
+  }
+  if (style !== 'jelly') {
+    g.save();
+    rr(g, x, y, size, size, r);
+    g.clip();
+    decorate(g, style, x, y, size);
+    g.restore();
+  }
   return { canvas: c, pad, size };
 }
 
+function decorate(g: CanvasRenderingContext2D, style: BlockStyle, x: number, y: number, size: number): void {
+  if (style === 'candy') {
+    // diagonal stripes like a sweet
+    g.fillStyle = 'rgba(255, 255, 255, .3)';
+    for (let k = -2; k < 4; k++) {
+      g.beginPath();
+      const o = k * size * 0.34;
+      g.moveTo(x + o, y + size);
+      g.lineTo(x + o + size * 0.16, y + size);
+      g.lineTo(x + o + size * 0.16 + size, y);
+      g.lineTo(x + o + size, y);
+      g.closePath();
+      g.fill();
+    }
+  } else if (style === 'garden') {
+    // a leaf: the middle vein and two side veins, matte
+    g.strokeStyle = 'rgba(30, 80, 30, .35)';
+    g.lineCap = 'round';
+    g.lineWidth = size * 0.045;
+    g.beginPath();
+    g.moveTo(x + size * 0.2, y + size * 0.82);
+    g.quadraticCurveTo(x + size * 0.5, y + size * 0.5, x + size * 0.8, y + size * 0.2);
+    g.stroke();
+    g.lineWidth = size * 0.03;
+    for (const t of [0.35, 0.55, 0.72]) {
+      const px = x + size * (0.2 + 0.6 * (1 - t)), py = y + size * (0.82 - 0.62 * (1 - t));
+      g.beginPath();
+      g.moveTo(px, py);
+      g.lineTo(px + size * 0.14, py + size * 0.1);
+      g.moveTo(px, py);
+      g.lineTo(px - size * 0.1, py - size * 0.12);
+      g.stroke();
+    }
+  } else if (style === 'art') {
+    // a glossy drop of paint in the corner
+    const cx = x + size * 0.7, cy = y + size * 0.7, d = size * 0.18;
+    g.fillStyle = 'rgba(255, 255, 255, .38)';
+    g.beginPath();
+    g.moveTo(cx, cy - d * 1.5);
+    g.bezierCurveTo(cx + d * 1.2, cy - d * 0.2, cx + d, cy + d, cx, cy + d);
+    g.bezierCurveTo(cx - d, cy + d, cx - d * 1.2, cy - d * 0.2, cx, cy - d * 1.5);
+    g.fill();
+    g.fillStyle = 'rgba(255, 255, 255, .85)';
+    g.beginPath();
+    g.ellipse(cx - d * 0.35, cy, d * 0.18, d * 0.35, 0.3, 0, Math.PI * 2);
+    g.fill();
+  } else if (style === 'space') {
+    // twinkles: four-pointed stars and dust
+    const spark = (cx: number, cy: number, r: number): void => {
+      g.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = (i * Math.PI) / 4;
+        const rad = i % 2 === 0 ? r : r * 0.28;
+        g.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad);
+      }
+      g.closePath();
+      g.fill();
+    };
+    g.fillStyle = 'rgba(255, 255, 255, .95)';
+    spark(x + size * 0.72, y + size * 0.3, size * 0.16);
+    spark(x + size * 0.3, y + size * 0.72, size * 0.1);
+    g.fillStyle = 'rgba(255, 255, 255, .7)';
+    for (const [px, py] of [[0.2, 0.45], [0.55, 0.8], [0.85, 0.62], [0.48, 0.5]]) {
+      g.beginPath();
+      g.arc(x + size * px, y + size * py, size * 0.022, 0, Math.PI * 2);
+      g.fill();
+    }
+  }
+}
+
 /** All seven colours at one size. */
-export function makeSprites(size: number): Sprite[] {
-  return PALETTE.map((_, i) => makeSprite(i, size));
+export function makeSprites(size: number, style: BlockStyle = 'jelly'): Sprite[] {
+  return PALETTE.map((_, i) => makeSprite(i, size, style));
 }
 
 /** A little star for the bursts (a sprite, white; tinted by drawing it with globalAlpha and a colour overlay is not needed: it is drawn in the colour of the block). */

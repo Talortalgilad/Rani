@@ -16,14 +16,15 @@ export const canAfford = (p: Price, stars: number): boolean => p.free || stars >
 /** Why a helper cannot be used now (the id of the line that explains it), or null when it can. */
 export function whyNot(h: Helper, o: { stars: number; used: FreeUsed; board: Board; tray: (Piece | null)[] }): 'blk_noStars' | 'blk_nothingHere' | 'blk_nothingToTurn' | null {
   if (!canAfford(priceOf(h, o.used), o.stars)) return 'blk_noStars';
-  if (h === 'hammer' && o.board.isEmpty) return 'blk_nothingHere';
+  if (h === 'hammer' && !o.board.cells.some((c, i) => c !== EMPTY && o.board.item[i] < 0)) return 'blk_nothingHere';
   if (h === 'rotate' && !o.tray.some((p) => p && p.name !== 'dot' && p.name !== 'square2')) return 'blk_nothingToTurn';
   return null;
 }
 
 /** The hammer breaks one block: returns the board index freed, or -1 when the cell is empty. */
 export function hammer(board: Board, r: number, c: number): number {
-  if (r < 0 || c < 0 || r >= N || c >= N || board.cells[idx(r, c)] === EMPTY) return -1;
+  // an item, a crate or a chain is not for the hammer: the goal must stay reachable
+  if (r < 0 || c < 0 || r >= N || c >= N || board.cells[idx(r, c)] === EMPTY || board.item[idx(r, c)] >= 0) return -1;
   board.cells[idx(r, c)] = EMPTY;
   return idx(r, c);
 }

@@ -20,5 +20,18 @@ export const bk = {
   rotate: 'סיבוב',
   hammer: 'פטיש',
   free: 'חינם',
+  journey: 'המסע',
+  freePlay: 'משחק חופשי',
+  next: 'הבא',
+  again: 'עוד פעם',
+  map: 'מפה',
+  levelDone: 'כל הכבוד!',
+  hard: 'קשה!',
+  boss: 'שלב בוס',
+  wave: 'לוח נקי, ממשיכים!',
+  tut_row: 'גררי את הצורה כדי להשלים שורה!',
+  tut_col: 'עכשיו נשלים עמודה!',
+  tut_square: 'ועכשיו ריבוע של שלוש על שלוש!',
+  prize: 'קיבלת יהלום!',
 };
 export const BLOCKS_LINES: { id: string; parts: (string | null)[] }[] = ((Object.keys(bk) as (keyof typeof bk)[])).map((k) => ({ id: `blk_${k}`, parts: [bk[k]] }));
