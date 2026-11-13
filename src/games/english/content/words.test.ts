@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { imageUrl } from '../art/images';
 import { BODY_REGIONS, partAt } from './body';
-import { WORDS, WORLD_NAMES, labelOf, wordsOfWorld } from './words';
+import { WORDS, WORLD_NAMES, labelOf, pluralOf, wordsOfWorld } from './words';
 
 const PICTURES = import.meta.glob('../../../../public/english/words/*.webp', { query: '?url', eager: false });
 const BODY = import.meta.glob('../../../../public/english/body.webp', { query: '?url', eager: false });
@@ -58,5 +58,16 @@ describe('the body: where a finger lands', () => {
     expect(partAt(40, 92)).toBe('feet');
     expect(partAt(40, 83)).toBe('legs');
     expect(partAt(2, 2)).toBeNull();
+  });
+});
+
+describe('plurals ("Find all the ___!")', () => {
+  it('the irregular ones are right: snowman is snowmen, fish stays fish, and the others take s, es or ies', () => {
+    expect(pluralOf('snowman')).toBe('snowmen');
+    expect(pluralOf('fish')).toBe('fish');
+    expect(pluralOf('box')).toBe('boxes');
+    expect(pluralOf('cat')).toBe('cats');
+    // no word of the game ends up with "mans"
+    for (const w of WORDS) expect(pluralOf(w.id), w.id).not.toMatch(/mans$/);
   });
 });

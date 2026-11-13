@@ -151,6 +151,7 @@ export const VERBS: Record<string, { en: string; he: string }> = {
 export function pluralOf(id: string): string {
   const l = labelOf(id);
   if (l === 'fish') return 'fish';
+  if (/man$/.test(l)) return `${l.slice(0, -3)}men`; // snowman: snowmen
   if (/ss$|x$|ch$|sh$/.test(l)) return `${l}es`;
   if (/s$/.test(l)) return l; // already a plural: glasses, scissors, skates, shoes
   if (/[^aeiou]y$/.test(l)) return `${l.slice(0, -1)}ies`;

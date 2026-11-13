@@ -720,1347 +720,2387 @@
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "phone",
   "text": "Phone.",
-  "lang": "en",
   "take": 100,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "tv",
   "text": "TV.",
-  "lang": "en",
   "take": 100,
   "dur": 0.91,
   "flag": "long"
  },
  {
+  "lang": "en",
   "id": "ball",
   "text": "Ball.",
-  "lang": "en",
   "take": 100,
   "dur": 0.92,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "doll",
   "text": "Doll.",
-  "lang": "en",
   "take": 100,
   "dur": 0.86,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "bed",
   "text": "Bed.",
-  "lang": "en",
   "take": 100,
   "dur": 0.66,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "book",
   "text": "Book.",
-  "lang": "en",
   "take": 100,
   "dur": 0.64,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "box",
   "text": "Box.",
-  "lang": "en",
   "take": 100,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "lamp",
   "text": "Lamp.",
-  "lang": "en",
   "take": 100,
   "dur": 0.64,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "chair",
   "text": "Chair.",
-  "lang": "en",
   "take": 100,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "pizza",
   "text": "Pizza.",
-  "lang": "en",
   "take": 100,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "cheese",
   "text": "Cheese.",
-  "lang": "en",
   "take": 100,
   "dur": 0.92,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "pasta",
   "text": "Pasta.",
-  "lang": "en",
   "take": 100,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "meat",
   "text": "Meat.",
-  "lang": "en",
   "take": 101,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "apple",
   "text": "Apple.",
-  "lang": "en",
   "take": 101,
   "dur": 0.74,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "banana",
   "text": "Banana.",
-  "lang": "en",
   "take": 101,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "milk",
   "text": "Milk.",
-  "lang": "en",
   "take": 101,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "cake",
   "text": "Cake.",
-  "lang": "en",
   "take": 101,
   "dur": 0.71,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "egg",
   "text": "Egg.",
-  "lang": "en",
   "take": 101,
   "dur": 0.67,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "slide",
   "text": "Slide.",
-  "lang": "en",
   "take": 101,
   "dur": 0.95,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "swing",
   "text": "Swing.",
-  "lang": "en",
   "take": 101,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "tree",
   "text": "Tree.",
-  "lang": "en",
   "take": 101,
   "dur": 0.73,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "bike",
   "text": "Bike.",
-  "lang": "en",
   "take": 101,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "skates",
   "text": "Skates.",
-  "lang": "en",
   "take": 101,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "helmet",
   "text": "Helmet.",
-  "lang": "en",
   "take": 101,
   "dur": 0.96,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "flower",
   "text": "Flower.",
-  "lang": "en",
   "take": 102,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "bench",
   "text": "Bench.",
-  "lang": "en",
   "take": 102,
   "dur": 0.75,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "kite",
   "text": "Kite.",
-  "lang": "en",
   "take": 102,
   "dur": 0.74,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "pencil",
   "text": "Pencil.",
-  "lang": "en",
   "take": 102,
   "dur": 0.81,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "brush",
   "text": "Brush.",
-  "lang": "en",
   "take": 102,
   "dur": 0.73,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "crayons",
   "text": "Crayons.",
-  "lang": "en",
   "take": 102,
   "dur": 1.03,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "paper",
   "text": "Paper.",
-  "lang": "en",
   "take": 102,
   "dur": 0.76,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "palette",
   "text": "Palette.",
-  "lang": "en",
   "take": 102,
   "dur": 0.83,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "scissors",
   "text": "Scissors.",
-  "lang": "en",
   "take": 102,
   "dur": 0.96,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "glue",
   "text": "Glue.",
-  "lang": "en",
   "take": 102,
   "dur": 0.7,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "picture",
   "text": "Picture.",
-  "lang": "en",
   "take": 102,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "easel",
   "text": "Easel.",
-  "lang": "en",
   "take": 102,
   "dur": 0.86,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "candy",
   "text": "Candy.",
-  "lang": "en",
   "take": 102,
   "dur": 0.83,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "lollipop",
   "text": "Lollipop.",
-  "lang": "en",
   "take": 102,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "cupcake",
   "text": "Cupcake.",
-  "lang": "en",
   "take": 102,
   "dur": 0.9,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "icecream",
   "text": "Ice cream.",
-  "lang": "en",
   "take": 102,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "cookie",
   "text": "Cookie.",
-  "lang": "en",
   "take": 102,
   "dur": 0.7,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "donut",
   "text": "Donut.",
-  "lang": "en",
   "take": 102,
   "dur": 0.84,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "chocolate",
   "text": "Chocolate.",
-  "lang": "en",
   "take": 102,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "balloon",
   "text": "Balloon.",
-  "lang": "en",
   "take": 102,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "gift",
   "text": "Gift.",
-  "lang": "en",
   "take": 102,
   "dur": 0.68,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "mom",
   "text": "Mom.",
-  "lang": "en",
   "take": 102,
   "dur": 0.72,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "dad",
   "text": "Dad.",
-  "lang": "en",
   "take": 102,
   "dur": 0.67,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "brother",
   "text": "Brother.",
-  "lang": "en",
   "take": 102,
   "dur": 0.7,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "sister",
   "text": "Sister.",
-  "lang": "en",
   "take": 102,
   "dur": 0.86,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "baby",
   "text": "Baby.",
-  "lang": "en",
   "take": 102,
   "dur": 0.76,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "grandma",
   "text": "Grandma.",
-  "lang": "en",
   "take": 102,
   "dur": 0.78,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "grandpa",
   "text": "Grandpa.",
-  "lang": "en",
   "take": 102,
   "dur": 0.81,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "family",
   "text": "Family.",
-  "lang": "en",
   "take": 103,
   "dur": 0.81,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "friends",
   "text": "Friends.",
-  "lang": "en",
   "take": 103,
   "dur": 0.86,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "shirt",
   "text": "Shirt.",
-  "lang": "en",
   "take": 103,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "shorts",
   "text": "Shorts.",
-  "lang": "en",
   "take": 103,
   "dur": 0.85,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "dress",
   "text": "Dress.",
-  "lang": "en",
   "take": 103,
   "dur": 0.72,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "skirt",
   "text": "Skirt.",
-  "lang": "en",
   "take": 103,
   "dur": 0.83,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "shoes",
   "text": "Shoes.",
-  "lang": "en",
   "take": 103,
   "dur": 0.87,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "socks",
   "text": "Socks.",
-  "lang": "en",
   "take": 103,
   "dur": 0.87,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "hat",
   "text": "Hat.",
-  "lang": "en",
   "take": 103,
   "dur": 0.71,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "jacket",
   "text": "Jacket.",
-  "lang": "en",
   "take": 103,
   "dur": 0.64,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "glasses",
   "text": "Glasses.",
-  "lang": "en",
   "take": 103,
   "dur": 0.84,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "jump",
   "text": "Jump.",
-  "lang": "en",
   "take": 103,
   "dur": 0.48,
   "flag": "short"
  },
  {
+  "lang": "en",
   "id": "clap",
   "text": "Clap.",
-  "lang": "en",
   "take": 103,
   "dur": 0.5,
   "flag": "short"
  },
  {
+  "lang": "en",
   "id": "dance",
   "text": "Dance.",
-  "lang": "en",
   "take": 103,
   "dur": 0.79,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "sing",
   "text": "Sing.",
-  "lang": "en",
   "take": 103,
   "dur": 0.72,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "run",
   "text": "Run.",
-  "lang": "en",
   "take": 103,
   "dur": 0.69,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "sleep",
   "text": "Sleep.",
-  "lang": "en",
   "take": 103,
   "dur": 0.6,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "eat",
   "text": "Eat.",
-  "lang": "en",
   "take": 103,
   "dur": 0.64,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "drink",
   "text": "Drink.",
-  "lang": "en",
   "take": 103,
   "dur": 0.65,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "wave",
   "text": "Wave.",
-  "lang": "en",
   "take": 103,
   "dur": 0.72,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "sun",
   "text": "Sun.",
-  "lang": "en",
   "take": 103,
   "dur": 0.74,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "cloud",
   "text": "Cloud.",
-  "lang": "en",
   "take": 103,
   "dur": 0.65,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "rain",
   "text": "Rain.",
-  "lang": "en",
   "take": 103,
   "dur": 0.75,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "snowflake",
   "text": "Snowflake.",
-  "lang": "en",
   "take": 103,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "wind",
   "text": "Wind.",
-  "lang": "en",
   "take": 103,
   "dur": 0.68,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "rainbow",
   "text": "Rainbow.",
-  "lang": "en",
   "take": 103,
   "dur": 0.83,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "umbrella",
   "text": "Umbrella.",
-  "lang": "en",
   "take": 103,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "snowman",
   "text": "Snowman.",
-  "lang": "en",
   "take": 103,
   "dur": 1.02,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "storm",
   "text": "Storm.",
-  "lang": "en",
   "take": 104,
   "dur": 0.92,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "cat",
   "text": "Cat.",
-  "lang": "en",
   "take": 104,
   "dur": 0.71,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "dog",
   "text": "Dog.",
-  "lang": "en",
   "take": 104,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "lion",
   "text": "Lion.",
-  "lang": "en",
   "take": 104,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "monkey",
   "text": "Monkey.",
-  "lang": "en",
   "take": 104,
   "dur": 0.79,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "fish",
   "text": "Fish.",
-  "lang": "en",
   "take": 104,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "bird",
   "text": "Bird.",
-  "lang": "en",
   "take": 104,
   "dur": 0.76,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "elephant",
   "text": "Elephant.",
-  "lang": "en",
   "take": 104,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "giraffe",
   "text": "Giraffe.",
-  "lang": "en",
   "take": 104,
   "dur": 0.97,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "rabbit",
   "text": "Rabbit.",
-  "lang": "en",
   "take": 104,
   "dur": 0.87,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "rope",
   "text": "Rope.",
-  "lang": "en",
   "take": 104,
   "dur": 0.53,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "wall",
   "text": "Climbing wall.",
-  "lang": "en",
   "take": 104,
   "dur": 1.17,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "beam",
   "text": "Balance beam.",
-  "lang": "en",
   "take": 104,
   "dur": 1.25,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "bars",
   "text": "Monkey bars.",
-  "lang": "en",
   "take": 104,
   "dur": 1.21,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "tunnel",
   "text": "Tunnel.",
-  "lang": "en",
   "take": 104,
   "dur": 0.68,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "crate",
   "text": "Crate.",
-  "lang": "en",
   "take": 104,
   "dur": 0.73,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "bridge",
   "text": "Bridge.",
-  "lang": "en",
   "take": 104,
   "dur": 0.99,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "mat",
   "text": "Mat.",
-  "lang": "en",
   "take": 104,
   "dur": 0.86,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "ladder",
   "text": "Ladder.",
-  "lang": "en",
   "take": 104,
   "dur": 0.86,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "stage",
   "text": "Stage.",
-  "lang": "en",
   "take": 104,
   "dur": 1.03,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "microphone",
   "text": "Microphone.",
-  "lang": "en",
   "take": 104,
   "dur": 1.14,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "guitar",
   "text": "Guitar.",
-  "lang": "en",
   "take": 104,
   "dur": 0.9,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "drum",
   "text": "Drum.",
-  "lang": "en",
   "take": 104,
   "dur": 0.8,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "piano",
   "text": "Piano.",
-  "lang": "en",
   "take": 104,
   "dur": 0.84,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "trumpet",
   "text": "Trumpet.",
-  "lang": "en",
   "take": 104,
   "dur": 0.88,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "star",
   "text": "Star.",
-  "lang": "en",
   "take": 104,
   "dur": 1.01,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "crown",
   "text": "Crown.",
-  "lang": "en",
   "take": 104,
   "dur": 0.88,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "flowers",
   "text": "Flowers.",
-  "lang": "en",
   "take": 104,
   "dur": 1.18,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_who",
   "text": "מי משחק?",
-  "lang": "he",
   "take": 105,
   "dur": 1.22,
   "flag": ""
  },
  {
-  "id": "mm_player1",
-  "text": "שחקן 1",
   "lang": "he",
-  "take": 105,
-  "dur": 1.7,
-  "flag": ""
- },
- {
-  "id": "mm_player2",
-  "text": "שחקן 2",
-  "lang": "he",
-  "take": 105,
-  "dur": 1.68,
-  "flag": ""
- },
- {
   "id": "mm_dad",
   "text": "אבא",
-  "lang": "he",
   "take": 105,
   "dur": 0.7,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_mum",
   "text": "אמא",
-  "lang": "he",
   "take": 105,
   "dur": 0.67,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_ray",
   "text": "ריי",
-  "lang": "he",
   "take": 105,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_go",
   "text": "יאללה, מתחילים!",
-  "lang": "he",
   "take": 105,
   "dur": 1.29,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_tie",
   "text": "תיקו! כל הכבוד לשניכם!",
-  "lang": "he",
   "take": 105,
   "dur": 2.65,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_newGame",
   "text": "משחק חדש",
-  "lang": "he",
   "take": 105,
   "dur": 1.51,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_turnOf.0",
   "text": "התור של",
-  "lang": "he",
   "take": 105,
   "dur": 1.53,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_pairAgain.0",
   "text": "זוג! עוד תור ל",
-  "lang": "he",
   "take": 105,
   "dur": 3.3,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "mm_wins.0",
   "text": "ניצחון ל",
-  "lang": "he",
   "take": 105,
   "dur": 1.12,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_title",
   "text": "קוביות קסם",
-  "lang": "he",
   "take": 105,
   "dur": 2.78,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_nice",
   "text": "יופי!",
-  "lang": "he",
   "take": 105,
   "dur": 0.95,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_amazing",
   "text": "מדהים!",
-  "lang": "he",
   "take": 105,
   "dur": 0.99,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_wow",
   "text": "וואו!",
-  "lang": "he",
   "take": 105,
   "dur": 1.04,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_magic",
   "text": "קסם!",
-  "lang": "he",
   "take": 105,
   "dur": 1.01,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_clean",
   "text": "לוח נקי!",
-  "lang": "he",
   "take": 105,
   "dur": 1.28,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_full",
   "text": "וואו, מילאת את כל הלוח!",
-  "lang": "he",
   "take": 105,
   "dur": 2.69,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_newBoard",
   "text": "לוח חדש",
-  "lang": "he",
   "take": 105,
   "dur": 1.52,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_score",
   "text": "ניקוד",
-  "lang": "he",
   "take": 106,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_idea",
   "text": "רגע, יש לי רעיון!",
-  "lang": "he",
   "take": 106,
   "dur": 1.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_noStars",
   "text": "אין מספיק כוכבים",
-  "lang": "he",
   "take": 106,
   "dur": 3.39,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_nothingHere",
   "text": "אין מה לפרק",
-  "lang": "he",
   "take": 106,
   "dur": 1.35,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_nothingToTurn",
   "text": "אין מה לסובב",
-  "lang": "he",
   "take": 106,
   "dur": 2.13,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_pickShape",
   "text": "בחרי צורה לסיבוב",
-  "lang": "he",
   "take": 106,
   "dur": 2.21,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_pickBlock",
   "text": "בחרי קובייה לפירוק",
-  "lang": "he",
   "take": 106,
   "dur": 1.76,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_swap",
   "text": "החלפה",
-  "lang": "he",
   "take": 106,
   "dur": 0.95,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_rotate",
   "text": "סיבוב",
-  "lang": "he",
   "take": 106,
   "dur": 1,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_hammer",
   "text": "פטיש",
-  "lang": "he",
   "take": 106,
   "dur": 0.81,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "blk_free",
   "text": "חינם",
-  "lang": "he",
   "take": 106,
   "dur": 1.08,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "my_letters",
   "text": "האותיות שלי",
-  "lang": "he",
   "take": 106,
   "dur": 2.22,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "abc_song",
   "text": "שיר ה-ABC",
-  "lang": "he",
   "take": 106,
   "dur": 1.27,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "abc_done",
   "text": "כל הכבוד! את מכירה את כל האותיות!",
-  "lang": "he",
   "take": 106,
   "dur": 5.35,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "l_bd_b",
   "text": "ב-b קודם יש גב, ואז בטן קדימה",
-  "lang": "he",
   "take": 106,
   "dur": 2.85,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "l_bd_d",
   "text": "ב-d קודם יש בטן, ואז גב",
-  "lang": "he",
   "take": 106,
   "dur": 4.89,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "letter_shelf",
   "text": "סקווישי האותיות",
-  "lang": "he",
   "take": 106,
   "dur": 1.68,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "island_1",
   "text": "אי החול",
-  "lang": "he",
   "take": 106,
   "dur": 1.11,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "island_2",
   "text": "אי הירח",
-  "lang": "he",
   "take": 106,
   "dur": 1.41,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "island_3",
   "text": "אי היער",
-  "lang": "he",
   "take": 106,
   "dur": 1.44,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "island_4",
   "text": "אי הקשת",
-  "lang": "he",
   "take": 107,
   "dur": 1.6,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "island_5",
   "text": "אי הפרחים",
-  "lang": "he",
   "take": 107,
   "dur": 1.36,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "island_6",
   "text": "אי הכוכבים",
-  "lang": "he",
   "take": 107,
   "dur": 1.38,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_hat",
   "text": "כובע מסיבה",
-  "lang": "he",
   "take": 107,
   "dur": 1.18,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_glasses",
   "text": "משקפיים",
-  "lang": "he",
   "take": 107,
   "dur": 1.12,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_bow",
   "text": "פפיון",
-  "lang": "he",
   "take": 107,
   "dur": 0.93,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_crown",
   "text": "כתר זהב",
-  "lang": "he",
   "take": 107,
   "dur": 1.27,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_locked_3",
   "text": "עולם 3",
-  "lang": "he",
   "take": 107,
   "dur": 1.36,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_locked_6",
   "text": "עולם 6",
-  "lang": "he",
   "take": 107,
   "dur": 1.28,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_locked_9",
   "text": "עולם 9",
-  "lang": "he",
   "take": 107,
   "dur": 1.31,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "acc_locked_12",
   "text": "עולם 12",
-  "lang": "he",
   "take": 107,
   "dur": 1.42,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_1",
   "text": "החדר שלי",
-  "lang": "he",
   "take": 107,
   "dur": 1.19,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_2",
   "text": "המטבח",
-  "lang": "he",
   "take": 107,
   "dur": 1.04,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_3",
   "text": "הגינה",
-  "lang": "he",
   "take": 107,
   "dur": 0.73,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_4",
   "text": "סטודיו הציור",
-  "lang": "he",
   "take": 107,
   "dur": 1.43,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_5",
   "text": "חנות הממתקים",
-  "lang": "he",
   "take": 107,
   "dur": 1.47,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_7",
   "text": "ארון הבגדים",
-  "lang": "he",
   "take": 107,
   "dur": 1.36,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_8",
   "text": "מסיבת ריקודים",
-  "lang": "he",
   "take": 107,
   "dur": 1.6,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_10",
   "text": "גן החיות",
-  "lang": "he",
   "take": 107,
   "dur": 1.37,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "world_11",
   "text": "פארק הנינג׳ה",
-  "lang": "he",
   "take": 107,
   "dur": 1.27,
+  "flag": ""
+ },
+ {
+  "id": "world_12",
+  "text": "ההופעה הגדולה",
+  "lang": "he",
+  "take": 108,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "id": "c_red",
+  "text": "אדום",
+  "lang": "he",
+  "take": 108,
+  "dur": 1.16,
+  "flag": ""
+ },
+ {
+  "id": "c_blue",
+  "text": "כחול",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "c_yellow",
+  "text": "צהוב",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "c_pink",
+  "text": "ורוד",
+  "lang": "he",
+  "take": 108,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "c_purple",
+  "text": "סגול",
+  "lang": "he",
+  "take": 108,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "c_green",
+  "text": "ירוק",
+  "lang": "he",
+  "take": 108,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "w_phone",
+  "text": "טלפון",
+  "lang": "he",
+  "take": 108,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "w_tv",
+  "text": "טלוויזיה",
+  "lang": "he",
+  "take": 108,
+  "dur": 1.18,
+  "flag": ""
+ },
+ {
+  "id": "w_ball",
+  "text": "כדור",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "w_doll",
+  "text": "בובה",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "w_bed",
+  "text": "מיטה",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "w_book",
+  "text": "ספר",
+  "lang": "he",
+  "take": 108,
+  "dur": 1.09,
+  "flag": ""
+ },
+ {
+  "id": "w_box",
+  "text": "קופסה",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "w_lamp",
+  "text": "מנורה",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "w_chair",
+  "text": "כיסא",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "w_pizza",
+  "text": "פיצה",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "w_cheese",
+  "text": "גבינה",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "w_pasta",
+  "text": "פסטה",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "w_meat",
+  "text": "בשר",
+  "lang": "he",
+  "take": 108,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "w_apple",
+  "text": "תפוח",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.1,
+  "flag": ""
+ },
+ {
+  "id": "w_banana",
+  "text": "בננה",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "w_milk",
+  "text": "חלב",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "w_cake",
+  "text": "עוגה",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.74,
+  "flag": ""
+ },
+ {
+  "id": "w_egg",
+  "text": "ביצה",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "w_slide",
+  "text": "מגלשה",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "w_swing",
+  "text": "נדנדה",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "w_tree",
+  "text": "עץ",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.77,
+  "flag": ""
+ },
+ {
+  "id": "w_bike",
+  "text": "אופניים",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "w_skates",
+  "text": "גלגיליות",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.3,
+  "flag": ""
+ },
+ {
+  "id": "w_helmet",
+  "text": "קסדה",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "w_flower",
+  "text": "פרח",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "w_bench",
+  "text": "ספסל",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.11,
+  "flag": ""
+ },
+ {
+  "id": "w_kite",
+  "text": "עפיפון",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "w_pencil",
+  "text": "עיפרון",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "w_brush",
+  "text": "מכחול",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "w_crayons",
+  "text": "צבעי שעווה",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.45,
+  "flag": ""
+ },
+ {
+  "id": "w_paper",
+  "text": "נייר",
+  "lang": "he",
+  "take": 109,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "w_palette",
+  "text": "פלטת צבעים",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.53,
+  "flag": ""
+ },
+ {
+  "id": "w_scissors",
+  "text": "מספריים",
+  "lang": "he",
+  "take": 109,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "w_glue",
+  "text": "דבק",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "w_picture",
+  "text": "תמונה",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "w_easel",
+  "text": "כן ציור",
+  "lang": "he",
+  "take": 110,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "w_candy",
+  "text": "סוכרייה",
+  "lang": "he",
+  "take": 110,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "w_lollipop",
+  "text": "סוכריה על מקל",
+  "lang": "he",
+  "take": 110,
+  "dur": 1.82,
+  "flag": ""
+ },
+ {
+  "id": "w_cupcake",
+  "text": "קאפקייק",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "w_icecream",
+  "text": "גלידה",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "w_cookie",
+  "text": "עוגייה",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.7,
+  "flag": ""
+ },
+ {
+  "id": "w_donut",
+  "text": "סופגנייה",
+  "lang": "he",
+  "take": 110,
+  "dur": 1.04,
+  "flag": ""
+ },
+ {
+  "id": "w_chocolate",
+  "text": "שוקולד",
+  "lang": "he",
+  "take": 110,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "w_balloon",
+  "text": "בלון",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.8,
+  "flag": ""
+ },
+ {
+  "id": "w_gift",
+  "text": "מתנה",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "w_brother",
+  "text": "אח",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.71,
+  "flag": ""
+ },
+ {
+  "id": "w_sister",
+  "text": "אחות",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "w_baby",
+  "text": "תינוק",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "w_grandma",
+  "text": "סבתא",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.85,
+  "flag": ""
+ },
+ {
+  "id": "w_grandpa",
+  "text": "סבא",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "w_family",
+  "text": "משפחה",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.95,
+  "flag": ""
+ },
+ {
+  "id": "w_friends",
+  "text": "חברים",
+  "lang": "he",
+  "take": 110,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "w_shirt",
+  "text": "חולצה",
+  "lang": "he",
+  "take": 110,
+  "dur": 2.13,
+  "flag": "long"
+ },
+ {
+  "id": "w_shorts",
+  "text": "מכנסיים קצרים",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.55,
+  "flag": ""
+ },
+ {
+  "id": "w_dress",
+  "text": "שמלה",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.77,
+  "flag": ""
+ },
+ {
+  "id": "w_skirt",
+  "text": "חצאית",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "w_shoes",
+  "text": "נעליים",
+  "lang": "he",
+  "take": 111,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "w_socks",
+  "text": "גרביים",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "w_hat",
+  "text": "כובע",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.68,
+  "flag": ""
+ },
+ {
+  "id": "w_jacket",
+  "text": "מעיל",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.79,
+  "flag": ""
+ },
+ {
+  "id": "w_jump",
+  "text": "לקפוץ",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "w_clap",
+  "text": "למחוא כפיים",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.37,
+  "flag": ""
+ },
+ {
+  "id": "w_dance",
+  "text": "לרקוד",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "w_sing",
+  "text": "לשיר",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "w_run",
+  "text": "לרוץ",
+  "lang": "he",
+  "take": 111,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "w_sleep",
+  "text": "לישון",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "w_eat",
+  "text": "לאכול",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "w_drink",
+  "text": "לשתות",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "w_wave",
+  "text": "לנופף",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.12,
+  "flag": ""
+ },
+ {
+  "id": "w_sun",
+  "text": "שמש",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.09,
+  "flag": ""
+ },
+ {
+  "id": "w_cloud",
+  "text": "ענן",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "w_rain",
+  "text": "גשם",
+  "lang": "he",
+  "take": 111,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "w_snowflake",
+  "text": "פתית שלג",
+  "lang": "he",
+  "take": 111,
+  "dur": 1.55,
+  "flag": ""
+ },
+ {
+  "id": "w_wind",
+  "text": "רוח",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "w_rainbow",
+  "text": "קשת",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.92,
+  "flag": ""
+ },
+ {
+  "id": "w_umbrella",
+  "text": "מטרייה",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "w_snowman",
+  "text": "איש שלג",
+  "lang": "he",
+  "take": 112,
+  "dur": 1.52,
+  "flag": ""
+ },
+ {
+  "id": "w_storm",
+  "text": "סערה",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "w_cat",
+  "text": "חתול",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "w_dog",
+  "text": "כלב",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "w_lion",
+  "text": "אריה",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.74,
+  "flag": ""
+ },
+ {
+  "id": "w_monkey",
+  "text": "קוף",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.79,
+  "flag": ""
+ },
+ {
+  "id": "w_fish",
+  "text": "דג",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "w_bird",
+  "text": "ציפור",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "w_elephant",
+  "text": "פיל",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.68,
+  "flag": ""
+ },
+ {
+  "id": "w_giraffe",
+  "text": "ג׳ירפה",
+  "lang": "he",
+  "take": 112,
+  "dur": 1,
+  "flag": ""
+ },
+ {
+  "id": "w_rabbit",
+  "text": "ארנב",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "w_rope",
+  "text": "חבל",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.9,
+  "flag": ""
+ },
+ {
+  "id": "w_wall",
+  "text": "קיר טיפוס",
+  "lang": "he",
+  "take": 112,
+  "dur": 1.59,
+  "flag": ""
+ },
+ {
+  "id": "w_beam",
+  "text": "קורת שיווי משקל",
+  "lang": "he",
+  "take": 112,
+  "dur": 1.9,
+  "flag": ""
+ },
+ {
+  "id": "w_bars",
+  "text": "מקבילים",
+  "lang": "he",
+  "take": 112,
+  "dur": 1.2,
+  "flag": ""
+ },
+ {
+  "id": "w_tunnel",
+  "text": "מנהרה",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "w_crate",
+  "text": "ארגז",
+  "lang": "he",
+  "take": 112,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "w_bridge",
+  "text": "גשר",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.93,
+  "flag": ""
+ },
+ {
+  "id": "w_mat",
+  "text": "מזרן",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "w_ladder",
+  "text": "סולם",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "w_stage",
+  "text": "במה",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.79,
+  "flag": ""
+ },
+ {
+  "id": "w_microphone",
+  "text": "מיקרופון",
+  "lang": "he",
+  "take": 113,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "w_guitar",
+  "text": "גיטרה",
+  "lang": "he",
+  "take": 113,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "w_drum",
+  "text": "תוף",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.75,
+  "flag": ""
+ },
+ {
+  "id": "w_piano",
+  "text": "פסנתר",
+  "lang": "he",
+  "take": 113,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "w_trumpet",
+  "text": "חצוצרה",
+  "lang": "he",
+  "take": 113,
+  "dur": 1.05,
+  "flag": ""
+ },
+ {
+  "id": "w_star",
+  "text": "כוכב",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "id": "w_crown",
+  "text": "כתר",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "w_flowers",
+  "text": "זר פרחים",
+  "lang": "he",
+  "take": 113,
+  "dur": 3.24,
+  "flag": "long"
+ },
+ {
+  "id": "name.cheesy",
+  "text": "צ׳יזי",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.78,
+  "flag": ""
+ },
+ {
+  "id": "name.mozzi",
+  "text": "מוצי",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.83,
+  "flag": ""
+ },
+ {
+  "id": "name.horiko",
+  "text": "חוריקו",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.99,
+  "flag": ""
+ },
+ {
+  "id": "name.popcheese",
+  "text": "פופצ׳יז",
+  "lang": "he",
+  "take": 113,
+  "dur": 1.02,
+  "flag": ""
+ },
+ {
+  "id": "name.rani",
+  "text": "רני",
+  "lang": "he",
+  "take": 113,
+  "dur": 0.76,
+  "flag": ""
+ },
+ {
+  "id": "blk_journey",
+  "text": "המסע",
+  "lang": "he",
+  "take": 114,
+  "dur": 0.97,
+  "flag": ""
+ },
+ {
+  "id": "blk_freePlay",
+  "text": "משחק חופשי",
+  "lang": "he",
+  "take": 114,
+  "dur": 1.67,
+  "flag": ""
+ },
+ {
+  "id": "blk_next",
+  "text": "הבא",
+  "lang": "he",
+  "take": 114,
+  "dur": 0.63,
+  "flag": ""
+ },
+ {
+  "id": "blk_again",
+  "text": "עוד פעם",
+  "lang": "he",
+  "take": 114,
+  "dur": 0.88,
+  "flag": ""
+ },
+ {
+  "id": "blk_map",
+  "text": "מפה",
+  "lang": "he",
+  "take": 114,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "id": "blk_hard",
+  "text": "קשה!",
+  "lang": "he",
+  "take": 114,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "blk_boss",
+  "text": "שלב בוס",
+  "lang": "he",
+  "take": 114,
+  "dur": 1.72,
+  "flag": ""
+ },
+ {
+  "id": "blk_wave",
+  "text": "לוח נקי, ממשיכים!",
+  "lang": "he",
+  "take": 114,
+  "dur": 2.27,
+  "flag": ""
+ },
+ {
+  "id": "blk_tut_row",
+  "text": "גררי את הצורה כדי להשלים שורה!",
+  "lang": "he",
+  "take": 114,
+  "dur": 3.12,
+  "flag": ""
+ },
+ {
+  "id": "blk_tut_col",
+  "text": "עכשיו נשלים עמודה!",
+  "lang": "he",
+  "take": 114,
+  "dur": 2.06,
+  "flag": ""
+ },
+ {
+  "id": "blk_tut_square",
+  "text": "ועכשיו ריבוע של שלוש על שלוש!",
+  "lang": "he",
+  "take": 114,
+  "dur": 3.12,
+  "flag": ""
+ },
+ {
+  "id": "blk_prize",
+  "text": "קיבלת יהלום!",
+  "lang": "he",
+  "take": 114,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "blk_cheer",
+  "text": "את יכולה! עוד קצת!",
+  "lang": "he",
+  "take": 114,
+  "dur": 2.17,
+  "flag": ""
+ },
+ {
+  "id": "mm_player1",
+  "text": "שחקן אחד",
+  "lang": "he",
+  "take": 114,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "mm_player2",
+  "text": "שחקן שתיים",
+  "lang": "he",
+  "take": 114,
+  "dur": 1.68,
   "flag": ""
  }
 ]
