@@ -7,6 +7,11 @@ import { showMap, showWorld } from './ui/map';
 import { ACCESSORIES, accessoryOf, unlockedAccessories } from './art/accessories';
 import { SQUISHIES, squishyOfWorld } from './art/squishies';
 import { showWordbook } from './ui/wordbook';
+import type { Journey } from './ui/journeyTabs';
+import { showIsland, showLettersMap } from './letters/ui/mapLetters';
+import { letterSquishy } from './letters/ui/glyph';
+import { ISLANDS, islandInfo } from './letters/journey';
+import { learnedBefore, planLetterStation } from './letters/plan';
 import { songTaskStep } from './engine/steps';
 import { showShelf } from './ui/shelf';
 import { preloadCheesy, setLook } from './art/cheesy';
@@ -17,7 +22,7 @@ import { STATIONS_PER_WORLD, addPlay, dayNumber, emptyMap, finishStation, markSe
 import { labelBusy, recognitionAvailable, stopSpeech } from './voice';
 import { getState } from '../../storage';
 import { he } from './content/lines';
-import { preloadWorld } from './art/images';
+import { preloadLetters, preloadWorld } from './art/images';
 import '@fontsource/fredoka/latin-600.css';
 import '@fontsource/fredoka/latin-700.css';
 import '@fontsource/fredoka/hebrew-600.css';
@@ -38,6 +43,10 @@ const words = (): Words => ctx!.load<Words>('words', {});
 const mapState = (): MapProgress => ctx!.load<MapProgress>('map', emptyMap());
 /** a parent setting (off): every world and station is open */
 const openAll = (): boolean => ctx!.load<boolean>('openAll', false);
+/** the second journey (SPEC-letters.md): its own progress and its own rescued letters */
+const lmap = (): MapProgress => ctx!.load<MapProgress>('lmap', emptyMap());
+const rescuedLetters = (): string[] => ctx!.load<string[]>('rescuedLetters', []);
+const journey = (): Journey => ctx!.load<Journey>('journey', 'words');
 const buddy = (): string | null => ctx!.load<string | null>('buddy', null);
 const accessory = (): string | null => ctx!.load<string | null>('accessory', null);
 const unlocked = () => unlockedAccessories(mapState().done, STATIONS_PER_WORLD);
@@ -73,6 +82,7 @@ function showShelfScreen(): void {
       buddy: buddy(),
       accessory: accessory(),
       unlocked: unlocked(),
+      letters: ISLANDS.map((i) => ({ id: i.letters[0], art: letterSquishy(i.letters[0], i.color), have: rescuedLetters().includes(i.letters[0]) })),
       sound: ctx!.sound,
       onBuddy: (id) => (ctx!.save('buddy', id), applyLook()),
       onAccessory: (id) => (ctx!.save('accessory', id), applyLook()),
@@ -97,9 +107,76 @@ function singSong(world: number): void {
 
 /** The map of the worlds (the first screen after the name). */
 function showWorlds(): void {
+  if (journey() === 'letters') return showLetters();
   const name = displayName();
-  swap(() => showMap(root!, { name, openAll: openAll(), map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
+  swap(() => showMap(root!, { name, openAll: openAll(), map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onJourney: pickJourney, onHome: () => ctx!.onExit() }));
   announce('island_title', name);
+}
+
+function pickJourney(j: Journey): void {
+  ctx!.save('journey', j);
+  showWorlds();
+}
+
+/** The map of the letters journey. */
+function showLetters(): void {
+  const name = displayName();
+  swap(() => showLettersMap(root!, { name, openAll: openAll(), map: lmap(), sound: ctx!.sound, onIsland: showIslandStations, onJourney: pickJourney, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
+  announce('letters_title');
+}
+
+function showIslandStations(island: number): void {
+  swap(() => showIsland(root!, { island, openAll: openAll(), map: lmap(), sound: ctx!.sound, onStation: (s) => playLetterStation(island, s), onBack: showLetters }));
+  announce(`island_${island}`);
+}
+
+function playLetterStation(island: number, station: number): void {
+  const wait = document.createElement('div');
+  wait.className = 'en-loading';
+  wait.textContent = '⏳';
+  root!.appendChild(wait);
+  void preloadLetters(island).then(() => {
+    wait.remove();
+    if (root) startLetterStation(island, station);
+  });
+}
+
+function startLetterStation(island: number, station: number): void {
+  const name = displayName();
+  const today = dayNumber();
+  const t0 = Date.now();
+  const isl = islandInfo(island);
+  const steps = planLetterStation({ island, station, learned: learnedBefore(island, station), seed: today * 31 + station * 7 + island + Math.floor(Math.random() * 1000) });
+  swap(() =>
+    runStation(root!, {
+      name,
+      world: 3,
+      bg: 3,
+      accent: isl.color === '#ffc83a' ? '#ff7a2e' : isl.color,
+      steps,
+      sound: ctx!.sound,
+      verbs: verbs(),
+      onVerb: () => {},
+      onScore: (ws, firstTry) => saveWords(ws.reduce((acc, id) => review(acc, id, firstTry, today), words())),
+      onSeen: (key) => saveWords(markSeen(words(), key, today)),
+      onHome: () => showIslandStations(island),
+      onFinish: (stars) => {
+        ctx!.save('playlog', addPlay(ctx!.load('playlog', {}), today, Math.min(20, Math.max(1, Math.round((Date.now() - t0) / 60000)))));
+        ctx!.onRoundEnd({ won: true, stars, score: stars });
+        ctx!.save('lmap', finishStation(lmap(), island, station, stars));
+        swap(() => showBanner(root!, stars, name, ctx!.sound, () => (station === STATIONS_PER_WORLD - 1 ? rescueLetter(island, name) : showIslandStations(island))));
+      },
+    }),
+  );
+}
+
+/** The squishy letter of an island is rescued at the end of its words station. */
+function rescueLetter(island: number, name: string): void {
+  const isl = islandInfo(island);
+  const id = isl.letters[0];
+  if (!rescuedLetters().includes(id)) ctx!.save('rescuedLetters', [...rescuedLetters(), id]);
+  const sq = { id: `letter-${id}`, name: `${id.toUpperCase()}`, world: island, he: isl.he };
+  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : showLetters()), { art: letterSquishy(id, isl.color) }));
 }
 
 function showStations(world: number): void {
@@ -178,6 +255,7 @@ const mod: GameModule = {
     applyLook();
     preloadCheesy();
     void preloadVoice(0);
+    if (import.meta.env.DEV) (window as unknown as { __enRescueLetter?: (n: number) => void }).__enRescueLetter = (n) => rescueLetter(n, displayName());
     if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, displayName());
     root = document.createElement('div');
     root.className = 'english-root';

@@ -11,7 +11,7 @@ import { sayLine } from '../content/heLines';
  * The rescue: the gift shakes and a tiny voice calls. A tap opens it: the gift hops and pops, and the squishy jumps out in an arc,
  * squashes on landing and says its name. It joins the shelf of rescued squishies.
  */
-export function showRescue(root: HTMLElement, name: string, squishy: Squishy, sound: SoundApi, onDone: (toShelf: boolean) => void, extra: { prize?: Accessory; /** the last world: the golden squishy, fireworks */ finale?: boolean } = {}): () => void {
+export function showRescue(root: HTMLElement, name: string, squishy: Squishy, sound: SoundApi, onDone: (toShelf: boolean) => void, extra: { /** the picture of the one who is rescued, when it is not a squishy picture (a letter) */ art?: string; prize?: Accessory; /** the last world: the golden squishy, fireworks */ finale?: boolean } = {}): () => void {
   root.innerHTML = `
     <div class="en-screen en-rescue ${extra.finale ? 'finale' : ''}">
       <div class="en-sky"></div>
@@ -19,7 +19,7 @@ export function showRescue(root: HTMLElement, name: string, squishy: Squishy, so
         <div class="cheesy-side" id="ch"></div>
         <div class="bubble" id="bub">שמעת? מישהו קורא לעזרה!</div>
         <div class="gift" id="gift"><img class="gift-img" src="${import.meta.env.BASE_URL}english/words/gift.webp" alt="" draggable="false"><div class="gift-help" dir="ltr">help!</div></div>
-        <div class="bunny-out" id="bunny" hidden><div class="bunny-in" id="bunnyIn">${squishyImg(squishy.id)}</div></div>
+        <div class="bunny-out" id="bunny" hidden><div class="bunny-in" id="bunnyIn">${extra.art ?? squishyImg(squishy.id)}</div></div>
       </div>
       <div class="rescue-actions" id="acts" hidden>
         ${extra.prize ? `<div class="prize"><span class="prize-pic"><img src="${cheesyUrl('happy')}" alt="" draggable="false">${accessorySvg(extra.prize)}</span><b data-say="new_acc_${extra.prize.id}">${he.newAccessory(extra.prize.he)}</b></div>` : ''}
@@ -33,6 +33,7 @@ export function showRescue(root: HTMLElement, name: string, squishy: Squishy, so
   const gift = root.querySelector<HTMLElement>('#gift')!;
   const bunny = root.querySelector<HTMLElement>('#bunny')!;
   const bunnyIn = root.querySelector<HTMLElement>('#bunnyIn')!;
+  if (extra.art) bunny.classList.add('letter'); // a letter squishy is shown bigger
   const acts = root.querySelector<HTMLElement>('#acts')!;
   const timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));

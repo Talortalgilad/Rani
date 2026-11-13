@@ -12,6 +12,8 @@ export interface ShelfOptions {
   /** what Cheesy wears (an accessory id) or null */
   accessory: string | null;
   unlocked: Accessory[];
+  /** the letter squishies that were rescued (ids like "s"), with their pictures */
+  letters?: { id: string; art: string; have: boolean }[];
   sound: SoundApi;
   onBuddy(id: string | null): void;
   onAccessory(id: string | null): void;
@@ -46,6 +48,11 @@ export function showShelf(root: HTMLElement, o: ShelfOptions): () => void {
           </div>`,
         ).join('')}
       </div>
+      ${
+        o.letters?.length
+          ? `<div class="shelf-letters"><div class="acc-title" data-say="letter_shelf">${he.letterShelf}</div><div class="sl-row">${o.letters.map((l) => `<div class="sl ${l.have ? 'have' : 'lost'}" aria-label="${l.id.toUpperCase()}">${l.art}</div>`).join('')}</div></div>`
+          : ''
+      }
       <div class="acc-bar">
         <div class="acc-title" data-say="accessories_title">${he.accessories}</div>
         <div class="acc-row">

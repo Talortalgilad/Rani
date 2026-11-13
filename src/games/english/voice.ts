@@ -170,6 +170,9 @@ export function playClip(url: string): Promise<boolean> {
   });
 }
 
+/** The sound of a letter: the recording (sound_<letter>) if there is one, until then the phone reads the letter and the example word ("s... sun"). */
+export const speakLetterSound = (letter: string, word: string): Promise<boolean> => speakHeLine([{ clip: `sound_${letter}`, text: `${letter}... ${word}`, lang: 'en' }]);
+
 export interface LinePiece { clip?: string; text: string; lang: 'he' | 'en' }
 /**
  * Says a Hebrew sentence made of pieces, one after the other: each piece from its recording if there is one, else read by the phone

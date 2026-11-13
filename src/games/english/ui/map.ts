@@ -2,19 +2,21 @@ import { mountCheesy } from '../art/cheesy';
 import { WORLDS } from '../content/worlds';
 import { STATIONS_PER_WORLD, stationOpen, worldOpen, type MapProgress } from '../engine/progress';
 import { mixed } from './text';
+import { bindJourneyTabs, journeyTabs, type Journey } from './journeyTabs';
 import { he } from '../content/lines';
 import type { SoundApi } from '../../../sound';
 
 const worldStars = (map: MapProgress, n: number): number => Array.from({ length: STATIONS_PER_WORLD }, (_, s) => map.stars[`${n}-${s}`] ?? 0).reduce((a, b) => a + b, 0);
 
 /** The map of the worlds: a winding path, a world on each bend. A world opens when the one before it is finished. */
-export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onBook(): void; onHome(): void }): () => void {
+export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onBook(): void; onJourney(j: Journey): void; onHome(): void }): () => void {
   const open = WORLDS.map((w) => w.ready && worldOpen(o.map, w.n, o.openAll));
   const current = WORLDS.findIndex((w, i) => open[i] && (o.map.done[w.n] ?? 0) < STATIONS_PER_WORLD);
   root.innerHTML = `
     <div class="en-screen en-map">
       <div class="en-sky"></div>
       <header class="q-top"><button class="q-home" id="mh" type="button" aria-label="${he.home}">🏠</button><h1 class="map-title" data-say="island_title">${mixed(he.islandTitle(o.name))}</h1><span class="q-pair"><button class="q-say" id="mbk" data-say="wordbook" type="button" aria-label="${he.wordbook}">📖</button><button class="q-say" id="msh" data-say="shelf_title" type="button" aria-label="${he.shelfTitle}">🧸</button></span></header>
+      ${journeyTabs('words')}
       <div class="map-scroll" id="scroll">
         <div class="map-path">
           ${WORLDS.map((w, i) => {
@@ -35,6 +37,7 @@ export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean;
   root.querySelector('#mh')!.addEventListener('click', o.onHome);
   root.querySelector('#msh')!.addEventListener('click', o.onShelf);
   root.querySelector('#mbk')!.addEventListener('click', o.onBook);
+  bindJourneyTabs(root, 'words', o.onJourney);
   root.querySelectorAll<HTMLButtonElement>('.map-world').forEach((b) =>
     b.addEventListener('click', () => {
       const n = Number(b.dataset.n);

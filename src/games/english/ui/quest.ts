@@ -4,7 +4,7 @@ import { COLORS } from '../content/colors';
 import { VERBS, labelOf, pluralOf, wordsOfWorld } from '../content/words';
 import { en, he } from '../content/lines';
 import type { Step } from '../engine/steps';
-import { speakEn, speakWord, stopSpeech } from '../voice';
+import { speakEn, speakLetterSound, speakWord, stopSpeech } from '../voice';
 import type { SoundApi } from '../../../sound';
 import { bigSmallTask } from '../tasks/bigsmall';
 import { circleTask } from '../tasks/circle';
@@ -20,6 +20,13 @@ import { sayTask } from '../tasks/say';
 import { songTask } from '../tasks/song';
 import { tapTask } from '../tasks/tap';
 import { whereTask, whereText } from '../tasks/where';
+import { caseTask } from '../letters/tasks/case';
+import { huntTask } from '../letters/tasks/hunt';
+import { buildTask, readTask } from '../letters/tasks/build';
+import { meetTask } from '../letters/tasks/meet';
+import { firstSoundTask, soundTask } from '../letters/tasks/sound';
+import { traceTask } from '../letters/tasks/trace';
+import { letterById } from '../letters/journey';
 import { el, type TaskEnv, type TaskHandle } from '../tasks/common';
 import { mixed } from './text';
 import { sayLine } from '../content/heLines';
@@ -28,6 +35,10 @@ export interface QuestDeps {
   name: string;
   /** the world whose room is the background */
   world: number;
+  /** the colour of the island (letters journey): the marker of the writing */
+  accent?: string;
+  /** a room to use instead of the one of the world (letters journey) */
+  bg?: number;
   steps: Step[];
   sound: SoundApi;
   /** how many times each verb was done right already (the Hebrew help goes away after 3) */
@@ -45,7 +56,7 @@ export interface QuestDeps {
 /** The word of the instruction that has a Hebrew help the first times: find, color, how many, big, on... */
 export function verbOf(s: Step): string | null {
   switch (s.kind) {
-    case 'card': case 'colorcard': case 'listen': case 'song': case 'say': return null;
+    case 'card': case 'colorcard': case 'listen': case 'song': case 'say': case 'lmeet': case 'ltrace': case 'lsound': case 'lfirst': case 'lcase': case 'lhunt': case 'lbuild': case 'lread': return null;
     case 'put': return 'put';
     case 'count': return 'count';
     case 'bigsmall': return s.which;
@@ -75,6 +86,14 @@ export function instruction(s: Step): { text: string; html: string } {
       return { text, html: text.replace(new RegExp(`\\b(${s.prep}|${labelOf(s.ref)}|Jump|Go)\\b`, 'g'), '<b>$1</b>') };
     }
     case 'sentence': return { text: 'Make the sentence!', html: 'Make the sentence!' };
+    case 'lmeet': return { text: '', html: '<span class="hint-he">אות חדשה!</span>' };
+    case 'ltrace': return { text: `Write the ${s.letter}!`, html: `Write the <b>${s.letter}</b>!` };
+    case 'lsound': return { text: 'Which letter?', html: 'Which letter says this sound?' };
+    case 'lfirst': return { text: 'What starts with this sound?', html: `What starts with <b>/${s.letter}/</b>?` };
+    case 'lcase': return { text: 'Match big and small!', html: 'Match big and small!' };
+    case 'lhunt': return { text: `Find all the ${s.letter.toUpperCase()}!`, html: `Find all the <b>${s.letter.toUpperCase()}</b>!` };
+    case 'lbuild': return s.missing === null ? { text: `Let's build ${s.word}!`, html: `Let’s build <b>${s.word}</b>!` } : { text: 'Which letter is missing?', html: 'Which letter is missing?' };
+    case 'lread': return { text: 'Read the word!', html: 'Read the word!' };
     case 'say': return { text: `Say ${labelOf(s.right)}!`, html: `Say <b>${labelOf(s.right)}</b>!` };
     case 'song': return { text: 'Let’s sing!', html: 'Let’s sing!' };
   }
@@ -99,7 +118,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       <div class="q-stage" id="stage"></div>
     </div>`;
   const stage = root.querySelector<HTMLElement>('#stage')!;
-  stage.insertAdjacentHTML('afterbegin', `<div class="scene">${sceneImg(d.world)}</div>`);
+  stage.insertAdjacentHTML('afterbegin', `<div class="scene">${sceneImg(d.bg ?? d.world)}</div>`);
   const instr = root.querySelector<HTMLElement>('#instr')!;
   const bub = root.querySelector<HTMLElement>('#bub')!;
   const dots = root.querySelector<HTMLElement>('#dots')!;
@@ -147,6 +166,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
     sound: (n, pitch) => d.sound.play(n, pitch),
     say: (text, word) => void (word ? speakWord(text) : speakEn(text)),
     sayHe: (id) => void sayLine(id),
+    sayLetter: (letter) => void speakLetterSound(letter, letterById(letter).label),
   };
 
   const start = (s: Step): void => {
@@ -169,6 +189,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
     } else later(speakInstr, 500);
     // a new word or colour: the Hebrew hint is read to her
     if (s.kind === 'card' || s.kind === 'colorcard') later(() => void sayLine('card_tap'), 700);
+    stage.classList.toggle('ltr-hint', ['lmeet', 'lbuild', 'lread', 'lcase'].includes(s.kind));
     const met = COLORS.map((c) => c.id);
     switch (s.kind) {
       case 'card': handle = wordCard(env, s.word); break;
@@ -185,6 +206,14 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       case 'where': handle = whereTask(env, s.item, s.ref, s.prep); break;
       case 'sentence': handle = sentenceTask(env, s.words, s.picture, s.missing); break;
       case 'say': handle = sayTask(env, s.right); break;
+      case 'lmeet': handle = meetTask(env, s.letter); break;
+      case 'ltrace': handle = traceTask(env, s.letter, d.accent); break;
+      case 'lsound': handle = soundTask(env, s.letter, s.options, index + 5); break;
+      case 'lfirst': handle = firstSoundTask(env, s.letter, s.ids, index + 6); break;
+      case 'lcase': handle = caseTask(env, s.letters, index + 7); break;
+      case 'lhunt': handle = huntTask(env, s.letter, s.pool, index + 8); break;
+      case 'lbuild': handle = buildTask(env, s.word, s.missing, s.pool, index + 9); break;
+      case 'lread': handle = readTask(env, s.word, s.options, index + 10); break;
       case 'song': handle = songTask(env, s.world); break;
     }
   };
@@ -195,6 +224,7 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       const v = verbOf(prev);
       if (v && mistakesInTask < 3) d.onVerb(v);
       if (prev.kind === 'card') d.onSeen(prev.word);
+      else if (prev.kind === 'lmeet') d.onSeen(`l:${prev.letter}`);
       else if (prev.kind === 'colorcard') d.onSeen(`color:${prev.color}`);
       if (prev.score.length) {
         d.onScore(prev.score, mistakesInTask === 0);

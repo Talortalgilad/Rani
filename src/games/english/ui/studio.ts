@@ -1,7 +1,7 @@
 import { cleanRecording, toInt16 } from '../engine/audioFx';
 import { readZip, writeZip } from '../engine/zip';
-import { allClips, canonicalClip, clipsOfTrack, type Clip, type Track } from '../content/heLines';
-import { resetRecorded } from '../voice';
+import { allClips, canonicalClip, clipsOfTrack, soundClips, type Clip, type Track } from '../content/heLines';
+import { resetRecorded, speakWord } from '../voice';
 import { clipIds, getClip, putClip } from '../voiceStore';
 import { gameStore } from '../../../storage';
 
@@ -16,6 +16,7 @@ const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;',
 const TRACKS: { id: Track; title: string; hint: string }[] = [
   { id: 'important', title: 'חשוב', hint: 'המשפטים של צ׳יזי והשמות' },
   { id: 'words', title: 'מילים', hint: 'המילים והצבעים שרני לומדת' },
+  { id: 'sounds', title: 'צלילי אותיות', hint: 'הצליל הראשון של כל אות (באנגלית)' },
 ];
 
 /** Mono samples at 24 kHz from whatever the phone recorded (webm, m4a...). */
@@ -62,7 +63,7 @@ export function openStudio(root: HTMLElement, onBack: () => void): () => void {
 
   const items = (): Clip[] => clipsOfTrack(track);
   const isDone = (c: Clip): boolean => done.has(canonicalClip(c.id));
-  const pos = (): Record<Track, number> => store.load('studioPos', { important: 0, words: 0 });
+  const pos = (): Record<Track, number> => ({ important: 0, words: 0, sounds: 0, ...store.load<Partial<Record<Track, number>>>('studioPos', {}) });
   const savePos = (): void => store.save('studioPos', { ...pos(), [track]: idx });
   const shell = (inner: string): void => {
     root.innerHTML = `<div class="screen parent studio">${inner}</div>`;
@@ -176,7 +177,7 @@ export function openStudio(root: HTMLElement, onBack: () => void): () => void {
 
   async function importZip(f: File): Promise<void> {
     try {
-      const known = new Set(allClips().map((c) => c.id));
+      const known = new Set([...allClips(), ...soundClips()].map((c) => c.id));
       let n = 0;
       let skipped = 0;
       for (const e of await readZip(new Uint8Array(await f.arrayBuffer()))) {
@@ -209,7 +210,11 @@ export function openStudio(root: HTMLElement, onBack: () => void): () => void {
       <div class="st-strip" id="strip">${list.map((x, i) => `<button class="st-chip ${i === idx ? 'now' : ''} ${isDone(x) ? 'ok' : ''}" data-i="${i}" type="button" aria-label="${i + 1}">${isDone(x) ? '✓' : i + 1}</button>`).join('')}</div>
       <section class="st-card">
         <div class="st-id" dir="ltr">${esc(c.id)}</div>
-        <div class="st-text" dir="rtl">${esc(c.text)}</div>
+        ${
+          c.sound
+            ? `<div class="st-letter" dir="ltr">${esc(c.sound.letter)}</div><div class="st-word" dir="ltr">${esc(c.sound.word)} <button class="st-hear" id="hear" type="button" aria-label="השמעת המילה">🔊</button></div><div class="st-instr" dir="rtl">${esc(c.text)}</div>`
+            : `<div class="st-text" dir="rtl">${esc(c.text)}</div>`
+        }
         <div class="st-state ${ok ? 'ok' : ''}" id="state">${ok ? '✓ הוקלט' : 'עוד לא הוקלט'}</div>
       </section>
       <div class="st-mic-wrap">
@@ -235,6 +240,11 @@ export function openStudio(root: HTMLElement, onBack: () => void): () => void {
     });
     q('#again').addEventListener('click', () => void play(canonicalClip(c.id)));
 
+    if (c.sound) {
+      const word = c.sound.word;
+      root.querySelector('#hear')?.addEventListener('click', () => void speakWord(word));
+      void speakWord(word); // the studio says the example word, she says only the first sound
+    }
     const state = q('#state');
     const hint = q('#hint');
     const mic = q('#mic');

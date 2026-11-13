@@ -1,6 +1,9 @@
 import { WORDS, wordsOfWorld } from '../content/words';
 import { PAINT, paintUrl } from '../content/paint';
 import { preloadVoice } from '../content/heLines';
+import { ISLANDS, letterById } from '../letters/journey';
+import { LETTER_PICTURES } from '../letters/plan';
+import { LETTER_WORD_PICS, letterWordUrl } from '../letters/pictures';
 import { bgUrl } from './scenes';
 import { squishyOfWorld, squishyUrl } from './squishies';
 
@@ -32,6 +35,13 @@ export function preloadWorld(world: number): Promise<void> {
   );
   jobs.push(preloadVoice(world));
   return Promise.all(jobs).then(() => void loaded.add(world));
+}
+
+/** The pictures of an island of letters: the example word of each of its letters, and the pictures that "what starts with..." may show. */
+export function preloadLetters(island: number): Promise<void> {
+  const ids = [...ISLANDS.filter((i) => i.n <= island).flatMap((i) => i.letters.map((l) => letterById(l).word)), ...LETTER_PICTURES];
+  const urls = [...new Set(ids)].map((w) => (LETTER_WORD_PICS.includes(w) ? letterWordUrl(w) : imageUrl(w))).concat(bgUrl(3));
+  return Promise.all(urls.map((u) => new Promise<void>((res) => { const im = new Image(); im.onload = im.onerror = () => res(); im.src = u; }))).then(() => preloadVoice(0));
 }
 
 /** Every file name that has a word (for the tests that no picture is missing or left over). */

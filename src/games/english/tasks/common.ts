@@ -16,6 +16,8 @@ export interface TaskEnv {
   say(text: string, word?: boolean): void;
   /** a Hebrew line of the registry (content/heLines.ts), recorded or read by the phone */
   sayHe(id: string): void;
+  /** the sound that a letter makes (/s/): her recording, or the phone says "s... sun" until it is recorded */
+  sayLetter(letter: string): void;
 }
 
 export interface TaskHandle {
