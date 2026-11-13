@@ -1705,5 +1705,1508 @@
     "text": "שחקן שתיים"
    }
   ]
+ },
+ {
+  "take": 200,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_195224_e6296c5b-8603-4a0a-ba5c-b84a8774818b.mp3",
+  "lines": [
+   {
+    "id": "let_s_go",
+    "text": "Let's go!"
+   },
+   {
+    "id": "help_help",
+    "text": "Help! Help!"
+   },
+   {
+    "id": "great_job",
+    "text": "Great job!"
+   },
+   {
+    "id": "hmm_try_again",
+    "text": "Hmm, try again!"
+   },
+   {
+    "id": "almost_try_again",
+    "text": "Almost! Try again!"
+   },
+   {
+    "id": "great_try",
+    "text": "Great try!"
+   },
+   {
+    "id": "can_you_say_it_again",
+    "text": "Can you say it again?"
+   },
+   {
+    "id": "make_the_sentence",
+    "text": "Make the sentence!"
+   },
+   {
+    "id": "which_letter",
+    "text": "Which letter?"
+   },
+   {
+    "id": "which_letter_says_this_sound",
+    "text": "Which letter says this sound?"
+   },
+   {
+    "id": "what_starts_with_this_sound",
+    "text": "What starts with this sound?"
+   },
+   {
+    "id": "match_big_and_small",
+    "text": "Match big and small!"
+   },
+   {
+    "id": "let_s_sing_the_abc",
+    "text": "Let's sing the ABC!"
+   },
+   {
+    "id": "read_the_word",
+    "text": "Read the word!"
+   },
+   {
+    "id": "let_s_sing",
+    "text": "Let's sing!"
+   },
+   {
+    "id": "hello_i_m_your_friend_let_s_play",
+    "text": "Hello! I'm your friend. Let's play!"
+   },
+   {
+    "id": "i_m_bunny",
+    "text": "I'm Bunny!"
+   },
+   {
+    "id": "which_letter_is_missing",
+    "text": "Which letter is missing?"
+   }
+  ]
+ },
+ {
+  "take": 201,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_200136_dc1ad91d-c436-49f1-ab4f-6fdcb37d8cae.mp3",
+  "lines": [
+   {
+    "id": "now_i_know_my_abc",
+    "text": "Now I know my ABC!"
+   },
+   {
+    "id": "i_m_pizza",
+    "text": "I'm Pizza!"
+   },
+   {
+    "id": "i_m_leafy",
+    "text": "I'm Leafy!"
+   },
+   {
+    "id": "i_m_rainbow",
+    "text": "I'm Rainbow!"
+   },
+   {
+    "id": "i_m_cookie",
+    "text": "I'm Cookie!"
+   },
+   {
+    "id": "i_m_cloud",
+    "text": "I'm Cloud!"
+   },
+   {
+    "id": "i_m_panda",
+    "text": "I'm Panda!"
+   },
+   {
+    "id": "i_m_disco_ball",
+    "text": "I'm Disco Ball!"
+   },
+   {
+    "id": "i_m_sunny",
+    "text": "I'm Sunny!"
+   },
+   {
+    "id": "i_m_kitty",
+    "text": "I'm Kitty!"
+   },
+   {
+    "id": "i_m_ninja_cat",
+    "text": "I'm Ninja Cat!"
+   },
+   {
+    "id": "i_m_unicorn",
+    "text": "I'm Unicorn!"
+   },
+   {
+    "id": "pop_cheese",
+    "text": "Pop Cheese"
+   },
+   {
+    "id": "verb_count",
+    "text": "How many!"
+   },
+   {
+    "id": "verb_sentence",
+    "text": "Make a sentence!"
+   },
+   {
+    "id": "sentence_i_love_mom",
+    "text": "I love mom."
+   },
+   {
+    "id": "sentence_i_love_dad",
+    "text": "I love dad."
+   },
+   {
+    "id": "sentence_ray_is_my_brother",
+    "text": "Ray is my brother."
+   }
+  ]
+ },
+ {
+  "take": 202,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_201051_02dc0177-f9ec-45cc-8dd5-79c968c3f91f.mp3",
+  "lines": [
+   {
+    "id": "sentence_this_is_my_family",
+    "text": "This is my family."
+   },
+   {
+    "id": "sentence_we_are_friends",
+    "text": "We are friends."
+   },
+   {
+    "id": "sentence_i_like_my_dress",
+    "text": "I like my dress."
+   },
+   {
+    "id": "sentence_the_hat_is_yellow",
+    "text": "The hat is yellow."
+   },
+   {
+    "id": "sentence_i_can_dance",
+    "text": "I can dance."
+   },
+   {
+    "id": "sentence_i_can_sing",
+    "text": "I can sing."
+   },
+   {
+    "id": "sentence_the_sun_is_hot",
+    "text": "The sun is hot."
+   },
+   {
+    "id": "sentence_i_like_cats",
+    "text": "I like cats."
+   },
+   {
+    "id": "sentence_i_can_jump",
+    "text": "I can jump."
+   },
+   {
+    "id": "sentence_i_like_pizza",
+    "text": "I like pizza."
+   },
+   {
+    "id": "sentence_i_ride_my_bike",
+    "text": "I ride my bike."
+   },
+   {
+    "id": "ice_creams",
+    "text": "ice creams"
+   },
+   {
+    "id": "climbing_walls",
+    "text": "climbing walls"
+   },
+   {
+    "id": "balance_beams",
+    "text": "balance beams"
+   }
+  ]
+ },
+ {
+  "take": 203,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_202007_6477e262-5448-4f5b-a5a5-f2402f0cc063.mp3",
+  "lines": [
+   {
+    "id": "match",
+    "text": "Match!"
+   },
+   {
+    "id": "cheesy",
+    "text": "Cheesy"
+   },
+   {
+    "id": "mozzi",
+    "text": "Mozzi"
+   },
+   {
+    "id": "horiko",
+    "text": "Horiko"
+   },
+   {
+    "id": "verb_find",
+    "text": "Find!"
+   },
+   {
+    "id": "verb_color",
+    "text": "Color!"
+   },
+   {
+    "id": "verb_big",
+    "text": "Big!"
+   },
+   {
+    "id": "verb_small",
+    "text": "Small!"
+   },
+   {
+    "id": "verb_on",
+    "text": "On!"
+   },
+   {
+    "id": "verb_over",
+    "text": "Over!"
+   },
+   {
+    "id": "verb_in",
+    "text": "In!"
+   },
+   {
+    "id": "verb_under",
+    "text": "Under!"
+   },
+   {
+    "id": "verb_circle",
+    "text": "Circle!"
+   },
+   {
+    "id": "verb_tap",
+    "text": "Tap!"
+   },
+   {
+    "id": "verb_put",
+    "text": "Put!"
+   },
+   {
+    "id": "verb_match",
+    "text": "Match!"
+   },
+   {
+    "id": "verb_listen",
+    "text": "Listen!"
+   },
+   {
+    "id": "number_1",
+    "text": "One"
+   },
+   {
+    "id": "number_2",
+    "text": "Two"
+   },
+   {
+    "id": "number_3",
+    "text": "Three"
+   },
+   {
+    "id": "number_4",
+    "text": "Four"
+   },
+   {
+    "id": "number_5",
+    "text": "Five"
+   },
+   {
+    "id": "number_6",
+    "text": "Six"
+   },
+   {
+    "id": "number_7",
+    "text": "Seven"
+   },
+   {
+    "id": "number_8",
+    "text": "Eight"
+   },
+   {
+    "id": "number_9",
+    "text": "Nine"
+   },
+   {
+    "id": "number_10",
+    "text": "Ten"
+   },
+   {
+    "id": "red",
+    "text": "Red"
+   },
+   {
+    "id": "blue",
+    "text": "Blue"
+   },
+   {
+    "id": "yellow",
+    "text": "Yellow"
+   },
+   {
+    "id": "pink",
+    "text": "Pink"
+   },
+   {
+    "id": "purple",
+    "text": "Purple"
+   }
+  ]
+ },
+ {
+  "take": 204,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_202928_a84722b7-d0a7-4404-9f58-75c7ec0728ee.mp3",
+  "lines": [
+   {
+    "id": "green",
+    "text": "Green"
+   },
+   {
+    "id": "letter_s",
+    "text": "S"
+   },
+   {
+    "id": "letter_a",
+    "text": "A"
+   },
+   {
+    "id": "letter_t",
+    "text": "T"
+   },
+   {
+    "id": "letter_p",
+    "text": "P"
+   },
+   {
+    "id": "letter_i",
+    "text": "I"
+   },
+   {
+    "id": "igloo",
+    "text": "igloo"
+   },
+   {
+    "id": "letter_n",
+    "text": "N"
+   },
+   {
+    "id": "nest",
+    "text": "nest"
+   },
+   {
+    "id": "letter_m",
+    "text": "M"
+   },
+   {
+    "id": "letter_d",
+    "text": "D"
+   },
+   {
+    "id": "letter_g",
+    "text": "G"
+   },
+   {
+    "id": "letter_o",
+    "text": "O"
+   },
+   {
+    "id": "octopus",
+    "text": "octopus"
+   },
+   {
+    "id": "letter_c",
+    "text": "C"
+   },
+   {
+    "id": "letter_k",
+    "text": "K"
+   },
+   {
+    "id": "letter_e",
+    "text": "E"
+   },
+   {
+    "id": "letter_u",
+    "text": "U"
+   },
+   {
+    "id": "letter_r",
+    "text": "R"
+   },
+   {
+    "id": "letter_h",
+    "text": "H"
+   },
+   {
+    "id": "letter_b",
+    "text": "B"
+   },
+   {
+    "id": "letter_f",
+    "text": "F"
+   },
+   {
+    "id": "letter_l",
+    "text": "L"
+   },
+   {
+    "id": "letter_j",
+    "text": "J"
+   },
+   {
+    "id": "jam",
+    "text": "jam"
+   },
+   {
+    "id": "letter_v",
+    "text": "V"
+   },
+   {
+    "id": "van",
+    "text": "van"
+   },
+   {
+    "id": "letter_w",
+    "text": "W"
+   },
+   {
+    "id": "web",
+    "text": "web"
+   },
+   {
+    "id": "letter_x",
+    "text": "X"
+   },
+   {
+    "id": "fox",
+    "text": "fox"
+   },
+   {
+    "id": "letter_y",
+    "text": "Y"
+   }
+  ]
+ },
+ {
+  "take": 205,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_203848_94162e9e-3e81-44cb-8190-43e25448af74.mp3",
+  "lines": [
+   {
+    "id": "yoyo",
+    "text": "yo-yo"
+   },
+   {
+    "id": "letter_z",
+    "text": "Z"
+   },
+   {
+    "id": "zebra",
+    "text": "zebra"
+   },
+   {
+    "id": "letter_q",
+    "text": "Q"
+   },
+   {
+    "id": "queen",
+    "text": "queen"
+   },
+   {
+    "id": "tap",
+    "text": "tap"
+   },
+   {
+    "id": "sat",
+    "text": "sat"
+   },
+   {
+    "id": "pat",
+    "text": "pat"
+   },
+   {
+    "id": "pan",
+    "text": "pan"
+   },
+   {
+    "id": "pin",
+    "text": "pin"
+   },
+   {
+    "id": "map",
+    "text": "map"
+   },
+   {
+    "id": "man",
+    "text": "man"
+   },
+   {
+    "id": "tin",
+    "text": "tin"
+   },
+   {
+    "id": "nap",
+    "text": "nap"
+   },
+   {
+    "id": "pig",
+    "text": "pig"
+   },
+   {
+    "id": "hen",
+    "text": "hen"
+   },
+   {
+    "id": "bus",
+    "text": "bus"
+   },
+   {
+    "id": "bat",
+    "text": "bat"
+   },
+   {
+    "id": "cup",
+    "text": "cup"
+   },
+   {
+    "id": "mug",
+    "text": "mug"
+   },
+   {
+    "id": "net",
+    "text": "net"
+   },
+   {
+    "id": "bounce",
+    "text": "bounce"
+   },
+   {
+    "id": "the",
+    "text": "the"
+   },
+   {
+    "id": "read",
+    "text": "read"
+   },
+   {
+    "id": "time",
+    "text": "time"
+   },
+   {
+    "id": "for",
+    "text": "for"
+   },
+   {
+    "id": "yummy",
+    "text": "yummy"
+   },
+   {
+    "id": "yum",
+    "text": "yum"
+   },
+   {
+    "id": "and",
+    "text": "and"
+   },
+   {
+    "id": "sweet",
+    "text": "sweet"
+   },
+   {
+    "id": "cold",
+    "text": "cold"
+   },
+   {
+    "id": "white",
+    "text": "white"
+   }
+  ]
+ },
+ {
+  "take": 206,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_204812_1c0d75f3-c89f-40e8-b36f-a275370f02c0.mp3",
+  "lines": [
+   {
+    "id": "up",
+    "text": "up"
+   },
+   {
+    "id": "down",
+    "text": "down"
+   },
+   {
+    "id": "ride",
+    "text": "ride"
+   },
+   {
+    "id": "around",
+    "text": "around"
+   },
+   {
+    "id": "wheee",
+    "text": "wheee"
+   },
+   {
+    "id": "in",
+    "text": "in"
+   },
+   {
+    "id": "park",
+    "text": "park"
+   },
+   {
+    "id": "draw",
+    "text": "draw"
+   },
+   {
+    "id": "a",
+    "text": "a"
+   },
+   {
+    "id": "line",
+    "text": "line"
+   },
+   {
+    "id": "paint",
+    "text": "Paint"
+   },
+   {
+    "id": "with",
+    "text": "with"
+   },
+   {
+    "id": "what",
+    "text": "what"
+   },
+   {
+    "id": "one",
+    "text": "One"
+   },
+   {
+    "id": "two",
+    "text": "two"
+   },
+   {
+    "id": "three",
+    "text": "three"
+   },
+   {
+    "id": "four",
+    "text": "four"
+   },
+   {
+    "id": "five",
+    "text": "five"
+   },
+   {
+    "id": "nice",
+    "text": "nice"
+   },
+   {
+    "id": "ice",
+    "text": "Ice"
+   },
+   {
+    "id": "cream",
+    "text": "cream"
+   },
+   {
+    "id": "as",
+    "text": "as"
+   },
+   {
+    "id": "i",
+    "text": "I"
+   },
+   {
+    "id": "love",
+    "text": "love"
+   },
+   {
+    "id": "you",
+    "text": "you"
+   },
+   {
+    "id": "ray",
+    "text": "Ray"
+   },
+   {
+    "id": "is",
+    "text": "is"
+   },
+   {
+    "id": "my",
+    "text": "my"
+   },
+   {
+    "id": "hooray",
+    "text": "hooray"
+   },
+   {
+    "id": "on",
+    "text": "on"
+   },
+   {
+    "id": "head",
+    "text": "head"
+   },
+   {
+    "id": "feet",
+    "text": "feet"
+   }
+  ]
+ },
+ {
+  "take": 207,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_205755_d25e5434-d69a-4da5-9106-b946fb406b41.mp3",
+  "lines": [
+   {
+    "id": "twirl",
+    "text": "twirl"
+   },
+   {
+    "id": "spin",
+    "text": "spin"
+   },
+   {
+    "id": "look",
+    "text": "look"
+   },
+   {
+    "id": "great",
+    "text": "great"
+   },
+   {
+    "id": "high",
+    "text": "high"
+   },
+   {
+    "id": "your",
+    "text": "your"
+   },
+   {
+    "id": "hands",
+    "text": "hands"
+   },
+   {
+    "id": "me",
+    "text": "me"
+   },
+   {
+    "id": "song",
+    "text": "song"
+   },
+   {
+    "id": "hot",
+    "text": "hot"
+   },
+   {
+    "id": "bright",
+    "text": "bright"
+   },
+   {
+    "id": "drip",
+    "text": "drip"
+   },
+   {
+    "id": "drop",
+    "text": "drop"
+   },
+   {
+    "id": "hello",
+    "text": "hello"
+   },
+   {
+    "id": "roar",
+    "text": "roar"
+   },
+   {
+    "id": "big",
+    "text": "big"
+   },
+   {
+    "id": "gray",
+    "text": "gray"
+   },
+   {
+    "id": "ninja",
+    "text": "Ninja"
+   },
+   {
+    "id": "climb",
+    "text": "climb"
+   },
+   {
+    "id": "over",
+    "text": "Over"
+   },
+   {
+    "id": "hop",
+    "text": "hop"
+   },
+   {
+    "id": "under",
+    "text": "Under"
+   },
+   {
+    "id": "shh",
+    "text": "shh"
+   },
+   {
+    "id": "did",
+    "text": "did"
+   },
+   {
+    "id": "it",
+    "text": "it"
+   },
+   {
+    "id": "alien",
+    "text": "alien"
+   },
+   {
+    "id": "anchor",
+    "text": "anchor"
+   },
+   {
+    "id": "asteroid",
+    "text": "asteroid"
+   },
+   {
+    "id": "astronaut",
+    "text": "astronaut"
+   },
+   {
+    "id": "barn",
+    "text": "barn"
+   },
+   {
+    "id": "cakeslice",
+    "text": "cakeslice"
+   },
+   {
+    "id": "candycane",
+    "text": "candycane"
+   }
+  ]
+ },
+ {
+  "take": 208,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_210755_da056250-3ee7-4114-8849-3e84ae39d74f.mp3",
+  "lines": [
+   {
+    "id": "candyjar",
+    "text": "candyjar"
+   },
+   {
+    "id": "chick",
+    "text": "chick"
+   },
+   {
+    "id": "clownfish",
+    "text": "clownfish"
+   },
+   {
+    "id": "comet",
+    "text": "comet"
+   },
+   {
+    "id": "cottoncandy",
+    "text": "cottoncandy"
+   },
+   {
+    "id": "cow",
+    "text": "cow"
+   },
+   {
+    "id": "crab",
+    "text": "crab"
+   },
+   {
+    "id": "dolphin",
+    "text": "dolphin"
+   },
+   {
+    "id": "donkey",
+    "text": "donkey"
+   },
+   {
+    "id": "duck",
+    "text": "duck"
+   },
+   {
+    "id": "earth",
+    "text": "earth"
+   },
+   {
+    "id": "goat",
+    "text": "goat"
+   },
+   {
+    "id": "gummybear",
+    "text": "gummybear"
+   },
+   {
+    "id": "horse",
+    "text": "horse"
+   },
+   {
+    "id": "jellyfish",
+    "text": "jellyfish"
+   },
+   {
+    "id": "lighthouse",
+    "text": "lighthouse"
+   },
+   {
+    "id": "lobster",
+    "text": "lobster"
+   },
+   {
+    "id": "macaron",
+    "text": "macaron"
+   },
+   {
+    "id": "mars",
+    "text": "mars"
+   },
+   {
+    "id": "moon",
+    "text": "moon"
+   },
+   {
+    "id": "muffin",
+    "text": "muffin"
+   },
+   {
+    "id": "nightsky",
+    "text": "nightsky"
+   },
+   {
+    "id": "popsicle",
+    "text": "popsicle"
+   },
+   {
+    "id": "pufferfish",
+    "text": "pufferfish"
+   },
+   {
+    "id": "robot",
+    "text": "robot"
+   },
+   {
+    "id": "rocket",
+    "text": "rocket"
+   },
+   {
+    "id": "rover",
+    "text": "rover"
+   },
+   {
+    "id": "sailboat",
+    "text": "sailboat"
+   },
+   {
+    "id": "satellite",
+    "text": "satellite"
+   },
+   {
+    "id": "saturn",
+    "text": "saturn"
+   },
+   {
+    "id": "seahorse",
+    "text": "seahorse"
+   },
+   {
+    "id": "seal",
+    "text": "seal"
+   }
+  ]
+ },
+ {
+  "take": 209,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_212002_03aa673a-fd1b-4bec-a0a8-0e6f1e9a0ec4.mp3",
+  "lines": [
+   {
+    "id": "shark",
+    "text": "shark"
+   },
+   {
+    "id": "sheep",
+    "text": "sheep"
+   },
+   {
+    "id": "shell",
+    "text": "shell"
+   },
+   {
+    "id": "shootingstar",
+    "text": "shootingstar"
+   },
+   {
+    "id": "starfish",
+    "text": "starfish"
+   },
+   {
+    "id": "station",
+    "text": "station"
+   },
+   {
+    "id": "submarine",
+    "text": "submarine"
+   },
+   {
+    "id": "telescope",
+    "text": "telescope"
+   },
+   {
+    "id": "tractor",
+    "text": "tractor"
+   },
+   {
+    "id": "treasure",
+    "text": "treasure"
+   },
+   {
+    "id": "turtle",
+    "text": "turtle"
+   },
+   {
+    "id": "ufo",
+    "text": "ufo"
+   },
+   {
+    "id": "waffle",
+    "text": "waffle"
+   },
+   {
+    "id": "whale",
+    "text": "whale"
+   },
+   {
+    "id": "car",
+    "text": "car"
+   },
+   {
+    "id": "house",
+    "text": "house"
+   },
+   {
+    "id": "butterfly",
+    "text": "butterfly"
+   },
+   {
+    "id": "heart",
+    "text": "heart"
+   },
+   {
+    "id": "phones",
+    "text": "phones"
+   },
+   {
+    "id": "tvs",
+    "text": "TVs"
+   },
+   {
+    "id": "balls",
+    "text": "balls"
+   },
+   {
+    "id": "dolls",
+    "text": "dolls"
+   },
+   {
+    "id": "beds",
+    "text": "beds"
+   },
+   {
+    "id": "books",
+    "text": "books"
+   },
+   {
+    "id": "boxes",
+    "text": "boxes"
+   },
+   {
+    "id": "lamps",
+    "text": "lamps"
+   },
+   {
+    "id": "chairs",
+    "text": "chairs"
+   },
+   {
+    "id": "pizzas",
+    "text": "pizzas"
+   },
+   {
+    "id": "cheeses",
+    "text": "cheeses"
+   },
+   {
+    "id": "pastas",
+    "text": "pastas"
+   },
+   {
+    "id": "meats",
+    "text": "meats"
+   },
+   {
+    "id": "apples",
+    "text": "apples"
+   }
+  ]
+ },
+ {
+  "take": 210,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_213037_55121465-2adf-49ca-bcb4-99412bbebddb.mp3",
+  "lines": [
+   {
+    "id": "bananas",
+    "text": "bananas"
+   },
+   {
+    "id": "milks",
+    "text": "milks"
+   },
+   {
+    "id": "cakes",
+    "text": "cakes"
+   },
+   {
+    "id": "eggs",
+    "text": "eggs"
+   },
+   {
+    "id": "slides",
+    "text": "slides"
+   },
+   {
+    "id": "swings",
+    "text": "swings"
+   },
+   {
+    "id": "trees",
+    "text": "trees"
+   },
+   {
+    "id": "bikes",
+    "text": "bikes"
+   },
+   {
+    "id": "helmets",
+    "text": "helmets"
+   },
+   {
+    "id": "benches",
+    "text": "benches"
+   },
+   {
+    "id": "kites",
+    "text": "kites"
+   },
+   {
+    "id": "pencils",
+    "text": "pencils"
+   },
+   {
+    "id": "brushes",
+    "text": "brushes"
+   },
+   {
+    "id": "papers",
+    "text": "papers"
+   },
+   {
+    "id": "palettes",
+    "text": "palettes"
+   },
+   {
+    "id": "glues",
+    "text": "glues"
+   },
+   {
+    "id": "pictures",
+    "text": "pictures"
+   },
+   {
+    "id": "easels",
+    "text": "easels"
+   },
+   {
+    "id": "candies",
+    "text": "candies"
+   },
+   {
+    "id": "lollipops",
+    "text": "lollipops"
+   },
+   {
+    "id": "cupcakes",
+    "text": "cupcakes"
+   },
+   {
+    "id": "cookies",
+    "text": "cookies"
+   },
+   {
+    "id": "donuts",
+    "text": "donuts"
+   },
+   {
+    "id": "chocolates",
+    "text": "chocolates"
+   },
+   {
+    "id": "balloons",
+    "text": "balloons"
+   },
+   {
+    "id": "gifts",
+    "text": "gifts"
+   },
+   {
+    "id": "moms",
+    "text": "moms"
+   },
+   {
+    "id": "dads",
+    "text": "dads"
+   },
+   {
+    "id": "brothers",
+    "text": "brothers"
+   },
+   {
+    "id": "sisters",
+    "text": "sisters"
+   },
+   {
+    "id": "babies",
+    "text": "babies"
+   },
+   {
+    "id": "grandmas",
+    "text": "grandmas"
+   }
+  ]
+ },
+ {
+  "take": 211,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_214132_fecacdbf-ee87-4291-999d-3161d209c2dc.mp3",
+  "lines": [
+   {
+    "id": "grandpas",
+    "text": "grandpas"
+   },
+   {
+    "id": "families",
+    "text": "families"
+   },
+   {
+    "id": "shirts",
+    "text": "shirts"
+   },
+   {
+    "id": "dresses",
+    "text": "dresses"
+   },
+   {
+    "id": "skirts",
+    "text": "skirts"
+   },
+   {
+    "id": "hats",
+    "text": "hats"
+   },
+   {
+    "id": "jackets",
+    "text": "jackets"
+   },
+   {
+    "id": "jumps",
+    "text": "jumps"
+   },
+   {
+    "id": "claps",
+    "text": "claps"
+   },
+   {
+    "id": "dances",
+    "text": "dances"
+   },
+   {
+    "id": "sings",
+    "text": "sings"
+   },
+   {
+    "id": "runs",
+    "text": "runs"
+   },
+   {
+    "id": "sleeps",
+    "text": "sleeps"
+   },
+   {
+    "id": "eats",
+    "text": "eats"
+   },
+   {
+    "id": "drinks",
+    "text": "drinks"
+   },
+   {
+    "id": "waves",
+    "text": "waves"
+   },
+   {
+    "id": "suns",
+    "text": "suns"
+   },
+   {
+    "id": "clouds",
+    "text": "clouds"
+   },
+   {
+    "id": "rains",
+    "text": "rains"
+   },
+   {
+    "id": "snowflakes",
+    "text": "snowflakes"
+   },
+   {
+    "id": "winds",
+    "text": "winds"
+   },
+   {
+    "id": "rainbows",
+    "text": "rainbows"
+   },
+   {
+    "id": "umbrellas",
+    "text": "umbrellas"
+   },
+   {
+    "id": "snowmans",
+    "text": "snowmans"
+   },
+   {
+    "id": "storms",
+    "text": "storms"
+   },
+   {
+    "id": "cats",
+    "text": "cats"
+   },
+   {
+    "id": "dogs",
+    "text": "dogs"
+   },
+   {
+    "id": "lions",
+    "text": "lions"
+   },
+   {
+    "id": "monkeys",
+    "text": "monkeys"
+   },
+   {
+    "id": "birds",
+    "text": "birds"
+   },
+   {
+    "id": "elephants",
+    "text": "elephants"
+   },
+   {
+    "id": "giraffes",
+    "text": "giraffes"
+   }
+  ]
+ },
+ {
+  "take": 212,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_215442_40f5b959-8c91-4308-9130-aafc3afac6f7.mp3",
+  "lines": [
+   {
+    "id": "rabbits",
+    "text": "rabbits"
+   },
+   {
+    "id": "ropes",
+    "text": "ropes"
+   },
+   {
+    "id": "tunnels",
+    "text": "tunnels"
+   },
+   {
+    "id": "crates",
+    "text": "crates"
+   },
+   {
+    "id": "bridges",
+    "text": "bridges"
+   },
+   {
+    "id": "mats",
+    "text": "mats"
+   },
+   {
+    "id": "ladders",
+    "text": "ladders"
+   },
+   {
+    "id": "stages",
+    "text": "stages"
+   },
+   {
+    "id": "microphones",
+    "text": "microphones"
+   },
+   {
+    "id": "guitars",
+    "text": "guitars"
+   },
+   {
+    "id": "drums",
+    "text": "drums"
+   },
+   {
+    "id": "pianos",
+    "text": "pianos"
+   },
+   {
+    "id": "trumpets",
+    "text": "trumpets"
+   },
+   {
+    "id": "stars",
+    "text": "stars"
+   },
+   {
+    "id": "crowns",
+    "text": "crowns"
+   }
+  ]
  }
 ]
