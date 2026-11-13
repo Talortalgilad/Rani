@@ -1,4 +1,5 @@
 import { ACCESSORIES } from '../art/accessories';
+import { FAMILY_NAMES, MEMORY_LINES } from '../../memory/lines';
 import { ISLANDS, LETTERS } from '../letters/journey';
 import { COLORS } from './colors';
 import { WORLDS } from './worlds';
@@ -62,6 +63,8 @@ export const HE_LINES: HeLine[] = [
   { id: 'l_trace_blur', world: 0, parts: [he.traceBlur] },
   { id: 'l_trace_again', world: 0, parts: [he.traceAgain] },
   { id: 'soon', world: 0, parts: [he.soon] },
+  // the memory game
+  ...MEMORY_LINES.map((l): HeLine => ({ id: l.id, world: 0, parts: l.parts })),
   { id: 'my_letters', world: 0, parts: [he.myLetters] },
   { id: 'abc_song', world: 0, parts: [he.abcSong] },
   { id: 'abc_done', world: 0, parts: [he.abcDone] },
@@ -76,7 +79,7 @@ export const HE_LINES: HeLine[] = [
   ...WORDS.map((w): HeLine => ({ id: `w_${w.id}`, world: w.world, parts: [w.he] })),
 ];
 
-export const NAME_KEYS: Record<string, string> = { 'צ׳יזי': 'cheesy', 'מוצי': 'mozzi', 'חוריקו': 'horiko', 'פופצ׳יז': 'popcheese' };
+export const NAME_KEYS: Record<string, string> = { 'צ׳יזי': 'cheesy', 'מוצי': 'mozzi', 'חוריקו': 'horiko', 'פופצ׳יז': 'popcheese', ...Object.fromEntries(FAMILY_NAMES.map((n) => [n.he, n.key])) };
 
 export interface Clip { id: string; text: string; world: number; /** a letter sound (the studio shows the letter and its word, not a sentence) */ sound?: { letter: string; word: string } }
 
@@ -89,6 +92,7 @@ function rawClips(): Clip[] {
     });
   }
   for (const n of nameOptions) out.push({ id: `name.${NAME_KEYS[n.name]}`, text: n.name, world: 0 });
+  for (const n of FAMILY_NAMES) out.push({ id: `name.${n.key}`, text: n.he, world: 0 });
   return out;
 }
 
@@ -134,7 +138,7 @@ export function linePartsFor(id: string, name = ''): LinePart[] {
   return l.parts.map((p, i): LinePart => {
     if (p !== null) return { clip: canonicalClip(l.parts.length === 1 ? l.id : `${l.id}.${i}`), text: p.trim(), lang: 'he' };
     const key = NAME_KEYS[name];
-    if (key) return { clip: `name.${key}`, text: name, lang: 'he' };
+    if (key) return { clip: canonicalClip(`name.${key}`), text: name, lang: 'he' };
     return { text: name, lang: /[A-Za-z]/.test(name) ? 'en' : 'he' };
   });
 }

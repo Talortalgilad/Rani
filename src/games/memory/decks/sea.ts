@@ -116,4 +116,5 @@ const back = `<svg viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" pres
   <circle cx="20" cy="104" r="4" fill="#cfeeff"/><circle cx="82" cy="22" r="3" fill="#cfeeff"/><circle cx="84" cy="100" r="5" fill="#cfeeff"/>
 </svg>`;
 
-export const sea: Deck = { id: 'sea', name: 'הים', art, keys: Object.keys(art), back, frame: '#9fd8ff' };
+export const sea: Deck = { id: 'sea', name: 'הים', art, /** The 3D pictures of the world (public/memory/cards) and some of the English game (en:); the drawn SVG pictures stay as a fallback. */
+  keys: ['whale', 'dolphin', 'crab', 'starfish', 'seahorse', 'turtle', 'shark', 'jellyfish', 'sailboat', 'submarine', 'treasure', 'pufferfish', 'clownfish', 'seal', 'en:octopus'], back, frame: '#9fd8ff' };

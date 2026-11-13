@@ -146,7 +146,8 @@ export const farm: Deck = {
   id: 'farm',
   name: 'החווה',
   art,
-  keys: Object.keys(art),
+  /** The 3D pictures of the world (public/memory/cards) and some of the English game (en:); the drawn SVG pictures stay as a fallback. */
+  keys: ['cow', 'sheep', 'horse', 'duck', 'goat', 'donkey', 'barn', 'tractor', 'chick', 'en:pig', 'en:hen', 'en:dog', 'en:cat', 'en:rabbit', 'en:flower'],
   back,
   frame: '#ffd8a8',
 };

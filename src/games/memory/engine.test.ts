@@ -130,3 +130,43 @@ describe('farm deck art', () => {
     expect(DECKS.farm.back.startsWith('<svg')).toBe(true);
   });
 });
+
+describe('a round in the middle (snapshot and restore)', () => {
+  const cards = buildCards(['a', 'b', 'c', 'd'], 4, 2, () => 0.3);
+  it('carries on exactly where it was: found cards, attempts, the streak, one card that is open', () => {
+    const g = new MemoryGame(cards.map((c) => ({ ...c })));
+    const a = g.cards.findIndex((c) => c.art === 'a');
+    const a2 = g.cards.findIndex((c, i) => i !== a && c.art === 'a');
+    g.flip(a);
+    g.flip(a2);
+    const b = g.cards.findIndex((c) => c.art === 'b');
+    g.flip(b);
+    const copy = MemoryGame.restore(JSON.parse(JSON.stringify(g.snapshot())))!;
+    expect(copy.matched).toEqual(g.matched);
+    expect(copy.open).toEqual([b]);
+    expect(copy.attempts).toBe(1);
+    expect(copy.streak).toBe(1);
+    expect(copy.cards.map((c) => c.art)).toEqual(g.cards.map((c) => c.art));
+    // and it plays on: the partner of the open card finishes the pair
+    const b2 = copy.cards.findIndex((c, i) => i !== b && c.art === 'b');
+    expect(copy.flip(b2).kind).toBe('match');
+  });
+  it('a miss that was showing is not carried over (both cards are turned back)', () => {
+    const g = new MemoryGame(cards.map((c) => ({ ...c })));
+    const x = g.cards.findIndex((c) => c.art === 'a');
+    const y = g.cards.findIndex((c) => c.art === 'b');
+    expect(g.flip(x).kind).toBe('open');
+    expect(g.flip(y).kind).toBe('miss');
+    const copy = MemoryGame.restore(g.snapshot())!;
+    expect(copy.open).toEqual([]);
+    expect(copy.resolving).toBe(false);
+    expect(copy.attempts).toBe(1);
+    expect(copy.failStreak).toBe(1);
+  });
+  it('rubbish is refused', () => {
+    expect(MemoryGame.restore(null as never)).toBeNull();
+    const s = new MemoryGame(cards.map((c) => ({ ...c }))).snapshot();
+    expect(MemoryGame.restore({ ...s, matched: [true] })).toBeNull();
+    expect(MemoryGame.restore({ ...s, group: 4 as never })).toBeNull();
+  });
+});

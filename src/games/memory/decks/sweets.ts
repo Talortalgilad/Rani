@@ -110,4 +110,5 @@ const back = `<svg viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" pres
   <path d="M50 62 a3 3 0 0 1 6 0 a8 8 0 0 1 -16 0 a13 13 0 0 1 26 0" fill="none" stroke="#ff5d73" stroke-width="4.5"/>
 </svg>`;
 
-export const sweets: Deck = { id: 'sweets', name: 'הממתקים', art, keys: Object.keys(art), back, frame: '#ffc0d3' };
+export const sweets: Deck = { id: 'sweets', name: 'הממתקים', art, /** The 3D pictures of the world (public/memory/cards) and some of the English game (en:); the drawn SVG pictures stay as a fallback. */
+  keys: ['macaron', 'gummybear', 'cottoncandy', 'popsicle', 'candycane', 'muffin', 'waffle', 'cakeslice', 'candyjar', 'en:candy', 'en:lollipop', 'en:cupcake', 'en:icecream', 'en:cookie', 'en:donut'], back, frame: '#ffc0d3' };

@@ -23,4 +23,4 @@ export function artDrawing(key: string): string {
 export const artSvg = (key: string): string => svg(artDrawing(key));
 
 /** All "deck:picture" keys of one deck. */
-export const deckKeys = (id: DeckId): string[] => DECKS[id].keys.map((k) => `${id}:${k}`);
+export const deckKeys = (id: DeckId): string[] => DECKS[id].keys.map((k) => (k.includes(':') ? k : `${id}:${k}`));

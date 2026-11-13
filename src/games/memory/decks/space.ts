@@ -106,4 +106,5 @@ const back = `<svg viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" pres
   <ellipse cx="50" cy="64" rx="40" ry="10" fill="none" stroke="#b58cff" stroke-width="3" transform="rotate(-20 50 64)"/>
 </svg>`;
 
-export const space: Deck = { id: 'space', name: 'החלל', art, keys: Object.keys(art), back, frame: '#c3b5ff' };
+export const space: Deck = { id: 'space', name: 'החלל', art, /** The 3D pictures of the world (public/memory/cards) and some of the English game (en:); the drawn SVG pictures stay as a fallback. */
+  keys: ['rocket', 'moon', 'earth', 'saturn', 'astronaut', 'alien', 'ufo', 'comet', 'satellite', 'mars', 'rover', 'shootingstar', 'robot', 'en:sun', 'en:star'], back, frame: '#c3b5ff' };
