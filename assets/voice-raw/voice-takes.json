@@ -400,5 +400,1310 @@
     "text": "המשפחה שלי"
    }
   ]
+ },
+ {
+  "take": 100,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_181553_fcc7de70-b282-4d97-bc7d-82cf29db2686.mp3",
+  "lines": [
+   {
+    "id": "phone",
+    "text": "Phone."
+   },
+   {
+    "id": "tv",
+    "text": "TV."
+   },
+   {
+    "id": "ball",
+    "text": "Ball."
+   },
+   {
+    "id": "doll",
+    "text": "Doll."
+   },
+   {
+    "id": "bed",
+    "text": "Bed."
+   },
+   {
+    "id": "book",
+    "text": "Book."
+   },
+   {
+    "id": "box",
+    "text": "Box."
+   },
+   {
+    "id": "lamp",
+    "text": "Lamp."
+   },
+   {
+    "id": "chair",
+    "text": "Chair."
+   },
+   {
+    "id": "pizza",
+    "text": "Pizza."
+   },
+   {
+    "id": "cheese",
+    "text": "Cheese."
+   },
+   {
+    "id": "pasta",
+    "text": "Pasta."
+   }
+  ]
+ },
+ {
+  "take": 101,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_181907_d9bf3efc-ba40-45cd-9838-f22a4e7f0e80.mp3",
+  "lines": [
+   {
+    "id": "meat",
+    "text": "Meat."
+   },
+   {
+    "id": "apple",
+    "text": "Apple."
+   },
+   {
+    "id": "banana",
+    "text": "Banana."
+   },
+   {
+    "id": "milk",
+    "text": "Milk."
+   },
+   {
+    "id": "cake",
+    "text": "Cake."
+   },
+   {
+    "id": "egg",
+    "text": "Egg."
+   },
+   {
+    "id": "slide",
+    "text": "Slide."
+   },
+   {
+    "id": "swing",
+    "text": "Swing."
+   },
+   {
+    "id": "tree",
+    "text": "Tree."
+   },
+   {
+    "id": "bike",
+    "text": "Bike."
+   },
+   {
+    "id": "skates",
+    "text": "Skates."
+   },
+   {
+    "id": "helmet",
+    "text": "Helmet."
+   }
+  ]
+ },
+ {
+  "take": 102,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_182250_3269a1c8-9ff6-489d-b7de-b386276cb4c6.mp3",
+  "lines": [
+   {
+    "id": "flower",
+    "text": "Flower."
+   },
+   {
+    "id": "bench",
+    "text": "Bench."
+   },
+   {
+    "id": "kite",
+    "text": "Kite."
+   },
+   {
+    "id": "pencil",
+    "text": "Pencil."
+   },
+   {
+    "id": "brush",
+    "text": "Brush."
+   },
+   {
+    "id": "crayons",
+    "text": "Crayons."
+   },
+   {
+    "id": "paper",
+    "text": "Paper."
+   },
+   {
+    "id": "palette",
+    "text": "Palette."
+   },
+   {
+    "id": "scissors",
+    "text": "Scissors."
+   },
+   {
+    "id": "glue",
+    "text": "Glue."
+   },
+   {
+    "id": "picture",
+    "text": "Picture."
+   },
+   {
+    "id": "easel",
+    "text": "Easel."
+   },
+   {
+    "id": "candy",
+    "text": "Candy."
+   },
+   {
+    "id": "lollipop",
+    "text": "Lollipop."
+   },
+   {
+    "id": "cupcake",
+    "text": "Cupcake."
+   },
+   {
+    "id": "icecream",
+    "text": "Ice cream."
+   },
+   {
+    "id": "cookie",
+    "text": "Cookie."
+   },
+   {
+    "id": "donut",
+    "text": "Donut."
+   },
+   {
+    "id": "chocolate",
+    "text": "Chocolate."
+   },
+   {
+    "id": "balloon",
+    "text": "Balloon."
+   },
+   {
+    "id": "gift",
+    "text": "Gift."
+   },
+   {
+    "id": "mom",
+    "text": "Mom."
+   },
+   {
+    "id": "dad",
+    "text": "Dad."
+   },
+   {
+    "id": "brother",
+    "text": "Brother."
+   },
+   {
+    "id": "sister",
+    "text": "Sister."
+   },
+   {
+    "id": "baby",
+    "text": "Baby."
+   },
+   {
+    "id": "grandma",
+    "text": "Grandma."
+   },
+   {
+    "id": "grandpa",
+    "text": "Grandpa."
+   }
+  ]
+ },
+ {
+  "take": 103,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_182649_122d98d8-d138-4f1b-9769-a0b65dfbe361.mp3",
+  "lines": [
+   {
+    "id": "family",
+    "text": "Family."
+   },
+   {
+    "id": "friends",
+    "text": "Friends."
+   },
+   {
+    "id": "shirt",
+    "text": "Shirt."
+   },
+   {
+    "id": "shorts",
+    "text": "Shorts."
+   },
+   {
+    "id": "dress",
+    "text": "Dress."
+   },
+   {
+    "id": "skirt",
+    "text": "Skirt."
+   },
+   {
+    "id": "shoes",
+    "text": "Shoes."
+   },
+   {
+    "id": "socks",
+    "text": "Socks."
+   },
+   {
+    "id": "hat",
+    "text": "Hat."
+   },
+   {
+    "id": "jacket",
+    "text": "Jacket."
+   },
+   {
+    "id": "glasses",
+    "text": "Glasses."
+   },
+   {
+    "id": "jump",
+    "text": "Jump."
+   },
+   {
+    "id": "clap",
+    "text": "Clap."
+   },
+   {
+    "id": "dance",
+    "text": "Dance."
+   },
+   {
+    "id": "sing",
+    "text": "Sing."
+   },
+   {
+    "id": "run",
+    "text": "Run."
+   },
+   {
+    "id": "sleep",
+    "text": "Sleep."
+   },
+   {
+    "id": "eat",
+    "text": "Eat."
+   },
+   {
+    "id": "drink",
+    "text": "Drink."
+   },
+   {
+    "id": "wave",
+    "text": "Wave."
+   },
+   {
+    "id": "sun",
+    "text": "Sun."
+   },
+   {
+    "id": "cloud",
+    "text": "Cloud."
+   },
+   {
+    "id": "rain",
+    "text": "Rain."
+   },
+   {
+    "id": "snowflake",
+    "text": "Snowflake."
+   },
+   {
+    "id": "wind",
+    "text": "Wind."
+   },
+   {
+    "id": "rainbow",
+    "text": "Rainbow."
+   },
+   {
+    "id": "umbrella",
+    "text": "Umbrella."
+   },
+   {
+    "id": "snowman",
+    "text": "Snowman."
+   }
+  ]
+ },
+ {
+  "take": 104,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_183103_74aba81d-f201-41b3-af6c-6a1712cf16ac.mp3",
+  "lines": [
+   {
+    "id": "storm",
+    "text": "Storm."
+   },
+   {
+    "id": "cat",
+    "text": "Cat."
+   },
+   {
+    "id": "dog",
+    "text": "Dog."
+   },
+   {
+    "id": "lion",
+    "text": "Lion."
+   },
+   {
+    "id": "monkey",
+    "text": "Monkey."
+   },
+   {
+    "id": "fish",
+    "text": "Fish."
+   },
+   {
+    "id": "bird",
+    "text": "Bird."
+   },
+   {
+    "id": "elephant",
+    "text": "Elephant."
+   },
+   {
+    "id": "giraffe",
+    "text": "Giraffe."
+   },
+   {
+    "id": "rabbit",
+    "text": "Rabbit."
+   },
+   {
+    "id": "rope",
+    "text": "Rope."
+   },
+   {
+    "id": "wall",
+    "text": "Climbing wall."
+   },
+   {
+    "id": "beam",
+    "text": "Balance beam."
+   },
+   {
+    "id": "bars",
+    "text": "Monkey bars."
+   },
+   {
+    "id": "tunnel",
+    "text": "Tunnel."
+   },
+   {
+    "id": "crate",
+    "text": "Crate."
+   },
+   {
+    "id": "bridge",
+    "text": "Bridge."
+   },
+   {
+    "id": "mat",
+    "text": "Mat."
+   },
+   {
+    "id": "ladder",
+    "text": "Ladder."
+   },
+   {
+    "id": "stage",
+    "text": "Stage."
+   },
+   {
+    "id": "microphone",
+    "text": "Microphone."
+   },
+   {
+    "id": "guitar",
+    "text": "Guitar."
+   },
+   {
+    "id": "drum",
+    "text": "Drum."
+   },
+   {
+    "id": "piano",
+    "text": "Piano."
+   },
+   {
+    "id": "trumpet",
+    "text": "Trumpet."
+   },
+   {
+    "id": "star",
+    "text": "Star."
+   },
+   {
+    "id": "crown",
+    "text": "Crown."
+   },
+   {
+    "id": "flowers",
+    "text": "Flowers."
+   }
+  ]
+ },
+ {
+  "take": 105,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_183542_6041599b-f39a-4378-904e-48b07c1fbe0b.mp3",
+  "lines": [
+   {
+    "id": "mm_who",
+    "text": "מי משחק?"
+   },
+   {
+    "id": "mm_player1",
+    "text": "שחקן 1"
+   },
+   {
+    "id": "mm_player2",
+    "text": "שחקן 2"
+   },
+   {
+    "id": "mm_dad",
+    "text": "אבא"
+   },
+   {
+    "id": "mm_mum",
+    "text": "אמא"
+   },
+   {
+    "id": "mm_ray",
+    "text": "ריי"
+   },
+   {
+    "id": "mm_go",
+    "text": "יאללה, מתחילים!"
+   },
+   {
+    "id": "mm_tie",
+    "text": "תיקו! כל הכבוד לשניכם!"
+   },
+   {
+    "id": "mm_newGame",
+    "text": "משחק חדש"
+   },
+   {
+    "id": "mm_turnOf.0",
+    "text": "התור של"
+   },
+   {
+    "id": "mm_pairAgain.0",
+    "text": "זוג! עוד תור ל"
+   },
+   {
+    "id": "mm_wins.0",
+    "text": "ניצחון ל"
+   },
+   {
+    "id": "blk_title",
+    "text": "קוביות קסם"
+   },
+   {
+    "id": "blk_nice",
+    "text": "יופי!"
+   },
+   {
+    "id": "blk_amazing",
+    "text": "מדהים!"
+   },
+   {
+    "id": "blk_wow",
+    "text": "וואו!"
+   },
+   {
+    "id": "blk_magic",
+    "text": "קסם!"
+   },
+   {
+    "id": "blk_clean",
+    "text": "לוח נקי!"
+   },
+   {
+    "id": "blk_full",
+    "text": "וואו, מילאת את כל הלוח!"
+   },
+   {
+    "id": "blk_newBoard",
+    "text": "לוח חדש"
+   }
+  ]
+ },
+ {
+  "take": 106,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_184037_3a19b6dc-d20a-4f66-ad97-4d1f8fe4d327.mp3",
+  "lines": [
+   {
+    "id": "blk_score",
+    "text": "ניקוד"
+   },
+   {
+    "id": "blk_idea",
+    "text": "רגע, יש לי רעיון!"
+   },
+   {
+    "id": "blk_noStars",
+    "text": "אין מספיק כוכבים"
+   },
+   {
+    "id": "blk_nothingHere",
+    "text": "אין מה לפרק"
+   },
+   {
+    "id": "blk_nothingToTurn",
+    "text": "אין מה לסובב"
+   },
+   {
+    "id": "blk_pickShape",
+    "text": "בחרי צורה לסיבוב"
+   },
+   {
+    "id": "blk_pickBlock",
+    "text": "בחרי קובייה לפירוק"
+   },
+   {
+    "id": "blk_swap",
+    "text": "החלפה"
+   },
+   {
+    "id": "blk_rotate",
+    "text": "סיבוב"
+   },
+   {
+    "id": "blk_hammer",
+    "text": "פטיש"
+   },
+   {
+    "id": "blk_free",
+    "text": "חינם"
+   },
+   {
+    "id": "my_letters",
+    "text": "האותיות שלי"
+   },
+   {
+    "id": "abc_song",
+    "text": "שיר ה-ABC"
+   },
+   {
+    "id": "abc_done",
+    "text": "כל הכבוד! את מכירה את כל האותיות!"
+   },
+   {
+    "id": "l_bd_b",
+    "text": "ב-b קודם יש גב, ואז בטן קדימה"
+   },
+   {
+    "id": "l_bd_d",
+    "text": "ב-d קודם יש בטן, ואז גב"
+   },
+   {
+    "id": "letter_shelf",
+    "text": "סקווישי האותיות"
+   },
+   {
+    "id": "island_1",
+    "text": "אי החול"
+   },
+   {
+    "id": "island_2",
+    "text": "אי הירח"
+   },
+   {
+    "id": "island_3",
+    "text": "אי היער"
+   }
+  ]
+ },
+ {
+  "take": 107,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_184553_5cdb16ba-71f2-4155-b5c1-6ccc93c8371f.mp3",
+  "lines": [
+   {
+    "id": "island_4",
+    "text": "אי הקשת"
+   },
+   {
+    "id": "island_5",
+    "text": "אי הפרחים"
+   },
+   {
+    "id": "island_6",
+    "text": "אי הכוכבים"
+   },
+   {
+    "id": "acc_hat",
+    "text": "כובע מסיבה"
+   },
+   {
+    "id": "acc_glasses",
+    "text": "משקפיים"
+   },
+   {
+    "id": "acc_bow",
+    "text": "פפיון"
+   },
+   {
+    "id": "acc_crown",
+    "text": "כתר זהב"
+   },
+   {
+    "id": "acc_locked_3",
+    "text": "עולם 3"
+   },
+   {
+    "id": "acc_locked_6",
+    "text": "עולם 6"
+   },
+   {
+    "id": "acc_locked_9",
+    "text": "עולם 9"
+   },
+   {
+    "id": "acc_locked_12",
+    "text": "עולם 12"
+   },
+   {
+    "id": "world_1",
+    "text": "החדר שלי"
+   },
+   {
+    "id": "world_2",
+    "text": "המטבח"
+   },
+   {
+    "id": "world_3",
+    "text": "הגינה"
+   },
+   {
+    "id": "world_4",
+    "text": "סטודיו הציור"
+   },
+   {
+    "id": "world_5",
+    "text": "חנות הממתקים"
+   },
+   {
+    "id": "world_7",
+    "text": "ארון הבגדים"
+   },
+   {
+    "id": "world_8",
+    "text": "מסיבת ריקודים"
+   },
+   {
+    "id": "world_10",
+    "text": "גן החיות"
+   },
+   {
+    "id": "world_11",
+    "text": "פארק הנינג׳ה"
+   }
+  ]
+ },
+ {
+  "take": 108,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_185125_b19ef9f6-fc80-4bad-9503-72cd63893931.mp3",
+  "lines": [
+   {
+    "id": "world_12",
+    "text": "ההופעה הגדולה"
+   },
+   {
+    "id": "c_red",
+    "text": "אדום"
+   },
+   {
+    "id": "c_blue",
+    "text": "כחול"
+   },
+   {
+    "id": "c_yellow",
+    "text": "צהוב"
+   },
+   {
+    "id": "c_pink",
+    "text": "ורוד"
+   },
+   {
+    "id": "c_purple",
+    "text": "סגול"
+   },
+   {
+    "id": "c_green",
+    "text": "ירוק"
+   },
+   {
+    "id": "w_phone",
+    "text": "טלפון"
+   },
+   {
+    "id": "w_tv",
+    "text": "טלוויזיה"
+   },
+   {
+    "id": "w_ball",
+    "text": "כדור"
+   },
+   {
+    "id": "w_doll",
+    "text": "בובה"
+   },
+   {
+    "id": "w_bed",
+    "text": "מיטה"
+   },
+   {
+    "id": "w_book",
+    "text": "ספר"
+   },
+   {
+    "id": "w_box",
+    "text": "קופסה"
+   },
+   {
+    "id": "w_lamp",
+    "text": "מנורה"
+   },
+   {
+    "id": "w_chair",
+    "text": "כיסא"
+   },
+   {
+    "id": "w_pizza",
+    "text": "פיצה"
+   },
+   {
+    "id": "w_cheese",
+    "text": "גבינה"
+   },
+   {
+    "id": "w_pasta",
+    "text": "פסטה"
+   },
+   {
+    "id": "w_meat",
+    "text": "בשר"
+   }
+  ]
+ },
+ {
+  "take": 109,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_185723_b59947e3-e7e7-4e93-9d2b-11f53a4a4b67.mp3",
+  "lines": [
+   {
+    "id": "w_apple",
+    "text": "תפוח"
+   },
+   {
+    "id": "w_banana",
+    "text": "בננה"
+   },
+   {
+    "id": "w_milk",
+    "text": "חלב"
+   },
+   {
+    "id": "w_cake",
+    "text": "עוגה"
+   },
+   {
+    "id": "w_egg",
+    "text": "ביצה"
+   },
+   {
+    "id": "w_slide",
+    "text": "מגלשה"
+   },
+   {
+    "id": "w_swing",
+    "text": "נדנדה"
+   },
+   {
+    "id": "w_tree",
+    "text": "עץ"
+   },
+   {
+    "id": "w_bike",
+    "text": "אופניים"
+   },
+   {
+    "id": "w_skates",
+    "text": "גלגיליות"
+   },
+   {
+    "id": "w_helmet",
+    "text": "קסדה"
+   },
+   {
+    "id": "w_flower",
+    "text": "פרח"
+   },
+   {
+    "id": "w_bench",
+    "text": "ספסל"
+   },
+   {
+    "id": "w_kite",
+    "text": "עפיפון"
+   },
+   {
+    "id": "w_pencil",
+    "text": "עיפרון"
+   },
+   {
+    "id": "w_brush",
+    "text": "מכחול"
+   },
+   {
+    "id": "w_crayons",
+    "text": "צבעי שעווה"
+   },
+   {
+    "id": "w_paper",
+    "text": "נייר"
+   },
+   {
+    "id": "w_palette",
+    "text": "פלטת צבעים"
+   },
+   {
+    "id": "w_scissors",
+    "text": "מספריים"
+   }
+  ]
+ },
+ {
+  "take": 110,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_190837_f90f7449-80dd-460a-9171-aa02ec553732.mp3",
+  "lines": [
+   {
+    "id": "w_glue",
+    "text": "דבק"
+   },
+   {
+    "id": "w_picture",
+    "text": "תמונה"
+   },
+   {
+    "id": "w_easel",
+    "text": "כן ציור"
+   },
+   {
+    "id": "w_candy",
+    "text": "סוכרייה"
+   },
+   {
+    "id": "w_lollipop",
+    "text": "סוכריה על מקל"
+   },
+   {
+    "id": "w_cupcake",
+    "text": "קאפקייק"
+   },
+   {
+    "id": "w_icecream",
+    "text": "גלידה"
+   },
+   {
+    "id": "w_cookie",
+    "text": "עוגייה"
+   },
+   {
+    "id": "w_donut",
+    "text": "סופגנייה"
+   },
+   {
+    "id": "w_chocolate",
+    "text": "שוקולד"
+   },
+   {
+    "id": "w_balloon",
+    "text": "בלון"
+   },
+   {
+    "id": "w_gift",
+    "text": "מתנה"
+   },
+   {
+    "id": "w_brother",
+    "text": "אח"
+   },
+   {
+    "id": "w_sister",
+    "text": "אחות"
+   },
+   {
+    "id": "w_baby",
+    "text": "תינוק"
+   },
+   {
+    "id": "w_grandma",
+    "text": "סבתא"
+   },
+   {
+    "id": "w_grandpa",
+    "text": "סבא"
+   },
+   {
+    "id": "w_family",
+    "text": "משפחה"
+   },
+   {
+    "id": "w_friends",
+    "text": "חברים"
+   },
+   {
+    "id": "w_shirt",
+    "text": "חולצה"
+   }
+  ]
+ },
+ {
+  "take": 111,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_191614_ecaafee9-3111-49c8-b2ec-bad857db2683.mp3",
+  "lines": [
+   {
+    "id": "w_shorts",
+    "text": "מכנסיים קצרים"
+   },
+   {
+    "id": "w_dress",
+    "text": "שמלה"
+   },
+   {
+    "id": "w_skirt",
+    "text": "חצאית"
+   },
+   {
+    "id": "w_shoes",
+    "text": "נעליים"
+   },
+   {
+    "id": "w_socks",
+    "text": "גרביים"
+   },
+   {
+    "id": "w_hat",
+    "text": "כובע"
+   },
+   {
+    "id": "w_jacket",
+    "text": "מעיל"
+   },
+   {
+    "id": "w_jump",
+    "text": "לקפוץ"
+   },
+   {
+    "id": "w_clap",
+    "text": "למחוא כפיים"
+   },
+   {
+    "id": "w_dance",
+    "text": "לרקוד"
+   },
+   {
+    "id": "w_sing",
+    "text": "לשיר"
+   },
+   {
+    "id": "w_run",
+    "text": "לרוץ"
+   },
+   {
+    "id": "w_sleep",
+    "text": "לישון"
+   },
+   {
+    "id": "w_eat",
+    "text": "לאכול"
+   },
+   {
+    "id": "w_drink",
+    "text": "לשתות"
+   },
+   {
+    "id": "w_wave",
+    "text": "לנופף"
+   },
+   {
+    "id": "w_sun",
+    "text": "שמש"
+   },
+   {
+    "id": "w_cloud",
+    "text": "ענן"
+   },
+   {
+    "id": "w_rain",
+    "text": "גשם"
+   },
+   {
+    "id": "w_snowflake",
+    "text": "פתית שלג"
+   }
+  ]
+ },
+ {
+  "take": 112,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_192516_448cc3ff-90f5-4b93-bdca-ec7faf0eea5f.mp3",
+  "lines": [
+   {
+    "id": "w_wind",
+    "text": "רוח"
+   },
+   {
+    "id": "w_rainbow",
+    "text": "קשת"
+   },
+   {
+    "id": "w_umbrella",
+    "text": "מטרייה"
+   },
+   {
+    "id": "w_snowman",
+    "text": "איש שלג"
+   },
+   {
+    "id": "w_storm",
+    "text": "סערה"
+   },
+   {
+    "id": "w_cat",
+    "text": "חתול"
+   },
+   {
+    "id": "w_dog",
+    "text": "כלב"
+   },
+   {
+    "id": "w_lion",
+    "text": "אריה"
+   },
+   {
+    "id": "w_monkey",
+    "text": "קוף"
+   },
+   {
+    "id": "w_fish",
+    "text": "דג"
+   },
+   {
+    "id": "w_bird",
+    "text": "ציפור"
+   },
+   {
+    "id": "w_elephant",
+    "text": "פיל"
+   },
+   {
+    "id": "w_giraffe",
+    "text": "ג׳ירפה"
+   },
+   {
+    "id": "w_rabbit",
+    "text": "ארנב"
+   },
+   {
+    "id": "w_rope",
+    "text": "חבל"
+   },
+   {
+    "id": "w_wall",
+    "text": "קיר טיפוס"
+   },
+   {
+    "id": "w_beam",
+    "text": "קורת שיווי משקל"
+   },
+   {
+    "id": "w_bars",
+    "text": "מקבילים"
+   },
+   {
+    "id": "w_tunnel",
+    "text": "מנהרה"
+   },
+   {
+    "id": "w_crate",
+    "text": "ארגז"
+   }
+  ]
+ },
+ {
+  "take": 113,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_193347_19c68fe2-7d6b-42f6-a79f-1b4fcd837622.mp3",
+  "lines": [
+   {
+    "id": "w_bridge",
+    "text": "גשר"
+   },
+   {
+    "id": "w_mat",
+    "text": "מזרן"
+   },
+   {
+    "id": "w_ladder",
+    "text": "סולם"
+   },
+   {
+    "id": "w_stage",
+    "text": "במה"
+   },
+   {
+    "id": "w_microphone",
+    "text": "מיקרופון"
+   },
+   {
+    "id": "w_guitar",
+    "text": "גיטרה"
+   },
+   {
+    "id": "w_drum",
+    "text": "תוף"
+   },
+   {
+    "id": "w_piano",
+    "text": "פסנתר"
+   },
+   {
+    "id": "w_trumpet",
+    "text": "חצוצרה"
+   },
+   {
+    "id": "w_star",
+    "text": "כוכב"
+   },
+   {
+    "id": "w_crown",
+    "text": "כתר"
+   },
+   {
+    "id": "w_flowers",
+    "text": "זר פרחים"
+   },
+   {
+    "id": "name.cheesy",
+    "text": "צ׳יזי"
+   },
+   {
+    "id": "name.mozzi",
+    "text": "מוצי"
+   },
+   {
+    "id": "name.horiko",
+    "text": "חוריקו"
+   },
+   {
+    "id": "name.popcheese",
+    "text": "פופצ׳יז"
+   },
+   {
+    "id": "name.rani",
+    "text": "רני"
+   }
+  ]
+ },
+ {
+  "take": 114,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_194301_0b71cc92-f569-4e73-a464-4ecf600e1700.mp3",
+  "lines": [
+   {
+    "id": "blk_journey",
+    "text": "המסע"
+   },
+   {
+    "id": "blk_freePlay",
+    "text": "משחק חופשי"
+   },
+   {
+    "id": "blk_next",
+    "text": "הבא"
+   },
+   {
+    "id": "blk_again",
+    "text": "עוד פעם"
+   },
+   {
+    "id": "blk_map",
+    "text": "מפה"
+   },
+   {
+    "id": "blk_hard",
+    "text": "קשה!"
+   },
+   {
+    "id": "blk_boss",
+    "text": "שלב בוס"
+   },
+   {
+    "id": "blk_wave",
+    "text": "לוח נקי, ממשיכים!"
+   },
+   {
+    "id": "blk_tut_row",
+    "text": "גררי את הצורה כדי להשלים שורה!"
+   },
+   {
+    "id": "blk_tut_col",
+    "text": "עכשיו נשלים עמודה!"
+   },
+   {
+    "id": "blk_tut_square",
+    "text": "ועכשיו ריבוע של שלוש על שלוש!"
+   },
+   {
+    "id": "blk_prize",
+    "text": "קיבלת יהלום!"
+   },
+   {
+    "id": "blk_cheer",
+    "text": "את יכולה! עוד קצת!"
+   },
+   {
+    "id": "mm_player1",
+    "text": "שחקן אחד"
+   },
+   {
+    "id": "mm_player2",
+    "text": "שחקן שתיים"
+   }
+  ]
  }
 ]
