@@ -9,8 +9,7 @@
  * of that folder is updated. The order of priority does not change: a recording made on the device, then a file of the repo, then TTS.
  *
  *   npx vite-node scripts/import-takes.ts            downloads what is missing (assets/voice-raw/takes/take-<n>.mp3), cuts, reports
- *   options: --only=<takes: 5, 100-107, 3,5,100-107>   (the page of the parents area is fed by he/_review.json, written here; the lines of the takes that
- *   are not cut now stay in it)
+ *   options: --only=<takes: 5, 100-107, 3,5,100-107>
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -196,14 +195,6 @@ async function main(): Promise<void> {
     }
   }
   writeFileSync(join(ROOT, 'src/games/english/content/enClips.ts'), `/** The English recordings by what the game says (written by scripts/import-takes.ts): letters and digits of the text only, lower case (a single letter keeps its case: "A" is the letter, "a" the word), to the id of the clip in public/english/voice/en. */\nexport const EN_CLIPS: Record<string, string> = ${JSON.stringify(byText, null, 1)};\n`);
-  // the temporary review page in the parents area reads this (the lines of the takes that were not cut now are kept)
-  mkdirSync(OUT('he'), { recursive: true });
-  const reviewFile = join(OUT('he'), '_review.json');
-  type Review = { id: string; text: string; lang: string; take: number; dur: number; flag: string };
-  const prev = existsSync(reviewFile) ? (JSON.parse(readFileSync(reviewFile, 'utf8')) as Review[]) : [];
-  const now: Review[] = all.map((a) => ({ id: a.id, text: a.text, lang: a.lang, take: a.take, dur: Math.round((a.dur + 2 * MARGIN) * 100) / 100, flag: a.note }));
-  const keep = prev.map((r) => ({ lang: 'he', ...r })).filter((r) => !now.some((n) => n.id === r.id && n.lang === r.lang));
-  writeFileSync(reviewFile, JSON.stringify([...keep, ...now], null, 1) + '\n');
   const rate = rateOf.get('he')!;
   console.log(`\n${all.length} lines cut. Median ${rate.toFixed(3)} s per letter (Hebrew), ${rateOf.get('en')!.toFixed(3)} (English).`);
   console.log(problems.length ? `\nTo check:\n  ${problems.join('\n  ')}` : '\nEvery take matched its lines, and no line looks wrong.');

@@ -273,11 +273,3 @@ html, body {
 /* counters with numbers: never broken across lines, each number isolated (see counter.ts) */
 .cnt { white-space: nowrap; unicode-bidi: isolate; }
 .cnt bdi { unicode-bidi: isolate; }
-
-/* temporary: review of the recordings (voiceReview.ts) */
-.vr { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
-.vr-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 14px; background: #f6f3fa; }
-.vr-row.flag { background: #fff1d6; }
-.vr-play { flex: none; width: 44px; height: 44px; border: 0; border-radius: 50%; background: #1fb5a8; color: #fff; font-size: 18px; }
-.vr-t { display: flex; flex-direction: column; min-width: 0; }
-.vr-t small { color: #7a7490; font-size: 12px; }

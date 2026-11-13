@@ -6,7 +6,6 @@ import { TYPE_LABEL, computeStats } from '../math/stats';
 import { addExtraMinutes, allowedMinutes, playedMinutes } from '../usage';
 import { bindEnglishParent, englishParentHtml } from '../games/english/ui/parentSection';
 import { bindPhotosCard, photosCardHtml } from '../games/memory/ui/photosAdmin';
-import { bindVoiceReview, voiceReviewCardHtml } from './voiceReview';
 import { getState, resetProgress, update, type AppState, type QuestionType } from '../storage';
 
 const AVATARS = ['🦄', '🐱', '🐶', '🐰', '🦊', '🐼'];
@@ -158,7 +157,6 @@ export function renderParent(root: HTMLElement): () => void {
       ${englishParentHtml()}
 
       ${photosCardHtml()}
-      ${voiceReviewCardHtml()}
 
       <section class="p-card danger">
         <h2>איפוס התקדמות</h2>
@@ -247,7 +245,6 @@ export function renderParent(root: HTMLElement): () => void {
     });
     bindEnglishParent(root, settings);
     void bindPhotosCard(root);
-    bindVoiceReview(root);
     root.querySelector('#done')!.addEventListener('click', () => go({ name: 'home' }));
   }
 
