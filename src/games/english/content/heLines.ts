@@ -17,7 +17,7 @@ export interface HeLine { id: string; world: number; /** the pieces: text, or nu
 const VERB_WORLD: Record<string, number> = { find: 2, color: 4, count: 5, sentence: 6, on: 11, over: 11, in: 11, under: 11, big: 11, small: 11 };
 
 const NAME = '\u0000';
-const cut = (template: string): (string | null)[] => template.split(NAME).flatMap((t, i, a) => (i < a.length - 1 ? [t, null] : [t])).filter((p) => p !== '');
+const cut = (template: string): (string | null)[] => template.split(NAME).flatMap((t, i, a) => (i < a.length - 1 ? [t, null] : [t])).filter((p) => p !== '' && (p === null || /[א-ת]/.test(p))); // a piece that is only "!" has nothing to record
 
 export const HE_LINES: HeLine[] = [
   { id: 'ask_name', world: 0, parts: [he.askName] },

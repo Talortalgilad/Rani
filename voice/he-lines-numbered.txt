@@ -36,151 +36,150 @@
 36. type_name — איזה שם תרצי?
 37. name_confirm — זה השם שלי!
 38. i_am.0 — אני
-39. i_am.2 — !
-40. island_title.0 — ההרפתקאות של
-41. shelf — המדף
-42. shelf_title — מדף הסקווישים
-43. buddy_pick — חבר שלי
-44. buddy_now — החבר שלי
-45. accessories_title — אביזרים של צ׳יזי
-46. accessory_note — האביזרים מוצגים על צ׳יזי
-47. wordbook — ספר המילים
-48. songs — שירים
-49. acc_hat — כובע מסיבה
-50. acc_glasses — משקפיים
-51. acc_bow — פפיון
-52. acc_crown — כתר זהב
-53. acc_locked_3 — עולם 3
-54. acc_locked_6 — עולם 6
-55. acc_locked_9 — עולם 9
-56. acc_locked_12 — עולם 12
-57. world_1 — החדר שלי
-58. world_2 — המטבח
-59. world_3 — הגינה
-60. world_4 — סטודיו הציור
-61. world_5 — חנות הממתקים
-62. world_6 — המשפחה שלי
-63. world_7 — ארון הבגדים
-64. world_8 — מסיבת ריקודים
-65. world_9 — מזג אוויר
-66. world_10 — גן החיות
-67. world_11 — פארק הנינג׳ה
-68. world_12 — ההופעה הגדולה
-69. c_red — אדום
-70. c_blue — כחול
-71. c_yellow — צהוב
-72. c_pink — ורוד
-73. c_purple — סגול
-74. c_green — ירוק
-75. w_phone — טלפון
-76. w_tv — טלוויזיה
-77. w_ball — כדור
-78. w_doll — בובה
-79. w_bed — מיטה
-80. w_book — ספר
-81. w_box — קופסה
-82. w_lamp — מנורה
-83. w_chair — כיסא
-84. w_pizza — פיצה
-85. w_cheese — גבינה
-86. w_pasta — פסטה
-87. w_meat — בשר
-88. w_apple — תפוח
-89. w_banana — בננה
-90. w_milk — חלב
-91. w_cake — עוגה
-92. w_egg — ביצה
-93. w_slide — מגלשה
-94. w_swing — נדנדה
-95. w_tree — עץ
-96. w_bike — אופניים
-97. w_skates — גלגיליות
-98. w_helmet — קסדה
-99. w_flower — פרח
-100. w_bench — ספסל
-101. w_kite — עפיפון
-102. w_pencil — עיפרון
-103. w_brush — מכחול
-104. w_crayons — צבעי שעווה
-105. w_paper — נייר
-106. w_palette — פלטת צבעים
-107. w_scissors — מספריים
-108. w_glue — דבק
-109. w_picture — תמונה
-110. w_easel — כן ציור
-111. w_candy — סוכרייה
-112. w_lollipop — סוכריה על מקל
-113. w_cupcake — קאפקייק
-114. w_icecream — גלידה
-115. w_cookie — עוגייה
-116. w_donut — סופגנייה
-117. w_chocolate — שוקולד
-118. w_balloon — בלון
-119. w_gift — מתנה
-120. w_mom — אמא
-121. w_dad — אבא
-122. w_brother — אח
-123. w_sister — אחות
-124. w_baby — תינוק
-125. w_grandma — סבתא
-126. w_grandpa — סבא
-127. w_family — משפחה
-128. w_friends — חברים
-129. w_shirt — חולצה
-130. w_shorts — מכנסיים קצרים
-131. w_dress — שמלה
-132. w_skirt — חצאית
-133. w_shoes — נעליים
-134. w_socks — גרביים
-135. w_hat — כובע
-136. w_jacket — מעיל
-137. w_glasses — משקפיים
-138. w_jump — לקפוץ
-139. w_clap — למחוא כפיים
-140. w_dance — לרקוד
-141. w_sing — לשיר
-142. w_run — לרוץ
-143. w_sleep — לישון
-144. w_eat — לאכול
-145. w_drink — לשתות
-146. w_wave — לנופף
-147. w_sun — שמש
-148. w_cloud — ענן
-149. w_rain — גשם
-150. w_snowflake — פתית שלג
-151. w_wind — רוח
-152. w_rainbow — קשת
-153. w_umbrella — מטרייה
-154. w_snowman — איש שלג
-155. w_storm — סערה
-156. w_cat — חתול
-157. w_dog — כלב
-158. w_lion — אריה
-159. w_monkey — קוף
-160. w_fish — דג
-161. w_bird — ציפור
-162. w_elephant — פיל
-163. w_giraffe — ג׳ירפה
-164. w_rabbit — ארנב
-165. w_rope — חבל
-166. w_wall — קיר טיפוס
-167. w_beam — קורת שיווי משקל
-168. w_bars — מקבילים
-169. w_tunnel — מנהרה
-170. w_crate — ארגז
-171. w_bridge — גשר
-172. w_mat — מזרן
-173. w_ladder — סולם
-174. w_stage — במה
-175. w_microphone — מיקרופון
-176. w_guitar — גיטרה
-177. w_drum — תוף
-178. w_piano — פסנתר
-179. w_trumpet — חצוצרה
-180. w_star — כוכב
-181. w_crown — כתר
-182. w_flowers — זר פרחים
-183. name.cheesy — צ׳יזי
-184. name.mozzi — מוצי
-185. name.horiko — חוריקו
-186. name.popcheese — פופצ׳יז
+39. island_title.0 — ההרפתקאות של
+40. shelf — המדף
+41. shelf_title — מדף הסקווישים
+42. buddy_pick — חבר שלי
+43. buddy_now — החבר שלי
+44. accessories_title — אביזרים של צ׳יזי
+45. accessory_note — האביזרים מוצגים על צ׳יזי
+46. wordbook — ספר המילים
+47. songs — שירים
+48. acc_hat — כובע מסיבה
+49. acc_glasses — משקפיים
+50. acc_bow — פפיון
+51. acc_crown — כתר זהב
+52. acc_locked_3 — עולם 3
+53. acc_locked_6 — עולם 6
+54. acc_locked_9 — עולם 9
+55. acc_locked_12 — עולם 12
+56. world_1 — החדר שלי
+57. world_2 — המטבח
+58. world_3 — הגינה
+59. world_4 — סטודיו הציור
+60. world_5 — חנות הממתקים
+61. world_6 — המשפחה שלי
+62. world_7 — ארון הבגדים
+63. world_8 — מסיבת ריקודים
+64. world_9 — מזג אוויר
+65. world_10 — גן החיות
+66. world_11 — פארק הנינג׳ה
+67. world_12 — ההופעה הגדולה
+68. c_red — אדום
+69. c_blue — כחול
+70. c_yellow — צהוב
+71. c_pink — ורוד
+72. c_purple — סגול
+73. c_green — ירוק
+74. w_phone — טלפון
+75. w_tv — טלוויזיה
+76. w_ball — כדור
+77. w_doll — בובה
+78. w_bed — מיטה
+79. w_book — ספר
+80. w_box — קופסה
+81. w_lamp — מנורה
+82. w_chair — כיסא
+83. w_pizza — פיצה
+84. w_cheese — גבינה
+85. w_pasta — פסטה
+86. w_meat — בשר
+87. w_apple — תפוח
+88. w_banana — בננה
+89. w_milk — חלב
+90. w_cake — עוגה
+91. w_egg — ביצה
+92. w_slide — מגלשה
+93. w_swing — נדנדה
+94. w_tree — עץ
+95. w_bike — אופניים
+96. w_skates — גלגיליות
+97. w_helmet — קסדה
+98. w_flower — פרח
+99. w_bench — ספסל
+100. w_kite — עפיפון
+101. w_pencil — עיפרון
+102. w_brush — מכחול
+103. w_crayons — צבעי שעווה
+104. w_paper — נייר
+105. w_palette — פלטת צבעים
+106. w_scissors — מספריים
+107. w_glue — דבק
+108. w_picture — תמונה
+109. w_easel — כן ציור
+110. w_candy — סוכרייה
+111. w_lollipop — סוכריה על מקל
+112. w_cupcake — קאפקייק
+113. w_icecream — גלידה
+114. w_cookie — עוגייה
+115. w_donut — סופגנייה
+116. w_chocolate — שוקולד
+117. w_balloon — בלון
+118. w_gift — מתנה
+119. w_mom — אמא
+120. w_dad — אבא
+121. w_brother — אח
+122. w_sister — אחות
+123. w_baby — תינוק
+124. w_grandma — סבתא
+125. w_grandpa — סבא
+126. w_family — משפחה
+127. w_friends — חברים
+128. w_shirt — חולצה
+129. w_shorts — מכנסיים קצרים
+130. w_dress — שמלה
+131. w_skirt — חצאית
+132. w_shoes — נעליים
+133. w_socks — גרביים
+134. w_hat — כובע
+135. w_jacket — מעיל
+136. w_glasses — משקפיים
+137. w_jump — לקפוץ
+138. w_clap — למחוא כפיים
+139. w_dance — לרקוד
+140. w_sing — לשיר
+141. w_run — לרוץ
+142. w_sleep — לישון
+143. w_eat — לאכול
+144. w_drink — לשתות
+145. w_wave — לנופף
+146. w_sun — שמש
+147. w_cloud — ענן
+148. w_rain — גשם
+149. w_snowflake — פתית שלג
+150. w_wind — רוח
+151. w_rainbow — קשת
+152. w_umbrella — מטרייה
+153. w_snowman — איש שלג
+154. w_storm — סערה
+155. w_cat — חתול
+156. w_dog — כלב
+157. w_lion — אריה
+158. w_monkey — קוף
+159. w_fish — דג
+160. w_bird — ציפור
+161. w_elephant — פיל
+162. w_giraffe — ג׳ירפה
+163. w_rabbit — ארנב
+164. w_rope — חבל
+165. w_wall — קיר טיפוס
+166. w_beam — קורת שיווי משקל
+167. w_bars — מקבילים
+168. w_tunnel — מנהרה
+169. w_crate — ארגז
+170. w_bridge — גשר
+171. w_mat — מזרן
+172. w_ladder — סולם
+173. w_stage — במה
+174. w_microphone — מיקרופון
+175. w_guitar — גיטרה
+176. w_drum — תוף
+177. w_piano — פסנתר
+178. w_trumpet — חצוצרה
+179. w_star — כוכב
+180. w_crown — כתר
+181. w_flowers — זר פרחים
+182. name.cheesy — צ׳יזי
+183. name.mozzi — מוצי
+184. name.horiko — חוריקו
+185. name.popcheese — פופצ׳יז
