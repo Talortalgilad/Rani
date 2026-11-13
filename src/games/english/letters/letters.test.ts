@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTiles, blendTimeline } from './blend';
-import { ISLANDS, LETTERS, TEMP_EMOJI, islandInfo, lettersUpTo, soundsOf } from './journey';
+import { ISLANDS, LETTERS, islandInfo, lettersUpTo, soundsOf } from './journey';
 import { buildableWords, hasPicture } from './art';
 import { STROKES, hasStrokes, type Stroke } from './strokes';
 import { TOLERANCE, evaluateStroke, lengthOf, resample } from './trace';
@@ -173,17 +173,18 @@ describe('words to build have a picture', () => {
   it('only words with a picture are offered for building, and a words station always has three', () => {
     for (const isl of ISLANDS) {
       const ws = buildableWords(isl.n);
-      expect(ws.length, `island ${isl.n}`).toBeGreaterThanOrEqual(isl.n === 1 ? 3 : 1);
+      expect(ws.length, `island ${isl.n}`).toBeGreaterThanOrEqual(2);
       for (const w of ws) expect(hasPicture(w), w).toBe(true);
     }
     const steps = planLetterStation({ island: 3, station: 4, learned: [], seed: 2 });
     for (const s of steps) if (s.kind === 'lbuild' || s.kind === 'lread') expect(hasPicture(s.word), s.word).toBe(true);
   });
-  it('the stand-in emoji are only for the nine words of sheet 16', () => {
-    expect(Object.keys(TEMP_EMOJI).sort()).toEqual(['man', 'mat', 'nap', 'pan', 'pat', 'pin', 'sat', 'tap', 'tin']);
-    expect(hasPicture('sap')).toBe(false);
-    expect(hasPicture('dad')).toBe(true); // a word of the words journey: it has its picture
-    expect(hasPicture('pig')).toBe(false); // until sheet 14 is cut
+  it('the pictures of the sheets are all there: every island has its words, and every letter has its example word', () => {
+    for (const isl of ISLANDS) for (const w of isl.words) expect(hasPicture(w), `${isl.n}: ${w}`).toBe(true);
+    for (const l of LETTERS) expect(hasPicture(l.word), l.word).toBe(true);
+    expect(hasPicture('sap')).toBe(false); // not a word of the journey
+    expect(buildableWords(1)).toEqual(['tap', 'sat', 'pat']);
+    expect(buildableWords(2)).toEqual(['pan', 'pin', 'map', 'mat', 'man', 'tin', 'nap']);
   });
 });
 

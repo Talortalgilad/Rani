@@ -28,12 +28,6 @@ export const islandInfo = (n: number): Island => ISLANDS.find((i) => i.n === n) 
 /** The letters taught up to and including an island (what may appear in its tasks). */
 export const lettersUpTo = (island: number): string[] => ISLANDS.filter((i) => i.n <= island).flatMap((i) => i.letters);
 
-/**
- * Until the sheet of pictures is cut (scripts/english-letters-art.py) the nine words of sheet 16 have an emoji, and only these: every
- * other word without a picture is never offered for building (SPEC: nouns that have a picture).
- */
-export const TEMP_EMOJI: Record<string, string> = { tap: '🚰', sat: '🪑', pat: '🐾', pan: '🍳', pin: '📌', mat: '🧺', man: '👨', tin: '🥫', nap: '😴' };
-
 /** The sounds of a word, one letter each ("sat" -> s, a, t). */
 export const soundsOf = (word: string): string[] => word.split('');
 

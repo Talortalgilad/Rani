@@ -480,3 +480,7 @@ bdi { unicode-bidi: isolate; }
 .bd-letter.d .belly { left: -8%; }
 .bd-pic { width: clamp(90px, 28vw, 130px); aspect-ratio: 1; }
 .bd-pic .item-img { width: 100%; height: 100%; object-fit: contain; }
+.build-pic { width: clamp(110px, 32vw, 160px); aspect-ratio: 1; }
+.build-pic .item-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 6px 4px rgba(58, 47, 75, .22)); }
+.shelf-letters .sl img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.shelf-letters .sl.lost .squishy-img { filter: brightness(0) opacity(.28); }
