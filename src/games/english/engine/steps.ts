@@ -16,6 +16,15 @@ export type Step =
   | { kind: 'sentence'; words: string[]; picture: string; missing: number; score: string[] }
   /** "Say it!" (only when a parent turned it on): she says the word, the phone listens */
   | { kind: 'say'; right: string; score: string[] }
+  // the letters journey (SPEC-letters.md): the keys of the scores are `l:<letter>` and `lw:<word>`
+  | { kind: 'lmeet'; letter: string; score: string[] }
+  | { kind: 'ltrace'; letter: string; score: string[] }
+  | { kind: 'lsound'; letter: string; options: string[]; score: string[] }
+  | { kind: 'lfirst'; letter: string; ids: string[]; score: string[] }
+  | { kind: 'lcase'; letters: string[]; score: string[] }
+  | { kind: 'lhunt'; letter: string; pool: string[]; score: string[] }
+  | { kind: 'lbuild'; word: string; /** the place of the one letter that is missing (the others are there); null: all of them */ missing: number | null; pool: string[]; score: string[] }
+  | { kind: 'lread'; word: string; options: string[]; score: string[] }
   | { kind: 'song'; world: number; score: string[] };
 
 export type Kind = Step['kind'];

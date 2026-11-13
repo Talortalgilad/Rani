@@ -1,4 +1,5 @@
 import { ACCESSORIES } from '../art/accessories';
+import { ISLANDS, LETTERS } from '../letters/journey';
 import { COLORS } from './colors';
 import { WORLDS } from './worlds';
 import { clipUrl, recordedClips, speakHeLine } from '../voice';
@@ -50,6 +51,19 @@ export const HE_LINES: HeLine[] = [
   { id: 'accessory_note', world: 0, parts: [he.accessoryNote] },
   { id: 'wordbook', world: 0, parts: [he.wordbook] },
   { id: 'songs', world: 0, parts: [he.songs] },
+  // the letters journey
+  { id: 'j_words', world: 0, parts: [he.tabWords] },
+  { id: 'j_letters', world: 0, parts: [he.tabLetters] },
+  { id: 'letters_title', world: 0, parts: [he.lettersTitle] },
+  { id: 'words_station', world: 0, parts: [he.wordsStation] },
+  { id: 'l_new', world: 0, parts: [he.newLetter] },
+  { id: 'l_trace_capital', world: 0, parts: [he.traceCapital] },
+  { id: 'l_trace_dots', world: 0, parts: [he.traceDots] },
+  { id: 'l_trace_blur', world: 0, parts: [he.traceBlur] },
+  { id: 'l_trace_again', world: 0, parts: [he.traceAgain] },
+  { id: 'soon', world: 0, parts: [he.soon] },
+  { id: 'letter_shelf', world: 0, parts: [he.letterShelf] },
+  ...ISLANDS.map((i): HeLine => ({ id: `island_${i.n}`, world: 0, parts: [i.he] })),
   ...ACCESSORIES.map((a): HeLine => ({ id: `acc_${a.id}`, world: 0, parts: [a.he] })),
   ...ACCESSORIES.map((a): HeLine => ({ id: `acc_locked_${a.world}`, world: 0, parts: [he.accessoryLocked(a.world)] })),
   ...WORLDS.map((w): HeLine => ({ id: `world_${w.n}`, world: 0, parts: [w.he] })),
@@ -59,7 +73,7 @@ export const HE_LINES: HeLine[] = [
 
 export const NAME_KEYS: Record<string, string> = { 'צ׳יזי': 'cheesy', 'מוצי': 'mozzi', 'חוריקו': 'horiko', 'פופצ׳יז': 'popcheese' };
 
-export interface Clip { id: string; text: string; world: number }
+export interface Clip { id: string; text: string; world: number; /** a letter sound (the studio shows the letter and its word, not a sentence) */ sound?: { letter: string; word: string } }
 
 /** Every text piece of every sentence, and the ready-made names, one entry each (some have the same text as another: see allClips). */
 function rawClips(): Clip[] {
@@ -92,9 +106,15 @@ export function allClips(): Clip[] {
 }
 
 /** The two tracks of the recording studio: the sentences of the game and the names first, then the words (and colours) she learns. */
-export type Track = 'important' | 'words';
+export type Track = 'important' | 'words' | 'sounds';
 export const trackOf = (id: string): Track => (/^(w_|c_)/.test(id) ? 'words' : 'important');
+/** The 26 sounds of the letters and "qu": English, recorded in the studio (not part of the Hebrew list): `sound_<letter>`. */
+export function soundClips(): Clip[] {
+  const hint = 'אמרי רק את הצליל הראשון של המילה, קצר, בלי שם האות';
+  return [...LETTERS.map((l) => ({ id: `sound_${l.id}`, text: hint, world: 0, sound: { letter: l.id, word: l.label } })), { id: 'sound_qu', text: hint, world: 0, sound: { letter: 'qu', word: 'queen' } }];
+}
 export const clipsOfTrack = (t: Track): Clip[] => {
+  if (t === 'sounds') return soundClips();
   const all = allClips();
   const names = all.filter((c) => c.id.startsWith('name.'));
   return t === 'words' ? all.filter((c) => trackOf(c.id) === 'words') : [...all.filter((c) => trackOf(c.id) === 'important' && !c.id.startsWith('name.')), ...names];
