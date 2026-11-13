@@ -86,6 +86,11 @@ onRoute((route: Route) => {
       break;
     case 'gate':
       if (!games.some((g) => g.id === route.gameId)) return go({ name: 'home' }, { replace: true });
+      if (games.find((g) => g.id === route.gameId)?.resumeWithoutGate && hasFreshSession(route.gameId)) {
+        // a board left less than 10 minutes ago goes on, without the gate
+        grantPass(route.gameId);
+        return go({ name: 'game', gameId: route.gameId }, { replace: true });
+      }
       if (games.find((g) => g.id === route.gameId)?.noGate) {
         // a game that is learning in itself has no maths gate
         grantPass(route.gameId);

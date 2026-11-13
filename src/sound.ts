@@ -9,7 +9,9 @@ export type SoundName =
   // Traffic Jam: engine starting, the "bonk" of a blocked vehicle, braking, the honk of a full one, a firework
   | 'engine' | 'bonk' | 'brake' | 'honk' | 'firework'
   // a vehicle that hops over another on the road
-  | 'boing';
+  | 'boing'
+  // block puzzle: a block lands, a block bursts (pitch rises with every block), a combo arpeggio, a streak step (pitch), a new tray, a clean board, a soft happy tune for a full board
+  | 'thock' | 'blast' | 'arpeggio' | 'streak' | 'trayin' | 'fanfare' | 'gentle';
 
 export interface SoundApi {
   /** `pitch` (Hz) applies to 'pop', 'bell' and 'tick'. */
@@ -127,6 +129,37 @@ export const sound: SoundApi = {
         case 'firework':
           tone(900, 0, 0.28, 'sawtooth', 0.06, 160);
           tone(1500, 0.06, 0.25, 'sine', 0.06, 700);
+          break;
+        case 'thock':
+          tone(210, 0, 0.08, 'sine', 0.26, 120);
+          tone(520, 0, 0.03, 'triangle', 0.07);
+          break;
+        case 'blast': {
+          const f = pitch ?? 520;
+          tone(f, 0, 0.13, 'sine', 0.22, f * 1.5);
+          tone(f * 2, 0, 0.05, 'triangle', 0.06);
+          break;
+        }
+        case 'arpeggio': {
+          const f = pitch ?? 523.25;
+          notes([f, f * 1.25, f * 1.5, f * 2], 0.07, 0.2, 'triangle', 0.22);
+          break;
+        }
+        case 'streak': {
+          const f = pitch ?? 660;
+          tone(f, 0, 0.12, 'square', 0.07, f * 1.25);
+          tone(f * 1.5, 0.08, 0.16, 'sine', 0.16);
+          break;
+        }
+        case 'trayin':
+          tone(300, 0, 0.09, 'sine', 0.14, 480);
+          break;
+        case 'fanfare':
+          notes([523.25, 659.25, 783.99, 1046.5, 1318.5], 0.08, 0.22, 'triangle', 0.26);
+          [523.25, 783.99, 1046.5, 1318.5].forEach((f) => tone(f, 0.45, 0.7, 'triangle', 0.18));
+          break;
+        case 'gentle':
+          notes([392, 494, 587, 523, 659, 784], 0.16, 0.3, 'sine', 0.2);
           break;
         case 'crack': tone(240, 0, 0.09, 'square', 0.1, 140); break;
         case 'correct': notes([523.25, 659.25, 783.99], 0.09, 0.2, 'triangle', 0.3); break;
