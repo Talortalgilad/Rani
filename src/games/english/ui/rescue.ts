@@ -33,6 +33,7 @@ export function showRescue(root: HTMLElement, name: string, squishy: Squishy, so
   const gift = root.querySelector<HTMLElement>('#gift')!;
   const bunny = root.querySelector<HTMLElement>('#bunny')!;
   const bunnyIn = root.querySelector<HTMLElement>('#bunnyIn')!;
+  if (extra.art) bunny.classList.add('letter'); // a letter squishy is shown bigger
   const acts = root.querySelector<HTMLElement>('#acts')!;
   const timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));

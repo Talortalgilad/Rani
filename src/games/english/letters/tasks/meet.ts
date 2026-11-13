@@ -1,4 +1,4 @@
-import { itemImg } from '../../art/images';
+import { wordPictureHtml } from '../art';
 import { el, type TaskEnv, type TaskHandle } from '../../tasks/common';
 import { letterById } from '../journey';
 import { exampleWord, toyLetter } from '../ui/glyph';
@@ -9,7 +9,7 @@ export function meetTask(env: TaskEnv, letterId: string): TaskHandle {
   const wrap = el('div', 'letter-card', env.stage);
   wrap.innerHTML = `
     <div class="lc-letters">${toyLetter(L.upper)}${toyLetter(L.id, 'small')}</div>
-    <div class="lc-pic">${itemImg(L.word)}</div>
+    <div class="lc-pic">${wordPictureHtml(L.word)}</div>
     <div class="lc-word" dir="ltr">${exampleWord(L.id)}</div>`;
   let timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));

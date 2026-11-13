@@ -453,7 +453,12 @@ bdi { unicode-bidi: isolate; }
 .letter-squishy .ls-eyes i:first-child { left: 32cqw; }
 .letter-squishy .ls-eyes i:last-child { left: 55cqw; }
 .letter-squishy .ls-mouth { position: absolute; left: 44cqw; top: 49cqw; width: 12cqw; height: 6cqw; border-bottom: 1.8cqw solid #3a2218; border-radius: 0 0 50% 50%; }
-.letter-squishy .ls-cheeks { position: absolute; left: 26cqw; top: 41cqw; width: 48cqw; height: 8cqw; background: radial-gradient(ellipse at center, #ff8fa8 0 60%, transparent 66%) left / 9cqw 100% no-repeat, radial-gradient(ellipse at center, #ff8fa8 0 60%, transparent 66%) right / 9cqw 100% no-repeat; opacity: .9; }
+.letter-squishy .ls-cheeks { position: absolute; inset: 0; }
+.letter-squishy .ls-cheeks::before, .letter-squishy .ls-cheeks::after { content: ''; position: absolute; top: 47cqw; width: 8cqw; height: 5cqw; border-radius: 50%; background: #ff8fa8; opacity: .9; }
+.letter-squishy .ls-cheeks::before { left: 27cqw; }
+.letter-squishy .ls-cheeks::after { left: 61cqw; }
+.bunny-out.letter { width: 270px; height: 270px; margin-left: -135px; top: 40%; }
+.bunny-out.letter.land { transform: translate(-80px, 70px); }
 .shelf-letters { width: 100%; max-width: 480px; padding: 0 8px; }
 .shelf-letters .acc-title { margin: 4px 0; }
 .shelf-letters .sl-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }

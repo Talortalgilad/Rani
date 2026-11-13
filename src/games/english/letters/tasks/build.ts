@@ -1,10 +1,11 @@
 import { el, shuffled, type TaskEnv, type TaskHandle } from '../../tasks/common';
 import { blendTimeline, buildTiles } from '../blend';
-import { WORD_EMOJI, soundsOf } from '../journey';
+import { wordPictureHtml } from '../art';
+import { soundsOf } from '../journey';
 import { toyLetter } from '../ui/glyph';
 
-/** The picture of a word (an emoji until the sheets of pictures are made). */
-export const wordPic = (word: string): string => `<span class="emoji-pic" role="img" aria-label="${word}">${WORD_EMOJI[word] ?? '❓'}</span>`;
+/** The picture of a word (the empty string when there is none: such a word is not offered). */
+export const wordPic = wordPictureHtml;
 
 /**
  * "Let's build cat!": empty places in a row (the first one on the left) and letters to drag into them; every letter that is touched says

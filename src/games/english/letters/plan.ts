@@ -1,6 +1,6 @@
 import { mulberry32 } from '../engine/planner';
 import type { Step } from '../engine/steps';
-import { WORDS } from '../content/words';
+import { buildableWords, exampleHasPicture, hasPicture } from './art';
 import { ISLANDS, islandInfo, letterById, lettersUpTo, wordsUpTo } from './journey';
 
 /** Pictures that are not the example word of a letter in island 1: for "what starts with /s/?" (a word with that first letter is never among them). */
@@ -37,22 +37,23 @@ export function planLetterStation(o: LetterPlan): Step[] {
   const others = known.filter((l) => l !== id);
   const score = [`l:${id}`];
   const firstOthers = sample(r, DISTRACTORS.filter((w) => w[0] !== id && w !== L.word), 2);
-  return [
+  const steps: Step[] = [
     { kind: 'lmeet', letter: id, score: [] },
     { kind: 'ltrace', letter: id, score },
     { kind: 'lsound', letter: id, options: [id, ...sample(r, others, 2)], score },
     { kind: 'lfirst', letter: id, ids: [L.word, ...firstOthers], score },
-    { kind: 'lcase', letters: [id, ...sample(r, others, 2)], score: [id, ...[]].map((l) => `l:${l}`) },
+    { kind: 'lcase', letters: [id, ...sample(r, others, 2)], score },
     { kind: 'lhunt', letter: id, pool: known, score },
   ];
+  // "what starts with /x/?" needs the picture of the example word: until it is cut, the task is left out
+  return exampleHasPicture(id) ? steps : steps.filter((s) => s.kind !== 'lfirst');
 }
 
 function planWordsStation(o: LetterPlan, r: () => number): Step[] {
-  const isl = islandInfo(o.island);
-  const words = isl.words;
+  const words = buildableWords(o.island);
   const pool = lettersUpTo(o.island);
   const w = (i: number): string => words[i % words.length];
-  const options = (word: string): string[] => [word, ...sample(r, wordsUpTo(o.island).filter((x) => x !== word), 2)];
+  const options = (word: string): string[] => [word, ...sample(r, [...new Set([...wordsUpTo(o.island).filter(hasPicture), ...words])].filter((x) => x !== word), 2)];
   const lw = (word: string): string[] => [`lw:${word}`];
   return [
     { kind: 'lbuild', word: w(0), missing: 0, pool, score: lw(w(0)) },
@@ -70,4 +71,4 @@ export function learnedBefore(island: number, done: number): string[] {
   return [...before, ...islandInfo(island).letters.slice(0, Math.min(done, 4))];
 }
 
-export const hasPictures = (word: string): boolean => WORDS.some((x) => x.id === word);
+

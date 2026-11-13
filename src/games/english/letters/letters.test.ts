@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildTiles, blendTimeline } from './blend';
-import { ISLANDS, LETTERS, WORD_EMOJI, islandInfo, lettersUpTo, soundsOf } from './journey';
+import { ISLANDS, LETTERS, TEMP_EMOJI, islandInfo, lettersUpTo, soundsOf } from './journey';
+import { buildableWords, hasPicture } from './art';
 import { STROKES, hasStrokes, type Stroke } from './strokes';
 import { TOLERANCE, evaluateStroke, lengthOf, resample } from './trace';
 import { WORDS } from '../content/words';
@@ -21,12 +22,12 @@ describe('the journey', () => {
     for (const isl of ISLANDS) {
       const known = new Set(lettersUpTo(isl.n));
       for (const w of isl.words) {
-        const letters = w === 'quiz' ? ['q', 'u', 'i', 'z'] : soundsOf(w);
+        const letters = soundsOf(w);
         for (const l of letters) expect(known.has(l), `${w}: ${l} on island ${isl.n}`).toBe(true);
-        expect(WORD_EMOJI[w], w).toBeTruthy();
       }
     }
-    expect(islandInfo(1).words.slice(0, 3)).toEqual(['sat', 'tap', 'pat']);
+    expect(islandInfo(1).words).toEqual(['tap', 'sat', 'pat']);
+    expect(islandInfo(2).words).toEqual(['pan', 'pin', 'map', 'mat', 'man', 'tin', 'nap']);
   });
   it('the example word of every letter starts with it (qu for q), and island 1 uses pictures that exist', () => {
     for (const l of LETTERS) expect(l.id === 'x' ? l.word.includes('x') : l.word[0], l.id).toBe(l.id === 'x' ? true : l.id); // x is at the end of fox
@@ -150,5 +151,38 @@ describe('planning a station of letters', () => {
     expect(s).toHaveLength(27);
     expect(s[s.length - 1].id).toBe('sound_qu');
     expect(new Set(s.map((c) => c.id)).size).toBe(27);
+  });
+});
+
+import { huntSpots } from './tasks/hunt';
+describe('the hunt for letters', () => {
+  it('twelve tap areas never touch each other (a tile is 86 x 96 px on a stage of 380 x 520 or more)', () => {
+    for (let seed = 1; seed < 60; seed++) {
+      const sp = huntSpots(12, 3, seed);
+      for (let i = 0; i < sp.length; i++)
+        for (let j = i + 1; j < sp.length; j++) {
+          const dx = Math.abs(sp[i][0] - sp[j][0]) * 380;
+          const dy = Math.abs(sp[i][1] - sp[j][1]) * 520;
+          expect(dx >= 90 || dy >= 100, `seed ${seed}: ${i}/${j}`).toBe(true);
+        }
+    }
+  });
+});
+
+describe('words to build have a picture', () => {
+  it('only words with a picture are offered for building, and a words station always has three', () => {
+    for (const isl of ISLANDS) {
+      const ws = buildableWords(isl.n);
+      expect(ws.length, `island ${isl.n}`).toBeGreaterThanOrEqual(isl.n === 1 ? 3 : 1);
+      for (const w of ws) expect(hasPicture(w), w).toBe(true);
+    }
+    const steps = planLetterStation({ island: 3, station: 4, learned: [], seed: 2 });
+    for (const s of steps) if (s.kind === 'lbuild' || s.kind === 'lread') expect(hasPicture(s.word), s.word).toBe(true);
+  });
+  it('the stand-in emoji are only for the nine words of sheet 16', () => {
+    expect(Object.keys(TEMP_EMOJI).sort()).toEqual(['man', 'mat', 'nap', 'pan', 'pat', 'pin', 'sat', 'tap', 'tin']);
+    expect(hasPicture('sap')).toBe(false);
+    expect(hasPicture('dad')).toBe(true); // a word of the words journey: it has its picture
+    expect(hasPicture('pig')).toBe(false); // until sheet 14 is cut
   });
 });

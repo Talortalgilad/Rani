@@ -2,12 +2,13 @@ import { el, shuffled, type TaskEnv, type TaskHandle } from '../../tasks/common'
 import { toyLetter } from '../ui/glyph';
 
 /** Places on a grid, with a little shake, so that letters never overlap. */
-export function huntSpots(n: number, cols = 4, seed = 1): [number, number][] {
+export function huntSpots(n: number, cols = 3, seed = 1): [number, number][] {
   const rows = Math.ceil(n / cols);
   const cells = shuffled(Array.from({ length: cols * rows }, (_, i) => i), seed).slice(0, n);
   let s = seed || 1;
-  const jit = (): number => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff - 0.5) * 0.06;
-  return cells.map((c) => [(0.14 + 0.72 * ((c % cols) / (cols - 1))) + jit(), (0.1 + 0.8 * (Math.floor(c / cols) / Math.max(1, rows - 1))) + jit()]);
+  // a small shake inside the cell (a quarter of its free space at most), so that two tap areas can never touch
+  const jit = (): number => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff - 0.5) * 0.04;
+  return cells.map((c) => [((c % cols) + 0.5) / cols + jit(), (Math.floor(c / cols) + 0.5) / rows + jit()]);
 }
 
 /** "Find all the S!": letters scattered in capitals and small ones, only the ones she has learned; she taps every S (both shapes). */
@@ -22,7 +23,7 @@ export function huntTask(env: TaskEnv, letterId: string, pool: string[], seed = 
     items.push({ ch: i % 3 === 0 ? l.toUpperCase() : l, target: false });
   }
   const order = shuffled(items, seed);
-  const spots = huntSpots(order.length, 4, seed);
+  const spots = huntSpots(order.length, 3, seed);
   let found = 0;
   let locked = false;
   let dead = false;

@@ -1,4 +1,4 @@
-import { itemImg } from '../../art/images';
+import { wordPictureHtml } from '../art';
 import { el, pictureButton, shuffled, showSolution, type TaskEnv, type TaskHandle } from '../../tasks/common';
 import { letterById } from '../journey';
 import { toyLetter } from '../ui/glyph';
@@ -62,7 +62,7 @@ export function firstSoundTask(env: TaskEnv, letterId: string, ids: string[], se
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));
   const play = (): void => env.sayLetter(letterId);
   shuffled(ids, seed).forEach((id) => {
-    const b = pictureButton(row, itemImg(id), id, 'pic en-choice');
+    const b = pictureButton(row, wordPictureHtml(id), id, 'pic en-choice');
     pics.set(id, b);
     b.addEventListener('click', async () => {
       if (locked) return;
