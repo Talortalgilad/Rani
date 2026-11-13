@@ -1,5 +1,6 @@
 import { likeIds } from '../content/likes';
 import { WORDS, labelOf } from '../content/words';
+import { counter } from '../../../ui/counter';
 import { LETTERS } from '../letters/journey';
 import { letterState, letterStats, type Confusions } from '../letters/stats';
 import { dayNumber, isKnown, markKnown, minutesInWeek, unmarkKnown, STATIONS_PER_WORLD, type MapProgress, type PlayLog, type Words } from '../engine/progress';
@@ -41,15 +42,15 @@ export function englishParentHtml(): string {
         <div><b>${Object.values(verbs).filter((n) => n > 0).length}</b><span>פעלים שנלמדו</span></div>
       </div>
       <div class="p-kpis">
-        <div><b style="font-size:20px">${worldsDone} מתוך ${WORLDS.length}</b><span>עולמות שהושלמו</span></div>
-        <div><b style="font-size:20px">${rescued} מתוך ${SQUISHIES.length}</b><span>סקווישים שניצלו</span></div>
+        <div><b style="font-size:20px">${counter(`${worldsDone} מתוך ${WORLDS.length}`)}</b><span>עולמות שהושלמו</span></div>
+        <div><b style="font-size:20px">${counter(`${rescued} מתוך ${SQUISHIES.length}`)}</b><span>סקווישים שניצלו</span></div>
         <div><b>${week}</b><span>דקות השבוע</span></div>
       </div>
       <h3 class="p-letters-h">אותיות</h3>
       <div class="p-kpis">
-        <div><b style="font-size:20px">${ls.learned} מתוך ${ls.total}</b><span>אותיות שנלמדו</span></div>
+        <div><b style="font-size:20px">${counter(`${ls.learned} מתוך ${ls.total}`)}</b><span>אותיות שנלמדו</span></div>
         <div><b>${ls.learning}</b><span>אותיות בלמידה</span></div>
-        <div><b style="font-size:20px">${ls.written} מתוך ${ls.total}</b><span>אותיות שנכתבו</span></div>
+        <div><b style="font-size:20px">${counter(`${ls.written} מתוך ${ls.total}`)}</b><span>אותיות שנכתבו</span></div>
       </div>
       <div class="p-sub">אותיות שמתבלבלים בהן (כשהקישה על אות אחת במקום אחרת)</div>
       <div class="p-chips"><span class="chip-btn ${ls.bd ? 'on' : ''}" dir="ltr">b / d : ${ls.bd}</span>${ls.top.map(([k, n]) => `<span class="chip-btn" dir="ltr">${esc(k)} : ${n}</span>`).join('')}</div>

@@ -5,6 +5,7 @@ import { sound } from '../sound';
 import { speak, stopSpeaking } from '../speech';
 import { go } from '../router';
 import { renderHint } from './hints';
+import { counter } from './counter';
 import { englishGateQuestion } from '../games/english/gate';
 import { gateKinds, letterGateQuestion } from '../games/english/letters/gate';
 import { speakLetterSound } from '../games/english/voice';
@@ -52,7 +53,7 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
     body.innerHTML = `
       <div class="intro">
         <div class="intro-emoji">🎮</div>
-        <h2>פותרים ${total === 1 ? 'תרגיל אחד' : `${total} תרגילים`} ומשחקים!</h2>
+        <h2>פותרים ${total === 1 ? 'תרגיל אחד' : counter(`${total} תרגילים`)} ומשחקים!</h2>
         <button class="btn big" id="start">יאללה!</button>
       </div>`;
     body.querySelector('#start')!.addEventListener('click', nextQuestion);

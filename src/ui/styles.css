@@ -269,3 +269,7 @@ html, body {
 .choices.english-gate .choice img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
 .choices.english-gate .choice.right { background: #d8f8e1; }
 .choices.english-gate .choice .toy-letter { font-size: min(34vw, 20vh); }
+
+/* counters with numbers: never broken across lines, each number isolated (see counter.ts) */
+.cnt { white-space: nowrap; unicode-bidi: isolate; }
+.cnt bdi { unicode-bidi: isolate; }

@@ -1,4 +1,5 @@
 import { go } from '../router';
+import { counter } from './counter';
 import { IOS_PICTURE, currentInstallMode, onInstallChange, promptInstall } from '../install';
 import { activeLevel } from '../math/adaptive';
 import { TYPE_LABEL, computeStats } from '../math/stats';
@@ -145,7 +146,7 @@ export function renderParent(root: HTMLElement): () => void {
       <section class="p-card">
         <h2>הגבלת זמן יומית</h2>
         ${chips('dailyLimitMin', [['כבוי', null], ['15 דק׳', 15], ['30 דק׳', 30], ['45 דק׳', 45], ['60 דק׳', 60]], se.dailyLimitMin)}
-        ${allowed === null ? '' : `<div class="p-sub">שיחקו היום ${played} דק׳ מתוך ${allowed}</div><button class="btn alt" id="plus15">➕ הוסף 15 דקות להיום</button>`}
+        ${allowed === null ? '' : `<div class="p-sub">${counter(`שיחקו היום ${played} דק׳ מתוך ${allowed}`)}</div><button class="btn alt" id="plus15">➕ הוסף 15 דקות להיום</button>`}
       </section>
 
       ${installHtml()}
