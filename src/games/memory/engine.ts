@@ -32,6 +32,18 @@ export function buildCards(artKeys: readonly string[], pairs: number, group: 2 |
   return shuffle(cards, rand).map((art, id) => ({ id, art }));
 }
 
+export interface GameSnapshot {
+  cards: Card[];
+  group: 2 | 3;
+  matched: boolean[];
+  open: number[];
+  attempts: number;
+  streak: number;
+  bestStreak: number;
+  failStreak: number;
+  hintUsed: boolean;
+}
+
 export type FlipResult =
   | { kind: 'ignored' }
   | { kind: 'open'; index: number }
@@ -103,6 +115,37 @@ export class MemoryGame {
     const moved = shuffle(idx.map((i) => this.cards[i]), rand);
     idx.forEach((i, k) => (this.cards[i] = { ...moved[k], id: i }));
     return idx;
+  }
+
+  /** Everything needed to carry on later (SPEC-memory.md section 7): the cards in their places, what was found, the attempts. */
+  snapshot(): GameSnapshot {
+    return {
+      cards: this.cards.map((c) => ({ ...c })),
+      group: this.group,
+      matched: [...this.matched],
+      open: [...this.open],
+      attempts: this.attempts,
+      streak: this.streak,
+      bestStreak: this.bestStreak,
+      failStreak: this.failStreak,
+      hintUsed: this.hintUsed,
+    };
+  }
+
+  /** A game as it was: a missed set that was still showing is turned back (a miss is never carried over). Null for a snapshot that makes no sense. */
+  static restore(s: GameSnapshot): MemoryGame | null {
+    if (!s || !Array.isArray(s.cards) || !Array.isArray(s.matched) || s.matched.length !== s.cards.length || (s.group !== 2 && s.group !== 3)) return null;
+    if (s.cards.length % s.group !== 0) return null;
+    const g = new MemoryGame(s.cards.map((c) => ({ ...c })), s.group);
+    g.matched = [...s.matched];
+    // a half-finished set of fewer than `group` open cards stays open; a complete one can only have been a miss
+    g.open = s.open.length < s.group ? s.open.filter((i) => Number.isInteger(i) && i >= 0 && i < s.cards.length && !s.matched[i]) : [];
+    g.attempts = s.attempts | 0;
+    g.streak = s.streak | 0;
+    g.bestStreak = s.bestStreak | 0;
+    g.failStreak = s.failStreak | 0;
+    g.hintUsed = !!s.hintUsed;
+    return g;
   }
 
   /** Turns a missed set back; returns the indices to flip face-down. */

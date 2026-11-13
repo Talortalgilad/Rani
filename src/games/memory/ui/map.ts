@@ -1,4 +1,5 @@
 import { LEVELS, WORLDS } from '../levels';
+import { mm } from '../lines';
 
 export interface LevelProgress { stars: number; bestAttempts: number; bestStreak: number }
 export interface Progress { levels: Record<number, LevelProgress> }
@@ -18,7 +19,7 @@ export function renderMap(root: HTMLElement, p: Progress, cb: { onPick(id: numbe
     <div class="mm-pane mm-map">
       <div class="mm-top">
         <button class="icon-btn small" id="mm-back" aria-label="חזרה">⬅️</button>
-        <h2>מסע</h2>
+        <h2 data-say="mm_journey">${mm.journey}</h2>
         <span class="mm-sp"></span>
       </div>
       ${WORLDS.map((w) => {

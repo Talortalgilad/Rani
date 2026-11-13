@@ -41,7 +41,7 @@ describe('the recording studio lists', () => {
     const imp = clipsOfTrack('important');
     const words = clipsOfTrack('words');
     expect(imp[0].id).toBe('ask_name');
-    expect(imp.slice(-4).map((c) => c.id)).toEqual(['name.cheesy', 'name.mozzi', 'name.horiko', 'name.popcheese']);
+    expect(imp.slice(-5).map((c) => c.id)).toEqual(['name.cheesy', 'name.mozzi', 'name.horiko', 'name.popcheese', 'name.rani']); // (אבא, אמא and ריי have the recording of the same text that is there already)
     expect(words.every((c) => /^(w_|c_)/.test(c.id))).toBe(true);
     expect(imp.length + words.length).toBe(allClips().length);
   });

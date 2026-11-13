@@ -121,3 +121,72 @@
 .mm-stop:active { transform: translate(-50%, -48%); }
 .mm-stop.wiggle { animation: wiggle .4s; }
 @keyframes mm-pulse { 0%,100% { box-shadow: 0 6px 0 rgba(0,0,0,.18), 0 0 0 0 rgba(255,255,255,.9); } 50% { box-shadow: 0 6px 0 rgba(0,0,0,.18), 0 0 0 14px rgba(255,255,255,0); } }
+
+/* ---- stage 3: decks, sizes, two players, family ---- */
+.mm-img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 6%; box-sizing: border-box; pointer-events: none; }
+.mm-photo { object-fit: cover; padding: 0; }
+.face.front .mm-photo { border-radius: 10px; }
+.mm-deckgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding-bottom: 12px; }
+.mm-deck { all: unset; box-sizing: border-box; position: relative; background: #fff; border-radius: 28px; padding: 14px 10px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; box-shadow: 0 5px 14px rgba(58, 47, 75, .12); cursor: pointer; text-align: center; }
+.mm-deck:active { transform: scale(.97); }
+.mm-deck.last { outline: 4px solid #8e5cf0; }
+.mm-dname { font-size: 22px; font-weight: 800; }
+.mm-cover { position: relative; width: 100%; aspect-ratio: 1.15; }
+.mm-cv { position: absolute; width: 46%; aspect-ratio: .8; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(58, 47, 75, .25); border: 3px solid #fff; background: #fff; }
+.mm-cv > svg, .mm-cv > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mm-cv.back { left: 10%; top: 8%; transform: rotate(-9deg); border-color: #fff; }
+.mm-cv.f0 { left: 34%; top: 14%; transform: rotate(2deg); }
+.mm-cv.f1 { left: 50%; top: 6%; transform: rotate(10deg); }
+.mm-cv .mm-img { padding: 8%; }
+.mm-deck.locked .mm-cover { filter: grayscale(.85) brightness(.9); }
+.mm-deck.locked { background: #ece8f2; }
+.mm-lock { position: absolute; top: 10px; left: 12px; font-size: 30px; }
+.mm-why { font-size: 13px; font-weight: 600; line-height: 1.25; color: #6d6580; }
+.mm-sizes { gap: 18px; }
+.mm-chosen { display: flex; align-items: center; gap: 12px; justify-content: center; font-size: 26px; }
+.mm-chosen .mm-cv.back { position: relative; left: auto; top: auto; width: 54px; transform: rotate(-6deg); }
+.mm-sizelist { display: flex; flex-direction: column; gap: 14px; }
+.mm-size { all: unset; box-sizing: border-box; background: #fff; border-radius: 26px; padding: 14px 18px; display: flex; align-items: center; gap: 16px; box-shadow: 0 5px 0 #cbbfe0; cursor: pointer; font-size: 28px; font-weight: 800; flex-wrap: wrap; }
+.mm-size small { font-size: 16px; opacity: .7; font-weight: 600; }
+.mm-size .mm-why { flex-basis: 100%; }
+.mm-size.locked { opacity: .55; box-shadow: none; }
+.mm-mini { display: grid; gap: 3px; width: 64px; flex: none; }
+.mm-mini i { aspect-ratio: .8; background: linear-gradient(#8e5cf0, #6d3fd0); border-radius: 4px; }
+.mm-setup { gap: 12px; }
+.mm-player { background: #fff; border-radius: 26px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 12px rgba(58, 47, 75, .1); border-top: 8px solid var(--pc); }
+.mm-player.p0 { --pc: #ff7ad0; } .mm-player.p1 { --pc: #4aa3df; }
+.mm-pl-head { display: flex; align-items: center; gap: 10px; }
+.mm-pl-head h3 { margin: 0; font-size: 22px; }
+.av { font-size: 26px; line-height: 1; }
+.av.big { font-size: 44px; } .av.huge { font-size: 96px; }
+.mm-name { font: 700 24px inherit; font-family: inherit; border: 3px solid #cbbfe0; border-radius: 16px; padding: 8px 14px; width: 100%; box-sizing: border-box; text-align: center; }
+.mm-names { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { font: 700 20px inherit; font-family: inherit; border: 3px solid #cbbfe0; background: #fff; border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+.chip.on { background: #ffe58a; border-color: #f2a900; }
+.mm-avatars { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.av-btn { font-size: 30px; line-height: 1; border: 3px solid transparent; border-radius: 16px; background: #f4f0ff; padding: 4px 6px; cursor: pointer; }
+.av-btn.on { border-color: #8e5cf0; background: #fff; }
+.av-btn:disabled { opacity: .3; }
+.mm-vs { flex: 1; display: flex; gap: 8px; min-width: 0; }
+.mm-pl { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; background: #fff; border-radius: 18px; padding: 6px 10px; border: 4px solid var(--pc); transition: transform .25s, box-shadow .25s, opacity .25s; opacity: .7; font-weight: 800; }
+.mm-pl.p0 { --pc: #ff7ad0; } .mm-pl.p1 { --pc: #4aa3df; }
+.mm-pl .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.mm-pl b { font-size: 28px; min-width: 24px; text-align: center; }
+.mm-pl.on { opacity: 1; transform: scale(1.06); box-shadow: 0 0 0 4px #fff, 0 0 18px 6px var(--pc); animation: mm-glow 1.4s ease-in-out infinite; }
+.mm-pl.got b { animation: mm-combo2 .5s; }
+@keyframes mm-glow { 50% { box-shadow: 0 0 0 4px #fff, 0 0 28px 10px var(--pc); } }
+@keyframes mm-combo2 { 50% { transform: scale(1.6); } }
+.mcard.fly { transition: transform .65s cubic-bezier(.5, 0, .8, .45), opacity .65s ease-in; transform: translate(var(--fx, 0), var(--fy, -200px)) scale(.2); opacity: 0; pointer-events: none; z-index: 6; }
+.mm-vsres { position: relative; overflow: hidden; }
+.mm-winners { display: flex; gap: 10px; justify-content: center; }
+.av.win { animation: pop .6s, mm-bounce 1s .6s ease-in-out infinite alternate; }
+@keyframes mm-bounce { to { transform: translateY(-10px) rotate(6deg); } }
+.mm-vstitle { margin: 0; font-size: 28px; text-align: center; }
+.mm-vsscores { display: flex; gap: 10px; width: 100%; }
+.mm-vsscores div { flex: 1; background: #fff; border-radius: 18px; padding: 8px; text-align: center; display: flex; flex-direction: column; gap: 2px; font-weight: 700; }
+.mm-vsscores div.top { outline: 4px solid #ffd23f; }
+.mm-vsscores b { font-size: 34px; }
+.mm-confetti i { position: absolute; top: -10px; width: 9px; height: 14px; border-radius: 2px; animation: mm-fall 2.6s linear infinite; }
+@keyframes mm-fall { to { transform: translateY(520px) rotate(540deg); } }
+.mm-overlay-resume { position: absolute; inset: 0; z-index: 12; background: rgba(58, 47, 75, .5); display: grid; place-items: center; }
+@media (prefers-reduced-motion: reduce) { .mcard.fly { transition: none; } .mm-pl.on, .av.win { animation: none; } }

@@ -1,4 +1,5 @@
 import { artSvg } from '../decks';
+import { pictureHtml } from '../decks/pictures';
 import { INK, star5 } from '../decks/svg';
 import type { Card } from '../engine';
 
@@ -69,7 +70,7 @@ export interface FrontFace { html: string; frame: string }
 /** Markup and border colour for the face-up side of a card. Different kinds get different colours. */
 export function frontFace(card: Card, deckFrame: string): FrontFace {
   const f = card.face;
-  if (!f) return { html: artSvg(card.art), frame: deckFrame };
+  if (!f) return { html: pictureHtml(card.art), frame: deckFrame };
   switch (f.kind) {
     case 'letter':
       return { html: wrap(`<text x="50" y="92" font-size="84" ${FONT}>${f.letter}</text>`, '#dff0ff'), frame: '#4a90e2' };
