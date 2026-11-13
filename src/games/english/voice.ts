@@ -1,5 +1,6 @@
 import { getState } from '../../storage';
 import { clipIds, getClip } from './voiceStore';
+import { WORDS } from './content/words';
 
 /** English (instructions, words) and Hebrew (story, encouragement) read aloud with the device's own voices. Works offline. */
 let voices: SpeechSynthesisVoice[] = [];
@@ -52,8 +53,25 @@ function say(text: string, lang: 'en' | 'he', rate: number): Promise<boolean> {
 }
 
 /** English: instructions at 0.85, single words at 0.75. */
-export const speakEn = (text: string, rate = 0.85): Promise<boolean> => (stopSpeech(), say(text, 'en', rate));
+/**
+ * English: a word of the game is played from its recording (public/english/voice/en/<id>.mp3) when there is one; the voice of the phone reads
+ * it only when there is not. The same order as the Hebrew: the recording made on this phone, then the file of the game, then the phone's voice.
+ */
+export const speakEn = (text: string, rate = 0.85): Promise<boolean> => {
+  stopSpeech();
+  const id = wordIdOf(text);
+  return id ? playWord(id).then((ok) => ok || say(text, 'en', rate)) : say(text, 'en', rate);
+};
 export const speakWord = (word: string): Promise<boolean> => speakEn(word, 0.75);
+
+const wordKey = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const WORD_IDS = new Map<string, string>();
+for (const w of WORDS) {
+  WORD_IDS.set(wordKey(w.id), w.id);
+  WORD_IDS.set(wordKey(w.label ?? w.id), w.id);
+}
+/** The id of the word that a text says ("Ice cream." and "ice cream" are icecream; "yo-yo" is yoyo), or null for anything else (a sentence, a name). */
+export const wordIdOf = (text: string): string | null => WORD_IDS.get(wordKey(text)) ?? null;
 /** Hebrew: false when the device has no Hebrew voice (the text stays in the speech bubble). */
 export const speakHe = (text: string): Promise<boolean> => (stopSpeech(), say(text, 'he', 0.9));
 
@@ -131,6 +149,31 @@ export function recordedClips(): Promise<Set<string>> {
     .catch(() => new Set<string>());
   return manifest;
 }
+const enBase = (): string => `${import.meta.env.BASE_URL}english/voice/en/`;
+export const wordClipUrl = (id: string): string => `${enBase()}${id}.mp3`;
+let enManifest: Promise<Set<string>> | null = null;
+/** The words that have a recording in the game (the manifest of the en folder; an empty set when there is none). */
+export function recordedWords(): Promise<Set<string>> {
+  enManifest ??= fetch(`${enBase()}manifest.json`)
+    .then((r) => (r.ok ? r.json() : { clips: [] }))
+    .then((j: { clips?: string[] }) => new Set(j.clips ?? []))
+    .catch(() => new Set<string>());
+  return enManifest;
+}
+/** Plays the recording of a word: the one made on this phone (key en:<id>) first, then the file of the game. False when there is none. */
+export async function playWord(id: string): Promise<boolean> {
+  if ((await phoneClipIds()).has(`en:${id}`)) {
+    const blob = await getClip(`en:${id}`);
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      const ok = await playClip(url);
+      URL.revokeObjectURL(url);
+      if (ok) return true;
+    }
+  }
+  return (await recordedWords()).has(id) ? playClip(wordClipUrl(id)) : false;
+}
+
 /** The recordings made in the studio on this phone (they come first). */
 let phone: Promise<Set<string>> | null = null;
 export function phoneClipIds(): Promise<Set<string>> {
@@ -140,6 +183,7 @@ export function phoneClipIds(): Promise<Set<string>> {
 /** Forget what was learned about the recordings (the tests, and the studio after it saved or imported one). */
 export const resetRecorded = (): void => {
   manifest = null;
+  enManifest = null;
   phone = null;
 };
 

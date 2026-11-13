@@ -43,10 +43,16 @@ export default defineConfig({
         // kept for offline by this runtime cache
         runtimeCaching: [
           {
+            // the lists of the recordings (he and en) come first from the cache but are renewed in the background, so that a new recording shows up
+            urlPattern: ({ url }: { url: URL }) => /^\/english\/voice\/(he|en)\/manifest\.json$/.test(url.pathname),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'english-voice-lists', cacheableResponse: { statuses: [0, 200] } },
+          },
+          {
             urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/') || url.pathname.startsWith('/memory/') || url.pathname.startsWith('/blocks/'),
             handler: 'CacheFirst',
-            // pictures and the recorded Hebrew voice (mp3: Safari asks for ranges)
-            options: { cacheName: 'english-images', expiration: { maxEntries: 400 }, cacheableResponse: { statuses: [0, 200] }, rangeRequests: true },
+            // pictures and the recorded voice, Hebrew and English (mp3: Safari asks for ranges)
+            options: { cacheName: 'english-images', expiration: { maxEntries: 900 }, cacheableResponse: { statuses: [0, 200] }, rangeRequests: true },
           },
         ],
       },
