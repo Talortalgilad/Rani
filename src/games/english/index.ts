@@ -6,13 +6,14 @@ import { runStation } from './ui/quest';
 import { showMap, showWorld } from './ui/map';
 import { ACCESSORIES, accessoryOf, unlockedAccessories } from './art/accessories';
 import { SQUISHIES, squishyOfWorld } from './art/squishies';
-import { showWordbook } from './ui/wordbook';
+import { showWordbook, type BookTab } from './ui/wordbook';
 import type { Journey } from './ui/journeyTabs';
 import { showIsland, showLettersMap } from './letters/ui/mapLetters';
 import { letterSquishyArt } from './letters/ui/glyph';
-import { SQUISHY_LETTER, stationsOf } from './letters/progress';
+import { SQUISHY_LETTER, islandDone, stationsOf } from './letters/progress';
 import { ISLANDS, islandInfo } from './letters/journey';
 import { learnedBefore, planLetterStation } from './letters/plan';
+import { addConfusion, type Confusions } from './letters/stats';
 import { songTaskStep } from './engine/steps';
 import { showShelf } from './ui/shelf';
 import { preloadCheesy, setLook } from './art/cheesy';
@@ -93,9 +94,29 @@ function showShelfScreen(): void {
   announce('shelf_title');
 }
 
-function showBook(tab?: 'words' | 'songs'): void {
-  swap(() => showWordbook(root!, { words: words(), map: mapState(), sound: ctx!.sound, onSong: singSong, onBack: showWorlds }, tab));
-  announce(tab === 'songs' ? 'songs' : 'wordbook');
+function showBook(tab?: BookTab): void {
+  swap(() => showWordbook(root!, { words: words(), map: mapState(), sound: ctx!.sound, onSong: singSong, abcOpen: islandDone(lmap(), 6), onAbc: () => showAbc(() => showBook('letters')), onBack: showWorlds }, tab));
+  announce(tab === 'songs' ? 'songs' : tab === 'letters' ? 'my_letters' : 'wordbook');
+}
+
+/** The ABC song (at the end of the letters journey, and again from the book of letters). */
+function showAbc(after: () => void): void {
+  swap(() =>
+    runStation(root!, {
+      name: displayName(),
+      world: 12,
+      bg: 12,
+      crew: rescuedLetters(),
+      steps: [{ kind: 'labc', score: [] }],
+      sound: ctx!.sound,
+      verbs: verbs(),
+      onVerb: () => {},
+      onScore: () => {},
+      onSeen: () => {},
+      onHome: after,
+      onFinish: () => (ctx!.save('abcSeen', true), after()),
+    }),
+  );
 }
 
 /** A song of a finished world, sung again from the book. */
@@ -161,6 +182,8 @@ function startLetterStation(island: number, station: number): void {
       onScore: (ws, firstTry) => saveWords(ws.reduce((acc, id) => review(acc, id, firstTry, today), words())),
       onSeen: (key) => saveWords(markSeen(words(), key, today)),
       onHome: () => showIslandStations(island),
+      onConfuse: (target, picked) => ctx!.save('confusions', addConfusion(ctx!.load<Confusions>('confusions', {}), target, picked)),
+      onWritten: (letter) => ctx!.save('lwritten', [...new Set([...ctx!.load<string[]>('lwritten', []), letter])]),
       onFinish: (stars) => {
         ctx!.save('playlog', addPlay(ctx!.load('playlog', {}), today, Math.min(20, Math.max(1, Math.round((Date.now() - t0) / 60000)))));
         ctx!.onRoundEnd({ won: true, stars, score: stars });
@@ -177,7 +200,7 @@ function rescueLetter(island: number, name: string): void {
   const id = SQUISHY_LETTER[island];
   if (!rescuedLetters().includes(id)) ctx!.save('rescuedLetters', [...rescuedLetters(), id]);
   const sq = { id: `letter-${id}`, name: `${id.toUpperCase()}`, world: island, he: isl.he };
-  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : showLetters()), { art: letterSquishyArt(id, isl.color) }));
+  swap(() => showRescue(root!, name, sq, ctx!.sound, (toShelf) => (toShelf ? showShelfScreen() : island === 6 && !ctx!.load<boolean>('abcSeen', false) ? showAbc(showLetters) : showLetters()), { art: letterSquishyArt(id, isl.color) }));
 }
 
 function showStations(world: number): void {
@@ -256,6 +279,7 @@ const mod: GameModule = {
     applyLook();
     preloadCheesy();
     void preloadVoice(0);
+    if (import.meta.env.DEV) (window as unknown as { __enAbc?: () => void }).__enAbc = () => showAbc(showLetters);
     if (import.meta.env.DEV) (window as unknown as { __enRescueLetter?: (n: number) => void }).__enRescueLetter = (n) => rescueLetter(n, displayName());
     if (import.meta.env.DEV) (window as unknown as { __enRescue?: (w: number) => void }).__enRescue = (w) => rescue(w, displayName());
     root = document.createElement('div');

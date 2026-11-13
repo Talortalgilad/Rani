@@ -54,6 +54,7 @@ export function huntTask(env: TaskEnv, letterId: string, pool: string[], seed = 
         void b.offsetWidth;
         b.classList.add('shake');
         env.mistake();
+        env.confused(letterId, it.ch.toLowerCase());
         env.sound('oops');
         env.face('cheer', 'Hmm, try again!');
       }

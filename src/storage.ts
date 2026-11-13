@@ -20,7 +20,7 @@ export interface AppState {
     /** Home screen: the 3D lobby (automatic: falls back when the device is slow), forced 3D, or the regular home. */
     lobby: 'auto' | '3d' | '2d';
     /** What the gate before a game asks: maths, English ("what did you hear?", only words she learned), or both in turn. */
-    gateSubject: 'math' | 'english' | 'both';
+    gateSubject: 'math' | 'english' | 'letters' | 'both' | 'all';
   };
   math: {
     currentLevel: number;

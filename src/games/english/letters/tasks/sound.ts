@@ -32,6 +32,7 @@ export function soundTask(env: TaskEnv, letterId: string, options: string[], see
         void b.offsetWidth;
         b.classList.add('shake');
         const n = env.mistake();
+        env.confused(letterId, id);
         env.sound('oops');
         env.face('cheer', 'Hmm, try again!');
         later(play, 600);

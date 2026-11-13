@@ -63,6 +63,7 @@ export function caseTask(env: TaskEnv, letters: string[], seed = 7): TaskHandle 
         b.style.translate = '0 0';
         window.setTimeout(() => b.classList.remove('slide-back'), 400);
         if (hit) {
+          env.confused(id, hit[0]);
           env.mistake();
           env.sound('oops');
           env.face('cheer', 'Hmm, try again!');

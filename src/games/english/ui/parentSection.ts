@@ -1,5 +1,7 @@
 import { likeIds } from '../content/likes';
 import { WORDS, labelOf } from '../content/words';
+import { LETTERS } from '../letters/journey';
+import { letterState, letterStats, type Confusions } from '../letters/stats';
 import { dayNumber, isKnown, markKnown, minutesInWeek, unmarkKnown, STATIONS_PER_WORLD, type MapProgress, type PlayLog, type Words } from '../engine/progress';
 import { SQUISHIES } from '../art/squishies';
 import { WORLDS } from '../content/worlds';
@@ -21,6 +23,7 @@ export function englishParentHtml(): string {
   const liked = store.load<string[]>('likes', likeIds);
   const openAll = store.load<boolean>('openAll', false);
   const say = store.load<boolean>('say', false);
+  const ls = letterStats(words, store.load<string[]>('lwritten', []), store.load<Confusions>('confusions', {}));
   const known = WORDS.filter((w) => isKnown(words[w.id])).length;
   const learning = WORDS.filter((w) => words[w.id]?.seen && !isKnown(words[w.id])).length;
   const worldsDone = WORLDS.filter((w) => (map.done[w.n] ?? 0) >= STATIONS_PER_WORLD).length;
@@ -42,6 +45,16 @@ export function englishParentHtml(): string {
         <div><b style="font-size:20px">${rescued} מתוך ${SQUISHIES.length}</b><span>סקווישים שניצלו</span></div>
         <div><b>${week}</b><span>דקות השבוע</span></div>
       </div>
+      <h3 class="p-letters-h">אותיות</h3>
+      <div class="p-kpis">
+        <div><b style="font-size:20px">${ls.learned} מתוך ${ls.total}</b><span>אותיות שנלמדו</span></div>
+        <div><b>${ls.learning}</b><span>אותיות בלמידה</span></div>
+        <div><b style="font-size:20px">${ls.written} מתוך ${ls.total}</b><span>אותיות שנכתבו</span></div>
+      </div>
+      <div class="p-sub">אותיות שמתבלבלים בהן (כשהקישה על אות אחת במקום אחרת)</div>
+      <div class="p-chips"><span class="chip-btn ${ls.bd ? 'on' : ''}" dir="ltr">b / d : ${ls.bd}</span>${ls.top.map(([k, n]) => `<span class="chip-btn" dir="ltr">${esc(k)} : ${n}</span>`).join('')}</div>
+      <div class="p-sub">האותיות שנלמדו (מוכרות, ברמה 4 ומעלה, מסומנות בסגול)</div>
+      <div class="p-chips">${LETTERS.map((l) => ({ l, s: letterState(words, l.id) })).filter((x) => x.s !== 'new').map((x) => `<span class="chip-btn ${x.s === 'known' ? 'on' : ''}" dir="ltr">${x.l.upper}${x.l.id}</span>`).join('') || '<span class="p-sub">עוד לא נלמדו אותיות</span>'}</div>
       <div class="p-sub">שם החבר (הדמות המלווה)</div>
       <input id="en-name" class="p-input" maxlength="12" value="${esc(name)}" aria-label="שם החבר" ${name ? '' : 'placeholder="עוד לא נבחר"'} />
       <div class="p-sub">דברים שרני אוהבת (המילים האלה מופיעות ראשונות בעולם שלהן)</div>

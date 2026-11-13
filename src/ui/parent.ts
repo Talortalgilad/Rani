@@ -120,8 +120,8 @@ export function renderParent(root: HTMLElement): () => void {
         ${chips('gateFrequency', [['לפני כל סיבוב', 'every'], ['כל 2 סיבובים', 2], ['כל 3 סיבובים', 3], ['רק בכניסה למשחק', 'entry']], se.gateFrequency)}
         <div class="p-sub">רמת חשבון</div>
         ${chips('mathLevel', [['אוטומטית', 'auto'], ['1', 1], ['2', 2], ['3', 3], ['4', 4], ['5', 5]], se.mathLevel)}
-        <div class="p-sub">שאלות בשער: חשבון, אנגלית או שניהם (אנגלית: "מה שמעת?" עם תמונות, רק ממילים שכבר נלמדו)</div>
-        ${chips('gateSubject', [['חשבון', 'math'], ['אנגלית', 'english'], ['שניהם', 'both']], se.gateSubject)}
+        <div class="p-sub">שאלות בשער: חשבון, אנגלית ("מה שמעת?" עם תמונות), אותיות ("איזו אות עושה את הצליל?"), או כמה ביחד. אנגלית ואותיות רק ממה שכבר נלמד, ובלי מספיק למידה השער שואל חשבון</div>
+        ${chips('gateSubject', [['חשבון', 'math'], ['אנגלית', 'english'], ['אותיות', 'letters'], ['חשבון + אנגלית', 'both'], ['הכל', 'all']], se.gateSubject)}
         <div class="p-sub">סוגי שאלות (חשבון)</div>
         <div class="p-chips">${ALL_TYPES.map((t) => `<button class="chip-btn ${se.enabledTypes.includes(t) ? 'on' : ''}" data-type="${t}">${TYPE_LABEL[t]}</button>`).join('')}</div>
         <div class="p-sub">הקראה בקול</div>

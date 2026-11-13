@@ -26,6 +26,8 @@ export type Step =
   | { kind: 'lbuild'; word: string; /** the place of the one letter that is missing (the others are there); null: all of them */ missing: number | null; pool: string[]; score: string[] }
   /** the b and d station's first card: b has its belly forward, d has its belly at the back */
   | { kind: 'lbd'; score: string[] }
+  /** the ABC song at the end of the journey: every letter that was collected dances on the stage */
+  | { kind: 'labc'; score: string[] }
   | { kind: 'lread'; word: string; options: string[]; score: string[] }
   | { kind: 'song'; world: number; score: string[] };
 
