@@ -38,7 +38,8 @@ const DEFS: Def[] = [
   { name: 's', group: 'medium', art: ['.##', '##.'], rotate: true },
   { name: 'z', group: 'medium', art: ['##.', '.##'], rotate: true },
   { name: 'line5', group: 'large', art: ['#####'], rotate: true },
-  { name: 'square3', group: 'large', art: ['###', '###', '###'] },
+  // no 3 x 3 square: it would close a square of the board with one move (the biggest square is 2 x 2); the rectangle 2 x 3 is its place
+  { name: 'rect23', group: 'large', art: ['###', '###'], rotate: true },
   { name: 'l5', group: 'large', art: ['#..', '#..', '###'], rotate: true },
   // diagonals: only after level 20 of the journey (SPEC-blocks.md 3.1)
   { name: 'diag2', group: 'late', art: ['#.', '.#'], rotate: true },

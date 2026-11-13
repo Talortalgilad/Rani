@@ -27,7 +27,7 @@ export class Score {
   total = 0;
   /** trays in a row in which something was cleared (including the one being played, once it has a clear) */
   streak = 0;
-  private clearedThisTray = false;
+  clearedThisTray = false;
 
   get multiplier(): number {
     return Math.min(MAX_STREAK, Math.max(1, this.streak));

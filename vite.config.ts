@@ -43,7 +43,7 @@ export default defineConfig({
         // kept for offline by this runtime cache
         runtimeCaching: [
           {
-            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/') || url.pathname.startsWith('/memory/'),
+            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/') || url.pathname.startsWith('/memory/') || url.pathname.startsWith('/blocks/'),
             handler: 'CacheFirst',
             // pictures and the recorded Hebrew voice (mp3: Safari asks for ranges)
             options: { cacheName: 'english-images', expiration: { maxEntries: 400 }, cacheableResponse: { statuses: [0, 200] }, rangeRequests: true },

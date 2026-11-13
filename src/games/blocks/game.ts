@@ -5,6 +5,10 @@ import { LIFT_CELLS, floatingAnchor, landing, type Geometry, type Landing } from
 import { Generator } from './generator';
 import type { Piece } from './pieces';
 import { Score, comboLine } from './scoring';
+import { fullestSquare } from './rescue';
+import { freshFree, hammer, priceOf, whyNot, type FreeUsed, type Helper } from './helpers';
+import { boardOf, type SavedGame } from './save';
+import { pieceById, turned } from './pieces';
 import { PALETTE, makeSprites, type Sprite } from './render/blockSprites';
 import { Particles } from './render/particles';
 
@@ -17,13 +21,29 @@ export interface GameHooks {
   say(id: string): void;
   onScore(total: number, mult: number, streak: number): void;
   onCombo(text: string, kind: 'combo' | 'clean'): void;
-  onGain(points: number, x: number, y: number): void;
+  onGain(points: number, x: number, y: number, big: boolean): void;
   onFull(score: number): void;
   onShake(): void;
   best(): number;
+  /** where the row of helpers goes (px in the stage) and the size of a cell: the board, the tray and the helpers are centred as one group */
+  onLayout(helpersTop: number, cell: number): void;
+  /** a move is done (the game is saved) */
+  onMoveDone(): void;
+  /** the helper that waits for a tap on a shape or on a block (null: none) */
+  onMode(h: Helper | null): void;
+  /** what the helpers cost now */
+  onHelpers(free: FreeUsed): void;
+  /** a short friendly line over the stage (id of the line) */
+  onSay(id: string): void;
+  /** the stars of the jar, and paying with them */
+  stars(): number;
+  spend(n: number): void;
 }
 
-const SLOT_SCALE = 0.6;
+/** the shapes of the tray are 70% of a cell of the board (SPEC-blocks.md 2.4, improved after the first look) */
+const SLOT_SCALE = 0.7;
+const TRAY_ROWS = 3.2;
+const GAP_CELLS = 0.5;
 const GROW_MS = 130;
 const POP_MS = 170;
 const FLASH_MS = 130;
@@ -69,12 +89,21 @@ export class BlockGame {
   private dirty = true;
   private nextTrayAt = 0;
   private ended = false;
+  /** the rescue of a full board is used once on every board */
+  rescued = false;
+  free: FreeUsed = freshFree();
+  private mode: Helper | null = null;
+  private locked = false;
+  private trayTop = 0;
+  private trayH = 0;
+  private seed = 0;
   private cleanedAt = -1e9;
   private reduced = false;
   private ro: ResizeObserver;
 
-  constructor(private canvas: HTMLCanvasElement, private hooks: GameHooks, seed = Date.now() % 1e9) {
+  constructor(private canvas: HTMLCanvasElement, private hooks: GameHooks, seed = Date.now() % 1e9, saved: SavedGame | null = null) {
     this.g = canvas.getContext('2d')!;
+    this.seed = seed;
     this.gen = new Generator(seed);
     this.reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.ro = new ResizeObserver(() => this.resize());
@@ -85,7 +114,8 @@ export class BlockGame {
     canvas.addEventListener('pointerup', this.onUp);
     canvas.addEventListener('pointercancel', this.onCancel);
     this.resize();
-    this.newTray(0);
+    if (saved) this.restoreSaved(saved);
+    else this.newTray(0);
     this.last = performance.now();
     this.raf = requestAnimationFrame(this.frame);
   }
@@ -109,6 +139,12 @@ export class BlockGame {
     this.drag = null;
     this.returning = [];
     this.ended = false;
+    this.rescued = false;
+    this.locked = false;
+    this.free = freshFree();
+    this.setMode(null);
+    this.hooks.onHelpers(this.free);
+    this.seed = seed;
     this.shownScore = 0;
     this.pop.fill(-1e9);
     this.tray = [null, null, null];
@@ -136,17 +172,23 @@ export class BlockGame {
     this.dpr = Math.min(3, window.devicePixelRatio || 1);
     this.canvas.width = Math.round(this.W * this.dpr);
     this.canvas.height = Math.round(this.H * this.dpr);
-    const cell = Math.floor(Math.min((this.W * 0.92) / N, (this.H - 28) / (N + 3.2)));
+    // the board, the tray (half a cell below it) and the row of helpers are one group, centred up and down
+    const helpersH = (c: number): number => Math.min(72, Math.max(52, c * 1.5));
+    let cell = Math.floor((this.W * 0.92) / N);
+    const groupH = (c: number): number => (N + GAP_CELLS + TRAY_ROWS) * c + 0.35 * c + helpersH(c);
+    while (cell > 20 && groupH(cell) > this.H - 8) cell--;
     const board = cell * N;
-    this.geo = { x: Math.round((this.W - board) / 2), y: 8, cell };
+    const top = Math.max(4, Math.round((this.H - groupH(cell)) / 2));
+    this.geo = { x: Math.round((this.W - board) / 2), y: top, cell };
     if (this.spriteCell !== cell * this.dpr) {
       this.spriteCell = cell * this.dpr;
       this.sprites = makeSprites(Math.round(cell * this.dpr));
     }
-    const ty = this.geo.y + board + 14;
-    const th = Math.max(cell * 2.8, this.H - ty - 6);
+    this.trayTop = top + board + GAP_CELLS * cell;
+    this.trayH = TRAY_ROWS * cell;
     const sw = this.W / 3;
-    this.slotRects = [0, 1, 2].map((i) => ({ x: i * sw, y: ty, w: sw, h: th }));
+    this.slotRects = [0, 1, 2].map((i) => ({ x: i * sw, y: this.trayTop, w: sw, h: this.trayH }));
+    this.hooks.onLayout(this.trayTop + this.trayH + 0.35 * cell, cell);
     this.dirty = true;
   }
 
@@ -159,13 +201,14 @@ export class BlockGame {
     this.enter = this.tray.map(() => ({ t0: now }));
     this.hooks.sound.play('trayin', 380);
     this.dirty = true;
+    this.hooks.onMoveDone();
     this.checkFull();
   }
 
   private slotScale(p: Piece): number {
     const r = this.slotRects[0];
     const c = this.geo.cell;
-    return Math.min(SLOT_SCALE, (r.w * 0.86) / (p.w * c), (r.h * 0.92) / (p.h * c));
+    return Math.min(SLOT_SCALE, (r.w * 0.94) / (p.w * c), (r.h * 0.96) / (p.h * c));
   }
 
   /** Where the shape of a slot is in the tray (its top-left, in px) at its tray size. */
@@ -173,18 +216,143 @@ export class BlockGame {
     const r = this.slotRects[i];
     const s = this.slotScale(p);
     const c = this.geo.cell * s;
-    return { x: r.x + (r.w - p.w * c) / 2, y: r.y + (r.h - p.h * c) / 2, s };
+    // the shapes hang close under the board: the middle of a shape is 1.25 cells under the top of the tray (a tall one starts at the top)
+    return { x: r.x + (r.w - p.w * c) / 2, y: r.y + Math.max(0, this.geo.cell * 1.25 - (p.h * c) / 2), s };
   }
 
   private checkFull(): void {
-    if (this.ended) return;
-    if (this.tray.every((s) => !s || !this.board.fits(s.piece)) && this.tray.some(Boolean)) {
-      this.ended = true;
-      this.hooks.sound.play('gentle');
-      window.setTimeout(() => this.hooks.onFull(this.score.total), 700);
-      this.particles.confetti(this.W, PALETTE.map((p) => p.mid), 60);
-      this.dirty = true;
+    if (this.ended || this.locked) return;
+    if (!(this.tray.every((s) => !s || !this.board.fits(s.piece)) && this.tray.some(Boolean))) return;
+    if (!this.rescued) {
+      this.rescue();
+      return;
     }
+    this.ended = true;
+    this.hooks.sound.play('gentle');
+    window.setTimeout(() => this.hooks.onFull(this.score.total), 700);
+    this.particles.confetti(this.W, PALETTE.map((p) => p.mid), 60);
+    this.dirty = true;
+  }
+
+  /** The first full board is saved by magic (SPEC-blocks.md 3.6): the fullest square of 3 x 3 bursts, with no points, and the game goes on. */
+  private rescue(): void {
+    this.rescued = true;
+    this.locked = true;
+    this.hooks.onSay('blk_idea');
+    const cells = fullestSquare(this.board).cells;
+    window.setTimeout(() => {
+      const now = performance.now();
+      const order = burstOrder(cells);
+      order.forEach(({ i, rank }) => this.blasts.push({ i, color: this.board.cells[i], at: now + FLASH_MS + rank * STAGGER_MS, done: false }));
+      cells.forEach((i) => (this.board.cells[i] = -1));
+      this.hooks.sound.play('fanfare');
+      this.particles.confetti(this.W, PALETTE.map((p) => p.mid), 40);
+      this.dirty = true;
+      window.setTimeout(() => {
+        this.locked = false;
+        // a long shape may still not fit in the empty square: the fair generator deals a new tray in that case
+        if (this.tray.every((s) => !s || !this.board.fits(s.piece))) this.newTray(performance.now());
+        else this.hooks.onMoveDone();
+        this.dirty = true;
+      }, 900);
+    }, 1400);
+  }
+
+  // ---- helpers (SPEC-blocks.md 3.5) ----
+
+  private setMode(m: Helper | null): void {
+    this.mode = m;
+    this.hooks.onMode(m);
+  }
+
+  /** A helper button was pressed. */
+  useHelper(h: Helper): void {
+    if (this.ended || this.locked || this.drag) return;
+    if (this.mode === h) return this.setMode(null);
+    const why = whyNot(h, { stars: this.hooks.stars(), used: this.free, board: this.board, tray: this.tray.map((t) => t?.piece ?? null) });
+    if (why) return this.hooks.onSay(why);
+    this.setMode(null);
+    if (h === 'swap') {
+      this.charge(h);
+      this.tray = [null, null, null];
+      this.newTray(performance.now());
+    } else {
+      this.setMode(h);
+      this.hooks.onSay(h === 'rotate' ? 'blk_pickShape' : 'blk_pickBlock');
+    }
+  }
+
+  private charge(h: Helper): void {
+    const price = priceOf(h, this.free);
+    if (!price.free) this.hooks.spend(price.stars);
+    this.free = { ...this.free, [h]: true };
+    this.hooks.onHelpers(this.free);
+    this.hooks.sound.play('streak', 600);
+  }
+
+  private tapWithHelper(x: number, y: number): boolean {
+    if (this.mode === 'rotate') {
+      const i = this.slotRects.findIndex((r) => x >= r.x && x < r.x + r.w);
+      const slot = i >= 0 && y > this.trayTop - this.geo.cell && y < this.trayTop + this.trayH + this.geo.cell ? this.tray[i] : null;
+      if (!slot) return true;
+      const t = turned(slot.piece);
+      if (t === slot.piece || t.id === slot.piece.id) return true;
+      this.charge('rotate');
+      this.tray[i] = { piece: t, color: slot.color };
+      this.enter[i] = { t0: performance.now() - 150 };
+      this.setMode(null);
+      this.hooks.onMoveDone();
+      this.dirty = true;
+      return true;
+    }
+    if (this.mode === 'hammer') {
+      const c = Math.floor((x - this.geo.x) / this.geo.cell);
+      const r = Math.floor((y - this.geo.y) / this.geo.cell);
+      const color = this.board.get(r, c);
+      const k = hammer(this.board, r, c);
+      if (k < 0) return true;
+      this.charge('hammer');
+      this.blasts.push({ i: k, color, at: performance.now(), done: false });
+      this.setMode(null);
+      this.hooks.onMoveDone();
+      this.dirty = true;
+      return true;
+    }
+    return false;
+  }
+
+  // ---- saving ----
+
+  snapshot(): SavedGame {
+    return {
+      v: 1,
+      savedAt: Date.now(),
+      cells: Array.from(this.board.cells),
+      tray: this.tray.map((t) => (t ? { id: t.piece.id, color: t.color } : null)),
+      score: { total: this.score.total, streak: this.score.streak, clearedThisTray: this.score.clearedThisTray },
+      gen: this.gen.snapshot(),
+      rescued: this.rescued,
+      free: { ...this.free },
+      seed: this.seed,
+    };
+  }
+
+  private restoreSaved(sv: SavedGame): void {
+    this.board = boardOf(sv);
+    this.score = new Score();
+    this.score.total = sv.score.total;
+    this.score.streak = sv.score.streak;
+    this.score.clearedThisTray = sv.score.clearedThisTray;
+    this.shownScore = sv.score.total;
+    this.gen.restore(sv.gen);
+    this.rescued = sv.rescued;
+    this.free = sv.free;
+    this.tray = sv.tray.map((t) => (t ? { piece: pieceById(t.id), color: t.color } : null));
+    this.hooks.onScore(this.score.total, this.score.multiplier, this.score.streak);
+    this.hooks.onHelpers(this.free);
+    if (this.tray.every((t) => !t)) this.newTray(performance.now());
+    else this.checkFull();
+    this.dirty = true;
   }
 
   // ---- the finger ----
@@ -195,9 +363,11 @@ export class BlockGame {
   }
 
   private onDown = (e: PointerEvent): void => {
-    if (this.drag || this.ended) return;
+    if (this.drag || this.ended || this.locked) return;
     const { x, y } = this.pt(e);
-    const i = this.slotRects.findIndex((r) => x >= r.x && x < r.x + r.w && y >= r.y - 10 && y < r.y + r.h + 10);
+    if (this.mode && this.tapWithHelper(x, y)) return;
+    // the whole third of the tray is the touch area of a shape, not only its blocks (and the half cell above it)
+    const i = this.slotRects.findIndex((r) => x >= r.x && x < r.x + r.w && y >= r.y - this.geo.cell * 0.5 && y < r.y + r.h + this.geo.cell * 0.4);
     const slot = i >= 0 ? this.tray[i] : null;
     if (!slot) return;
     e.preventDefault();
@@ -276,7 +446,7 @@ export class BlockGame {
       const order = burstOrder(clears.cells);
       order.forEach(({ i: k, rank }) => this.blasts.push({ i: k, color: before[k] >= 0 ? before[k] : colorAt(k), at: now + FLASH_MS + REST_MS * 0 + rank * STAGGER_MS, done: false }));
       const p = this.cellCenter(c + slot.piece.w / 2 - 0.5 + 0.5 - 0.5, r);
-      this.hooks.onGain(res.total, p.x, p.y);
+      this.hooks.onGain(res.total, p.x, p.y, clears.units >= 2);
       const line = comboLine(clears.units);
       if (line) {
         this.hooks.say(line);
@@ -295,7 +465,7 @@ export class BlockGame {
       }
     } else {
       const p = this.cellCenter(c, r);
-      this.hooks.onGain(res.total, p.x, p.y);
+      this.hooks.onGain(res.total, p.x, p.y, false);
     }
     this.hooks.onScore(this.score.total, this.score.multiplier, this.score.streak);
     if (this.tray.every((s) => !s)) {
@@ -303,6 +473,7 @@ export class BlockGame {
       this.hooks.onScore(this.score.total, this.score.multiplier, this.score.streak);
       this.nextTrayAt = now + 380;
     } else this.checkFull();
+    if (!this.tray.every((s) => !s)) this.hooks.onMoveDone();
     this.dirty = true;
   }
 
@@ -409,12 +580,15 @@ export class BlockGame {
       for (const [dr, dc] of slotD.piece.cells) {
         const x = bx + (d.landing.c + dc) * cell;
         const y = by + (d.landing.r + dr) * cell;
-        this.spriteAt(slotD.color, x, y, cell, 0.42);
-        g.strokeStyle = 'rgba(255, 255, 255, .85)';
-        g.lineWidth = 2;
+        this.spriteAt(slotD.color, x, y, cell, 0.4);
+        // the ghost: the colour of the shape at 40%, with a dashed white outline (the blocks that burst are tinted, not dashed)
+        g.setLineDash([cell * 0.14, cell * 0.1]);
+        g.strokeStyle = '#fff';
+        g.lineWidth = 2.5;
         g.beginPath();
         g.roundRect(x + 2, y + 2, cell - 4, cell - 4, cell * 0.22);
         g.stroke();
+        g.setLineDash([]);
       }
     }
 

@@ -10,5 +10,15 @@ export const bk = {
   newBoard: 'לוח חדש',
   best: 'שיא חדש!',
   score: 'ניקוד',
+  idea: 'רגע, יש לי רעיון!',
+  noStars: 'אין מספיק כוכבים',
+  nothingHere: 'אין מה לפרק',
+  nothingToTurn: 'אין מה לסובב',
+  pickShape: 'בחרי צורה לסיבוב',
+  pickBlock: 'בחרי קובייה לפירוק',
+  swap: 'החלפה',
+  rotate: 'סיבוב',
+  hammer: 'פטיש',
+  free: 'חינם',
 };
-export const BLOCKS_LINES: { id: string; parts: (string | null)[] }[] = (['title', 'nice', 'amazing', 'wow', 'magic', 'clean', 'full', 'newBoard', 'best', 'score'] as const).map((k) => ({ id: `blk_${k}`, parts: [bk[k]] }));
+export const BLOCKS_LINES: { id: string; parts: (string | null)[] }[] = ((Object.keys(bk) as (keyof typeof bk)[])).map((k) => ({ id: `blk_${k}`, parts: [bk[k]] }));

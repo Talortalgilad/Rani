@@ -1,10 +1,10 @@
 /* Block game. Everything is scoped under .bk so it can't touch other games. */
 .screen.game:has(> .bk) { padding: 0; height: 100%; min-height: 0; overflow: hidden; }
 .bk { position: relative; height: 100%; display: flex; flex-direction: column; background: linear-gradient(#fdf3dc, #f7dfb4); touch-action: none; user-select: none; -webkit-user-select: none; }
-.bk-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 4px calc(12px + env(safe-area-inset-left)); }
-.bk-home { width: 48px; height: 48px; border: 0; border-radius: 50%; background: #fff; font-size: 24px; box-shadow: 0 3px 8px rgba(90,50,20,.2); font-family: inherit; }
-.bk-score { font-size: 40px; font-weight: 800; color: #6b3f1d; line-height: 1; text-align: center; flex: 1; font-variant-numeric: tabular-nums; }
-.bk-best { min-width: 70px; text-align: center; font-weight: 800; color: #a86d2a; font-size: 18px; }
+.bk-top { display: grid; grid-template-columns: 88px 1fr 88px; align-items: center; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 4px calc(12px + env(safe-area-inset-left)); }
+.bk-home { justify-self: end; width: 48px; height: 48px; border: 0; border-radius: 50%; background: #fff; font-size: 24px; box-shadow: 0 3px 8px rgba(90,50,20,.2); font-family: inherit; }
+.bk-score { justify-self: center; min-width: 110px; background: rgba(255,255,255,.85); border-radius: 22px; padding: 2px 14px; font-size: 40px; font-weight: 800; color: #6b3f1d; line-height: 1; text-align: center; font-variant-numeric: tabular-nums; }
+.bk-best { justify-self: start; background: rgba(255,255,255,.85); border-radius: 18px; padding: 4px 10px; min-width: 70px; text-align: center; font-weight: 800; color: #a86d2a; font-size: 18px; }
 .bk-streak { position: absolute; top: calc(60px + env(safe-area-inset-top)); inset-inline-start: 14px; background: #ff7a2c; color: #fff; border-radius: 16px; padding: 2px 10px; font-weight: 800; font-size: 18px; transform: scale(0); transition: transform .2s; }
 .bk-streak.on { transform: scale(1); }
 .bk-stage { flex: 1; min-height: 0; position: relative; }
@@ -23,3 +23,25 @@
 .bk-over h2 { margin: 0; font-size: 34px; color: #6b3f1d; }
 .bk-over .big { font-size: 64px; font-weight: 900; color: #e0568a; }
 .bk-over .row { display: flex; gap: 12px; }
+
+/* the background of the free game, the helpers, the friendly line */
+.bk { background: var(--bk-bg, none) center / cover no-repeat, linear-gradient(#fdf3dc, #f7dfb4); }
+.bk-gain { font-size: 22px; }
+.bk-gain.big { font-size: 34px; }
+.bk-say { position: absolute; top: 4px; inset-inline: 12px; margin: 0 auto; width: fit-content; max-width: 90%; background: #fff; color: #6b3f1d; font-weight: 800; font-size: 22px; padding: 8px 18px; border-radius: 22px; box-shadow: 0 6px 16px rgba(90, 50, 20, .25); text-align: center; pointer-events: none; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .2s; z-index: 5; }
+.bk-say.on { opacity: 1; transform: none; }
+.bk-helpers { position: absolute; inset-inline: 0; margin: 0 auto; width: min(92%, 420px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; pointer-events: none; }
+.bk-help { pointer-events: auto; position: relative; height: clamp(52px, calc(var(--cell, 40px) * 1.5), 72px); border: 0; border-radius: 20px; background: linear-gradient(#5aa9ff 0%, #2f7bff 55%, #2563e6 100%); box-shadow: 0 5px 0 #1a3fa8, 0 8px 12px rgba(20, 30, 70, .25), inset 0 3px 0 rgba(255, 255, 255, .55); display: grid; place-items: center; font-family: inherit; transition: transform .1s; touch-action: manipulation; }
+.bk-help:active { transform: translateY(3px); box-shadow: 0 2px 0 #1a3fa8, inset 0 3px 0 rgba(255, 255, 255, .55); }
+.bk-help svg, .bk-help img { width: 70%; max-height: 74%; height: auto; object-fit: contain; filter: drop-shadow(0 2px 0 rgba(0, 0, 60, .35)); }
+.bk-help svg { width: 34px; height: 34px; }
+.bk-help.dim { opacity: .55; }
+.bk-help.active { outline: 4px solid #ffe36a; outline-offset: 2px; }
+.bk-badge { position: absolute; top: -9px; inset-inline-end: -4px; background: #fff; color: #2563e6; font-weight: 800; font-size: 13px; padding: 1px 8px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); white-space: nowrap; }
+.bk-help.free .bk-badge { background: #3ec26a; color: #fff; }
+.bk-over .newbest { font-size: 26px; font-weight: 800; color: #c98a10; }
+.bk-over .earned { font-size: 38px; }
+
+.bk-btn { border: 0; border-radius: 26px; padding: 14px 30px; background: linear-gradient(#ff8fb8, #e0568a); color: #fff; font-family: inherit; font-size: 26px; font-weight: 800; box-shadow: 0 6px 0 #a83566, 0 10px 14px rgba(90, 30, 60, .3), inset 0 3px 0 rgba(255, 255, 255, .5); touch-action: manipulation; }
+.bk-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #a83566; }
+.bk-btn.round { padding: 14px 20px; background: linear-gradient(#5aa9ff, #2563e6); box-shadow: 0 6px 0 #1a3fa8, inset 0 3px 0 rgba(255, 255, 255, .5); }

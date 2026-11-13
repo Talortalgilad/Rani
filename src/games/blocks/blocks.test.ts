@@ -4,6 +4,10 @@ import { LIFT_CELLS, fingerFor, floatingAnchor, landing, type Geometry } from '.
 import { Generator, completers, fitCount } from './generator';
 import { PIECES, pieceById, pool, turned } from './pieces';
 import { CLEAN_BOARD_BONUS, Score, clearPoints, comboLine } from './scoring';
+import { freshFree, hammer, priceOf, whyNot } from './helpers';
+import { fullestSquare, rescue } from './rescue';
+import { boardOf, validSaved } from './save';
+import { boardStars } from './stars';
 
 const P = (id: string) => pieceById(id);
 const rowFull = (b: Board, r: number, except: number[] = []): void => { for (let c = 0; c < N; c++) if (!except.includes(c)) b.cells[idx(r, c)] = 1; };
@@ -21,7 +25,8 @@ describe('the shapes', () => {
     expect(n('t')).toBe(4);
     expect(n('s') + n('z')).toBe(4); // S/Z: 4 directions
     expect(n('line5')).toBe(2);
-    expect(n('square3')).toBe(1);
+    expect(n('square3')).toBe(0);
+    expect(n('rect23')).toBe(2);
     expect(n('l5')).toBe(4);
     expect(PIECES.filter((p) => p.group === 'late').length).toBeGreaterThan(0);
     expect(pool(false).some((p) => p.group === 'late')).toBe(false);
@@ -146,7 +151,7 @@ describe('scoring', () => {
 describe('dragging', () => {
   const geo: Geometry = { x: 20, y: 100, cell: 40 };
   it('the shape floats above the finger: its bottom edge is 1.5 cells over the touch, even for tall shapes', () => {
-    for (const id of ['dot-0', 'line5-1', 'square3-0', 'l5-0']) {
+    for (const id of ['dot-0', 'line5-1', 'rect23-0', 'l5-0']) {
       const p = P(id);
       const a = floatingAnchor(geo, p, 200, 400);
       const bottomPx = geo.y + (a.r + p.h) * geo.cell;
@@ -256,5 +261,71 @@ describe('the fair generator', () => {
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if ((r * 5 + c * 3) % 7 !== 0 && (r + 2 * c) % 11 !== 0) heavy.cells[idx(r, c)] = 1;
     expect(heavy.fullness).toBeGreaterThan(0.6);
     expect(share(heavy)).toBeGreaterThan(share(light));
+  });
+});
+
+describe('stage 1: shapes, combo words, helpers, rescue, saving', () => {
+  it('has no 3x3 square; the biggest square is 2x2; the 2x3 rectangle comes in two directions', () => {
+    expect(PIECES.some((p) => p.w === 3 && p.h === 3 && p.cells.length === 9)).toBe(false);
+    expect(PIECES.filter((p) => p.name === 'rect23').map((p) => `${p.w}x${p.h}`).sort()).toEqual(['2x3', '3x2']);
+    expect(Math.max(...PIECES.filter((p) => p.cells.length === p.w * p.h).map((p) => Math.min(p.w, p.h)))).toBe(2);
+  });
+
+  it('the combo word follows the number of clears of one move: 1 none, 2 nice, 3 amazing, 4 wow, 5 and more magic', () => {
+    expect([0, 1, 2, 3, 4, 5, 6, 9].map(comboLine)).toEqual([null, null, 'blk_nice', 'blk_amazing', 'blk_wow', 'blk_magic', 'blk_magic', 'blk_magic']);
+  });
+
+  it('helpers: the first of each kind is free, then 1, 1 and 2 stars; they say why they cannot be used', () => {
+    const used = freshFree();
+    expect(priceOf('swap', used)).toEqual({ stars: 0, free: true });
+    expect(priceOf('swap', { ...used, swap: true })).toEqual({ stars: 1, free: false });
+    expect(priceOf('hammer', { ...used, hammer: true })).toEqual({ stars: 2, free: false });
+    const b = new Board();
+    const tray = [pieceById('dot-0'), null, null];
+    expect(whyNot('hammer', { stars: 5, used, board: b, tray })).toBe('blk_nothingHere');
+    expect(whyNot('rotate', { stars: 5, used, board: b, tray })).toBe('blk_nothingToTurn');
+    expect(whyNot('swap', { stars: 0, used: { ...used, swap: true }, board: b, tray })).toBe('blk_noStars');
+    expect(whyNot('swap', { stars: 0, used, board: b, tray })).toBeNull();
+  });
+
+  it('the hammer breaks one block and the turn keeps the shape', () => {
+    const b = new Board();
+    b.place(pieceById('dot-0'), 4, 4, 2);
+    expect(hammer(b, 0, 0)).toBe(-1);
+    expect(hammer(b, 4, 4)).toBe(idx(4, 4));
+    expect(b.isEmpty).toBe(true);
+    const l = pieceById('line3-0');
+    expect(turned(l).name).toBe('line3');
+    expect(turned(l).id).not.toBe(l.id);
+    expect(turned(turned(l)).id).toBe(l.id);
+  });
+
+  it('the rescue empties the fullest 3x3 square and nothing else', () => {
+    const b = new Board();
+    for (let r = 3; r < 6; r++) for (let c = 3; c < 5; c++) b.cells[idx(r, c)] = 1; // 6 in the middle square
+    b.cells[idx(0, 0)] = 2;
+    expect(fullestSquare(b).square).toBe(4);
+    const gone = rescue(b);
+    expect(gone.length).toBe(6);
+    expect(b.filled).toBe(1);
+  });
+
+  it('stars of a free board: 500 points gives one, a new best another, three a day at most', () => {
+    expect([boardStars(499, false, 0), boardStars(500, false, 0), boardStars(500, true, 0), boardStars(100, true, 0), boardStars(900, true, 2), boardStars(900, true, 3)]).toEqual([0, 1, 2, 1, 1, 0]);
+  });
+
+  it('a saved game comes back as it was and keeps dealing the same trays', () => {
+    const gen = new Generator(7);
+    const b = new Board();
+    gen.next(b);
+    const snap = { v: 1 as const, savedAt: Date.now(), cells: Array.from(b.cells), tray: [{ id: 'dot-0', color: 3 }, null, null], score: { total: 40, streak: 2, clearedThisTray: true }, gen: gen.snapshot(), rescued: true, free: freshFree(), seed: 7 };
+    const back = validSaved(JSON.parse(JSON.stringify(snap)))!;
+    expect(back).not.toBeNull();
+    const g2 = new Generator(1);
+    g2.restore(back.gen);
+    expect(g2.next(boardOf(back)).map((p) => p.id)).toEqual(gen.next(b).map((p) => p.id));
+    expect(validSaved({ ...snap, cells: [1, 2] })).toBeNull();
+    expect(validSaved({ ...snap, tray: [{ id: 'nope', color: 1 }, null, null] })).toBeNull();
+    expect(validSaved(null)).toBeNull();
   });
 });

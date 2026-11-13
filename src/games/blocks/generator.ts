@@ -5,15 +5,22 @@ import { pool, sizeOf, type Piece } from './pieces';
  * The fair and merciful generator of trays (SPEC-blocks.md 3.2). Deterministic for a seed. The iron rule: at least one shape of a new tray
  * fits on the board (30 draws, then an easy shape that fits is put in by force).
  */
-export function mulberry(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
+export class Rng {
+  a: number;
+  constructor(seed: number) {
+    this.a = seed >>> 0;
+  }
+  next(): number {
+    this.a = (this.a + 0x6d2b79f5) >>> 0;
+    let t = this.a;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+  }
+}
+export function mulberry(seed: number): () => number {
+  const r = new Rng(seed);
+  return () => r.next();
 }
 
 const BASE: Record<Piece['group'], number> = { easy: 3, medium: 4, large: 2, late: 1.5 };
@@ -29,11 +36,21 @@ export function completers(board: Board, shapes: Piece[]): Piece[] {
 export interface GeneratorOptions { late?: boolean }
 
 export class Generator {
-  private rand: () => number;
+  private rng: Rng;
+  private rand = (): number => this.rng.next();
   /** the ids of the shapes of the last trays, newest first */
   history: string[][] = [];
   constructor(seed: number, private opts: GeneratorOptions = {}) {
-    this.rand = mulberry(seed);
+    this.rng = new Rng(seed);
+  }
+
+  /** What a saved game needs to go on dealing the same way. */
+  snapshot(): { a: number; history: string[][] } {
+    return { a: this.rng.a, history: this.history.map((t) => [...t]) };
+  }
+  restore(s: { a: number; history: string[][] }): void {
+    this.rng.a = s.a >>> 0;
+    this.history = s.history.map((t) => [...t]);
   }
 
   private weight(p: Piece, fullness: number): number {
