@@ -334,3 +334,20 @@ bdi { unicode-bidi: isolate; }
 .prize-pic .cheesy-acc { z-index: 1; inset: 14% 8% 0; width: 84%; height: 84%; }
 .en-rescue.finale .bunny-in .squishy-img { filter: sepia(.5) saturate(2.2) hue-rotate(-12deg) brightness(1.1) drop-shadow(0 0 18px #ffc83a); }
 .en-rescue.finale .en-sky { background: radial-gradient(circle at 50% 35%, #fff2b0, #ffd56a 40%, #ff9fc0 100%); }
+
+/* "Say it!" */
+.say-pic { position: absolute; left: 50%; top: 38%; width: clamp(150px, 46vw, 230px); aspect-ratio: 1; transform: translate(-50%, -50%); z-index: 2; }
+.say-pic .item-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 6px 4px rgba(58, 47, 75, .25)); }
+.say-pic.win { animation: squish .9s cubic-bezier(.2, 1.6, .4, 1); }
+.say-mic { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); z-index: 2; width: 96px; height: 96px; border-radius: 50%; border: 4px solid #3a2f4b; background: #ff5d9e; font-size: 44px; box-shadow: 0 6px 0 rgba(58, 47, 75, .3); cursor: pointer; }
+.say-mic.listening { animation: mic-pulse .8s ease-in-out infinite; background: #7ed957; }
+@keyframes mic-pulse { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.14); } }
+
+/* listen and match: the basket, and the picture that flies into it */
+.basket { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); font-size: 64px; z-index: 1; filter: drop-shadow(0 4px 3px rgba(58, 47, 75, .25)); transition: transform .2s; }
+.basket.got { transform: translateX(-50%) scale(1.25) rotate(-6deg); }
+.en-choice.flying { transition: translate .45s cubic-bezier(.5, 0, .75, .4), scale .45s ease-in; z-index: 5; pointer-events: none; }
+.match-pic.placed { transition: translate .25s ease-out; }
+.match-pic.dragging { z-index: 6; }
+.choice-row.mid { bottom: auto; top: 44%; }
+.match-pic.win { animation: none; }

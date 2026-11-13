@@ -259,3 +259,12 @@ html, body {
 /* install to the home screen (parents' area) */
 .p-ios { display: flex; flex-direction: column; gap: 10px; }
 .p-ios ol { margin: 0; padding-inline-start: 22px; line-height: 1.7; font-size: 17px; }
+
+/* the English question of the gate: a big speaker, then three big pictures one under the other that fill the screen */
+.en-gate-head { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.en-gate-speaker { width: 96px; height: 96px; border-radius: 50%; border: 0; font-size: 48px; background: linear-gradient(#ff7ad0, #8e5cf0); box-shadow: 0 6px 0 rgba(58, 47, 75, .2); cursor: pointer; flex: none; }
+.en-gate-q { font: 800 30px 'Rubik', sans-serif; }
+.choices.english-gate { grid-template-columns: 1fr; grid-template-rows: repeat(3, minmax(0, 1fr)); flex: none; height: calc(100dvh - 212px); min-height: 360px; gap: 14px; padding-bottom: 6px; }
+.choices.english-gate .choice { min-height: 0; padding: 8px; background: #fff; box-shadow: 0 6px 0 #cbbfe0; overflow: hidden; }
+.choices.english-gate .choice img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+.choices.english-gate .choice.right { background: #d8f8e1; }

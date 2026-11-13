@@ -1,10 +1,10 @@
 import { mountCheesy, setHeadband, type Expression } from '../art/cheesy';
 import { sceneImg } from '../art/scenes';
 import { COLORS } from '../content/colors';
-import { VERBS, labelOf, pluralOf } from '../content/words';
+import { VERBS, labelOf, pluralOf, wordsOfWorld } from '../content/words';
 import { en, he } from '../content/lines';
 import type { Step } from '../engine/steps';
-import { speakEn, speakHe, speakWord, stopSpeech } from '../voice';
+import { speakEn, speakWord, stopSpeech } from '../voice';
 import type { SoundApi } from '../../../sound';
 import { bigSmallTask } from '../tasks/bigsmall';
 import { circleTask } from '../tasks/circle';
@@ -16,11 +16,13 @@ import { findTask } from '../tasks/find';
 import { listenTask } from '../tasks/listen';
 import { matchTask } from '../tasks/match';
 import { sentenceTask } from '../tasks/sentence';
+import { sayTask } from '../tasks/say';
 import { songTask } from '../tasks/song';
 import { tapTask } from '../tasks/tap';
 import { whereTask, whereText } from '../tasks/where';
 import { el, type TaskEnv, type TaskHandle } from '../tasks/common';
 import { mixed } from './text';
+import { sayLine } from '../content/heLines';
 
 export interface QuestDeps {
   name: string;
@@ -43,7 +45,7 @@ export interface QuestDeps {
 /** The word of the instruction that has a Hebrew help the first times: find, color, how many, big, on... */
 export function verbOf(s: Step): string | null {
   switch (s.kind) {
-    case 'card': case 'colorcard': case 'listen': case 'song': return null;
+    case 'card': case 'colorcard': case 'listen': case 'song': case 'say': return null;
     case 'put': return 'put';
     case 'count': return 'count';
     case 'bigsmall': return s.which;
@@ -63,7 +65,7 @@ export function instruction(s: Step): { text: string; html: string } {
     case 'tap': return { text: en.tap(labelOf(s.right)), html: `Tap the <b>${labelOf(s.right)}</b>!` };
     case 'put': return { text: en.put(labelOf(s.right), 'box'), html: `Put the <b>${labelOf(s.right)}</b> in the <b>box</b>!` };
     case 'listen': return { text: labelOf(s.right), html: `<span class="listen-q">?</span>` };
-    case 'match': return { text: s.mode === 'audio' ? 'Listen and match!' : en.match, html: s.mode === 'audio' ? 'Listen and match!' : 'Match!' };
+    case 'match': return { text: s.mode === 'audio' ? 'Listen and tap!' : en.match, html: s.mode === 'audio' ? 'Listen and tap!' : 'Match!' };
     case 'find': return { text: `Find all the ${pluralOf(s.right)}!`, html: `Find all the <b>${pluralOf(s.right)}</b>!` };
     case 'color': return { text: `Color the ${s.object} ${s.color}!`, html: `Color the <b>${s.object}</b> <b>${s.color}</b>!` };
     case 'count': return { text: `How many ${pluralOf(s.right)}? Tap the number!`, html: `How many <b>${pluralOf(s.right)}</b>?` };
@@ -73,6 +75,7 @@ export function instruction(s: Step): { text: string; html: string } {
       return { text, html: text.replace(new RegExp(`\\b(${s.prep}|${labelOf(s.ref)}|Jump|Go)\\b`, 'g'), '<b>$1</b>') };
     }
     case 'sentence': return { text: 'Make the sentence!', html: 'Make the sentence!' };
+    case 'say': return { text: `Say ${labelOf(s.right)}!`, html: `Say <b>${labelOf(s.right)}</b>!` };
     case 'song': return { text: 'Let’s sing!', html: 'Let’s sing!' };
   }
 }
@@ -133,11 +136,17 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
   const env: TaskEnv = {
     stage,
     face,
-    mistake: () => ((mistakesInTask += 1), (mistakesTotal += 1), mistakesInTask),
+    mistake: () => {
+      mistakesInTask += 1;
+      mistakesTotal += 1;
+      if (mistakesInTask === 2) later(() => void sayLine('try_again'), 1400); // after the English "try again"
+      return mistakesInTask;
+    },
     done: () => void (!dead && next()),
     sparkle,
     sound: (n, pitch) => d.sound.play(n, pitch),
     say: (text, word) => void (word ? speakWord(text) : speakEn(text)),
+    sayHe: (id) => void sayLine(id),
   };
 
   const start = (s: Step): void => {
@@ -156,8 +165,10 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
     if (first && verb && VERBS[verb]) {
       const v = VERBS[verb];
       note(he.verb(v.en, v.he));
-      void speakEn(v.en, 0.85).then(() => speakHe(`זה ${v.he}!`)).then(speakInstr);
+      void speakEn(v.en, 0.85).then(() => sayLine(`verb_${verb}`)).then(speakInstr);
     } else later(speakInstr, 500);
+    // a new word or colour: the Hebrew hint is read to her
+    if (s.kind === 'card' || s.kind === 'colorcard') later(() => void sayLine('card_tap'), 700);
     const met = COLORS.map((c) => c.id);
     switch (s.kind) {
       case 'card': handle = wordCard(env, s.word); break;
@@ -166,13 +177,14 @@ export function runStation(root: HTMLElement, d: QuestDeps): () => void {
       case 'tap': handle = tapTask(env, s.right, s.ids, index + 2); break;
       case 'put': handle = dragTask(env, s.right, s.others); break;
       case 'listen': handle = listenTask(env, s.right, s.ids, index + 3); break;
-      case 'match': handle = matchTask(env, s.ids, index + 4, s.mode); break;
+      case 'match': handle = matchTask(env, s.ids, index + 4, s.mode, wordsOfWorld(d.world).map((w) => w.id)); break;
       case 'find': handle = findTask(env, s.right, s.others, s.count, index + 5); break;
       case 'color': handle = colorTask(env, s.object, s.color, met); break;
       case 'count': handle = countTask(env, s.right, s.n); break;
       case 'bigsmall': handle = bigSmallTask(env, s.right, s.which, index); break;
       case 'where': handle = whereTask(env, s.item, s.ref, s.prep); break;
       case 'sentence': handle = sentenceTask(env, s.words, s.picture, s.missing); break;
+      case 'say': handle = sayTask(env, s.right); break;
       case 'song': handle = songTask(env, s.world); break;
     }
   };

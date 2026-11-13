@@ -1,5 +1,6 @@
 import { WORDS, wordsOfWorld } from '../content/words';
 import { PAINT, paintUrl } from '../content/paint';
+import { preloadVoice } from '../content/heLines';
 import { bgUrl } from './scenes';
 import { squishyOfWorld, squishyUrl } from './squishies';
 
@@ -29,6 +30,7 @@ export function preloadWorld(world: number): Promise<void> {
         im.src = u;
       }),
   );
+  jobs.push(preloadVoice(world));
   return Promise.all(jobs).then(() => void loaded.add(world));
 }
 

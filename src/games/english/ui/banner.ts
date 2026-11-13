@@ -1,7 +1,8 @@
 import { he } from '../content/lines';
 import { mixed } from './text';
-import { speakEn, speakHe } from '../voice';
+import { speakEn } from '../voice';
 import type { SoundApi } from '../../../sound';
+import { sayLine } from '../content/heLines';
 
 /** "Great Job!": a shiny banner with three stars that light up one by one, and confetti. */
 export function showBanner(root: HTMLElement, stars: 1 | 2 | 3, name: string, sound: SoundApi, onNext: () => void): () => void {
@@ -13,7 +14,7 @@ export function showBanner(root: HTMLElement, stars: 1 | 2 | 3, name: string, so
       <div class="banner-title"><span>G</span><span>r</span><span>e</span><span>a</span><span>t</span> <span>J</span><span>o</span><span>b</span><span>!</span></div>
       <div class="banner-stars">${[1, 2, 3].map((i) => `<i class="bs ${i <= stars ? 'on' : 'off'}" style="animation-delay:${0.9 + i * 0.35}s">★</i>`).join('')}</div>
       <div class="banner-sub">${mixed(he.proud(name))}</div>
-      <button class="en-btn go" type="button" id="bn">${he.next} ➜</button>
+      <button class="en-btn go" type="button" id="bn" data-say="next">${he.next} ➜</button>
     </div>
     <div class="confetti" id="bc"></div>`;
   root.appendChild(wrap);
@@ -28,7 +29,7 @@ export function showBanner(root: HTMLElement, stars: 1 | 2 | 3, name: string, so
     box.appendChild(p);
   }
   sound.play('win');
-  void speakEn('Great job!', 0.85).then(() => speakHe(he.proud(name)));
+  void speakEn('Great job!', 0.85).then(() => sayLine('proud', name));
   wrap.querySelector('#bn')!.addEventListener('click', () => {
     wrap.remove();
     onNext();

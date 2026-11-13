@@ -1,8 +1,9 @@
 import { mountCheesy } from '../art/cheesy';
 import { he, nameOptions } from '../content/lines';
-import { speakEn, speakHe } from '../voice';
+import { speakEn } from '../voice';
 import { mixed } from './text';
 import type { SoundApi } from '../../../sound';
+import { sayLine } from '../content/heLines';
 
 export const MAX_NAME = 12;
 /** A name typed by a parent or by Rani: trimmed, no tags, at most 12 characters. */
@@ -21,11 +22,11 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
         <div class="bubble big" id="bub">${he.askName}</div>
       </div>
       <div class="name-buttons" id="opts"></div>
-      <button class="en-btn go name-confirm" id="confirm" type="button" hidden>זה השם שלי!</button>
+      <button class="en-btn go name-confirm" id="confirm" data-say="name_confirm" type="button" hidden>זה השם שלי!</button>
       <div class="name-custom" id="custom" hidden>
-        <div class="p-sub">${he.typeName}</div>
+        <div class="p-sub" data-say="type_name">${he.typeName}</div>
         <input id="typed" class="name-input" maxlength="${MAX_NAME}" autocomplete="off" aria-label="${he.typeName}" />
-        <button class="en-btn go" id="typedOk" type="button">${he.ok}</button>
+        <button class="en-btn go" id="typedOk" data-say="ok" type="button">${he.ok}</button>
       </div>
       <div class="confetti" id="confetti"></div>
     </div>`;
@@ -39,7 +40,7 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
   const timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));
   later(() => c.squish(), 900);
-  later(() => (c.set('thinking'), void speakHe(he.askName)), 1300);
+  later(() => (c.set('thinking'), void sayLine('ask_name')), 1300);
   let chosen = false;
   const confetti = (): void => {
     const box = root.querySelector<HTMLElement>('#confetti')!;
@@ -63,6 +64,7 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
     sound.play('bonus');
     bub.innerHTML = mixed(he.iAm(name));
     void speakEn(say, 0.8);
+    later(() => void sayLine('i_am', name), 1500);
     confetti();
     later(() => onChosen(name), 3200);
   };
@@ -86,6 +88,7 @@ export function showNameScreen(root: HTMLElement, sound: SoundApi, onChosen: (na
   other.type = 'button';
   other.className = 'en-btn name-btn other';
   other.innerHTML = `<b>${he.otherName}</b><small>✏️</small>`;
+  other.dataset.say = 'other_name';
   other.addEventListener('click', () => {
     custom.hidden = false;
     opts.hidden = true;

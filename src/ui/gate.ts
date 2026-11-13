@@ -5,6 +5,10 @@ import { sound } from '../sound';
 import { speak, stopSpeaking } from '../speech';
 import { go } from '../router';
 import { renderHint } from './hints';
+import { englishGateQuestion } from '../games/english/gate';
+import { imageUrl } from '../games/english/art/images';
+import { speakWord } from '../games/english/voice';
+import type { Words } from '../games/english/engine/progress';
 
 const generator = createGenerator();
 
@@ -36,7 +40,8 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
   };
 
   let current: Question | null = null;
-  sayBtn.addEventListener('click', () => current && speak(current.speech));
+  let english: { say: string } | null = null;
+  sayBtn.addEventListener('click', () => (english ? void speakWord(english.say) : current && speak(current.speech)));
 
   function intro() {
     paintProgress();
@@ -53,6 +58,13 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
   function nextQuestion() {
     if (solved >= total) return finish();
     sayBtn.style.visibility = 'visible';
+    english = null;
+    const subject = getState().settings.gateSubject;
+    // English (or every second question for "both"): "what did you hear?"; maths when she has not met three words yet
+    if (subject === 'english' || (subject === 'both' && solved % 2 === 1)) {
+      const eq = englishGateQuestion(gameStore('english').load<Words>('words', {}));
+      if (eq) return englishQuestion(eq);
+    }
     const q = (current = generator.next(activeLevel(), getState().settings.enabledTypes));
     let attempts = 0;
     let locked = false;
@@ -99,6 +111,43 @@ export function renderGate(root: HTMLElement, gameId: string, onPass: () => void
         }
       });
     });
+  }
+
+  /** "What did you hear?": the word is said, three pictures, one tap. */
+  function englishQuestion(eq: NonNullable<ReturnType<typeof englishGateQuestion>>) {
+    english = eq;
+    current = null;
+    let locked = false;
+    body.innerHTML = `
+      <div class="en-gate-head">
+        <button class="en-gate-speaker" id="enSay" type="button" aria-label="שמעי שוב">🔊</button>
+        <div class="en-gate-q" dir="ltr">What did you hear?</div>
+      </div>
+      <div class="choices english-gate">
+        ${eq.choices.map((c) => `<button class="choice" data-v="${c}" aria-label="${c}"><img src="${imageUrl(c)}" alt="" draggable="false"></button>`).join('')}
+      </div>`;
+    body.querySelector('#enSay')!.addEventListener('click', () => void speakWord(eq.say));
+    void speakWord(eq.say);
+    body.querySelectorAll<HTMLButtonElement>('.choice').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        if (locked) return;
+        if (btn.dataset.v === eq.word) {
+          locked = true;
+          btn.classList.add('right');
+          body.querySelectorAll<HTMLButtonElement>('.choice').forEach((b) => (b.disabled = b !== btn));
+          sound.play('correct');
+          solved++;
+          paintProgress();
+          progress.children[solved - 1]?.classList.add('pop');
+          later(nextQuestion, 900);
+        } else {
+          btn.classList.add('wrong');
+          btn.disabled = true;
+          sound.play('oops');
+          later(() => void speakWord(eq.say), 500);
+        }
+      }),
+    );
   }
 
   function showHint(q: Question) {

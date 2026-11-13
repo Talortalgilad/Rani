@@ -2,9 +2,10 @@ import { accessorySvg, type Accessory } from '../art/accessories';
 import { cheesyUrl, mountCheesy } from '../art/cheesy';
 import { squishyImg, type Squishy } from '../art/squishies';
 import { he } from '../content/lines';
-import { speakEn, speakHe } from '../voice';
+import { speakEn } from '../voice';
 import type { SoundApi } from '../../../sound';
 import { mixed } from './text';
+import { sayLine } from '../content/heLines';
 
 /**
  * The rescue: the gift shakes and a tiny voice calls. A tap opens it: the gift hops and pops, and the squishy jumps out in an arc,
@@ -21,9 +22,9 @@ export function showRescue(root: HTMLElement, name: string, squishy: Squishy, so
         <div class="bunny-out" id="bunny" hidden><div class="bunny-in" id="bunnyIn">${squishyImg(squishy.id)}</div></div>
       </div>
       <div class="rescue-actions" id="acts" hidden>
-        ${extra.prize ? `<div class="prize"><span class="prize-pic"><img src="${cheesyUrl('happy')}" alt="" draggable="false">${accessorySvg(extra.prize)}</span><b>${he.newAccessory(extra.prize.he)}</b></div>` : ''}
-        <button class="en-btn go" id="home" type="button">🏠 ${he.home}</button>
-        <button class="en-btn" id="shelf" type="button">🧸 ${he.shelf}</button>
+        ${extra.prize ? `<div class="prize"><span class="prize-pic"><img src="${cheesyUrl('happy')}" alt="" draggable="false">${accessorySvg(extra.prize)}</span><b data-say="new_acc_${extra.prize.id}">${he.newAccessory(extra.prize.he)}</b></div>` : ''}
+        <button class="en-btn go" id="home" data-say="home" type="button">🏠 ${he.home}</button>
+        <button class="en-btn" id="shelf" data-say="shelf" type="button">🧸 ${he.shelf}</button>
       </div>
       <div class="confetti" id="rc"></div>
     </div>`;
@@ -35,7 +36,7 @@ export function showRescue(root: HTMLElement, name: string, squishy: Squishy, so
   const acts = root.querySelector<HTMLElement>('#acts')!;
   const timers: number[] = [];
   const later = (f: () => void, ms: number): void => void timers.push(window.setTimeout(f, ms));
-  void speakHe('שמעת? מישהו קורא לעזרה!');
+  void sayLine('help_call');
   later(() => void speakEn('Help! Help!', 0.8), 1800);
   let opened = false;
   gift.addEventListener('click', () => {
@@ -68,9 +69,9 @@ export function showRescue(root: HTMLElement, name: string, squishy: Squishy, so
     }, 1300);
     later(() => {
       bub.innerHTML = mixed(he.rescued(name));
-      void speakHe(he.rescued(name));
+      void sayLine('rescued', name);
       acts.hidden = false;
-      if (extra.prize) void speakHe(he.newAccessory(extra.prize.he));
+      if (extra.prize) void sayLine(`new_acc_${extra.prize.id}`);
     }, 3000);
   });
   bunny.addEventListener('pointerdown', () => {

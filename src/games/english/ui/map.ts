@@ -14,14 +14,14 @@ export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean;
   root.innerHTML = `
     <div class="en-screen en-map">
       <div class="en-sky"></div>
-      <header class="q-top"><button class="q-home" id="mh" type="button" aria-label="${he.home}">🏠</button><h1 class="map-title">${mixed(he.islandTitle(o.name))}</h1><span class="q-pair"><button class="q-say" id="mbk" type="button" aria-label="${he.wordbook}">📖</button><button class="q-say" id="msh" type="button" aria-label="${he.shelfTitle}">🧸</button></span></header>
+      <header class="q-top"><button class="q-home" id="mh" type="button" aria-label="${he.home}">🏠</button><h1 class="map-title" data-say="island_title">${mixed(he.islandTitle(o.name))}</h1><span class="q-pair"><button class="q-say" id="mbk" data-say="wordbook" type="button" aria-label="${he.wordbook}">📖</button><button class="q-say" id="msh" data-say="shelf_title" type="button" aria-label="${he.shelfTitle}">🧸</button></span></header>
       <div class="map-scroll" id="scroll">
         <div class="map-path">
           ${WORLDS.map((w, i) => {
             const x = i % 2 === 0 ? 4 : 32;
             const done = (o.map.done[w.n] ?? 0) >= STATIONS_PER_WORLD;
             const stars = worldStars(o.map, w.n);
-            return `<button class="map-world ${open[i] ? 'open' : 'locked'} ${done ? 'done' : ''} ${i === current ? 'current' : ''}" data-n="${w.n}" style="margin-inline-start:${x}%;--c:${w.color}" type="button" ${open[i] ? '' : 'aria-disabled="true"'}>
+            return `<button class="map-world ${open[i] ? 'open' : 'locked'} ${done ? 'done' : ''} ${i === current ? 'current' : ''}" data-n="${w.n}" data-say="world_${w.n}" style="margin-inline-start:${x}%;--c:${w.color}" type="button" ${open[i] ? '' : 'aria-disabled="true"'}>
               <span class="mw-ball">${open[i] ? w.emoji : '🔒'}</span>
               <span class="mw-name"><b>${w.name}</b><small>${w.he}</small></span>
               ${open[i] ? `<span class="mw-stars">${done ? '✅ ' : ''}${stars ? `⭐ ${stars}` : ''}</span>` : ''}
@@ -61,7 +61,7 @@ export function showWorld(root: HTMLElement, o: { world: number; openAll?: boole
   root.innerHTML = `
     <div class="en-screen en-world" style="--c:${w.color}">
       <div class="en-sky"></div>
-      <header class="q-top"><button class="q-home" id="wb" type="button" aria-label="${he.home}">⬅️</button><h1 class="map-title">${w.emoji} ${w.name}</h1><span class="q-say" style="visibility:hidden"></span></header>
+      <header class="q-top"><button class="q-home" id="wb" type="button" aria-label="${he.home}">⬅️</button><h1 class="map-title" data-say="world_${w.n}">${w.emoji} ${w.name}</h1><span class="q-say" style="visibility:hidden"></span></header>
       <div class="station-path">
         ${Array.from({ length: STATIONS_PER_WORLD }, (_, s) => {
           const op = stationOpen(o.map, o.world, s, o.openAll);

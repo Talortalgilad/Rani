@@ -28,7 +28,8 @@ export function wordCard(env: TaskEnv, wordId: string): TaskHandle {
         env.face('happy', `${labelOf(w.id)} = ${w.he}`);
         sayTwice();
       }, 450);
-      later(() => env.done(), 3600);
+      later(() => env.sayHe(`w_${w.id}`), 2700); // then the Hebrew meaning
+      later(() => env.done(), 4800);
     } else {
       env.say(labelOf(w.id), true);
       card.classList.remove('bounce');
@@ -61,7 +62,8 @@ export function colorCard(env: TaskEnv, colorId: string): TaskHandle {
         env.say(c.id, true);
         later(() => env.say(c.id, true), 1500);
       }, 450);
-      later(() => env.done(), 3600);
+      later(() => env.sayHe(`c_${c.id}`), 2700);
+      later(() => env.done(), 4800);
     } else env.say(c.id, true);
   });
   return { repeat: () => env.say(c.id, true), destroy: () => (timers.forEach(clearTimeout), (timers = []), wrap.remove()) };
