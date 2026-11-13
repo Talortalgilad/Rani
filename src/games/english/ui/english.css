@@ -351,3 +351,34 @@ bdi { unicode-bidi: isolate; }
 .match-pic.dragging { z-index: 6; }
 .choice-row.mid { bottom: auto; top: 44%; }
 .match-pic.win { animation: none; }
+
+/* the recording studio (parents' area) */
+.studio { padding-bottom: 40px; }
+.studio .st-emoji { font-size: 72px; text-align: center; }
+.studio .st-perm { text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.studio .st-bad { color: #c2410c; font-weight: 700; }
+.studio .st-track.first { border: 3px solid #8e5cf0; }
+.studio .st-track h2 small { font-size: 14px; font-weight: 500; opacity: .7; margin-inline-start: 8px; }
+.studio .st-count { font-weight: 700; }
+.studio .st-bar { height: 12px; background: #ece6f7; border-radius: 8px; overflow: hidden; margin: 6px 0 12px; }
+.studio .st-bar i { display: block; height: 100%; background: #7ed957; }
+.studio .p-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.studio .st-pos { font-weight: 800; font-size: 20px; }
+.studio .st-strip { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; scrollbar-width: thin; direction: rtl; }
+.studio .st-chip { flex: none; min-width: 40px; height: 40px; border-radius: 12px; border: 2px solid #cbbfe0; background: #fff; font: 700 15px inherit; font-family: inherit; color: #3a2f4b; cursor: pointer; }
+.studio .st-chip.ok { background: #d8f8e1; border-color: #3fb56b; color: #1d7a45; }
+.studio .st-chip.now { outline: 3px solid #8e5cf0; }
+.studio .st-card { background: #fff; border-radius: 28px; padding: 26px 18px; text-align: center; box-shadow: 0 6px 18px rgba(58, 47, 75, .12); display: flex; flex-direction: column; gap: 14px; min-height: 230px; justify-content: center; }
+.studio .st-id { font: 600 13px/1 monospace; opacity: .5; }
+.studio .st-text { font: 800 clamp(30px, 8vw, 44px)/1.25 'Rubik', system-ui, sans-serif; }
+.studio .st-state { font-weight: 700; color: #7b7190; }
+.studio .st-state.ok { color: #1d7a45; }
+.studio .st-state.live { color: #d6204b; animation: mic-blink .8s ease-in-out infinite; }
+@keyframes mic-blink { 50% { opacity: .4; } }
+.studio .st-mic-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 18px 0 8px; }
+.studio .st-mic { width: 150px; height: 150px; border-radius: 50%; border: 6px solid #3a2f4b; background: #ff5d9e; font-size: 70px; box-shadow: 0 8px 0 rgba(58, 47, 75, .3); touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; }
+.studio .st-mic:disabled { opacity: .4; }
+.studio .st-mic.on { background: #d6204b; transform: scale(1.1); box-shadow: 0 0 0 14px rgba(214, 32, 75, .25); }
+.studio .st-hint { font-size: 15px; opacity: .75; text-align: center; min-height: 20px; }
+.studio .st-nav { display: flex; gap: 10px; justify-content: space-between; }
+.studio .st-nav .btn { flex: 1; }
