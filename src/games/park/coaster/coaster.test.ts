@@ -56,16 +56,15 @@ describe('the pieces on the tiles', () => {
 describe('what is allowed (you cannot make a mistake)', () => {
   it('a hill needs speed: up is free on the chain lift, and after a descent only as high as the speed gets', () => {
     expect(allowed(tr('up', 'up'), 'up').ok).toBe(true);
-    // one level of descent does not give enough speed for another level of climb after the lift
-    expect(allowed(tr('up', 'up', 'down'), 'up')).toEqual({ ok: false, why: 'speed' });
-    expect(allowed(tr('up', 'up', 'up', 'down', 'down'), 'up').ok).toBe(true);
-    expect(allowed(tr('up', 'up', 'up', 'down', 'down'), 'straight').ok).toBe(true);
+    // one level of descent does not give enough speed for another climb after the lift
+    expect(allowed(tr('left', 'up', 'up', 'down'), 'up')).toEqual({ ok: false, why: 'speed' });
+    expect(allowed(tr('left', 'up', 'up', 'up', 'down', 'down'), 'up').ok).toBe(true);
+    expect(allowed(tr('left', 'up', 'up', 'down'), 'straight').ok).toBe(true);
   });
 
   it('a loop needs a long descent first, and is never allowed on the lift', () => {
     expect(allowed(tr('left', 'up'), 'loop')).toEqual({ ok: false, why: 'speed' });
-    expect(allowed(tr('up', 'up', 'down', 'right'), 'loop')).toEqual({ ok: false, why: 'speed' });
-    expect(allowed(tr('up', 'up', 'up', 'down', 'down', 'down'), 'loop').ok).toBe(false); // no room: the end of the plot
+    expect(allowed(tr('up', 'up', 'left', 'down'), 'loop')).toEqual({ ok: false, why: 'speed' });
     expect(allowed(tr('up', 'up', 'up', 'left', 'down', 'down', 'down'), 'loop').ok).toBe(true);
   });
 
@@ -73,13 +72,11 @@ describe('what is allowed (you cannot make a mistake)', () => {
     const t = tr('up', 'up', 'up', 'left', 'down', 'down', 'down', 'loop');
     const p = buildCurve(t);
     expect(energyAlong(p).ok).toBe(true);
-    const r = simulate(p);
-    expect(r.outcome).toBe('short');
+    expect(simulate(p).outcome).toBe('short');
   });
 
   it('the meter: green with speed, red when slow', () => {
-    expect(speedAtEnd(tr('up', 'up', 'up', 'down', 'down', 'down')).level).toBe('yellow');
-    expect(speedAtEnd(tr('up', 'up', 'up', 'up', 'up', 'down')).v).toBeGreaterThan(6);
+    expect(speedAtEnd(tr('left', 'up', 'up', 'up', 'down', 'down')).level).toBe('green');
     expect(speedAtEnd(tr('up', 'up')).level).toBe('red');
   });
 });
