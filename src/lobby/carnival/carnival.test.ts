@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { clampDist, clampTarget, DIST_MAX, DIST_MIN, eye, fitDist, isTap, PAN_LIMIT, PAN_Z } from './camera';
 import { ISLAND_R, minGap, PLOT_PAD, PLOT_R, plots, ZS } from './layout';
-import { residents } from './residents';
+import { ALT_NAMES, residents } from './residents';
 import { makeGraph, rng, Walker } from './walk';
 import { NAME_KEYS } from '../../games/english/content/heLines';
 
@@ -85,14 +85,29 @@ describe('walking', () => {
 });
 
 describe('the residents', () => {
-  it('five, with different names, and every name is one that has a recording', () => {
+  it('five, with different names, and the fixed names are the ones that have a recording', () => {
     const rs = residents('לילה', 'bunny');
     expect(rs).toHaveLength(5);
     expect(new Set(rs.map((r) => r.name)).size).toBe(5);
     expect(rs[0].name).toBe('לילה');
     expect(rs[0].img).toContain('bunny');
-    for (const r of residents(null, null)) expect(NAME_KEYS[r.name], r.name).toBeTruthy();
-    for (const r of rs.slice(1)) expect(NAME_KEYS[r.name], r.name).toBeTruthy();
+    for (const r of rs.slice(1)) {
+      expect(r.fixed).toBe(true);
+      expect(NAME_KEYS[r.name], r.name).toBeTruthy();
+    }
+  });
+  it('when the friend that Rani named has a fixed name, the resident with that name gets another one, from a fixed list', () => {
+    for (const mine of ['מוצי', 'צ׳יזי', 'חוריקו', 'פופצ׳יז']) {
+      const rs = residents(mine, 'bunny');
+      expect(new Set(rs.map((r) => r.name)).size, mine).toBe(5);
+      expect(rs.filter((r) => r.name === mine)).toHaveLength(1);
+      const renamed = rs.slice(1).filter((r) => !r.fixed);
+      expect(renamed).toHaveLength(1);
+      expect(ALT_NAMES).toContain(renamed[0].name);
+    }
+    // no name at all: the friend is Cheesy, and the other Cheesy is renamed
+    const none = residents(null, null);
+    expect(new Set(none.map((r) => r.name)).size).toBe(5);
   });
 });
 

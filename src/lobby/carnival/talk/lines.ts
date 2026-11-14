@@ -26,6 +26,8 @@ export const cv = {
   chat_play: 'בואי נשחק!',
   chat_fun: 'כיף לי כאן!',
   hearts: 'לבבות',
+  /** "two" before a noun (שתי גלידות); the number alone is cv_num_2 */
+  num_2c: 'שתי',
 };
 export const CARNIVAL_LINES: { id: string; parts: (string | null)[] }[] = [
   { id: 'carnival_name', parts: [null] },
@@ -39,10 +41,18 @@ export const CARNIVAL_EN: { id: string; text: string; note: string }[] = [
   { id: 'carn_can_i_have_the', text: 'Can I have the', note: 'opening, then the word' },
   { id: 'carn_please', text: 'please?', note: 'after the word' },
   { id: 'carn_what_is_it', text: 'What is it?', note: 'whole' },
-  { id: 'carn_hello_im', text: "Hello! I'm", note: 'opening, then the name (Cheesy, Mozzi, Horiko, Pop Cheese)' },
-  { id: 'carn_whats_your_name', text: "What's your name?", note: 'after the name' },
-  { id: 'carn_hello', text: 'Hello!', note: 'small bubble (already recorded)' },
+  { id: 'carn_hello_im_cheesy', text: "Hello! I'm Cheesy", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_mozzi', text: "Hello! I'm Mozzi", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_horiko', text: "Hello! I'm Horiko", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_popcheese', text: "Hello! I'm Pop Cheese", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello', text: 'Hello!', note: 'for the friend with the name that Rani chose (then carn_whats_your_name); also a small bubble' },
+  { id: 'carn_whats_your_name', text: "What's your name?", note: 'after the hello' },
   { id: 'carn_i_love_pizza', text: 'I love pizza!', note: 'small bubble' },
   { id: 'carn_hi_rani', text: 'Hi Rani!', note: 'small bubble' },
   { id: 'carn_nice_day', text: 'Nice day!', note: 'small bubble' },
+  { id: 'carn_lets_play', text: "Let's play!", note: 'small bubble' },
+  { id: 'carn_i_am_hungry', text: 'I am hungry!', note: 'small bubble' },
+  { id: 'carn_i_like_ice_cream', text: 'I like ice cream!', note: 'small bubble' },
+  { id: 'carn_look_at_me', text: 'Look at me!', note: 'small bubble' },
+  { id: 'carn_thank_you_rani', text: 'Thank you, Rani!', note: 'after a right answer in an English talk' },
 ];

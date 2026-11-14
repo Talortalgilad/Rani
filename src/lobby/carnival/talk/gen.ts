@@ -61,11 +61,13 @@ export function choices3(answer: number, max: number, r: () => number): number[]
 }
 
 export const WORD_NAMES = new Map(WORDS.map((w) => [w.id, w.label ?? w.id]));
+/** only things that can be held or pointed at are asked (not verbs, family or weather) */
+export const ASKABLE = new Set(WORDS.filter((w) => w.askable).map((w) => w.id));
 
 /** The words to ask, the ones that are due first (the longest overdue), then the least known, then the others: only words that she has seen. */
 export function learnedWords(words: Words, today: number): string[] {
-  const seen = Object.entries(words).filter(([id, w]) => w.seen && WORD_NAMES.has(id));
-  const due = dueWords(words, today).filter((id) => WORD_NAMES.has(id));
+  const seen = Object.entries(words).filter(([id, w]) => w.seen && ASKABLE.has(id));
+  const due = dueWords(words, today).filter((id) => ASKABLE.has(id));
   const rest = seen.filter(([id]) => !due.includes(id)).sort((a, b) => a[1].level - b[1].level).map(([id]) => id);
   return [...due, ...rest];
 }
@@ -90,12 +92,13 @@ export function makeTalk(kind: TalkKind, seed: number, env: TalkEnv): Talk | nul
   const item = ITEMS[int(r, 0, ITEMS.length - 1)];
   if (kind === 'together') {
     for (let k = 0; k < 200; k++) {
-      const a = int(r, 1, max - 1), b = int(r, 1, max - a);
-      if (a + b > max) continue;
+      // the quantities that are said are 2 or more (a plural noun follows)
+      const a = int(r, 2, max - 2), b = int(r, 2, max - a);
+      if (a + b > max || b < 2) continue;
       if (cfg.noTenCrossing && (a % 10) + (b % 10) >= 10) continue;
       return { kind, a, b, item, answer: a + b, choices: choices3(a + b, max, r) };
     }
-    return { kind, a: 1, b: 1, item, answer: 2, choices: choices3(2, max, r) };
+    return { kind, a: 2, b: 2, item, answer: 4, choices: choices3(4, max, r) };
   }
   if (kind === 'missing') {
     for (let k = 0; k < 200; k++) {
@@ -106,14 +109,17 @@ export function makeTalk(kind: TalkKind, seed: number, env: TalkEnv): Talk | nul
     return { kind, a: 3, b: 1, item, answer: 2, choices: choices3(2, max, r) };
   }
   if (kind === 'exact') {
-    const n = int(r, 1, max);
+    const n = int(r, 2, max);
     return { kind, n, pile: Math.min(24, n + int(r, 3, 5)), item };
   }
   if (kind === 'more') {
     const cap = Math.min(max, 12);
     const a = int(r, 1, cap);
     let b = int(r, 1, cap);
-    while (b === a) b = int(r, 1, cap);
+    // from level 3 the piles differ by 1 to 3: there is something to count
+    const near = env.level >= 3;
+    for (let k = 0; k < 100 && (b === a || (near && Math.abs(a - b) > 3)); k++) b = int(r, 1, cap);
+    if (b === a || (near && Math.abs(a - b) > 3)) b = a > 1 ? a - 1 : a + 1;
     const ask = r() < 0.7 ? 'more' : 'less';
     const answer = ask === 'more' ? (a > b ? 0 : 1) : a < b ? 0 : 1;
     return { kind, a, b, ask, item, answer };
@@ -139,13 +145,13 @@ export function validTalk(t: Talk, level: number): boolean {
   const max = levelConfig(level).max;
   switch (t.kind) {
     case 'together':
-      return t.a >= 1 && t.b >= 1 && t.a + t.b === t.answer && t.answer <= max && t.choices.length === 3 && new Set(t.choices).size === 3 && t.choices.filter((c) => c === t.answer).length === 1 && t.choices.every((c) => c >= 0 && c <= max);
+      return t.a >= 2 && t.b >= 2 && t.a + t.b === t.answer && t.answer <= max && t.choices.length === 3 && new Set(t.choices).size === 3 && t.choices.filter((c) => c === t.answer).length === 1 && t.choices.every((c) => c >= 0 && c <= max);
     case 'missing':
       return t.b >= 1 && t.a > t.b && t.a <= max && t.a - t.b === t.answer && t.choices.length === 3 && new Set(t.choices).size === 3 && t.choices.filter((c) => c === t.answer).length === 1 && t.choices.every((c) => c >= 0 && c <= max);
     case 'exact':
-      return t.n >= 1 && t.n <= max && t.pile > t.n && t.pile <= 24;
+      return t.n >= 2 && t.n <= max && t.pile > t.n && t.pile <= 24;
     case 'more':
-      return t.a !== t.b && t.a <= max && t.b <= max && (t.ask === 'more' ? (t.a > t.b ? 0 : 1) : t.a < t.b ? 0 : 1) === t.answer;
+      return t.a !== t.b && (level < 3 || Math.abs(t.a - t.b) <= 3) && t.a <= max && t.b <= max && (t.ask === 'more' ? (t.a > t.b ? 0 : 1) : t.a < t.b ? 0 : 1) === t.answer;
     case 'can':
     case 'what':
       return new Set(t.options).size === t.options.length && t.options.filter((o) => o === t.word).length === 1 && t.options[t.answer] === t.word && t.options.length === (t.kind === 'can' ? 3 : 2);

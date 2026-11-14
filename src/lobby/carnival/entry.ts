@@ -98,6 +98,9 @@ function strip(): HTMLElement {
   return s;
 }
 
+/** The talks of the plain home (the strip): they stop when the 3D carnival takes over, so that two do not run at once. */
+let plainStop: (() => void) | null = null;
+
 export function renderHomeCarnival(root: HTMLElement): () => void {
   if (wantsOldLobby()) return renderOldLobby(root);
   const pref = getState().settings.lobby;
@@ -119,6 +122,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         const r = btns[i]?.getBoundingClientRect();
         return r ? { x: r.left + r.width / 2, y: r.top } : null;
       },
+      alertDy: 16,
       focus: () => void 0,
       hold: () => void 0,
       wave: (i) => {
@@ -138,10 +142,14 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       last = t;
     };
     raf = requestAnimationFrame(loop);
-    return () => {
+    const stop = (): void => {
       cancelAnimationFrame(raf);
       talks.dispose();
       layer.remove();
+    };
+    plainStop = stop;
+    return () => {
+      stop();
       c();
     };
   };
@@ -267,6 +275,9 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         layer.className = 'cv-layer';
         screen.appendChild(layer);
         const host: TalkHost = { layer, residents: people(), pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i) };
+        // the talks of the strip stop, the carnival's own begin
+        plainStop?.();
+        plainStop = null;
         talks = new Talks(host);
         (window as unknown as Record<string, unknown>).__talks = talks;
         document.body.classList.add('lobby3d-on', 'carnival-on');

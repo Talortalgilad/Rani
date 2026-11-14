@@ -25,6 +25,8 @@ export interface TalkHost {
   focus(i: number | null): void;
   hold(i: number, on: boolean): void;
   wave(i: number): void;
+  /** where the "!" bubble sits against the place of the head: up (the default, -34) or lower, on the card of a strip */
+  alertDy?: number;
 }
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -49,7 +51,7 @@ export class Talks {
   attempts = 0;
   private waveT = new Map<number, number>();
 
-  constructor(private host: TalkHost, private now: () => number = () => Date.now()) {
+  constructor(readonly host: TalkHost, private now: () => number = () => Date.now()) {
     this.save = loadSave();
     this.chatter = new Chatter(Math.random);
     this.chatEl = document.createElement('div');
@@ -106,7 +108,7 @@ export class Talks {
       this.waveT.set(al.r, wt <= 0 ? 2.6 : wt);
       const p = this.host.pos(al.r);
       el.style.visibility = p && !busy ? 'visible' : 'hidden';
-      if (p) el.style.transform = `translate(${p.x}px, ${p.y - 34}px) translate(-50%, -100%)`;
+      if (p) el.style.transform = `translate(${p.x}px, ${p.y + (this.host.alertDy ?? -34)}px) translate(-50%, -100%)`;
     }
     for (const [r, el] of [...this.alertEls]) if (!this.save.alerts.alerts.some((x) => x.r === r)) {
       el.remove();
@@ -116,14 +118,18 @@ export class Talks {
     if (!busy && this.chatT <= 0) {
       const skip = [...this.save.alerts.alerts.map((x) => x.r)];
       const c = this.chatter.tick(dt, this.host.residents.length, skip);
-      if (c) {
+      const p0 = c ? this.host.pos(c.r) : null;
+      // only a resident who can be seen says something
+      if (c && p0) {
         this.chatR = c.r;
         this.chatT = 3.4;
         this.chatEl.textContent = c.chat.text;
+        // English runs left to right, so that its ! stays at the end
+        this.chatEl.dir = c.chat.en ? 'ltr' : 'rtl';
+        this.placeChat(p0);
         this.chatEl.classList.add('on');
-        const p = this.host.pos(c.r);
         // the sound only when he is near the middle of the screen
-        if (p && nearCentre(p.x, p.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ en: c.chat.en! }]);
+        if (nearCentre(p0.x, p0.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ enc: { id: c.chat.enId ?? 'carn_hello', text: c.chat.en! } }]);
       }
     } else if (!busy) {
       this.chatT -= dt;
@@ -131,19 +137,20 @@ export class Talks {
     }
     if (this.chatR >= 0) {
       const p = this.host.pos(this.chatR);
-      if (p && this.chatT > 0 && !busy) {
-        // inside the screen
-        const half = (this.chatEl.offsetWidth || 100) / 2 + 6;
-        const x = Math.min(window.innerWidth - half, Math.max(half, p.x));
-        this.chatEl.style.transform = `translate(${x}px, ${p.y - 18}px) translate(-50%, -100%)`;
-      }
-      else this.chatEl.classList.remove('on');
-      if (this.chatT <= 0) {
+      if (p && this.chatT > 0 && !busy) this.placeChat(p);
+      if (this.chatT <= 0 || busy) {
         this.chatEl.classList.remove('on');
         this.chatR = -1;
       }
     }
     if (this.now() - this.lastSaved > 4000) this.persist();
+  }
+
+  /** The small bubble sits over the head, inside the screen. */
+  private placeChat(p: { x: number; y: number }): void {
+    const half = (this.chatEl.offsetWidth || 100) / 2 + 6;
+    const x = Math.min(window.innerWidth - half, Math.max(half, p.x));
+    this.chatEl.style.transform = `translate(${x}px, ${Math.max(40, p.y - 18)}px) translate(-50%, -100%)`;
   }
 
   private persist(force = false): void {
@@ -181,6 +188,7 @@ export class Talks {
     this.host.focus(r);
     const s = document.createElement('div');
     s.className = 'cv-talk';
+    s.dataset.r = String(r);
     s.innerHTML = `<button class="cv-x" type="button" aria-label="סגירה">✕</button>
       <div class="cv-who"><img src="${esc(res.img)}" alt="" draggable="false"><div class="cv-say"></div></div>
       <div class="cv-act"></div><div class="cv-msg"></div>`;
@@ -225,8 +233,8 @@ export class Talks {
       if (ok) void this.correct(t);
       else void this.mistake(t, picked, wrong);
     };
-    const prompt = opening(t, englishName(res.name));
-    void say(prompt);
+    const prompt = opening(t, res, englishName(res.name));
+    if (t.kind !== 'what') void say(prompt);
     const bind = (): void => {
       act.querySelectorAll<HTMLElement>('.cv-opt').forEach((b) =>
         b.addEventListener('click', () => {
@@ -243,7 +251,7 @@ export class Talks {
       wrong = () => this.countRow(act, t.answer);
       bind();
     } else if (t.kind === 'missing') {
-      this.sayText(`${esc(cv.had)} <span class="n">${counter(String(t.a))}</span> ${esc(t.item.he)}, ${esc(cv.ate)} <span class="n">${counter(String(t.b))}</span><br>${esc(cv.left)}`);
+      this.sayText(`${esc(cv.had)} <span class="n">${counter(String(t.a))}</span> ${esc(t.item.he)}, ${esc(cv.ate)} <span class="n">${counter(String(t.b))}</span>${t.b === 1 ? '' : ` ${esc(t.item.he)}`}<br>${esc(cv.left)}`);
       act.innerHTML = `<div class="cv-items"><span class="grp">${items(t.item, t.a - t.b)}</span><span class="grp ate">${items(t.item, t.b)}</span></div><div class="cv-opts">${t.choices.map((c, i) => btn(counter(String(c)), i)).join('')}</div>`;
       wrong = () => this.countRow(act, t.answer, '.grp:not(.ate) i');
       bind();
@@ -305,10 +313,49 @@ export class Talks {
       bind();
     } else if (t.kind === 'what') {
       this.sayText(`<span dir="ltr" class="en">What is it?</span><br><small>${esc(cv.tapword)}</small>`);
-      act.innerHTML = `<div class="cv-bigpic"><img src="${base()}english/words/${t.word}.webp" alt="" draggable="false"></div><div class="cv-opts">${t.options.map((w, i) => btn(`<span dir="ltr">${esc(WORD_NAMES.get(w) ?? w)}</span>`, i, 'word')).join('')}</div>`;
-      bind();
+      act.innerHTML = `<div class="cv-bigpic"><img src="${base()}english/words/${t.word}.webp" alt="" draggable="false"></div><div class="cv-opts">${t.options.map((w, i) => btn(`<span dir="ltr">${esc(WORD_NAMES.get(w) ?? w)}</span>`, i, 'word')).join('')}</div><button class="cv-opt ok choose" type="button" style="visibility:hidden">✔</button>`;
+      const opts = [...act.querySelectorAll<HTMLElement>('.cv-opt.word')];
+      const choose = act.querySelector<HTMLElement>('.choose')!;
+      let sel = -1;
+      const pick = (i: number): void => {
+        sel = i;
+        opts.forEach((o, k) => o.classList.toggle('sel', k === i));
+        choose.style.visibility = i >= 0 ? 'visible' : 'hidden';
+      };
+      // the first tap says the word and marks it; the second tap (or the check) chooses it
+      opts.forEach((b, i) =>
+        b.addEventListener('click', () => {
+          if (act.classList.contains('lock')) return;
+          if (sel === i) {
+            done(i === t.answer, b);
+            pick(-1);
+            return;
+          }
+          pick(i);
+          void say([{ word: t.options[i] }]);
+        }),
+      );
+      choose.addEventListener('click', () => {
+        if (sel >= 0) {
+          const b = opts[sel];
+          done(sel === t.answer, b);
+          pick(-1);
+        }
+      });
+      // when the screen opens, both words are said, one after the other, and each button blinks while its word is heard
+      void (async () => {
+        await say(prompt);
+        await sleep(300);
+        for (const [i, o] of opts.entries()) {
+          if (!this.screen) return;
+          o.classList.add('blink');
+          await say([{ word: t.options[i] }]);
+          o.classList.remove('blink');
+          await sleep(200);
+        }
+      })();
     } else {
-      this.sayText(`<span dir="ltr" class="en">Hello! I'm ${esc(t.self)}.<br>What's your name?</span><br><small>${esc(cv.tapname)}</small>`);
+      this.sayText(`<span dir="ltr" class="en">${res.fixed ? `Hello! I'm ${esc(englishName(res.name))}.` : 'Hello!'}<br>What's your name?</span><br><small>${esc(cv.tapname)}</small>`);
       act.innerHTML = `<div class="cv-opts">${t.names.map((n, i) => btn(esc(n), i, 'word')).join('')}</div>`;
       bind();
     }
@@ -373,7 +420,12 @@ export class Talks {
     this.persist(true);
     this.flyHeart(sv.answers % 5 === 0);
     this.paintHearts();
-    void say([{ he: 'cv_thanks' }]);
+    // an English talk is thanked in English
+    if (SUBJECT[t.kind] === 'english') {
+      this.msg('Thank you, Rani!', 'ok');
+      this.screen.querySelector('.cv-msg')?.setAttribute('dir', 'ltr');
+      void say([{ enc: { id: 'carn_thank_you_rani', text: 'Thank you, Rani!' } }]);
+    } else void say([{ he: 'cv_thanks' }]);
     this.closeTimer = window.setTimeout(() => this.close(), 2000);
   }
   private flyHeart(star: boolean): void {

@@ -33,16 +33,20 @@ export function answered(s: AlertState, r: number): void {
   s.wait = ALERT_WAIT;
 }
 
-export interface Chat { text: string; /** a recorded Hebrew line, or English text */ he?: string; en?: string }
+export interface Chat { text: string; /** a recorded Hebrew line, or English text with the id of its recording */ he?: string; en?: string; enId?: string }
 export const CHATS: Chat[] = [
   { text: 'היי רני!', he: 'cv_chat_hi' },
   { text: 'איזה יום יפה!', he: 'cv_chat_day' },
   { text: 'בואי נשחק!', he: 'cv_chat_play' },
   { text: 'כיף לי כאן!', he: 'cv_chat_fun' },
-  { text: 'Hello!', en: 'Hello!' },
-  { text: 'I love pizza!', en: 'I love pizza!' },
-  { text: 'Hi Rani!', en: 'Hi Rani!' },
-  { text: 'Nice day!', en: 'Nice day!' },
+  { text: 'Hello!', en: 'Hello!', enId: 'carn_hello' },
+  { text: 'I love pizza!', en: 'I love pizza!', enId: 'carn_i_love_pizza' },
+  { text: 'Hi Rani!', en: 'Hi Rani!', enId: 'carn_hi_rani' },
+  { text: 'Nice day!', en: 'Nice day!', enId: 'carn_nice_day' },
+  { text: "Let's play!", en: "Let's play!", enId: 'carn_lets_play' },
+  { text: 'I am hungry!', en: 'I am hungry!', enId: 'carn_i_am_hungry' },
+  { text: 'I like ice cream!', en: 'I like ice cream!', enId: 'carn_i_like_ice_cream' },
+  { text: 'Look at me!', en: 'Look at me!', enId: 'carn_look_at_me' },
 ];
 export const CHAT_MIN = 4;
 export const CHAT_MAX = 8;

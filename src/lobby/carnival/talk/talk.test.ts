@@ -5,12 +5,14 @@ import { ALERT_WAIT, CHATS, Chatter, FIRST_WAIT, MAX_ALERTS, answered, freshAler
 import { MATH_KINDS, SUBJECT, learnedWords, makeTalk, nextKind, rng, validTalk, type TalkEnv, type TalkKind } from './gen';
 import { CARNIVAL_EN, CARNIVAL_LINES } from './lines';
 import { emptySave, loadSave, writeSave } from './state';
-import { opening } from './speak';
+import { numberLine, opening } from './speak';
+import { WORDS } from '../../../games/english/content/words';
+import { ASKABLE } from './gen';
 import { linePartsFor } from '../../../games/english/content/heLines';
 
 const word = (level: number, due: number, seen = true): Words[string] => ({ level, due, seen });
 const env = (level: number, words: Words = {}): TalkEnv => ({ level, words, today: 100, name: 'רני', otherNames: ['דני', 'נועה', 'תמר'], resident: 'מוצי' });
-const MANY: Words = { apple: word(1, 90), ball: word(2, 99), cake: word(3, 120), bed: word(1, 100), doll: word(4, 130), pizza: word(2, 80), unseenword: { level: 0, due: 0, seen: false } };
+const MANY: Words = { apple: word(1, 90), ball: word(2, 99), cake: word(3, 120), bed: word(1, 100), doll: word(4, 130), pizza: word(2, 80), unseenword: { level: 0, due: 0, seen: false }, mom: word(1, 50), run: word(1, 50), rain: word(1, 50) };
 
 describe('the questions', () => {
   it('every maths question is inside the level and has exactly one right answer (all levels, 3000 seeds)', () => {
@@ -74,6 +76,66 @@ describe('the questions', () => {
     const c = makeTalk('can', 3, env(3, MANY))!;
     expect(opening(c).map((p) => ('en' in p ? p.en : 'word' in p ? 'WORD' : '?'))).toEqual(['Can I have the', 'WORD', 'please?']);
     expect(CARNIVAL_EN.map((x) => x.text)).toContain('Can I have the');
+  });
+});
+
+describe('the rules of the new corrections', () => {
+  it('askable words: no verbs, no family, no weather; and only those are asked', () => {
+    for (const w of WORDS) {
+      if (w.world === 6 || w.world === 8 || ['sun', 'cloud', 'rain', 'snowflake', 'wind', 'rainbow', 'storm'].includes(w.id)) expect(w.askable, w.id).toBe(false);
+      else expect(w.askable, w.id).toBe(true);
+    }
+    expect(ASKABLE.has('apple') && ASKABLE.has('umbrella') && !ASKABLE.has('mom') && !ASKABLE.has('run') && !ASKABLE.has('rain')).toBe(true);
+    // mom, run and rain were learned, and are never asked
+    expect(learnedWords(MANY, 100)).not.toContain('mom');
+    for (let seed = 1; seed <= 300; seed++) for (const kind of ['can', 'what'] as TalkKind[]) {
+      const t = makeTalk(kind, seed, env(3, MANY))!;
+      if (t.kind === 'can' || t.kind === 'what') for (const o of t.options) expect(ASKABLE.has(o), o).toBe(true);
+    }
+  });
+
+  it('Hebrew numbers: before a noun two is "שתי" (cv_num_2c), one is never said before a plural noun, a number alone is the plain line', () => {
+    expect(numberLine(2, true)).toBe('cv_num_2c');
+    expect(numberLine(2)).toBe('cv_num_2');
+    expect(numberLine(3, true)).toBe('cv_num_3');
+    expect(CARNIVAL_LINES.find((l) => l.id === 'cv_num_2c')?.parts).toEqual(['שתי']);
+    for (let level = 1; level <= 5; level++) for (const kind of ['together', 'exact', 'missing'] as TalkKind[]) for (let seed = 1; seed <= 200; seed++) {
+      const t = makeTalk(kind, seed, env(level))!;
+      const ps = opening(t);
+      ps.forEach((p, i) => {
+        const next = ps[i + 1];
+        if ('num' in p && next && 'item' in next) {
+          // a number before a noun: 2 or more, and 2 is the "before" form
+          expect(p.num, `${kind} ${JSON.stringify(t)}`).toBeGreaterThanOrEqual(2);
+          expect(p.before).toBe(true);
+          expect(numberLine(p.num, p.before)).toBe(p.num === 2 ? 'cv_num_2c' : `cv_num_${p.num}`);
+        }
+        // the number that stands alone ("I ate one") is the plain line
+        if ('num' in p && !(next && 'item' in next)) expect(numberLine(p.num, p.before)).toBe(`cv_num_${p.num}`);
+      });
+    }
+    // "I ate one" has no noun after it
+    const one = { kind: 'missing', a: 3, b: 1, item: { id: 'cookie', emoji: '🍪', he: 'עוגיות' }, answer: 2, choices: [1, 2, 3] } as const;
+    expect(opening(one as never).some((p) => 'num' in p && p.num === 1 && !p.before)).toBe(true);
+  });
+
+  it('Hello: a fixed name has its whole clip, then "What\'s your name?"; the friend that Rani named says Hello', () => {
+    const t = makeTalk('hello', 1, env(1))!;
+    const fixed = opening(t, { id: 'mozzi', fixed: true, name: 'מוצי' }, 'Mozzi').map((p) => ('enc' in p ? p.enc.id : '?'));
+    expect(fixed).toEqual(['carn_hello_im_mozzi', 'carn_whats_your_name']);
+    const mine = opening(t, { id: 'companion', fixed: false, name: 'לילה' }).map((p) => ('enc' in p ? p.enc.id : '?'));
+    expect(mine).toEqual(['carn_hello', 'carn_whats_your_name']);
+    for (const id of ['cheesy', 'mozzi', 'horiko', 'popcheese']) expect(CARNIVAL_EN.some((x) => x.id === `carn_hello_im_${id}`)).toBe(true);
+    for (const id of ['carn_lets_play', 'carn_i_am_hungry', 'carn_i_like_ice_cream', 'carn_look_at_me', 'carn_thank_you_rani']) expect(CARNIVAL_EN.some((x) => x.id === id), id).toBe(true);
+    expect(CHATS.filter((c) => c.enId).map((c) => c.enId)).toEqual(expect.arrayContaining(['carn_lets_play', 'carn_i_am_hungry', 'carn_i_like_ice_cream', 'carn_look_at_me']));
+  });
+
+  it('"who has more": from level 3 the piles differ by 1 to 3', () => {
+    for (let level = 1; level <= 5; level++) for (let seed = 1; seed <= 300; seed++) {
+      const t = makeTalk('more', seed, env(level))!;
+      expect(validTalk(t, level)).toBe(true);
+      if (t.kind === 'more' && level >= 3) expect(Math.abs(t.a - t.b)).toBeLessThanOrEqual(3);
+    }
   });
 });
 

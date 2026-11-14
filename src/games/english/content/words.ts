@@ -6,10 +6,12 @@ export interface Word {
   world: number;
   /** what Cheesy says in Hebrew when the word first appears */
   he: string;
+  /** a thing that can be held or pointed at ("Can I have the...", "What is it?"): not a verb, not family, not weather */
+  askable: boolean;
 }
 
 /** The 108 words of the 12 worlds, nine in each, in the order of the picture sheets. */
-export const WORDS: Word[] = [
+const RAW: Omit<Word, 'askable'>[] = [
   { id: 'phone', world: 1, he: 'טלפון' },
   { id: 'tv', label: 'TV', world: 1, he: 'טלוויזיה' },
   { id: 'ball', world: 1, he: 'כדור' },
@@ -119,6 +121,10 @@ export const WORDS: Word[] = [
   { id: 'crown', world: 12, he: 'כתר' },
   { id: 'flowers', world: 12, he: 'זר פרחים' },
 ];
+
+/** The weather words (world 9): to see, not to ask for. The umbrella and the snowman are things. */
+const WEATHER = new Set(['sun', 'cloud', 'rain', 'snowflake', 'wind', 'rainbow', 'storm']);
+export const WORDS: Word[] = RAW.map((w) => ({ ...w, askable: !(w.world === 6 /* family */ || w.world === 8 /* verbs */ || WEATHER.has(w.id)) }));
 
 export const WORLD_NAMES: Record<number, string> = { 1: 'My room', 2: 'The kitchen', 3: 'The garden', 4: 'Drawing studio', 5: 'Candy shop', 6: 'My family', 7: 'The wardrobe', 8: 'Dance party', 9: 'Weather', 10: 'The zoo', 11: 'Ninja park', 12: 'The big show' };
 

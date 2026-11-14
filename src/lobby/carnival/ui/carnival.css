@@ -29,7 +29,7 @@
 .cv-alert { position: fixed; left: 0; top: 0; z-index: 7; width: 46px; height: 46px; border: 3px solid #fff; border-radius: 50%; background: linear-gradient(#ff7b8a, #ff3b5c); color: #fff; font-size: 24px; display: grid; place-items: center; padding: 0; box-shadow: 0 4px 10px rgba(0, 0, 0, .3); animation: cv-bounce .9s infinite; will-change: transform; }
 @keyframes cv-bounce { 50% { margin-top: -8px; } }
 .cv-hearts { position: fixed; z-index: 7; top: calc(150px + env(safe-area-inset-top)); inset-inline-start: 14px; background: rgba(255, 255, 255, .9); color: #b3123b; font-weight: 800; font-size: 20px; padding: 2px 12px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0, 0, 0, .2); pointer-events: auto; }
-.cv-talk { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; background: rgba(60, 30, 110, .5); backdrop-filter: blur(2px); pointer-events: auto; padding: calc(10px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom)); overflow: hidden; }
+.cv-talk { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; background: rgba(60, 30, 110, .78); pointer-events: auto; padding: calc(10px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom)); overflow: hidden; }
 .cv-x { align-self: flex-start; width: 52px; height: 52px; border: 0; border-radius: 50%; background: #fff; color: #7a2a5e; font-size: 26px; font-weight: 800; box-shadow: 0 3px 8px rgba(0, 0, 0, .3); flex: none; }
 .cv-who { position: relative; flex: 0 0 44%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 100%; }
 .cv-who img { height: 100%; max-height: 38vh; width: auto; max-width: 60vw; object-fit: contain; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, .3)); animation: cv-idle 2s ease-in-out infinite; }
@@ -77,3 +77,9 @@
 .cv-msg.ok { color: #fff7a0; font-size: 26px; }
 .cv-fly { position: fixed; z-index: 30; font-size: 34px; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .cv-alert, .cv-who img, .cv-talk.happy .cv-who img, .cv-opt.show, .cv-opt.shake { animation: none; } }
+
+.cv-opt.word.sel { box-shadow: 0 5px 0 #b05f08, 0 0 0 5px #fff, 0 0 18px #ffd23f; transform: scale(1.06); }
+.cv-opt.word.blink { animation: cv-blink .5s infinite; }
+@keyframes cv-blink { 50% { filter: brightness(1.5); transform: scale(1.1); } }
+.cv-opt.choose { min-height: 56px; font-size: 28px; }
+@media (prefers-reduced-motion: reduce) { .cv-opt.word.blink { animation: none; filter: brightness(1.4); } }
