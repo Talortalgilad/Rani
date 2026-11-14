@@ -13,8 +13,16 @@ export const sayFirst: StepRun = async (sh, step) => {
   const prompt = typeof step.prompt === 'string' ? step.prompt : '';
   const answer = String(step.answer);
   const pic = typeof step.picture === 'string' ? step.picture : '';
-  c.innerHTML = pic ? `<div class="tutor-pic big">${pictureHtml(pic)}</div>` : '';
+  // with a picture: the picture. Without: the question itself, big, with a speaker; with no question either: a big 🗣️
+  if (pic) {
+    c.innerHTML = `<div class="tutor-pic big">${pictureHtml(pic)}</div>`;
+  } else if (prompt) {
+    c.innerHTML = `<div class="tutor-card"><div class="tutor-big" dir="ltr">${esc(clipText(prompt))}</div><button class="tutor-speaker" type="button" aria-label="🔊">🔊</button></div>`;
+    c.querySelector('.tutor-speaker')!.addEventListener('click', () => void sh.say(prompt).catch(() => {}));
+  } else c.innerHTML = '<div class="tutor-card"><div class="tutor-mic big">🗣️</div></div>';
+  // a picture with no question: "What do you see?"
   if (prompt) await sh.say(prompt, { look: 'happy' });
+  else if (pic) await sh.say('t_what_do_you_see', { look: 'happy' });
   await sh.say('t_now_you', { look: 'listen', keep: true });
   if (sh.once('sayFirst')) await sh.say('t_now_you_he', { look: 'listen', keep: true });
   sh.lolly.set('listen');

@@ -66,7 +66,8 @@ export const teach: StepRun = async (sh, step) => {
     const st = sh.deps.state();
     if (!st.seen.includes(en)) {
       await sh.say(he, { look: 'listen' });
-      sh.deps.setState(markSeenSentence(sh.deps.state(), en));
+      // marked as heard only if it played to its end (a skip in the middle does not mark it)
+      if (sh.heard()) sh.deps.setState(markSeenSentence(sh.deps.state(), en));
     } else sh.setLast(he);
   }
   await sh.advance();

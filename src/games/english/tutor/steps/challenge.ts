@@ -13,11 +13,14 @@ interface Item { kind: 'pick' | 'answer'; clip: string; choices?: string[]; choi
 export const challenge: StepRun = async (sh, step) => {
   const items = (Array.isArray(step.items) ? step.items : []) as Item[];
   sh.clear();
+  await sh.say('t_challenge', { look: 'happy' });
   await sh.say('t_challenge_intro', { look: 'happy' });
   let mistakes = 0;
-  for (const it of items) {
+  for (const [k, it] of items.entries()) {
     sh.clear();
-    const hear = (): Promise<void> => sh.say(it.clip, { look: 'listen' });
+    // `pick`: the bubble does not give the sentence away ("🔊 ?" until she answers); `answer`: the question is in the bubble
+    const hear = (): Promise<void> => sh.say(it.clip, { look: 'listen', text: it.kind === 'pick' ? '🔊 ?' : undefined });
+    if (k === 0) await sh.say('t_listen_carefully', { look: 'listen' });
     await hear();
     const n = it.kind === 'pick' ? (it.choices ?? []).length : (it.choiceClips ?? []).length;
     const box = document.createElement('div');
@@ -32,21 +35,27 @@ export const challenge: StepRun = async (sh, step) => {
       box.appendChild(b);
       btns.push(b);
     }
-    if (it.kind === 'pick') {
-      const sp = document.createElement('button');
-      sp.className = 'tutor-speaker lone';
-      sp.type = 'button';
-      sp.textContent = '🔊';
-      sp.addEventListener('click', () => void hear().catch(() => {}));
-      sh.stage.prepend(sp);
-    }
+    // the bubble ("🔊 ?") says the question again when it is tapped: no second speaker
     sh.lolly.set('listen');
+    let touched = false;
     const right = await new Promise<boolean>((res, rej) => {
       let picked = -1;
       let busy = false;
+      // `answer`: the four answers are heard one after the other, each bubble blinking while it is heard (a tap stops this)
+      if (it.kind === 'answer') {
+        void (async () => {
+          for (let i = 0; i < btns.length && !touched; i++) {
+            btns[i].classList.add('blink');
+            await sh.say(it.choiceClips![i], { nobubble: true });
+            btns[i].classList.remove('blink');
+          }
+        })().catch(() => {});
+      }
       btns.forEach((b, i) =>
         b.addEventListener('click', () => {
           if (busy) return;
+          touched = true;
+          btns.forEach((x) => x.classList.remove('blink'));
           if (it.kind === 'answer' && picked !== i) {
             picked = i;
             btns.forEach((x, j) => x.classList.toggle('sel', j === i));
@@ -57,9 +66,11 @@ export const challenge: StepRun = async (sh, step) => {
           const ok = i === it.correct;
           btns[it.correct].classList.add('right');
           if (!ok) b.classList.add('wrong');
+          // the sentence is revealed now
+          if (it.kind === 'pick') sh.bubble(clipText(it.clip), 'en');
           sh.deps.sound.play(ok ? 'bonus' : 'pop', ok ? undefined : 300);
           // right: a short praise and on; wrong: the answer is shown and on (no hint, no second try)
-          (ok ? sh.praise() : sh.wait(1300)).then(() => res(ok)).catch(rej);
+          (ok ? sh.praise(it.kind === 'pick') : sh.wait(1300)).then(() => res(ok)).catch(rej);
         }),
       );
     });

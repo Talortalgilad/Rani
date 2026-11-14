@@ -51,10 +51,17 @@ export interface Shell {
   praise(keepBubble?: boolean): Promise<void>;
   /** what a tap on the bubble says */
   setLast(id: string): void;
+  /** did the last thing that Lolly said play to its end? (a skip, a stop or no sound: no) */
+  heard(): boolean;
   tapTwice: boolean;
 }
 
-const PRAISE = ['t_very_good', 't_excellent', 't_you_got_it', 't_super', 't_well_done'];
+export const PRAISE = ['t_very_good', 't_excellent', 't_you_got_it', 't_super', 't_well_done', 't_perfect', 't_amazing'];
+/** a praise that is not the one before it */
+export const nextPraise = (before: string, r = Math.random()): string => {
+  const pool = PRAISE.filter((p) => p !== before);
+  return pool[Math.floor(r * pool.length) % pool.length];
+};
 const fast = (): boolean => typeof window !== 'undefined' && !!(window as unknown as { __tutorFast?: boolean }).__tutorFast;
 
 export function bubbleHtml(text: string, lang: 'he' | 'en'): string {
@@ -90,6 +97,8 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
       window.setTimeout(() => (dead ? rej(new Aborted()) : res()), fast() ? Math.min(ms, 30) : ms);
     });
   let busy = 0;
+  let lastHeard = false;
+  let lastPraise = '';
   let listening = false;
   let skipping = false;
   let idleSince = Date.now();
@@ -98,6 +107,7 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
   const PRE: Partial<Record<Look, number>> = { wave: 600, clap: 500, confused: 500, think: 400 };
   const say = async (id: string, o: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number; side?: boolean; asGuest?: boolean } = {}): Promise<void> => {
     check();
+    lastHeard = false;
     if (skipping) return;
     busy++;
     // a squishy speaks (the guest of the dialogue, the squishies that are met): Lolly does not move her mouth
@@ -122,6 +132,7 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
     if (mine) lolly.speaking(true);
     const t0 = Date.now();
     const ok = await playTutor(id);
+    lastHeard = ok && !skipping;
     if (mine) lolly.speaking(false);
     try {
       check();
@@ -223,9 +234,11 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
     praise: async (keepBubble = false) => {
       deps.sound.play('bonus');
       lolly.set('happy');
-      await say(PRAISE[Math.floor(Math.random() * PRAISE.length)], { look: 'happy', keep: false, nobubble: keepBubble });
+      lastPraise = nextPraise(lastPraise);
+      await say(lastPraise, { look: 'happy', keep: false, nobubble: keepBubble });
     },
     setLast: (id) => void (last = id),
+    heard: () => lastHeard,
     tapTwice: true,
   };
   return {

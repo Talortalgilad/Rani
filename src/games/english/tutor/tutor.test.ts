@@ -6,6 +6,7 @@ import { parsePic } from './pictures';
 import { STAGE_OF, STEPS } from './steps';
 import { access, emptyTutor, finish, loadTutor, markSeenSentence, nextNew, saveProgress, setSparkle, unitOpen } from './state';
 import { canRun } from './engine';
+import { nextPraise, PRAISE } from './shell';
 
 const manifest = (lang: 'he' | 'en'): Set<string> => {
   const files = import.meta.glob('../../../../public/english/voice/*/manifest.json', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
@@ -96,7 +97,7 @@ describe('tutor-lessons.json: every clip exists, every answer is in range, every
     for (const t of DATA.things) expect(words.has(t), t).toBe(true);
   });
   it('the clips that the engine itself says exist (the hellos, the goodbyes, the reactions to a feeling, the praise, the mistakes)', () => {
-    const ids = ['t_welcome', 't_hi.0', 't_hi.1', 't_hi.2', 't_bye.0', 't_bye.1', 't_hello_rani', 't_how_are_you_today', 't_feel_ask', 't_review', 't_say_it_with_me', 't_say_aloud', 't_sentence_of_day', 't_sticker', 't_unit_done', 't_see_you_tomorrow', 't_who_said', 't_right_or_wrong', 't_am_i_right', 't_silly_me', 't_oops', 't_i_was_right', 't_fix_me', 't_almost', 't_show', 't_chant_intro', 't_chant_again', 't_done_today', 't_now_you', 't_now_you_he', 't_self_check', 't_challenge_intro', 't_challenge_perfect', 't_challenge_ok', 't_very_good', 't_excellent', 't_you_got_it', 't_super', 't_well_done', ...DATA.feelings.map((f) => `t_re_${f}`), ...DATA.foods.map((f) => `t_you_like_${f}`)];
+    const ids = ['t_welcome', 't_hi.0', 't_hi.1', 't_hi.2', 't_bye.0', 't_bye.1', 't_hello_rani', 't_how_are_you_today', 't_feel_ask', 't_review', 't_say_it_with_me', 't_say_aloud', 't_sentence_of_day', 't_sticker', 't_unit_done', 't_see_you_tomorrow', 't_who_said', 't_right_or_wrong', 't_am_i_right', 't_silly_me', 't_oops', 't_i_was_right', 't_fix_me', 't_almost', 't_show', 't_chant_intro', 't_chant_again', 't_done_today', 't_now_you', 't_now_you_he', 't_self_check', 't_challenge_intro', 't_challenge_perfect', 't_challenge_ok', 't_challenge', 't_listen_carefully', 't_what_do_you_see', 't_perfect', 't_amazing', 't_very_good', 't_excellent', 't_you_got_it', 't_super', 't_well_done', ...DATA.feelings.map((f) => `t_re_${f}`), ...DATA.foods.map((f) => `t_you_like_${f}`)];
     for (const id of ids) expect(recorded(id), id).toBe(true);
   });
   it('a lesson of unit 1 can be run by this stage; the types of stage 1 are named, not missing by mistake', () => {
@@ -176,5 +177,14 @@ describe('a save from before is not lost (lessons of version 4)', () => {
     s = setSparkle(s, 'u1l2');
     expect(loadTutor(s, steps).sparkle.u1l2).toBe(true);
     expect(loadTutor(s, steps).seen).toEqual(['t_hello']);
+  });
+});
+
+describe('the praises', () => {
+  it('the new ones are in the pool, every one has a recording, and the same praise never comes twice in a row', () => {
+    expect(PRAISE).toEqual(expect.arrayContaining(['t_perfect', 't_amazing', 't_very_good', 't_excellent', 't_you_got_it', 't_super', 't_well_done']));
+    for (const p of PRAISE) expect(recorded(p), p).toBe(true);
+    for (const before of ['', ...PRAISE]) for (let i = 0; i < 40; i++) expect(nextPraise(before, i / 40)).not.toBe(before);
+    expect(new Set(Array.from({ length: 40 }, (_, i) => nextPraise('t_super', i / 40))).size).toBe(PRAISE.length - 1);
   });
 });

@@ -146,6 +146,11 @@
 .tutor-sticker.sparkle { box-shadow: 0 0 0 6px rgba(255, 220, 90, .9), 0 0 28px 10px rgba(255, 220, 90, .85), 0 8px 18px rgba(58, 47, 75, .25); animation: spark-glow 1.2s ease-in-out infinite; }
 @keyframes spark-glow { 50% { box-shadow: 0 0 0 10px rgba(255, 235, 140, .95), 0 0 40px 16px rgba(255, 235, 140, .95), 0 8px 18px rgba(58, 47, 75, .25); } }
 .tl-badge.sparkle { box-shadow: 0 0 0 3px #ffd84a, 0 0 12px 4px rgba(255, 216, 74, .9); }
-.tutor-choices.four.ch4 { gap: 10px; }
-.tutor-choices.four.ch4 .tutor-opt { width: 40%; min-width: 0; aspect-ratio: 1.25; }
+.tutor-choices.four.ch4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: min(92%, 300px); }
+.tutor-choices.four.ch4 .tutor-opt { width: 100%; min-width: 0; aspect-ratio: 1.4; }
 .tutor-speaker.lone { width: 40px; height: 40px; font-size: 20px; }
+
+.tutor-opt.blink { animation: opt-blink .45s ease-in-out infinite; background: #fff3b8; }
+@keyframes opt-blink { 50% { transform: scale(1.04); box-shadow: 0 0 0 5px rgba(255, 200, 58, .9); } }
+.tutor-mic.big { font-size: 96px; }
+.tutor-card .tutor-speaker { margin-top: 4px; }
