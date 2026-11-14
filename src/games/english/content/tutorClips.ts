@@ -358,7 +358,7 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
  "t_no": {
   "lang": "en",
   "text": "No!",
-  "take": 320
+  "take": 328
  },
  "t_thank_you": {
   "lang": "en",
@@ -387,8 +387,8 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
  },
  "t_im": {
   "lang": "en",
-  "text": "I'm...",
-  "take": 321
+  "text": "I'm",
+  "take": 328
  },
  "t_im_rani": {
   "lang": "en",
@@ -418,7 +418,7 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
  "t_im_great": {
   "lang": "en",
   "text": "I'm great!",
-  "take": 321
+  "take": 328
  },
  "t_goodbye": {
   "lang": "en",
@@ -503,7 +503,7 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
  "t_im_sleepy": {
   "lang": "en",
   "text": "I'm sleepy.",
-  "take": 322
+  "take": 328
  },
  "t_im_hungry": {
   "lang": "en",
@@ -568,7 +568,7 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
  "t_like_milk": {
   "lang": "en",
   "text": "I like milk.",
-  "take": 323
+  "take": 328
  },
  "t_like_cake": {
   "lang": "en",
@@ -787,8 +787,8 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
  },
  "t_its_a": {
   "lang": "en",
-  "text": "It's a...",
-  "take": 325
+  "text": "It's a",
+  "take": 328
  },
  "t_what_color_is_it": {
   "lang": "en",
@@ -1004,5 +1004,10 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
   "lang": "en",
   "text": "Red, red, a red balloon! Blue, blue, a blue balloon! Yellow, pink, purple, green, the best balloons I've ever seen!",
   "take": 340
+ },
+ "t_goodbye_plain": {
+  "lang": "en",
+  "text": "Goodbye!",
+  "take": 328
  }
 } as never;

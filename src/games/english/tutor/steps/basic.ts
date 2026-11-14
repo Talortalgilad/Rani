@@ -3,7 +3,7 @@ import { esc } from '../../ui/text';
 import { clipText } from '../audio';
 import { pictureHtml } from '../pictures';
 import { setFeeling, finish } from '../state';
-import { faceSvg } from '../pictures';
+import { faceHtml } from '../pictures';
 import { bubbleHtml, type StepRun } from '../shell';
 
 const str = (x: unknown): string => (typeof x === 'string' ? x : '');
@@ -11,11 +11,12 @@ const str = (x: unknown): string => (typeof x === 'string' ? x : '');
 /** greet: Lolly waves. "Hello, Rani!", and before it one of the three Hebrew hellos (the first lesson says the welcome in its next step). */
 export const greet: StepRun = async (sh) => {
   const c = sh.clear();
-  c.innerHTML = '<div class="tutor-wave">👋</div>';
-  sh.lolly.set('happy');
+  c.innerHTML = '';
+  sh.roomy();
+  sh.lolly.set('wave');
   const welcomeNext = sh.lesson.steps.some((s) => s.type === 'say' && ((s.clips as string[]) ?? []).includes('t_welcome'));
-  if (!welcomeNext) await sh.say(`t_hi.${Math.floor(Math.random() * 3)}`, { look: 'happy', keep: true });
-  await sh.say('t_hello_rani', { look: 'happy' });
+  if (!welcomeNext) await sh.say(`t_hi.${Math.floor(Math.random() * 3)}`, { look: 'wave', keep: true });
+  await sh.say('t_hello_rani', { look: 'wave' });
 };
 
 /** feel: five faces; Lolly answers the one she taps, and it is remembered (only the last day). */
@@ -28,7 +29,7 @@ export const feel: StepRun = async (sh) => {
   const feelings = ['happy', 'sad', 'sleepy', 'hungry', 'great'];
   const row = document.createElement('div');
   row.className = 'tutor-faces';
-  row.innerHTML = feelings.map((f) => `<button class="tutor-face" type="button" data-f="${f}">${faceSvg(f)}</button>`).join('');
+  row.innerHTML = feelings.map((f) => `<button class="tutor-face" type="button" data-f="${f}">${faceHtml(f)}</button>`).join('');
   c.appendChild(row);
   const f = await new Promise<string>((res) => row.querySelectorAll<HTMLButtonElement>('.tutor-face').forEach((b) => b.addEventListener('click', () => res(b.dataset.f!))));
   row.querySelectorAll<HTMLButtonElement>('.tutor-face').forEach((b) => b.classList.toggle('sel', b.dataset.f === f));
@@ -40,8 +41,9 @@ export const feel: StepRun = async (sh) => {
 /** say: Lolly says the clips in order; the text is in her bubble. */
 export const say: StepRun = async (sh, step) => {
   sh.clear();
+  sh.roomy();
   for (const id of (step.clips as string[]) ?? []) {
-    await sh.say(id, { look: 'happy' });
+    await sh.say(id, { look: 'idle' });
     await sh.wait(250);
   }
 };
@@ -95,7 +97,7 @@ export const sticker: StepRun = async (sh) => {
   sh.deps.setState(finish(sh.deps.state(), sh.lesson.id, id, sh.deps.today));
   sh.lolly.set('clap');
   sh.deps.sound.play('win');
-  await sh.say('t_sticker', { look: 'clap' });
+  await sh.say('t_sticker', { look: 'clap', keep: true });
   c.querySelector('.tutor-sticker')?.classList.add('stuck');
   await sh.wait(900);
   await sh.next();
@@ -108,17 +110,18 @@ export const unitDone: StepRun = async (sh) => {
   c.innerHTML = `<div class="tutor-confetti" aria-hidden="true">${bits}</div><div class="tutor-card"><div class="tutor-crown">👑</div></div>`;
   sh.lolly.set('clap');
   sh.deps.sound.play('fanfare');
-  await sh.say('t_unit_done', { look: 'clap' });
+  await sh.say('t_unit_done', { look: 'clap', keep: true });
   await sh.next();
 };
 
 /** bye: "See you tomorrow!" and one of the two Hebrew goodbyes. */
 export const bye: StepRun = async (sh) => {
   const c = sh.clear();
-  c.innerHTML = '<div class="tutor-wave">👋</div>';
-  sh.lolly.set('happy');
-  await sh.say('t_see_you_tomorrow', { look: 'happy', keep: true });
-  await sh.say(`t_bye.${Math.floor(Math.random() * 2)}`, { look: 'happy' });
+  c.innerHTML = '';
+  sh.roomy();
+  sh.lolly.set('wave');
+  await sh.say('t_see_you_tomorrow', { look: 'wave', keep: true });
+  await sh.say(`t_bye.${Math.floor(Math.random() * 2)}`, { look: 'wave' });
   await sh.wait(500);
 };
 

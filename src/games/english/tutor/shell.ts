@@ -36,6 +36,8 @@ export interface Shell {
   next(label?: string, id?: string): Promise<void>;
   /** the step area, emptied */
   clear(): HTMLElement;
+  /** a step with nothing to tap (hello, goodbye, a sentence said): Lolly takes the room */
+  roomy(): void;
   /** per-lesson memory of the things that are said once ("tap the picture") */
   once(key: string): boolean;
   /** how many `kind` of step came before in this lesson run */
@@ -55,7 +57,7 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
     <div class="en-screen tutor-screen">
       <div class="en-sky"></div>
       <header class="tutor-top"><button class="q-home" id="tx" type="button" aria-label="סגירה">✕</button><div class="tutor-dots" id="td">${Array.from({ length: 6 }, () => '<i></i>').join('')}</div></header>
-      <div class="tutor-lolly-row"><div class="tutor-lolly" id="tl"></div><button class="tutor-bubble" id="tb" type="button" aria-label="שוב"><span id="tbt"></span></button></div>
+      <div class="tutor-lolly-col"><div class="tutor-lolly" id="tl"></div><button class="tutor-bubble" id="tb" type="button" aria-label="שוב"><span id="tbt"></span></button></div>
       <div class="tutor-stage" id="ts"></div>
     </div>`;
   const q = <T extends HTMLElement>(s: string): T => root.querySelector<T>(s)!;
@@ -126,8 +128,10 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
       }),
     clear: () => {
       stage.innerHTML = '';
+      root.querySelector('.tutor-screen')?.classList.remove('roomy');
       return stage;
     },
+    roomy: () => root.querySelector('.tutor-screen')?.classList.add('roomy'),
     once: (key) => (seen.has(key) ? false : (seen.add(key), true)),
     praise: async () => {
       deps.sound.play('bonus');
@@ -159,6 +163,7 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
   const box = document.createElement('div');
   box.className = `tutor-choices ${o.cls ?? ''}`;
   sh.stage.appendChild(box);
+  sh.lolly.set('listen');
   const btns = o.options.map((op, i) => {
     const b = document.createElement('button');
     b.type = 'button';

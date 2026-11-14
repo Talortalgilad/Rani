@@ -1,0 +1,37 @@
+[
+ {
+  "take": 328,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_170024_8970330c-a8e8-41a9-ad17-fef75d1d44c7.mp3",
+  "lines": [
+   {
+    "id": "t_like_milk",
+    "text": "I like milk."
+   },
+   {
+    "id": "t_im",
+    "text": "I'm"
+   },
+   {
+    "id": "t_its_a",
+    "text": "It's a"
+   },
+   {
+    "id": "t_no",
+    "text": "No!"
+   },
+   {
+    "id": "t_goodbye_plain",
+    "text": "Goodbye!"
+   },
+   {
+    "id": "t_im_sleepy",
+    "text": "I'm sleepy."
+   },
+   {
+    "id": "t_im_great",
+    "text": "I'm great!"
+   }
+  ]
+ }
+]

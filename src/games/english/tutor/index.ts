@@ -6,7 +6,7 @@ import { esc } from '../ui/text';
 import { stopSpeech } from '../voice';
 import { canRun, runLesson, type Run } from './engine';
 import { LESSONS, units, type Lesson } from './lessons';
-import { mountLolly } from './lolly';
+import { mountLolly, preloadTutor } from './lolly';
 import { access, isDone, loadTutor, type TutorState } from './state';
 import { playTutor, stopTutor, clipText } from './audio';
 import type { Deps } from './shell';
@@ -24,6 +24,7 @@ export interface TutorDeps {
 }
 
 export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
+  preloadTutor();
   let state = loadTutor(d.load());
   let run: Run | null = null;
   let alive = true;
@@ -49,7 +50,7 @@ export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
       <div class="en-screen tutor-screen tutor-list">
         <div class="en-sky"></div>
         <header class="tutor-top"><button class="q-home" id="tback" type="button" aria-label="חזרה">←</button><h1 class="map-title">המורה לולי</h1><span style="width:44px"></span></header>
-        <div class="tutor-lolly-row"><div class="tutor-lolly" id="tl"></div><button class="tutor-bubble ${note ? "" : "empty"}" id="tb" type="button"><span id="tbt">${esc(note)}</span></button></div>
+        <div class="tutor-lolly-row"><div class="tutor-lolly sm" id="tl"></div><button class="tutor-bubble ${note ? "" : "empty"}" id="tb" type="button"><span id="tbt">${esc(note)}</span></button></div>
         <div class="tutor-units">${units()
           .map(
             (u) => `<section class="tutor-unit"><h2>יחידה ${u}</h2><div class="tutor-lessons">${LESSONS.filter((l) => l.unit === u)

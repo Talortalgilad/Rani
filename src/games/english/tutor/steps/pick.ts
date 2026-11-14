@@ -3,7 +3,7 @@ import { dueWords, review as leitner } from '../../engine/progress';
 import { playWord } from '../../voice';
 import { clipText } from '../audio';
 import { pictureHtml } from '../pictures';
-import { bubbleHtml, pickRound, type Option, type StepRun } from '../shell';
+import { pickRound, type Option, type StepRun } from '../shell';
 import { esc } from '../../ui/text';
 
 const arr = <T>(x: unknown): T[] => (Array.isArray(x) ? (x as T[]) : []);
@@ -95,7 +95,7 @@ export const dialogue: StepRun = async (sh, step) => {
   const turns = arr<{ squishy: string; choices: string[]; correct: number }>(step.turns);
   for (const t of turns) {
     const c = sh.clear();
-    c.innerHTML = `<div class="tutor-pic big">${pictureHtml('squishy:mozzi')}</div><div class="tutor-sbubble">${bubbleHtml(clipText(t.squishy), 'en')}</div>`;
+    c.innerHTML = `<div class="tutor-pic big small">${pictureHtml('squishy:mozzi')}</div>`;
     const hear = (): Promise<void> => sh.say(t.squishy, { look: 'listen' });
     await hear();
     const tries = await pickRound(sh, { options: t.choices.map((id) => bubbleOpt(clipText(id), id)), correct: t.correct, replay: hear, twice: true, cls: 'bubbles', praise: false });

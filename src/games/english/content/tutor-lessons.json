@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "feelings": [
   "happy",
   "sad",
@@ -266,7 +266,7 @@
      ],
      "choiceClips": [
       "t_im_rani",
-      "t_goodbye",
+      "t_goodbye_plain",
       "t_hello"
      ],
      "correct": 0
@@ -285,7 +285,7 @@
        "squishy": "t_im_mozzi",
        "choices": [
         "t_im_rani",
-        "t_goodbye"
+        "t_im_hungry"
        ],
        "correct": 0
       },
@@ -293,7 +293,7 @@
        "squishy": "t_nice_to_meet_you",
        "choices": [
         "t_nice_to_meet_you",
-        "t_im_lolly"
+        "t_goodbye_plain"
        ],
        "correct": 0
       }

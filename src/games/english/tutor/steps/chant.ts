@@ -46,10 +46,10 @@ export const chant: StepRun = async (sh, step) => {
       clap.classList.remove('hit');
       void clap.offsetWidth;
       clap.classList.add('hit');
-      window.setTimeout(() => sh.lolly.set('happy'), 160);
+      window.setTimeout(() => sh.lolly.set('idle'), 220);
     });
     sh.bubble('', 'en');
-    sh.lolly.set('happy');
+    sh.lolly.set('idle');
     // the beat: every 0.5 s, the strong one every four
     let beat = 0;
     const metro = window.setInterval(() => drum(beat++ % 4 === 0), 500);

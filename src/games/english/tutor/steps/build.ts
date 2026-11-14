@@ -19,6 +19,7 @@ export const build: StepRun = async (sh, step) => {
   const clip = String(step.clip ?? '');
   const n = tiles.length;
   c.innerHTML = `${step.picture ? `<div class="tutor-pic big">${pictureHtml(String(step.picture))}</div>` : ''}<div class="tutor-slots" style="--n:${n}">${tiles.map((_, i) => `<div class="tutor-slot" data-s="${i}"></div>`).join('')}</div><div class="tutor-bank"></div>`;
+  sh.lolly.set('think');
   const slots = [...c.querySelectorAll<HTMLElement>('.tutor-slot')];
   const bank = c.querySelector<HTMLElement>('.tutor-bank')!;
   const els: HTMLElement[] = [];
@@ -74,7 +75,7 @@ export const build: StepRun = async (sh, step) => {
       }
       tries++;
       if (tries === 1) {
-        await sh.say('t_almost', { look: 'listen' });
+        await sh.say('t_almost', { look: 'think', keep: true });
         reset();
       } else if (tries === 2) {
         reset();
