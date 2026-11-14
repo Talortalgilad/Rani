@@ -248,9 +248,17 @@ function paintGoals(failed: Fail[] = []): void {
   }
   if (g.speed) chips.push({ ico: g.speed.mode === 'fast' ? '🐇' : '🐢', text: '', say: g.speed.mode === 'fast' ? 'goalFast' : 'goalSlow', done: checked && !failed_('gate'), fail: failed_('gate') });
   if (g.height) chips.push({ ico: '📏', text: g.height.kind === 'peak' ? `${g.height.h}` : `−${g.height.d}`, say: g.height.kind === 'peak' ? 'goalPeak' : 'goalLower', done: checked && !failed_('height'), fail: failed_('height') });
-  for (const q of g.parts) {
-    const have = q.kind === 'loop' ? b.track.loops.length : b.track.parts.filter((p) => p.kind === q.kind).length;
-    chips.push({ ico: PART_ICON[q.kind], text: q.n > 1 ? `${have}/${q.n}` : '', say: q.kind, done: have >= q.n, fail: failed.some((f) => f.kind === 'part' && f.part === q.kind) });
+  if (g.parts.length) {
+    // all the pieces that have to be on the track share one chip (an icon for each, with the number when it is more than one)
+    const have = (q: (typeof g.parts)[number]): number => (q.kind === 'loop' ? b.track.loops.length : b.track.parts.filter((p) => p.kind === q.kind).length);
+    const left = g.parts.find((q) => have(q) < q.n);
+    chips.push({
+      ico: g.parts.map((q) => PART_ICON[q.kind] + (q.n > 1 ? `×${q.n}` : '')).join(' '),
+      text: '',
+      say: left?.kind ?? g.parts[0].kind,
+      done: !left,
+      fail: failed.some((f) => f.kind === 'part'),
+    });
   }
   if (!chips.length) chips.push({ ico: '🏁', text: '', say: 'goalFinish', done: false, fail: false });
   box.innerHTML = chips.map((c) => `<span class="pk-chip ${c.done ? 'done' : ''} ${c.fail ? 'fail' : ''}" data-say="park_${c.say}">${c.ico}${c.text ? ` ${c.text}` : ''}</span>`).join('');

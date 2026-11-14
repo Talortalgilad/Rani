@@ -131,6 +131,9 @@ export function evaluate(goals: Goals, track: Track, path: Path, ride: Ride): Ev
     const have = pg.kind === 'loop' ? track.loops.length : track.parts.filter((p) => p.kind === pg.kind).length;
     if (have < pg.n) fails.push({ kind: 'part', part: pg.kind });
   }
+  // what is said first: the red of an obstacle, then the missing part, the height, the gate and the stars
+  const order = ['obstacle', 'part', 'height', 'gate', 'stars'];
+  fails.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
   return { ok: fails.length === 0, fails, stars };
 }
 
