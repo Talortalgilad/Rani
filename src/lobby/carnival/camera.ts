@@ -5,17 +5,19 @@
  */
 export const TAP_MOVE = 10;
 export const TAP_MS = 400;
-export const PITCH = (54 * Math.PI) / 180;
+export const PITCH = (62 * Math.PI) / 180;
 export const DIST_MIN = 15;
 export const DIST_MAX = 48;
 export const PAN_LIMIT = 8.5;
+/** the island is a tall ellipse: the camera may go further along it than across */
+export const PAN_Z = 17;
 export const FOV = 46;
 
 export interface CamState { x: number; z: number; dist: number }
 export const clampDist = (d: number): number => Math.min(DIST_MAX, Math.max(DIST_MIN, d));
 export function clampTarget(s: CamState): CamState {
-  const r = Math.hypot(s.x, s.z);
-  const k = r > PAN_LIMIT ? PAN_LIMIT / r : 1;
+  const r = Math.hypot(s.x / PAN_LIMIT, s.z / PAN_Z);
+  const k = r > 1 ? 1 / r : 1;
   return { x: s.x * k, z: s.z * k, dist: clampDist(s.dist) };
 }
 /** The distance from which a circle of `radius` round the middle fills the width of the screen. */

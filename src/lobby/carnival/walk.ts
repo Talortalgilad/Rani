@@ -2,7 +2,7 @@
  * The walking of the residents (SPEC-carnival.md 4): on a graph of the paths (the ring, the spokes of the cross and the edge of the plaza).
  * A resident goes from node to node in a straight line, rests a little at some of them, and never leaves the path. Pure and deterministic.
  */
-import { PLAZA_R, RING_NODES, RING_R } from './layout';
+import { PLAZA_R, RING_NODES, RING_R, ZS } from './layout';
 
 export interface Node { x: number; z: number; next: number[] }
 export interface Graph { nodes: Node[] }
@@ -10,20 +10,21 @@ export interface Graph { nodes: Node[] }
 /** The paths: RING_NODES nodes on the ring, a middle node and a plaza node on each of the four spokes, the plaza nodes joined round the pedestal. */
 export function makeGraph(): Graph {
   const nodes: Node[] = [];
-  const at = (r: number, a: number): number => {
-    nodes.push({ x: Math.sin(a) * r, z: -Math.cos(a) * r, next: [] });
+  const at = (r: number, a: number, zs = 1): number => {
+    nodes.push({ x: Math.sin(a) * r, z: -Math.cos(a) * r * zs, next: [] });
     return nodes.length - 1;
   };
   const link = (a: number, b: number): void => {
     nodes[a].next.push(b);
     nodes[b].next.push(a);
   };
-  const ring = Array.from({ length: RING_NODES }, (_, i) => at(RING_R, (i / RING_NODES) * Math.PI * 2));
+  const ring = Array.from({ length: RING_NODES }, (_, i) => at(RING_R, (i / RING_NODES) * Math.PI * 2, ZS));
   ring.forEach((n, i) => link(n, ring[(i + 1) % RING_NODES]));
   const plaza: number[] = [];
   for (let k = 0; k < 4; k++) {
     const a = (k / 4) * Math.PI * 2;
-    const mid = at((RING_R + PLAZA_R) / 2, a);
+    const vertical = k % 2 === 0;
+    const mid = at(vertical ? (RING_R * ZS + PLAZA_R) / 2 : (RING_R + PLAZA_R) / 2, a);
     const p = at(PLAZA_R, a);
     link(ring[k * (RING_NODES / 4)], mid);
     link(mid, p);

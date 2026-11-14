@@ -9,7 +9,7 @@ export {
   SpriteMaterial, TubeGeometry, BufferGeometry, CanvasTexture, CircleGeometry, Color, ConeGeometry, CylinderGeometry,
   DirectionalLight, ExtrudeGeometry, Fog, Group, HemisphereLight, InstancedMesh, MathUtils, Mesh,
   MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry,
-  Raycaster, SRGBColorSpace, Scene, Shape, SphereGeometry, TextureLoader, TorusGeometry, Vector2, Vector3, WebGLRenderer,
+  Raycaster, LineBasicMaterial, LineSegments, SRGBColorSpace, Scene, Shape, SphereGeometry, TextureLoader, TorusGeometry, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 export type { Material, Texture } from 'three';
 // shipped with Three.js (examples/jsm): built in code, nothing to download

@@ -2,12 +2,14 @@
  * The plan of the carnival island (SPEC-carnival.md 2, 5): a round island, a ring path with a cross path, a plaza in the middle with the star jar,
  * and a plot for every game round the outside. Pure: numbers only.
  */
-export const ISLAND_R = 10.4;
-export const RING_R = 4.9;
+/** the island is a tall ellipse (for a phone held upright): its radius across, and how much longer it is from the back to the front */
+export const ISLAND_R = 7.6;
+export const ZS = 2.05;
+export const RING_R = 4.3;
 export const PLAZA_R = 1.9;
 export const PATH_W = 1.1;
 /** the plots of the games sit on this circle */
-export const PLOT_R = 7.7;
+export const PLOT_R = 6.0;
 export const PLOT_PAD = 1.55;
 export const RING_NODES = 16;
 
@@ -18,7 +20,7 @@ export function plots(n: number): Plot[] {
   return Array.from({ length: n }, (_, i) => {
     // from the back-left going clockwise, with the front (the camera side) left to the cross path
     const angle = (i / n) * Math.PI * 2 + Math.PI / n - Math.PI / 2 * 0;
-    return { x: Math.sin(angle) * PLOT_R, z: -Math.cos(angle) * PLOT_R, angle };
+    return { x: Math.sin(angle) * PLOT_R, z: -Math.cos(angle) * PLOT_R * ZS, angle };
   });
 }
 

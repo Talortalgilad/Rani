@@ -115,6 +115,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
     if (dead) return;
     lobby?.dispose();
     lobby = null;
+    document.querySelectorAll('.cv-sign').forEach((e) => e.remove());
     document.body.classList.remove('lobby3d-on', 'carnival-on');
     setTier('2d');
     cleanup2d?.();
@@ -128,6 +129,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       const label = document.createElement('div');
       label.className = 'cv-label';
       let hideTimer = 0;
+      const signs: HTMLElement[] = [];
       const l = await mod.startCarnival({
         plots: [
           ...games.map((g) => ({ kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
@@ -153,6 +155,36 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           hideTimer = window.setTimeout(() => label.classList.remove('on'), 3200);
           sound.play(again ? 'bonus' : 'pop', again ? 900 : 700);
           if (!again) void sayLine('carnival_name', r.name);
+        },
+        onSigns: (list) => {
+          if (!signs.length) {
+            const all = [...games.map((g) => ({ title: g.title, icon: g.icon, color: g.color })), ...comingSoon.map(() => ({ title: 'בקרוב', icon: '🔒', color: '#8a8497' }))];
+            all.forEach((g, i) => {
+              const el = document.createElement('div');
+              el.className = 'cv-sign';
+              el.style.setProperty('--c', g.color);
+              el.innerHTML = `<i>${g.icon}</i><b>${esc(g.title)}</b>`;
+              (root.querySelector('.screen.home') ?? root).appendChild(el);
+              signs.push(el);
+              void i;
+            });
+          }
+          // inside the screen, and not on top of each other (the lower one moves down)
+          const placed: { x: number; y: number; hw: number }[] = [];
+          list
+            .map((p, i) => ({ p, i }))
+            .sort((a, b) => a.p.y - b.p.y)
+            .forEach(({ p, i }) => {
+              const el = signs[i];
+              if (!el) return;
+              const hw = (el.offsetWidth || 110) / 2 + 6;
+              const x = Math.min(window.innerWidth - hw, Math.max(hw, p.x));
+              let y = Math.max(160, p.y);
+              for (const q of placed) if (Math.abs(x - q.x) < hw + q.hw && Math.abs(y - q.y) < 36) y = q.y + 36;
+              y = Math.min(window.innerHeight - 96, y);
+              placed.push({ x, y, hw });
+              el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+            });
         },
         onLabelMove: (p) => {
           if (!p) {
@@ -207,6 +239,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
     dead = true;
     lobby?.dispose();
     cleanup2d?.();
+    document.querySelectorAll('.cv-sign').forEach((e) => e.remove());
     document.body.classList.remove('lobby3d-on', 'carnival-on');
   };
 }

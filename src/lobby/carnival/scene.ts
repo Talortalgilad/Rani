@@ -4,7 +4,6 @@
  */
 import * as T from '../../lobby3d/lib';
 import { buildJar } from '../../lobby3d/jar';
-import { iconTexture } from '../../lobby3d/islands';
 import { clamp } from '../../lobby3d/motion';
 import { pickIndex } from '../../lobby3d/pick';
 import type { Tier } from '../../lobby3d/quality';
@@ -13,8 +12,9 @@ import { isNight, skyFor } from '../../lobby3d/sky';
 import { disposeTree, setSky, showScene, type SceneEnv, type SceneHandle, type StageScene } from '../../lobby3d/stage';
 import type { LobbyIslandHandle } from '../../games/types';
 import { bake, staticMeshes } from './bake';
-import { clampDist, clampTarget, eye, fitDist, FOV, groundPerPx, isTap, type CamState } from './camera';
-import { ISLAND_R, PATH_W, PLAZA_R, PLOT_PAD, PLOT_R, RING_R, plots } from './layout';
+import { drawFlagpole } from './flagpole';
+import { clampDist, clampTarget, eye, fitDist, FOV, groundPerPx, isTap, PITCH, type CamState } from './camera';
+import { ISLAND_R, PATH_W, PLAZA_R, PLOT_PAD, PLOT_R, RING_R, ZS, plots } from './layout';
 import type { Resident } from './residents';
 import { makeGraph, rng, Walker } from './walk';
 
@@ -42,6 +42,8 @@ export interface CarnivalOpts {
   onResident(r: Resident, again: boolean, screen: { x: number; y: number }): void;
   /** the label of a resident follows it: its position on the screen each frame */
   onLabelMove?(screen: { x: number; y: number } | null): void;
+  /** every frame: where the sign of each plot is on the screen (the page puts the labels there, inside the screen) */
+  onSigns?(signs: { x: number; y: number; behind: boolean }[]): void;
 }
 export interface CarnivalHandle {
   fadeIn(ms: number): void;
@@ -71,35 +73,6 @@ export async function startCarnival(o: CarnivalOpts): Promise<CarnivalHandle> {
 
 const loader = new T.TextureLoader();
 
-async function signTexture(text: string, color: string, icon: HTMLCanvasElement | null): Promise<T.CanvasTexture> {
-  await document.fonts.ready;
-  const c = document.createElement('canvas');
-  c.width = 512;
-  c.height = 256;
-  const g = c.getContext('2d')!;
-  g.fillStyle = '#fffaf2';
-  g.beginPath();
-  g.roundRect(6, 118, 500, 132, 34);
-  g.fill();
-  g.lineWidth = 10;
-  g.strokeStyle = color;
-  g.stroke();
-  if (icon) g.drawImage(icon, 192, 0, 128, 128);
-  g.fillStyle = '#3a2f4b';
-  let size = 72;
-  g.font = `800 ${size}px Rubik, system-ui, sans-serif`;
-  while (g.measureText(text).width > 440 && size > 30) {
-    size -= 4;
-    g.font = `800 ${size}px Rubik, system-ui, sans-serif`;
-  }
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText(text, 256, 188);
-  const tex = new T.CanvasTexture(c);
-  tex.colorSpace = T.SRGBColorSpace;
-  return tex;
-}
-
 async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHandle | null)[]): Promise<{ scene: StageScene; api: CarnivalHandle }> {
   const mats = new Materials();
   const scene = new T.Scene();
@@ -127,33 +100,37 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   scene.fog = new T.Fog(sky.bottom, 40, 90);
 
   // ---- the island, the water, the paths, the plaza
-  const water = new T.Mesh(keep(new T.CircleGeometry(48, 24)), keep(new T.MeshBasicMaterial({ color: '#62c2ea' })));
+  const water = new T.Mesh(keep(new T.CircleGeometry(70, 24)), keep(new T.MeshBasicMaterial({ color: '#19b4ee' })));
   water.rotation.x = -Math.PI / 2;
   water.position.y = -0.9;
-  const foam = new T.Mesh(keep(new T.RingGeometry(ISLAND_R + 0.2, ISLAND_R + 1.1, 40)), mats.get('#d9f4ff', { rough: 0.6 }));
+  const foam = new T.Mesh(keep(new T.RingGeometry(ISLAND_R + 0.2, ISLAND_R + 1.1, 40)), mats.get('#e8fbff', { rough: 0.6 }));
   foam.rotation.x = -Math.PI / 2;
+  foam.scale.set(1, ZS, 1);
   foam.position.y = -0.88;
   const cliff = new T.Mesh(keep(new T.CylinderGeometry(ISLAND_R, ISLAND_R - 1.2, 1.8, 36)), mats.get('#c49a6c', { rough: 0.9 }));
   cliff.position.y = -0.9;
-  const grass = new T.Mesh(keep(new T.CylinderGeometry(ISLAND_R, ISLAND_R, 0.12, 36)), mats.get(PALETTE.grass, { rough: 0.85 }));
+  cliff.scale.z = ZS;
+  const grass = new T.Mesh(keep(new T.CylinderGeometry(ISLAND_R, ISLAND_R, 0.12, 36)), mats.get('#3fd12a', { rough: 0.85 }));
   grass.position.y = -0.06;
+  grass.scale.z = ZS;
   grass.receiveShadow = tier === 'high';
-  const sandMat = mats.get('#f6dba0', { rough: 0.95 });
+  const sandMat = mats.get('#ffd467', { rough: 0.95 });
   const ring = new T.Mesh(keep(new T.RingGeometry(RING_R - PATH_W / 2, RING_R + PATH_W / 2, 64)), sandMat);
   ring.rotation.x = -Math.PI / 2;
+  ring.scale.set(1, ZS, 1);
   ring.position.y = 0.012;
-  const crossGeo = keep(new T.PlaneGeometry(PATH_W, (RING_R + PATH_W) * 2));
+  const crossGeo = keep(new T.PlaneGeometry(PATH_W, (RING_R * ZS + PATH_W) * 2));
   const cross1 = new T.Mesh(crossGeo, sandMat);
   cross1.rotation.x = -Math.PI / 2;
   cross1.position.y = 0.011;
-  const cross2 = new T.Mesh(crossGeo, sandMat);
+  const cross2 = new T.Mesh(keep(new T.PlaneGeometry(PATH_W, (RING_R + PATH_W) * 2)), sandMat);
   cross2.rotation.x = -Math.PI / 2;
   cross2.rotation.z = Math.PI / 2;
   cross2.position.y = 0.011;
-  const plaza = new T.Mesh(keep(new T.CircleGeometry(PLAZA_R + 0.5, 40)), mats.get('#f2cf86', { rough: 0.95 }));
+  const plaza = new T.Mesh(keep(new T.CircleGeometry(PLAZA_R + 0.5, 40)), mats.get('#ffc03d', { rough: 0.95 }));
   plaza.rotation.x = -Math.PI / 2;
   plaza.position.y = 0.02;
-  const plazaEdge = new T.Mesh(keep(new T.RingGeometry(PLAZA_R + 0.5, PLAZA_R + 0.75, 40)), mats.get('#d9a35a', { rough: 0.9 }));
+  const plazaEdge = new T.Mesh(keep(new T.RingGeometry(PLAZA_R + 0.5, PLAZA_R + 0.75, 40)), mats.get('#ff8f3a', { rough: 0.9 }));
   plazaEdge.rotation.x = -Math.PI / 2;
   plazaEdge.position.y = 0.025;
   scene.add(water, foam, cliff, grass, ring, cross1, cross2, plaza, plazaEdge);
@@ -177,14 +154,14 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
 
   // trees and bushes on the rim of the island (instanced), outside the plots
   const rand = rng(11);
-  const treeCount = 20;
+  const treeCount = 34;
   const trunks = new T.InstancedMesh(keep(new T.CylinderGeometry(0.12, 0.16, 1, 6)), keep(new T.MeshLambertMaterial({ color: '#9a6b3f' })), treeCount);
   const crowns = new T.InstancedMesh(keep(new T.SphereGeometry(0.62, 8, 6)), keep(new T.MeshLambertMaterial({ color: '#ffffff' })), treeCount);
-  const cols = ['#4fbf6a', '#6fd16a', '#ff9bb8', '#ffb84d', '#59c9b8'];
+  const cols = ['#14b83a', '#2fd44a', '#ff4f8b', '#ffae00', '#00c7b0'];
   for (let i = 0; i < treeCount; i++) {
     const a = (i / treeCount) * Math.PI * 2 + rand() * 0.15;
     const r = ISLAND_R - 0.55 - rand() * 0.25;
-    const x = Math.sin(a) * r, z = -Math.cos(a) * r;
+    const x = Math.sin(a) * r, z = -Math.cos(a) * r * ZS;
     const h = 1.1 + rand() * 0.6;
     m4.compose(new T.Vector3(x, h / 2, z), new T.Quaternion(), new T.Vector3(1, h, 1));
     trunks.setMatrixAt(i, m4);
@@ -262,33 +239,13 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     }
     return g;
   }
-  // signs (a sprite each: always facing the camera, so that it can be read; the icon is on the sign) and flags (two instanced meshes)
-  const signs: T.Sprite[] = [];
+  // the signs are page elements (always readable, always inside the screen): the scene only says where they are
   let disposed = false;
   const flagPoles = new T.InstancedMesh(keep(new T.CylinderGeometry(0.04, 0.04, 2.2, 5)), mats.get('#ffffff'), pads.length * 2);
   const flagCloths = new T.InstancedMesh(keep(new T.PlaneGeometry(0.62, 0.38)), new T.MeshLambertMaterial({ side: T.DoubleSide }), pads.length * 2);
   keep(flagCloths.material as T.MeshLambertMaterial);
   const flagPos: { x: number; z: number }[] = [];
   pads.forEach((p, i) => {
-    const title = p.spec.kind === 'locked' ? 'בקרוב' : p.spec.title;
-    const draw = async (): Promise<void> => {
-      let iconCanvas: HTMLCanvasElement | null = null;
-      if (p.spec.kind === 'game') {
-        const it = await iconTexture(p.spec.icon ?? '🎮');
-        if (it) {
-          iconCanvas = it.image as HTMLCanvasElement;
-        }
-      }
-      const tex = await signTexture(title, p.spec.color, iconCanvas);
-      if (disposed) return tex.dispose();
-      owned.push(tex);
-      const sp = new T.Sprite(keep(new T.SpriteMaterial({ map: tex, transparent: true, depthWrite: false })));
-      sp.scale.set(3.1, 1.55, 1);
-      sp.position.set(ps[i].x, 4.0, ps[i].z);
-      scene.add(sp);
-      signs.push(sp);
-    };
-    void draw();
     for (const side of [-1, 1]) {
       const ang = Math.atan2(ps[i].x, -ps[i].z);
       const cx = ps[i].x + Math.cos(ang) * side * (PLOT_PAD - 0.15), cz = ps[i].z + Math.sin(ang) * side * (PLOT_PAD - 0.15);
@@ -308,6 +265,116 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     });
     flagCloths.instanceMatrix.needsUpdate = true;
   };
+  // ---- the look of a carnival: red and white striped tents behind the games, the entrance arch, flagpoles with flags, balloons, a hot air balloon, strings of pennants
+  const itemUrl = (n: string): string => `${import.meta.env.BASE_URL}park/items/${n}.webp`;
+  const sprites: { sp: T.Sprite; base: T.Vector3; bob: number; ph: number }[] = [];
+  const itemSprite = (name: string, size: number, x: number, y: number, z: number, bob = 0): void => {
+    const mat = keep(new T.SpriteMaterial({ transparent: true, depthWrite: false }));
+    new T.TextureLoader().load(itemUrl(name), (tex: T.Texture) => {
+      if (disposed) return tex.dispose();
+      tex.colorSpace = T.SRGBColorSpace;
+      owned.push(tex);
+      mat.map = tex;
+      mat.needsUpdate = true;
+    });
+    const sp = new T.Sprite(mat);
+    sp.scale.set(size, size, 1);
+    sp.position.set(x, y, z);
+    scene.add(sp);
+    sprites.push({ sp, base: sp.position.clone(), bob, ph: sprites.length * 1.7 });
+  };
+  // the tents: a half cone of red and white stripes at the back of each game's plot (open toward the camera), one merged mesh
+  const tentGeos: T.BufferGeometry[] = [];
+  pads.forEach((p, i) => {
+    if (p.spec.kind !== 'game') return;
+    const cone = new T.CylinderGeometry(0.3, PLOT_PAD + 1.3, 3.9, 16, 1, true, Math.PI / 2, Math.PI);
+    const g = cone.toNonIndexed();
+    const n = g.attributes.position.count;
+    const colors = new Float32Array(n * 3);
+    for (let v = 0; v < n; v++) {
+      const seg = Math.floor(v / 6);
+      const c = seg % 2 ? [1, 1, 1] : [1, 0.16, 0.2];
+      colors.set(c, v * 3);
+    }
+    g.setAttribute('color', new T.Float32BufferAttribute(colors, 3));
+    g.deleteAttribute('uv');
+    g.translate(ps[i].x, 1.95, ps[i].z - 1.0);
+    tentGeos.push(g);
+    cone.dispose();
+  });
+  if (tentGeos.length) {
+    const merged = T.mergeGeometries(tentGeos, false);
+    if (merged) scene.add(new T.Mesh(keep(merged), keep(new T.MeshBasicMaterial({ vertexColors: true, side: T.DoubleSide }))));
+  }
+  // the entrance arch at the front (the camera side) of the island, with a flagpole on each side
+  itemSprite('entrancearch', 7.5, 0, 3.6, ISLAND_R * ZS - 1.6);
+  // flagpoles (the picture of the pole with the flags drawn on it in code)
+  const poleCanvas = document.createElement('canvas');
+  poleCanvas.width = poleCanvas.height = 512;
+  const poleG = poleCanvas.getContext('2d')!;
+  const poleImg = new Image();
+  poleImg.onload = () => drawFlagpole(poleG, poleImg, 0);
+  poleImg.src = itemUrl('flagpole');
+  drawFlagpole(poleG, null, 0);
+  const poleTex = keep(new T.CanvasTexture(poleCanvas));
+  poleTex.colorSpace = T.SRGBColorSpace;
+  const poleMat = keep(new T.SpriteMaterial({ map: poleTex, transparent: true, depthWrite: false }));
+  const poles: T.Sprite[] = [];
+  for (const [x, z] of [[-3.4, ISLAND_R * ZS - 1.4], [3.4, ISLAND_R * ZS - 1.4], [-2.6, 0.6], [2.6, 0.6], [-2.6, -1.8], [2.6, -1.8]]) {
+    const sp = new T.Sprite(poleMat);
+    sp.scale.set(5, 5, 1);
+    sp.position.set(x, 2.4, z);
+    scene.add(sp);
+    poles.push(sp);
+  }
+  // balloons and a hot air balloon
+  itemSprite('balloons', 3.6, -4.6, 3.2, -4.2, 0.25);
+  itemSprite('balloons', 3.2, 4.8, 3.0, 5.2, 0.3);
+  itemSprite('balloons', 3, 3.8, 3.2, -9.6, 0.25);
+  itemSprite('hotairballoon', 5, -7.5, 11, -10, 0.6);
+  // strings of coloured pennants between posts along the ring path (all drawn in code)
+  const POSTS = 16;
+  const postPos = Array.from({ length: POSTS }, (_, i) => {
+    const a = (i / POSTS) * Math.PI * 2;
+    const r = RING_R + PATH_W / 2 + 0.5;
+    return new T.Vector3(Math.sin(a) * r, 0, -Math.cos(a) * r * ZS);
+  });
+  const postGeo = keep(new T.CylinderGeometry(0.07, 0.09, 2.6, 6));
+  const postMesh = new T.InstancedMesh(postGeo, keep(new T.MeshLambertMaterial({ color: '#ffffff' })), POSTS);
+  postPos.forEach((v, i) => {
+    m4.compose(new T.Vector3(v.x, 1.3, v.z), new T.Quaternion(), new T.Vector3(1, 1, 1));
+    postMesh.setMatrixAt(i, m4);
+  });
+  postMesh.frustumCulled = false;
+  scene.add(postMesh);
+  const PEN = 7;
+  const pennants = new T.InstancedMesh(keep(new T.ConeGeometry(0.17, 0.42, 3)), keep(new T.MeshLambertMaterial({ color: '#ffffff', side: T.DoubleSide })), POSTS * PEN);
+  const penColors = ['#ff3b5c', '#ffcf1f', '#1fb6ff', '#2fd44a', '#b45cff', '#ff8a1f'];
+  const linePts: number[] = [];
+  const qDown = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), Math.PI);
+  for (let i = 0; i < POSTS; i++) {
+    const a = postPos[i], b = postPos[(i + 1) % POSTS];
+    let prev: T.Vector3 | null = null;
+    for (let k = 0; k <= PEN + 1; k++) {
+      const t = k / (PEN + 1);
+      const pt = new T.Vector3().lerpVectors(a, b, t);
+      pt.y = 2.55 - Math.sin(t * Math.PI) * 0.55;
+      if (prev) linePts.push(prev.x, prev.y, prev.z, pt.x, pt.y, pt.z);
+      prev = pt;
+      if (k >= 1 && k <= PEN) {
+        m4.compose(new T.Vector3(pt.x, pt.y - 0.2, pt.z), qDown, new T.Vector3(1, 1, 1));
+        pennants.setMatrixAt(i * PEN + k - 1, m4);
+        pennants.setColorAt(i * PEN + k - 1, c4.set(penColors[(i * PEN + k) % penColors.length]));
+      }
+    }
+  }
+  pennants.frustumCulled = false;
+  const lineGeo = keep(new T.BufferGeometry());
+  lineGeo.setAttribute('position', new T.Float32BufferAttribute(linePts, 3));
+  const strings = new T.LineSegments(lineGeo, keep(new T.LineBasicMaterial({ color: '#5a3a2a' })));
+  strings.frustumCulled = false;
+  scene.add(pennants, strings);
+
   // fewer draw calls: everything that stands still is merged (the island, the pads, the tents, the pedestal, and what is still in the games' miniatures)
   const statics = staticMeshes(scene, (step) => {
     updaters.forEach((f) => f(step * 0.4, step * 1.7));
@@ -323,7 +390,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2;
       const r = RING_R + PATH_W / 2 + 0.25;
-      m4.compose(new T.Vector3(Math.sin(a) * r, 0.9 + Math.sin(i * 1.7) * 0.08, -Math.cos(a) * r), new T.Quaternion(), new T.Vector3(1, 1, 1));
+      m4.compose(new T.Vector3(Math.sin(a) * r, 0.9 + Math.sin(i * 1.7) * 0.08, -Math.cos(a) * r * ZS), new T.Quaternion(), new T.Vector3(1, 1, 1));
       bulbs.setMatrixAt(i, m4);
       bulbs.setColorAt(i, c4.set(lc[i % 4]));
     }
@@ -332,7 +399,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     for (let i = 0; i < 16; i++) {
       const a = (i / 16) * Math.PI * 2;
       const r = RING_R + PATH_W / 2 + 0.25;
-      m4.compose(new T.Vector3(Math.sin(a) * r, 0.45, -Math.cos(a) * r), new T.Quaternion(), new T.Vector3(1, 1, 1));
+      m4.compose(new T.Vector3(Math.sin(a) * r, 0.45, -Math.cos(a) * r * ZS), new T.Quaternion(), new T.Vector3(1, 1, 1));
       posts.setMatrixAt(i, m4);
     }
     scene.add(posts);
@@ -371,7 +438,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
 
   // ---- the camera: a fixed slant; the finger moves it (and nothing else does)
   let cam: CamState = { x: 0, z: 0.8, dist: 30 };
-  const home = (): CamState => ({ x: 0, z: 0.8, dist: fitDist(width / height, 9.6) });
+  const home = (): CamState => ({ x: 0, z: 0.8, dist: fitDist(width / height, ISLAND_R * 1.25) });
   const lookAt = new T.Vector3();
   function layout(): void {
     camera.aspect = width / height;
@@ -422,7 +489,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     if (downAt) dragged += Math.hypot(dx, dy);
     // the ground follows the finger: the screen's vertical is shortened by the slant
     const k = groundPerPx(goal.dist, height);
-    goal = clampTarget({ ...goal, x: goal.x - dx * k, z: goal.z - (dy * k) / Math.sin((54 * Math.PI) / 180) });
+    goal = clampTarget({ ...goal, x: goal.x - dx * k, z: goal.z - (dy * k) / Math.sin(PITCH) });
   };
   const onUp = (e: PointerEvent): void => {
     pts.delete(e.pointerId);
@@ -445,6 +512,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     return { x: r.left + ((p.x + 1) / 2) * r.width, y: r.top + ((1 - p.y) / 2) * r.height };
   }
   let labelOf: number | null = null;
+  let lastPole = -1;
   function tapAt(x: number, y: number): void {
     const targets: T.Object3D[] = [...pads.map((p) => p.g), jar.group, ...people.map((p) => p.sp)];
     const i = pickIndex(camera, canvas, x, y, targets);
@@ -522,6 +590,22 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     shadowMesh.instanceMatrix.needsUpdate = true;
     o.onLabelMove?.(labelOf !== null ? screenOf(people[labelOf].sp.position.clone().add(new T.Vector3(0, 0.75, 0))) : null);
     flagAt(time);
+    sprites.forEach((q) => {
+      if (q.bob) q.sp.position.set(q.base.x + (q.bob > 0.5 ? Math.sin(time * 0.15 + q.ph) * 6 : 0), q.base.y + (reduced ? 0 : Math.sin(time * 1.2 + q.ph) * q.bob), q.base.z);
+    });
+    if (!reduced && Math.floor(time * 6) !== lastPole) {
+      lastPole = Math.floor(time * 6);
+      drawFlagpole(poleG, poleImg.complete && poleImg.naturalWidth ? poleImg : null, time * 3);
+      poleTex.needsUpdate = true;
+    }
+    if (o.onSigns) {
+      o.onSigns(pads.map((p, i) => {
+        const v = new T.Vector3(ps[i].x, p.spec.kind === 'game' ? 3.5 : 2.9, ps[i].z);
+        const sc = screenOf(v);
+        const ndc = v.clone().project(camera);
+        return { x: sc.x, y: sc.y, behind: ndc.z > 1 };
+      }));
+    }
     if (puffs.visible) for (let i = 0; i < 3; i++) cloudAt(i, reduced ? 0 : time);
     jar.update(dt);
     if (bulbs && !reduced) bulbs.rotation.y = 0;

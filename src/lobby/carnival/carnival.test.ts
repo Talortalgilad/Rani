@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { clampDist, clampTarget, DIST_MAX, DIST_MIN, eye, fitDist, isTap, PAN_LIMIT } from './camera';
-import { ISLAND_R, minGap, PLOT_PAD, PLOT_R, plots } from './layout';
+import { clampDist, clampTarget, DIST_MAX, DIST_MIN, eye, fitDist, isTap, PAN_LIMIT, PAN_Z } from './camera';
+import { ISLAND_R, minGap, PLOT_PAD, PLOT_R, plots, ZS } from './layout';
 import { residents } from './residents';
 import { makeGraph, rng, Walker } from './walk';
 import { NAME_KEYS } from '../../games/english/content/heLines';
@@ -16,7 +16,7 @@ describe('the camera', () => {
     expect(clampDist(1)).toBe(DIST_MIN);
     expect(clampDist(999)).toBe(DIST_MAX);
     const s = clampTarget({ x: 50, z: 0, dist: 10 });
-    expect(Math.hypot(s.x, s.z)).toBeCloseTo(PAN_LIMIT);
+    expect(Math.hypot(s.x / PAN_LIMIT, s.z / PAN_Z)).toBeCloseTo(1);
     expect(s.dist).toBe(DIST_MIN);
   });
   it('the angle is fixed: the eye is above and in front of the target', () => {
@@ -36,8 +36,8 @@ describe('the plan of the island', () => {
       const ps = plots(n);
       expect(ps).toHaveLength(n);
       for (const p of ps) {
-        expect(Math.hypot(p.x, p.z)).toBeCloseTo(PLOT_R);
-        expect(PLOT_R + PLOT_PAD).toBeLessThan(ISLAND_R);
+        expect(Math.hypot(p.x / PLOT_R, p.z / (PLOT_R * ZS))).toBeCloseTo(1);
+        expect(Math.hypot(p.x / (ISLAND_R - PLOT_PAD), p.z / ((ISLAND_R - PLOT_PAD) * ZS))).toBeLessThan(1);
       }
       if (n <= 9) expect(minGap(ps)).toBeGreaterThan(0.3);
     }
