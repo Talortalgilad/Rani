@@ -9,7 +9,6 @@ export const V_CHAIN = 2.6;
 export const V_MAX = 13;
 const FRICTION = 0.16;
 const DT = 1 / 120;
-const START_S = 2.9; // the front of the train on the platform
 export const MAX_TIME = 80;
 
 export type Outcome = 'finished' | 'stalled' | 'loop' | 'short';
@@ -33,7 +32,7 @@ export function simulate(p: Path): Ride {
   const sArr: number[] = [];
   const vArr: number[] = [];
   const endOfTrack = p.s[p.n - 1];
-  let s = START_S;
+  let s = p.startS;
   let v = 0;
   let time = 0;
   let step = 0;
@@ -44,6 +43,7 @@ export function simulate(p: Path): Ride {
   let vTop = 0;
   let restFor = 0;
   let turnT = -1;
+  // the station slows the car down over the last stretch (it ends in the middle of the station, where it started)
   const brake = p.complete && p.endS < Infinity ? p.endS + 2.6 : null;
   while (time < MAX_TIME && outcome === null) {
     const pt = at(p, s);

@@ -1,336 +1,272 @@
 /**
- * The track of the roller coaster (SPEC-park.md 3.1): the points that Rani draws, smoothed into a curve, with a loop as a special part.
- * Pure: no DOM. The world is 10 units high and WORLD_W wide, x grows to the right and y up. The track always goes to the right.
+ * The track of version 2 (SPEC-park.md 3): a list of pieces on the tiles of an 8x8 plot, 7 levels high. Pure: no DOM, no Three.js.
+ * The track is a circuit through one station tile: it leaves the station to the east and has to come back into it from the west.
+ * `walk` follows the pieces over the tiles; `buildPath` makes the curve (the same curve is drawn in 3D and ridden by the physics: the "profile" of
+ * the curve is horizontal distance and height, so that the old energy physics works on it).
  */
-export interface Pt { x: number; y: number }
-
-export const WORLD_W = 24;
-export const WORLD_H = 10;
+export const N = 8;
+export const MAXZ = 6;
+/** a tile, a level of height, the height of the rails over the ground at level 0, the radius of a loop */
+export const T = 3;
+export const LH = 1.4;
+export const Y0 = 0.6;
+export const LOOP_R = 1.6;
 export const G = 9;
-/** the steepest slope of a track: 70 degrees */
-export const MAX_SLOPE = Math.tan((70 * Math.PI) / 180);
-export const MIN_Y = 0.5;
-export const MAX_Y = 9.6;
-/** the start: a platform, the chain lift that carries the car up, and the crest where the drawing begins */
-export const PLATFORM_X0 = -3;
-/** the start of the track, up to the crest: the car leaves the platform and the chain lift pulls it up (these points are fixed) */
-export const START_PTS: Pt[] = [{ x: 0.6, y: 1.5 }, { x: 1.8, y: 1.7 }, { x: 3, y: 3.2 }, { x: 4.2, y: 4.5 }];
-export const CHAIN_X0 = 1.2;
-export const CREST: Pt = { x: 6, y: 6 };
-/** the end station: the track has to come in here, and then runs flat to the end of the world */
-export const END: Pt = { x: WORLD_W - 3.4, y: 1.5 };
-/** the loop: its radius, and how far to the right its exit is from its entry (the two lanes do not touch) */
-export const LOOP_R = 1.25;
-export const LOOP_DRIFT = 1.7;
-export const POINT_GAP = 0.7;
+export const DS = 0.05;
 
-/** The special parts: a chain lift (pulls the car up by itself), a tunnel and a water splash (decorations); they cover x0..x1 of the track. */
-export type PartKind = 'chain' | 'tunnel' | 'splash';
-export interface Part { kind: PartKind; x0: number; x1: number }
-export const PART_SPAN: Record<PartKind, number> = { chain: 3.2, tunnel: 3.4, splash: 1.2 };
+export type Kind = 'straight' | 'up' | 'down' | 'left' | 'right' | 'loop';
+export const KINDS: Kind[] = ['straight', 'up', 'down', 'left', 'right', 'loop'];
+/** 0 east, 1 south, 2 west, 3 north (south is the way the rows grow) */
+export const DIR: [number, number][] = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+export interface Cursor { c: number; r: number; d: number; z: number }
+export const STATION = { c: 3, r: 7 };
+export const START: Cursor = { c: 4, r: 7, d: 0, z: 0 };
+export interface Track { pieces: Kind[] }
+export const newTrack = (): Track => ({ pieces: [] });
+export const cloneTrack = (t: Track): Track => ({ pieces: [...t.pieces] });
 
-export interface Track {
-  /** the control points; pts[0] is the crest. When `complete`, the last one is END. */
-  pts: Pt[];
-  /** the loops: each starts at one of the points (an index in pts), in order */
-  loops: number[];
-  parts: Part[];
-  complete: boolean;
-}
+const dz = (k: Kind): number => (k === 'up' ? 1 : k === 'down' ? -1 : 0);
+const inGrid = (c: number, r: number): boolean => c >= 0 && c < N && r >= 0 && r < N;
+const key = (c: number, r: number): number => r * N + c;
 
-export const newTrack = (): Track => ({ pts: [{ ...CREST }], loops: [], parts: [], complete: false });
-export const cloneTrack = (t: Track): Track => ({ pts: t.pts.map((p) => ({ ...p })), loops: [...t.loops], parts: t.parts.map((p) => ({ ...p })), complete: t.complete });
-
-/** The y a point can have next to a neighbour so that the slope stays under 70 degrees. */
-export const reach = (from: Pt, x: number): { lo: number; hi: number } => {
-  const d = Math.abs(x - from.x) * MAX_SLOPE;
-  return { lo: Math.max(MIN_Y, from.y - d), hi: Math.min(MAX_Y, from.y + d) };
-};
-const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
-
-/**
- * The finger is at (x, y): extends the track if the finger went far enough to the right of the last point (the points never go back).
- * Returns true when a point was added.
- */
-export function extend(t: Track, x: number, y: number): boolean {
-  if (t.complete) return false;
-  const last = t.pts[t.pts.length - 1];
-  // a loop needs room: its exit is to the right of its entry
-  const minX = last.x + POINT_GAP + (t.loops.includes(t.pts.length - 1) ? LOOP_DRIFT + 0.3 : 0);
-  if (x < minX || x > END.x + 0.001) return false;
-  const r = reach(last, x);
-  t.pts.push({ x, y: clamp(y, r.lo, r.hi) });
-  return true;
-}
-
-/**
- * The track reaches the station when the last point is near it and the way down is not too steep: then the end point is added and the
- * track is complete. Returns true when it is complete.
- */
-export function finish(t: Track): boolean {
-  if (t.complete) return true;
-  const last = t.pts[t.pts.length - 1];
-  const dx = END.x - last.x;
-  if (dx < 0.25 && Math.abs(last.y - END.y) > 0.9) return false;
-  if (last.x < END.x - 4.5 || dx < 0) return false;
-  if (Math.abs(END.y - last.y) > MAX_SLOPE * Math.max(dx, 0.01)) return false;
-  if (dx > 0.05) t.pts.push({ ...END });
-  else t.pts[t.pts.length - 1] = { ...END };
-  t.complete = true;
-  return true;
-}
-
-/** Moves a point up or down (never the crest or the end station): inside what its neighbours allow. Returns the y it got. */
-export function moveY(t: Track, i: number, y: number): number {
-  if (i <= 0 || (t.complete && i === t.pts.length - 1)) return t.pts[i].y;
-  const p = t.pts[i];
-  let lo = MIN_Y;
-  let hi = MAX_Y;
-  for (const n of [t.pts[i - 1], t.pts[i + 1]]) {
-    if (!n) continue;
-    const r = reach(n, p.x);
-    lo = Math.max(lo, r.lo);
-    hi = Math.min(hi, r.hi);
+export interface Step { next: Cursor; tiles: [number, number][]; why?: 'space' | 'high' }
+/** What a piece does from a cursor: the tiles it covers and where the next one goes (why: it cannot be, not counting other pieces). */
+export function step(cur: Cursor, k: Kind): Step {
+  const [dx, dy] = DIR[cur.d];
+  const here: [number, number] = [cur.c, cur.r];
+  if (k === 'up' && cur.z >= MAXZ) return { next: cur, tiles: [here], why: 'high' };
+  if (k === 'down' && cur.z <= 0) return { next: cur, tiles: [here], why: 'space' };
+  // a loop is 2.1 levels tall
+  if (k === 'loop' && cur.z > MAXZ - 2) return { next: cur, tiles: [here], why: 'high' };
+  if (k === 'left' || k === 'right') {
+    const nd = (cur.d + (k === 'right' ? 1 : 3)) % 4;
+    const [nx, ny] = DIR[nd];
+    return { next: { c: cur.c + nx, r: cur.r + ny, d: nd, z: cur.z }, tiles: [here] };
   }
-  p.y = hi < lo ? p.y : clamp(y, lo, hi);
-  return p.y;
+  if (k === 'loop') return { next: { c: cur.c + 2 * dx, r: cur.r + 2 * dy, d: cur.d, z: cur.z }, tiles: [here, [cur.c + dx, cur.r + dy]] };
+  return { next: { c: cur.c + dx, r: cur.r + dy, d: cur.d, z: cur.z + dz(k) }, tiles: [here] };
 }
 
-/** Deletes from point i to the end (never the crest). */
-export function deleteFrom(t: Track, i: number): void {
-  const k = Math.max(1, i);
-  t.pts.length = Math.min(t.pts.length, k);
-  t.complete = false;
-  t.loops = t.loops.filter((i) => i < t.pts.length);
-  const lastX = t.pts[t.pts.length - 1].x;
-  t.parts = t.parts.filter((p) => p.x0 < lastX);
-}
+export const atStation = (c: Cursor): boolean => c.c === STATION.c && c.r === STATION.r;
 
-/** A loop is put at the point nearest to x. Returns false when it does not fit (too low, too high, no room before the station, or too near another loop). */
-export function addLoop(t: Track, x: number, maxLoops = 2): boolean {
-  let best = 1;
-  let d = Infinity;
-  t.pts.forEach((p, i) => {
-    if (i > 0 && Math.abs(p.x - x) < d && !(t.complete && i === t.pts.length - 1)) {
-      d = Math.abs(p.x - x);
-      best = i;
-    }
-  });
-  if (t.pts.length < 2 || t.loops.length >= maxLoops) return false;
-  const p = t.pts[best];
-  if (p.y < MIN_Y + 0.2 || p.y + 2 * LOOP_R > MAX_Y + 0.3) return false;
-  if (p.x + LOOP_DRIFT + 0.8 > END.x) return false;
-  // not on a loop, and not so near another one that they would touch
-  if (t.loops.some((l) => Math.abs(t.pts[l].x - p.x) < LOOP_DRIFT + 2.6)) return false;
-  // the points that are inside the loop (between its entry and its exit) go; the loops that were after them shift with the points
-  const keep: boolean[] = t.pts.map((q, i) => i <= best || q.x > p.x + LOOP_DRIFT + 0.5 || (t.complete && i === t.pts.length - 1));
-  const remap: number[] = [];
-  let k = 0;
-  keep.forEach((kp, i) => (remap[i] = kp ? k++ : -1));
-  t.loops = t.loops.map((l) => remap[l]).filter((l) => l >= 0);
-  t.pts = t.pts.filter((_, i) => keep[i]);
-  t.loops.push(remap[best]);
-  t.loops.sort((a, b) => a - b);
-  const bi = remap[best];
-  const next = t.pts[bi + 1];
-  if (next) {
-    // the track leaves the loop at the height of its entry
-    const r = reach({ x: p.x + LOOP_DRIFT, y: p.y }, next.x);
-    next.y = clamp(next.y, r.lo, r.hi);
+export interface Walk {
+  /** the cursor before each piece, and the end */
+  before: Cursor[];
+  end: Cursor;
+  occupied: Set<number>;
+  closed: boolean;
+}
+/** Follows the pieces from the start (the track is assumed legal). */
+export function walk(t: Track): Walk {
+  let cur = START;
+  const before: Cursor[] = [];
+  const occupied = new Set<number>();
+  for (const k of t.pieces) {
+    before.push(cur);
+    const s = step(cur, k);
+    for (const [c, r] of s.tiles) occupied.add(key(c, r));
+    cur = s.next;
   }
-  return true;
+  return { before, end: cur, occupied, closed: t.pieces.length > 0 && atStation(cur) && cur.d === 0 && cur.z === 0 };
 }
-/** Takes off the loop nearest to x (or all of them without x). */
-export function removeLoop(t: Track, x?: number): void {
-  if (x === undefined || t.loops.length <= 1) {
-    t.loops = [];
-    return;
-  }
-  let best = 0;
-  t.loops.forEach((l, i) => {
-    if (Math.abs(t.pts[l].x - x) < Math.abs(t.pts[t.loops[best]].x - x)) best = i;
-  });
-  t.loops.splice(best, 1);
-}
+export const isClosed = (t: Track): boolean => walk(t).closed;
 
-/** A special part is put on the track around x (it covers its span, not inside a loop or on the lift). Returns false when it does not fit. */
-export function addPart(t: Track, kind: PartKind, x: number): boolean {
-  const span = PART_SPAN[kind];
-  const x0 = Math.max(CREST.x + 0.3, x - span / 2);
-  const x1 = Math.min(t.pts[t.pts.length - 1].x, x0 + span);
-  if (x1 - x0 < span * 0.6) return false;
-  if (t.loops.some((l) => t.pts[l].x < x1 + 0.4 && t.pts[l].x + LOOP_DRIFT > x0 - 0.4)) return false;
-  // not over another part of the same kind
-  if (t.parts.some((q) => q.kind === kind && q.x0 < x1 && q.x1 > x0)) return false;
-  t.parts.push({ kind, x0, x1 });
-  return true;
+/** Geometry only: can this piece go next (inside the plot, tiles free, the station only when coming in right). Why not: 'space' | 'high'. */
+export function fits(w: Walk, k: Kind): { ok: true; next: Cursor } | { ok: false; why: 'space' | 'high' } {
+  if (w.closed) return { ok: false, why: 'space' };
+  const s = step(w.end, k);
+  if (s.why) return { ok: false, why: s.why };
+  for (const [c, r] of s.tiles) if (!inGrid(c, r) || w.occupied.has(key(c, r)) || (c === STATION.c && r === STATION.r)) return { ok: false, why: 'space' };
+  const n = s.next;
+  if (atStation(n)) return n.d === 0 && n.z === 0 ? { ok: true, next: n } : { ok: false, why: 'space' };
+  if (!inGrid(n.c, n.r) || w.occupied.has(key(n.c, n.r))) return { ok: false, why: 'space' };
+  return { ok: true, next: n };
 }
-export const removePart = (t: Track, kind: PartKind): void => void (t.parts = t.parts.filter((p) => p.kind !== kind));
 
 // ---- the curve ----
 
 export interface Path {
-  /** the points of the curve, in the order of travel, one every ~0.05 units */
+  /** the profile: horizontal distance and height, the distance along the track, the slope, 1 inside a loop and the centre of its circle there */
   x: Float64Array;
   y: Float64Array;
-  /** the distance along the track at each point */
   s: Float64Array;
-  /** the direction of travel */
   th: Float64Array;
-  /** 1 inside the loop; the centre of the circle there */
   inLoop: Uint8Array;
   cx: Float64Array;
   cy: Float64Array;
   n: number;
-  /** the distance where the chain lift ends (the crest) and where the end station begins (Infinity when the track is not complete) */
+  /** where the car starts (the front of the train), where the chain lift ends and the free ride begins, where the station is (Infinity when not closed) */
+  startS: number;
   crestS: number;
   endS: number;
-  /** the distance of each control point, and of the entry and the exit of the loop */
-  ctrlS: number[];
-  /** the entry and the exit of each loop, by distance */
   loops: [number, number][];
-  /** the special parts, by distance: chain lifts and tunnels (from, to), splashes (the place) */
   chains: [number, number][];
   tunnels: [number, number][];
   splashes: number[];
+  ctrlS: number[];
   complete: boolean;
 }
-
-const DS = 0.05;
-
-/** Centripetal-free Catmull-Rom (Hermite with finite differences) through the points, with phantom points at both ends. */
-function spline(pts: Pt[], first: Pt, last: Pt, perSeg = 28): Pt[] {
-  const P = [first, ...pts, last];
-  const out: Pt[] = [];
-  for (let i = 1; i < P.length - 2; i++) {
-    const p0 = P[i - 1], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2];
-    // tangents scaled by the lengths of the segments, so that a short segment next to a long one does not loop back
-    const d0 = Math.hypot(p1.x - p0.x, p1.y - p0.y) || 1e-6, d1 = Math.hypot(p2.x - p1.x, p2.y - p1.y) || 1e-6, d2 = Math.hypot(p3.x - p2.x, p3.y - p2.y) || 1e-6;
-    const m1 = { x: ((p2.x - p0.x) / (d0 + d1)) * d1, y: ((p2.y - p0.y) / (d0 + d1)) * d1 };
-    const m2 = { x: ((p3.x - p1.x) / (d1 + d2)) * d1, y: ((p3.y - p1.y) / (d1 + d2)) * d1 };
-    for (let k = 0; k < perSeg; k++) {
-      const t = k / perSeg;
-      const t2 = t * t, t3 = t2 * t;
-      const h00 = 2 * t3 - 3 * t2 + 1, h10 = t3 - 2 * t2 + t, h01 = -2 * t3 + 3 * t2, h11 = t3 - t2;
-      out.push({ x: h00 * p1.x + h10 * m1.x + h01 * p2.x + h11 * m2.x, y: h00 * p1.y + h10 * m1.y + h01 * p2.y + h11 * m2.y });
-    }
-  }
-  out.push({ ...P[P.length - 2] });
-  return out;
+export interface Curve extends Path {
+  /** the world: position, the forward direction in the ground plane (for the loops and the tilt of the rails) */
+  X: Float64Array;
+  Y: Float64Array;
+  Z: Float64Array;
+  fx: Float64Array;
+  fz: Float64Array;
+  /** which piece each point belongs to (-1: the station and the run after the last piece) and where each piece starts (by distance) */
+  piece: Int16Array;
+  pieceS: number[];
+  /** the length of the circuit up to the station (the distance where a closed track is back at the middle of the station) */
+  length: number;
+  /** the distance where the pieces end (the open end of the track, or the station) */
+  piecesEnd: number;
 }
 
-/** The curve of the track: the platform, the chain lift, the smoothed points, the loop, the end station. */
-export function buildPath(t: Track): Path {
-  type Mark = { kind: 'ctrl'; i: number } | { kind: 'loopIn' } | { kind: 'loopOut' } | { kind: 'crest' } | { kind: 'end' };
-  const poly: { x: number; y: number; loop?: { cx: number; cy: number }; mark?: Mark }[] = [];
-  const push = (x: number, y: number, mark?: Mark, loop?: { cx: number; cy: number }): void => void poly.push({ x, y, mark, loop });
+type V3 = [number, number, number];
+const centre = (c: number, r: number, z: number): V3 => [(c + 0.5) * T, Y0 + z * LH, (r + 0.5) * T];
+export const worldOf = (cur: Cursor): V3 => centre(cur.c, cur.r, cur.z);
 
-  // the platform: a straight line, then the curve through the fixed points of the start and the drawn points (in one or two curves, the loop in the middle)
-  for (let x = PLATFORM_X0; x < START_PTS[0].x; x += DS) push(x, START_PTS[0].y);
-  const n0 = START_PTS.length;
-  const phantomBefore: Pt = { x: START_PTS[0].x - 1, y: START_PTS[0].y };
-  const all: Pt[] = [...START_PTS, ...t.pts];
-  const curve = (pts: Pt[], first: Pt, lastP: Pt, base: number, marks: boolean): void => {
-    const sp = spline(pts, first, lastP);
-    const per = 28;
-    sp.forEach((p, k) => {
-      const seg = Math.floor(k / per);
-      const isCtrl = k % per === 0 || k === sp.length - 1;
-      const idx = k === sp.length - 1 ? pts.length - 1 : seg;
-      push(p.x, p.y, marks && isCtrl ? { kind: 'ctrl', i: base + idx - n0 } : undefined);
-    });
+interface Raw { p: V3; fx: number; fz: number; u: number; piece: number }
+
+function bezier(p0: V3, h0: V3, h1: V3, p1: V3, n: number, out: V3[]): void {
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, a = (1 - t) ** 3, b = 3 * (1 - t) ** 2 * t, c = 3 * (1 - t) * t * t, d = t ** 3;
+    out.push([a * p0[0] + b * h0[0] + c * h1[0] + d * p1[0], a * p0[1] + b * h0[1] + c * h1[1] + d * p1[1], a * p0[2] + b * h0[2] + c * h1[2] + d * p1[2]]);
+  }
+}
+
+/** The curve of the track (and the run after the last piece when it is not closed, for the energy of the next piece). */
+export function buildCurve(t: Track): Curve {
+  const w = walk(t);
+  const raws: Raw[] = [];
+  const push = (p: V3, fx: number, fz: number, u: number, piece: number): void => void raws.push({ p, fx, fz, u, piece });
+  const slope = (a: Kind | null, b: Kind | null): number => {
+    if (a === 'loop' || b === 'loop') return 0;
+    return (((a ? dz(a) : 0) + (b ? dz(b) : 0)) / 2) * (LH / T);
   };
-  // the curve goes through the points, one piece up to each loop, the loop (a circle turned to the direction of the entry; its exit is a little to the
-  // right of its entry), and the next piece starts at the exit
-  let segStart: Pt[] = [];
-  let idx0 = 0;
-  let phantom: Pt = phantomBefore;
-  for (const L of t.loops.map((i) => i + n0)) {
-    const pts = [...segStart, ...all.slice(idx0, L + 1)];
-    const nb = pts.length;
-    const prev = pts[nb - 2];
-    const entry = pts[nb - 1];
-    const a = Math.atan2(entry.y - prev.y, entry.x - prev.x);
-    curve(pts, phantom, { x: entry.x + Math.cos(a), y: entry.y + Math.sin(a) }, idx0 - segStart.length, true);
-    const ca = Math.cos(a), sa = Math.sin(a);
-    const steps = Math.ceil((2 * Math.PI * LOOP_R + LOOP_DRIFT) / DS);
-    for (let k = 1; k <= steps; k++) {
-      const u = (2 * Math.PI * k) / steps;
-      const lx = LOOP_R * Math.sin(u) + (LOOP_DRIFT * u) / (2 * Math.PI);
-      const ly = LOOP_R - LOOP_R * Math.cos(u);
-      const ccx = (LOOP_DRIFT * u) / (2 * Math.PI);
-      push(entry.x + lx * ca - ly * sa, entry.y + lx * sa + ly * ca, k === 1 ? { kind: 'loopIn' } : k === steps ? { kind: 'loopOut' } : undefined, { cx: entry.x + ccx * ca - LOOP_R * sa, cy: entry.y + ccx * sa + LOOP_R * ca });
+  // the station: from its middle to its east edge
+  const sc = centre(STATION.c, STATION.r, 0);
+  push(sc, 1, 0, -1, -1);
+  push([sc[0] + T / 2, sc[1], sc[2]], 1, 0, -1, -1);
+  t.pieces.forEach((k, i) => {
+    const cur = w.before[i];
+    const [vx, vz] = DIR[cur.d];
+    const cen = centre(cur.c, cur.r, cur.z);
+    const e: V3 = [cen[0] - (vx * T) / 2, cen[1], cen[2] - (vz * T) / 2];
+    const s0 = slope(i > 0 ? t.pieces[i - 1] : null, k);
+    const s1 = slope(k, i + 1 < t.pieces.length ? t.pieces[i + 1] : null);
+    if (k === 'loop') {
+      const D = 2 * T;
+      const steps = 120;
+      for (let j = i === 0 ? 0 : 1; j <= steps; j++) {
+        const u = (j / steps) * Math.PI * 2;
+        const f = (D * u) / (2 * Math.PI) + LOOP_R * Math.sin(u);
+        const lat = 0.95 * Math.sin(u) * Math.sin(u / 2) ** 2;
+        // right of the heading: (-vz, vx) turned to the ground plane
+        push([e[0] + vx * f + -vz * lat, e[1] + LOOP_R * (1 - Math.cos(u)), e[2] + vz * f + vx * lat], vx, vz, u, i);
+      }
+      return;
     }
-    const exitP = poly[poly.length - 1];
-    segStart = [{ x: exitP.x, y: exitP.y }];
-    idx0 = L + 1;
-    phantom = { x: exitP.x - ca, y: exitP.y - sa };
+    const pts: V3[] = [];
+    if (k === 'left' || k === 'right') {
+      const nd = (cur.d + (k === 'right' ? 1 : 3)) % 4;
+      const [nx, nz] = DIR[nd];
+      const x1: V3 = [cen[0] + (nx * T) / 2, cen[1], cen[2] + (nz * T) / 2];
+      const kh = 0.5523 * (T / 2);
+      const hv = T / 3;
+      bezier(e, [e[0] + vx * kh, e[1] + s0 * hv, e[2] + vz * kh], [x1[0] - nx * kh, x1[1] - s1 * hv, x1[2] - nz * kh], x1, 24, pts);
+    } else {
+      const x1: V3 = [cen[0] + (vx * T) / 2, cen[1] + dz(k) * LH, cen[2] + (vz * T) / 2];
+      const h = T / 3;
+      bezier(e, [e[0] + vx * h, e[1] + s0 * h, e[2] + vz * h], [x1[0] - vx * h, x1[1] - s1 * h, x1[2] - vz * h], x1, 16, pts);
+    }
+    for (let j = i === 0 ? 0 : 1; j < pts.length; j++) {
+      // the forward direction follows the curve
+      const a = pts[Math.max(0, j - 1)], b = pts[Math.min(pts.length - 1, j + 1)];
+      let fx = b[0] - a[0], fz = b[2] - a[2];
+      const l = Math.hypot(fx, fz) || 1;
+      fx /= l;
+      fz /= l;
+      push(pts[j], fx, fz, -1, i);
+    }
+  });
+  const last = raws[raws.length - 1];
+  const piecesEndRaw = raws.length - 1;
+  if (w.closed) {
+    push([sc[0], sc[1], sc[2]], 1, 0, -1, -1);
+  } else {
+    // the run after the end (flat, straight on): so that the last piece has somewhere to go when the energy is checked
+    const [vx, vz] = DIR[w.end.d];
+    const lp = last.p;
+    for (let m = 1; m <= 12; m++) push([lp[0] + (vx * m * T) / 8, lp[1], lp[2] + (vz * m * T) / 8], vx, vz, -1, -1);
   }
-  const pts = [...segStart, ...all.slice(idx0)];
-  if (pts.length >= 2) curve(pts, phantom, { x: pts[pts.length - 1].x + 1, y: pts[pts.length - 1].y }, idx0 - segStart.length, true);
-  if (t.complete) {
-    for (let x = END.x; x <= WORLD_W + 1; x += DS) push(x, END.y, x === END.x ? { kind: 'end' } : undefined);
-  }
-
   // by arc length: one point every DS
-  const raw = poly;
   const cum: number[] = [0];
-  for (let i = 1; i < raw.length; i++) cum.push(cum[i - 1] + Math.hypot(raw[i].x - raw[i - 1].x, raw[i].y - raw[i - 1].y));
+  for (let i = 1; i < raws.length; i++) cum.push(cum[i - 1] + Math.hypot(raws[i].p[0] - raws[i - 1].p[0], raws[i].p[1] - raws[i - 1].p[1], raws[i].p[2] - raws[i - 1].p[2]));
   const total = cum[cum.length - 1];
   const n = Math.floor(total / DS) + 1;
-  const x = new Float64Array(n), y = new Float64Array(n), s = new Float64Array(n), th = new Float64Array(n), inLoop = new Uint8Array(n), cx = new Float64Array(n), cy = new Float64Array(n);
+  const X = new Float64Array(n), Yv = new Float64Array(n), Z = new Float64Array(n), fx = new Float64Array(n), fz = new Float64Array(n);
+  const x = new Float64Array(n), s = new Float64Array(n), th = new Float64Array(n), inLoop = new Uint8Array(n), cx = new Float64Array(n), cy = new Float64Array(n);
+  const piece = new Int16Array(n);
   let j = 0;
+  let hx = 0;
   for (let i = 0; i < n; i++) {
     const target = i * DS;
-    while (j < raw.length - 2 && cum[j + 1] < target) j++;
+    while (j < raws.length - 2 && cum[j + 1] < target) j++;
     const seg = cum[j + 1] - cum[j] || 1;
     const f = Math.min(1, Math.max(0, (target - cum[j]) / seg));
-    x[i] = raw[j].x + (raw[j + 1].x - raw[j].x) * f;
-    y[i] = raw[j].y + (raw[j + 1].y - raw[j].y) * f;
+    const a = raws[j], b = raws[j + 1];
+    X[i] = a.p[0] + (b.p[0] - a.p[0]) * f;
+    Yv[i] = a.p[1] + (b.p[1] - a.p[1]) * f;
+    Z[i] = a.p[2] + (b.p[2] - a.p[2]) * f;
+    const ffx = a.fx + (b.fx - a.fx) * f, ffz = a.fz + (b.fz - a.fz) * f;
+    const fl = Math.hypot(ffx, ffz) || 1;
+    fx[i] = ffx / fl;
+    fz[i] = ffz / fl;
     s[i] = target;
-    const lp = raw[j].loop ?? raw[j + 1].loop;
-    if (lp && raw[j].loop && raw[j + 1].loop) {
+    if (i > 0) hx += Math.hypot(X[i] - X[i - 1], Z[i] - Z[i - 1]);
+    x[i] = hx;
+    piece[i] = f < 0.5 ? a.piece : b.piece;
+    if (a.u >= 0 && b.u >= 0) {
+      const u = a.u + (b.u - a.u) * f;
       inLoop[i] = 1;
-      cx[i] = raw[j].loop!.cx + (raw[j + 1].loop!.cx - raw[j].loop!.cx) * f;
-      cy[i] = raw[j].loop!.cy + (raw[j + 1].loop!.cy - raw[j].loop!.cy) * f;
+      cx[i] = hx - LOOP_R * Math.sin(u);
+      // the circle starts at the height of the entry of the loop
+      cy[i] = Yv[i] - LOOP_R * (1 - Math.cos(u)) + LOOP_R;
     }
   }
   for (let i = 0; i < n; i++) {
     const a = Math.max(0, i - 2), b = Math.min(n - 1, i + 2);
-    th[i] = Math.atan2(y[b] - y[a], x[b] - x[a]);
+    th[i] = Math.atan2(Yv[b] - Yv[a], x[b] - x[a]);
   }
-  // where the marks are, by distance
-  const ctrlS: number[] = [];
-  let crestS = 0, endS = Infinity;
-  const loopIns: number[] = [], loopOuts: number[] = [];
-  raw.forEach((p, i) => {
-    if (!p.mark) return;
-    if (p.mark.kind === 'ctrl') {
-      if (p.mark.i >= 0 && ctrlS[p.mark.i] === undefined) ctrlS[p.mark.i] = cum[i];
-    }
-    else if (p.mark.kind === 'loopIn') loopIns.push(cum[i]);
-    else if (p.mark.kind === 'loopOut') loopOuts.push(cum[i]);
-    else if (p.mark.kind === 'end') endS = cum[i];
-  });
-  crestS = ctrlS[0] ?? 0;
-  const loops: [number, number][] = loopIns.map((a, k) => [a, loopOuts[k]]);
-  // the special parts by distance: the first and the last point of the track in their span (never inside a loop)
-  const range = (x0: number, x1: number): [number, number] | null => {
-    let a = -1, b = -1;
-    for (let i = 0; i < n; i++) {
-      if (inLoop[i] || s[i] < crestS) continue;
-      if (x[i] >= x0 && x[i] <= x1) {
-        if (a < 0) a = i;
-        b = i;
-      }
-    }
-    return a < 0 ? null : [s[a], s[b]];
+  // the loops, the chain lift (to the first descent), where the pieces start and end
+  const pieceS: number[] = [];
+  for (let i = 0; i < t.pieces.length; i++) {
+    let k = 0;
+    while (k < n - 1 && piece[k] !== i) k++;
+    pieceS.push(s[k]);
+  }
+  const loops: [number, number][] = [];
+  for (let i = 0; i < n; ) {
+    if (inLoop[i]) {
+      let e = i;
+      while (e + 1 < n && inLoop[e + 1]) e++;
+      loops.push([s[i], s[e]]);
+      i = e + 1;
+    } else i++;
+  }
+  const firstDown = t.pieces.indexOf('down');
+  const piecesEnd = Math.min(total, cum[piecesEndRaw]);
+  const length = w.closed ? total : piecesEnd;
+  const crestS = firstDown >= 0 ? pieceS[firstDown] : w.closed ? length : piecesEnd + 100;
+  const chains: [number, number][] = [[1.5, Math.min(crestS, piecesEnd)]];
+  const complete = w.closed;
+  return {
+    x, y: Yv, s, th, inLoop, cx, cy, n, startS: 1.2, crestS, endS: complete ? total : Infinity, loops, chains: crestS > 1.5 ? chains : [], tunnels: [], splashes: [], ctrlS: pieceS, complete,
+    X, Y: Yv, Z, fx, fz, piece, pieceS, length, piecesEnd,
   };
-  const chains = t.parts.filter((q) => q.kind === 'chain').map((q) => range(q.x0, q.x1)).filter((r): r is [number, number] => !!r);
-  const tunnels = t.parts.filter((q) => q.kind === 'tunnel').map((q) => range(q.x0, q.x1)).filter((r): r is [number, number] => !!r);
-  const splashes = t.parts.filter((q) => q.kind === 'splash').map((q) => range(q.x0, q.x1)).filter((r): r is [number, number] => !!r).map((r) => (r[0] + r[1]) / 2);
-  return { x, y, s, th, inLoop, cx, cy, n, crestS, endS, ctrlS, loops, chains, tunnels, splashes, complete: t.complete };
 }
+export const buildPath = buildCurve;
 
 /** The point at distance s along the path (clamped at both ends), with the direction. */
 export function at(p: Path, s: number): { x: number; y: number; th: number; inLoop: boolean; i: number } {
@@ -339,4 +275,3 @@ export function at(p: Path, s: number): { x: number; y: number; th: number; inLo
   const k = f - i;
   return { x: p.x[i] + (p.x[i + 1] - p.x[i]) * k, y: p.y[i] + (p.y[i + 1] - p.y[i]) * k, th: p.th[i] + (p.th[i + 1] - p.th[i]) * k, inLoop: p.inLoop[i] === 1, i };
 }
-export const pathLength = (p: Path): number => p.s[p.n - 1];
