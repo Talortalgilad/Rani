@@ -49,7 +49,7 @@ export default defineConfig({
             options: { cacheName: 'english-voice-lists', cacheableResponse: { statuses: [0, 200] } },
           },
           {
-            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/') || url.pathname.startsWith('/memory/') || url.pathname.startsWith('/blocks/'),
+            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/') || url.pathname.startsWith('/memory/') || url.pathname.startsWith('/blocks/') || url.pathname.startsWith('/park/'),
             handler: 'CacheFirst',
             // pictures and the recorded voice, Hebrew and English (mp3: Safari asks for ranges)
             options: { cacheName: 'english-images', expiration: { maxEntries: 900 }, cacheableResponse: { statuses: [0, 200] }, rangeRequests: true },
