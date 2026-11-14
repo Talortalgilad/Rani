@@ -110,15 +110,19 @@ const X0 = 8.4;
 const XL = 18.2;
 
 /** The route: valleys and hills, between the crest and the station. */
-function route(hills: number[], valley: number[]): Track {
+function route(hills: number[], valley: number[], loopAt: number[] = []): Track {
   const t = newTrack();
   const N = hills.length;
   const w = (XL - X0) / N;
   for (let i = 0; i <= N; i++) {
     t.pts.push({ x: X0 + i * w, y: valley[i] });
     if (i < N) {
-      const lim = Math.min(valley[i], valley[i + 1]) + MAX_SLOPE * (w / 2) * 0.92;
-      t.pts.push({ x: X0 + (i + 0.5) * w, y: Math.min(hills[i], lim, 9.4) });
+      // after a loop the hill is a little further on (the exit of the loop is 1.7 to the right of its entry)
+      const px = loopAt.includes(i) ? X0 + i * w + 3.3 : X0 + (i + 0.5) * w;
+      const left = loopAt.includes(i) ? px - (X0 + i * w + 1.7) : px - (X0 + i * w);
+      const right = X0 + (i + 1) * w - px;
+      const lim = Math.min(valley[i] + MAX_SLOPE * left, valley[i + 1] + MAX_SLOPE * right) * 0.94;
+      t.pts.push({ x: px, y: Math.min(hills[i], lim, 9.4) });
     }
   }
   t.pts.push({ ...END });
@@ -131,7 +135,7 @@ const SIZE: Record<ObstacleKind, { w: number; y0: number; y1: number }> = {
   rock: { w: 1.5, y0: 0, y1: 1.3 },
   palm: { w: 1.1, y0: 0, y1: 3.1 },
   pine: { w: 1.4, y0: 0, y1: 3.3 },
-  bridge: { w: 3, y0: 2.3, y1: 2.9 },
+  bridge: { w: 3, y0: 2.3, y1: 4.0 },
 };
 
 const cache = new Map<string, Level>();
@@ -174,16 +178,16 @@ export function makeLevel(id: number, max = 10): Level {
   const hills = Array.from({ length: N }, (_, i) => base[i]);
   if (wantChain) hills[0] = 7.2;
   if (height) hills[0] = fixedTop;
-  const valley = Array.from({ length: N + 1 }, (_, i) => (i === N ? 1.2 : 0.8));
+  const valley: number[] = Array.from({ length: N + 1 }, (_, i) => (i === N ? 1.2 : 0.8));
   let track = newTrack();
   let ride: Ride | null = null;
   let path: Path | null = null;
   for (let attempt = 0; attempt < 60; attempt++) {
-    track = route(hills, valley);
+    track = route(hills, valley, Array.from({ length: wantLoops }, (_, k) => k));
     const firstValleyX = X0;
     for (let k = 0; k < wantLoops; k++) addLoop(track, firstValleyX + k * ((XL - X0) / N), 2);
     // the parts: the chain over the first hill, the tunnel over another, the splash in a valley
-    const peaksX = Array.from({ length: N }, (_, i) => X0 + (i + 0.5) * ((XL - X0) / N));
+    const peaksX = Array.from({ length: N }, (_, i) => (wantLoops > i ? X0 + i * ((XL - X0) / N) + 3.3 : X0 + (i + 0.5) * ((XL - X0) / N)));
     const valleysX = Array.from({ length: N + 1 }, (_, i) => X0 + i * ((XL - X0) / N));
     const tryAdd = (kind: PartKind, xs: number[]): void => {
       for (const x of [...xs, ...[9.5, 11, 12.5, 14, 15.5, 17, 17.5, 18, 18.5]]) if (addPart(track, kind, x)) return;
@@ -229,6 +233,8 @@ export function makeLevel(id: number, max = 10): Level {
       const i = Math.round(s / 0.05);
       if (i < 1 || i >= path.n - 1 || !free(i) || path.y[i] < 0.6 || path.x[i] > END.x - 3.2) continue;
       if (spec.gate === 'slow' && (path.y[i] < 2.2)) continue;
+      // away from the straight line of a lazy track, so that the gate means something
+      if (Math.abs(path.y[i] - (CREST.y - ((CREST.y - END.y) / (END.x - CREST.x)) * (path.x[i] - CREST.x))) < 1.6) continue;
       const v = Math.abs(ride.v[j]);
       if (spec.gate === 'fast' ? v > bestV : v < bestV) {
         bestV = v;

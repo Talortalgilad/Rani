@@ -3,7 +3,7 @@ import { addPart, END, G, MAX_SLOPE, addLoop, buildPath, deleteFrom, extend, fin
 import { sample, simulate } from './physics';
 
 /** A track from points (after the crest), finished at the station when it reaches it. */
-function make(points: [number, number][], loopAt: number | null = null): Track {
+function make(points: [number, number][], _unused?: number): Track {
   const t = newTrack();
   for (const [x, y] of points) t.pts.push({ x, y });
   finish(t);

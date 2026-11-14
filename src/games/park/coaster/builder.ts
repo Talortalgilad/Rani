@@ -5,8 +5,11 @@
 import type { SoundApi } from '../../../sound';
 import { diagnose, fix, type Diagnosis } from './hints';
 import { sample, simulate, duration, type Ride } from './physics';
-import { drawBackground, drawHand, drawHandles, drawHeights, drawStations, drawStop, drawTrack, drawTrain, fromX, fromY, makeView, toX, toY, type Look, type View } from './render2d';
-import { END, WORLD_H, WORLD_W, addLoop, at, buildPath, cloneTrack, deleteFrom, extend, finish, moveY, newTrack, removeLoop, type Path, type Track } from './track';
+import { onArtLoaded } from './art';
+import { drawBackground, drawHand, drawHandles, drawHeights, drawHits, drawObstacle, drawParts, drawSpeedGate, drawStarGoal, drawStations, drawStop, drawTrack, drawTrain, drawTunnel, fromX, fromY, makeView, toX, toY, type Look, type View } from './render2d';
+import { evaluate, hitMask, noGoals, STAR_REACH, type Evaluation, type Goals } from '../goals';
+import { funOf, type Fun } from '../fun';
+import { END, PART_SPAN, WORLD_H, WORLD_W, addLoop, addPart, at, buildPath, cloneTrack, deleteFrom, extend, finish, moveY, newTrack, removeLoop, removePart, type PartKind, type Path, type Track } from './track';
 
 export interface BuilderHooks {
   sound: SoundApi;
@@ -14,19 +17,22 @@ export interface BuilderHooks {
   onChange(t: Track): void;
   /** the hint to say (a kind) when the ride is over without getting to the end; `attempts` counts them */
   onFailed(d: Diagnosis, attempts: number): void;
-  /** the car got to the end */
-  onFinished(): void;
+  /** the car got to the end: how the goals of the level went (null when there are none) and the fun of the ride */
+  onFinished(ev: Evaluation | null, fun: Fun): void;
+  /** the car took a star */
+  onStar?(got: number, of: number): void;
   /** the screen state changed: 'build' | 'ride' */
   onMode(mode: 'build' | 'ride', hasRide: boolean): void;
   /** the bottom of the mini map (px from the top of the canvas): the speech bubble goes under it */
   onLayout?(mapBottom: number): void;
   /** a place where something was refused (a bounce of the loop button, say) */
-  onRefused?(what: 'loop'): void;
+  onRefused?(what: 'loop' | PartKind): void;
 }
 
 interface Confetti { x: number; y: number; vx: number; vy: number; c: string; r: number; life: number }
 
-type Drag = { kind: 'map' } | { kind: 'draw' } | { kind: 'move'; i: number } | { kind: 'pan'; x: number; x0: number } | { kind: 'loop'; px: number; py: number };
+export type Piece = 'loop' | PartKind;
+type Drag = { kind: 'map' } | { kind: 'draw' } | { kind: 'move'; i: number } | { kind: 'pan'; x: number; x0: number } | { kind: 'part'; part: Piece; px: number; py: number };
 
 export class Builder {
   track: Track;
@@ -39,6 +45,18 @@ export class Builder {
   selected = -1;
   /** the ride has been seen to finish with this track (the button "to ride!" is on) */
   rideOk = false;
+  /** the challenge: its goals, the picture of the zone, how many loops and which parts are allowed, and the hand that shows how */
+  goals: Goals = noGoals();
+  bg: string | null = null;
+  allow: { loops: number; parts: PartKind[] } = { loops: 2, parts: ['chain', 'tunnel', 'splash'] };
+  guide: Path | null = null;
+  solution: Track | null = null;
+  /** the last ride: the goals (null without goals), the fun, and whether the goals failed */
+  evalRes: Evaluation | null = null;
+  fun: Fun | null = null;
+  goalFailed = false;
+  collected: boolean[] = [];
+  private hits: Uint8Array = new Uint8Array(0);
   private view: View;
   private g: CanvasRenderingContext2D;
   private W = 0;
@@ -51,10 +69,12 @@ export class Builder {
   private time = 0;
   private rideT = 0;
   private lastTick = 0;
+  private lastS = 0;
   private dirty = true;
   private confetti: Confetti[] = [];
   private wheeeDone = false;
   private ro: ResizeObserver;
+  private offArt: () => void;
   private doneAt = -1;
   /** the mini map of the whole track, in the empty sky above the track */
   mapRect = { x: 12, y: 72, w: 300, h: 60 };
@@ -64,6 +84,7 @@ export class Builder {
     this.track = track ?? newTrack();
     this.path = buildPath(this.track);
     this.view = makeView(300, 500, 0, false);
+    this.offArt = onArtLoaded(() => (this.dirty = true));
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(canvas);
     canvas.style.touchAction = 'none';
@@ -78,11 +99,27 @@ export class Builder {
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
+    this.offArt();
     this.ro.disconnect();
     this.canvas.removeEventListener('pointerdown', this.onDown);
     this.canvas.removeEventListener('pointermove', this.onMove);
     this.canvas.removeEventListener('pointerup', this.onUp);
     this.canvas.removeEventListener('pointercancel', this.onUp);
+  }
+
+  /** A challenge (or free building without one): the goals, the zone's picture and the way. */
+  setLevel(lv: { goals: Goals; solution: Track; allow: { loops: number; parts: PartKind[] }; zoneBg: string; tutorial: boolean } | null): void {
+    this.goals = lv ? lv.goals : noGoals();
+    this.solution = lv ? cloneTrack(lv.solution) : null;
+    this.bg = lv ? lv.zoneBg : 'candy';
+    this.allow = lv ? lv.allow : { loops: 2, parts: ['chain', 'tunnel', 'splash'] };
+    this.guide = lv?.tutorial ? buildPath(lv.solution) : null;
+    this.attempts = 0;
+    this.goalFailed = false;
+    this.evalRes = null;
+    this.fun = null;
+    this.collected = this.goals.stars.map(() => false);
+    this.changed();
   }
 
   setLook(l: Look): void {
@@ -206,7 +243,7 @@ export class Builder {
         this.changed();
         this.hooks.sound.play('tick', 600 + this.track.pts.length * 18);
       }
-    } else if (d.kind === 'loop') {
+    } else if (d.kind === 'part') {
       d.px = x;
       d.py = y;
     }
@@ -221,45 +258,60 @@ export class Builder {
       if (finish(this.track)) this.hooks.sound.play('bonus');
       this.changed();
     }
-    if (d.kind === 'loop') this.dropLoop(d.px);
+    if (d.kind === 'part') this.dropPart(d.part, d.px);
     this.dirty = true;
   };
 
-  /** The loop button is dragged out of the tray: it follows the finger over the canvas. */
-  beginLoopDrag(clientX: number, clientY: number): void {
+  /** A piece (the loop or a special part) is dragged out of the tray: it follows the finger over the canvas. */
+  beginPartDrag(part: Piece, clientX: number, clientY: number): void {
     const r = this.canvas.getBoundingClientRect();
-    this.drag = { kind: 'loop', px: clientX - r.left, py: clientY - r.top };
+    this.drag = { kind: 'part', part, px: clientX - r.left, py: clientY - r.top };
     this.dirty = true;
   }
-  moveLoopDrag(clientX: number, clientY: number): void {
-    if (this.drag?.kind !== 'loop') return;
+  movePartDrag(clientX: number, clientY: number): void {
+    if (this.drag?.kind !== 'part') return;
     const r = this.canvas.getBoundingClientRect();
     this.drag.px = clientX - r.left;
     this.drag.py = clientY - r.top;
     this.dirty = true;
   }
-  endLoopDrag(): void {
+  endPartDrag(): void {
     const d = this.drag;
     this.drag = null;
-    if (d?.kind === 'loop') this.dropLoop(d.px);
+    if (d?.kind === 'part') this.dropPart(d.part, d.px);
     this.dirty = true;
   }
-  private dropLoop(px: number): void {
+  private dropPart(part: Piece, px: number): void {
     if (px < 0 || px > this.W) return;
-    if (addLoop(this.track, fromX(this.view, px))) {
+    const x = fromX(this.view, px);
+    const ok = part === 'loop' ? addLoop(this.track, x, this.allow.loops) : this.allow.parts.includes(part) && addPart(this.track, part, x);
+    if (ok) {
       this.hooks.sound.play('bonus');
       this.changed();
-    } else this.hooks.onRefused?.('loop');
+    } else this.hooks.onRefused?.(part);
   }
-  removeLoopPiece(): void {
-    removeLoop(this.track);
+  /** A tap on a piece that is on the track takes it off (one of them). */
+  removePiece(part: Piece): void {
+    if (part === 'loop') removeLoop(this.track);
+    else removePart(this.track, part);
     this.changed();
+  }
+  has(part: Piece): boolean {
+    return part === 'loop' ? this.track.loops.length > 0 : this.track.parts.some((p) => p.kind === part);
+  }
+  /** Gets a piece on the track when the tray is full: the loop can be put twice where two are allowed. */
+  full(part: Piece): boolean {
+    return part === 'loop' ? this.track.loops.length >= this.allow.loops : false;
   }
 
   // ---- editing ----
 
   private changed(): void {
     this.path = buildPath(this.track);
+    this.hits = hitMask(this.goals, this.path);
+    this.collected = this.goals.stars.map(() => false);
+    this.goalFailed = false;
+    this.evalRes = null;
     this.rideOk = false;
     this.ride = null;
     this.clearHint();
@@ -280,15 +332,19 @@ export class Builder {
     this.track = newTrack();
     this.selected = -1;
     this.attempts = 0;
+    this.goalFailed = false;
     this.x0 = -1.6;
     this.updateView();
     this.changed();
   }
-  hasLoop(): boolean {
-    return this.track.loops.length > 0;
-  }
-  /** "Fix it for me" (after 3 tries that did not work). */
+  /** "Fix it for me" (after 3 tries that did not work): the ride that did not finish is mended; a ride that missed a goal gets the solution. */
   fixIt(): boolean {
+    if (!this.diag && this.goalFailed && this.solution) {
+      this.track = cloneTrack(this.solution);
+      this.attempts = 0;
+      this.changed();
+      return true;
+    }
     if (!this.diag) return false;
     const ok = fix(this.track, this.diag);
     this.attempts = 0;
@@ -313,8 +369,12 @@ export class Builder {
     this.rideT = 0;
     this.lastTick = 0;
     this.wheeeDone = false;
+    this.lastS = 0;
     this.doneAt = -1;
     this.diag = null;
+    this.collected = this.goals.stars.map(() => false);
+    this.evalRes = null;
+    this.goalFailed = false;
     this.selected = -1;
     this.mode = 'ride';
     this.overview = false;
@@ -345,10 +405,23 @@ export class Builder {
     const r = this.ride!;
     this.doneAt = this.time;
     if (r.outcome === 'finished') {
+      this.fun = funOf(this.track, this.path, r);
+      const hasGoals = this.goals.stars.length > 0 || this.goals.obstacles.length > 0 || !!this.goals.speed || !!this.goals.height || this.goals.parts.length > 0;
+      this.evalRes = hasGoals ? evaluate(this.goals, this.track, this.path, r) : null;
+      if (this.evalRes && !this.evalRes.ok) {
+        // it finished, but a goal was missed: another try (the track stays as it is)
+        this.goalFailed = true;
+        this.attempts++;
+        this.hooks.sound.play('oops');
+        this.mode = 'build';
+        this.hooks.onMode('build', true);
+        this.hooks.onFinished(this.evalRes, this.fun);
+        return;
+      }
       this.rideOk = true;
       this.hooks.sound.play('fanfare');
       for (let i = 0; i < 70; i++) this.confetti.push({ x: this.W * Math.random(), y: -20 - Math.random() * this.H * 0.4, vx: (Math.random() - 0.5) * 60, vy: 90 + Math.random() * 140, c: ['#ff5d8f', '#ffd23f', '#5ad1ff', '#8fe36b', '#b58cff'][i % 5], r: 3 + Math.random() * 4, life: 3.5 });
-      this.hooks.onFinished();
+      this.hooks.onFinished(this.evalRes, this.fun);
     } else {
       this.attempts++;
       this.diag = diagnose(this.track, this.path, r);
@@ -370,7 +443,7 @@ export class Builder {
     this.raf = requestAnimationFrame(this.frame);
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
-    const animating = this.mode === 'ride' || !!this.diag || this.confetti.length > 0 || this.track.pts.length <= 1 || this.drag?.kind === 'loop';
+    const animating = this.mode === 'ride' || !!this.diag || this.confetti.length > 0 || this.track.pts.length <= 1 || this.drag?.kind === 'part' || this.goals.stars.length > 0 || !!this.guide;
     if (!animating && !this.dirty) return;
     this.time += dt;
     if (this.mode === 'ride' && this.ride) this.stepRide(dt);
@@ -391,6 +464,16 @@ export class Builder {
       this.rideT = Math.min(end, this.rideT + dt);
       const { s, v } = this.carPose();
       const p = at(this.path, s);
+      for (const d of this.path.splashes) if (this.lastS < d && s >= d) this.hooks.sound.play('splash');
+      this.lastS = s;
+      this.goals.stars.forEach((st, i) => {
+        if (!this.collected[i] && Math.hypot(p.x - st.x, p.y - st.y) <= STAR_REACH) {
+          this.collected[i] = true;
+          this.hooks.sound.play('starpop');
+          this.hooks.onStar?.(this.collected.filter(Boolean).length, this.goals.stars.length);
+          for (let k = 0; k < 14; k++) this.confetti.push({ x: toX(this.view, st.x), y: toY(this.view, st.y), vx: (Math.random() - 0.5) * 220, vy: -80 - Math.random() * 140, c: '#ffd23f', r: 3 + Math.random() * 3, life: 0.8 });
+        }
+      });
       // the camera follows the car
       const target = p.x - (this.W / this.view.s) * 0.4;
       this.x0 += (target - this.x0) * Math.min(1, dt * 4);
@@ -418,14 +501,35 @@ export class Builder {
     const g = this.g;
     const v = this.view;
     g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    drawBackground(g, v, this.time);
+    drawBackground(g, v, this.time, this.bg);
     drawHeights(g, v);
+    // the height that is asked for: a line with its number
+    const hg = this.goals.height;
+    if (hg) {
+      g.save();
+      g.setLineDash([10, 8]);
+      g.strokeStyle = 'rgba(224,36,94,.85)';
+      g.lineWidth = 3;
+      g.beginPath();
+      g.moveTo(0, toY(v, hg.h));
+      g.lineTo(v.W, toY(v, hg.h));
+      g.stroke();
+      g.restore();
+    }
+    const sg = this.goals.speed;
+    if (sg) drawSpeedGate(g, v, sg, 'back', false);
     drawStations(g, v, this.path);
+    for (const o of this.goals.obstacles) drawObstacle(g, v, o, false, this.time);
     drawTrack(g, v, this.path, this.look.track);
+    drawParts(g, v, this.path, this.time, false);
+    if (this.hits.some((h) => h)) drawHits(g, v, this.path, this.hits, this.time);
+    const got = this.mode === 'ride' ? this.collected : this.evalRes ? this.evalRes.stars : this.collected;
+    this.goals.stars.forEach((st, i) => drawStarGoal(g, v, st, !!got[i], this.time, i));
     if (this.mode === 'build') {
       if (this.diag) drawStop(g, v, this.diag.mx, this.diag.my, this.diag.capY, this.time);
       drawHandles(g, v, this.track, this.selected);
-      if (this.track.pts.length <= 1) drawHand(g, v, this.time);
+      if (this.guide && this.track.pts.length <= 2 && !this.drag) this.drawGuide(g, v);
+      else if (this.track.pts.length <= 1 && !this.guide) drawHand(g, v, this.time);
       // the end of the track that is being drawn: a ring to start from
       if (!this.track.complete) {
         const last = this.track.pts[this.track.pts.length - 1];
@@ -437,34 +541,86 @@ export class Builder {
         g.stroke();
         g.setLineDash([]);
       }
-      // the loop that is dragged: where it will be put
-      if (this.drag?.kind === 'loop') {
-        const wx = fromX(v, this.drag.px);
-        let near = this.track.pts[1] ?? this.track.pts[0];
-        for (const p of this.track.pts) if (Math.abs(p.x - wx) < Math.abs(near.x - wx)) near = p;
-        g.strokeStyle = '#ff5d8f';
-        g.lineWidth = 4;
-        g.setLineDash([6, 6]);
-        g.beginPath();
-        g.arc(toX(v, near.x + 0.5), toY(v, near.y + 1.25), v.s * 1.25, 0, Math.PI * 2);
-        g.stroke();
-        g.setLineDash([]);
-        g.font = `${Math.round(v.s * 0.9)}px system-ui, sans-serif`;
-        g.textAlign = 'center';
-        g.fillText('🔁', this.drag.px, this.drag.py);
-      }
+      // the piece that is dragged: where it will be put
+      if (this.drag?.kind === 'part') this.drawPartDrag(g, v, this.drag);
     }
     if (this.ride) {
       const { s, v: speed } = this.mode === 'ride' ? this.carPose() : { s: this.diag ? this.ride.s[this.ride.s.length - 1] : this.path.crestS, v: 0 };
       if (this.mode === 'ride' || this.diag || this.ride.outcome !== 'finished') drawTrain(g, v, this.path, s, speed, this.look, this.time);
+      else if (this.goalFailed) drawTrain(g, v, this.path, this.ride.s[this.ride.s.length - 1], 0, this.look, this.time);
     } else {
       drawTrain(g, v, this.path, 2.9, 0, this.look, this.time);
+    }
+    // the tunnels (a hill that the track goes into) and the front of the splash and of the gate are over the train
+    for (const [a, b] of this.path.tunnels) drawTunnel(g, v, this.path, at(this.path, a).x, at(this.path, b).x);
+    drawParts(g, v, this.path, this.time, true);
+    if (sg) {
+      const hit = this.mode === 'ride' && this.ride ? at(this.path, this.carPose().s).x > sg.x : false;
+      drawSpeedGate(g, v, sg, 'front', hit);
     }
     this.drawMap();
     for (const c of this.confetti) {
       g.fillStyle = c.c;
       g.fillRect(c.x, c.y, c.r * 1.6, c.r);
     }
+  }
+
+  /** The hand that shows how to draw the challenge: it goes along the way of the reference solution, with the dotted line behind it. */
+  private drawGuide(g: CanvasRenderingContext2D, v: View): void {
+    const p = this.guide!;
+    const a = p.crestS, b = p.endS === Infinity ? p.s[p.n - 1] : p.endS;
+    const k = (this.time % 5) / 5;
+    const d = a + (b - a) * Math.min(1, k * 1.15);
+    g.save();
+    g.globalAlpha = k < 0.05 ? k / 0.05 : k > 0.93 ? Math.max(0, (1 - k) / 0.07) : 1;
+    g.strokeStyle = 'rgba(255,93,143,.65)';
+    g.lineWidth = Math.max(5, v.s * 0.15);
+    g.lineCap = 'round';
+    g.setLineDash([2, 11]);
+    g.beginPath();
+    for (let s2 = a; s2 <= d; s2 += 0.25) {
+      const q = at(p, s2);
+      if (s2 === a) g.moveTo(toX(v, q.x), toY(v, q.y));
+      else g.lineTo(toX(v, q.x), toY(v, q.y));
+    }
+    g.stroke();
+    g.setLineDash([]);
+    const q = at(p, d);
+    g.font = `${Math.round(v.s * 1.1)}px system-ui, sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText('👆', toX(v, q.x) + v.s * 0.1, toY(v, q.y) + v.s * 0.5);
+    g.restore();
+    // the view follows the hand
+    const target = q.x - (this.W / v.s) * 0.4;
+    if (Math.abs(target - this.x0) > 0.05 && !this.drag) {
+      this.x0 += (target - this.x0) * 0.08;
+      this.updateView();
+    }
+  }
+
+  private drawPartDrag(g: CanvasRenderingContext2D, v: View, d: { part: Piece; px: number; py: number }): void {
+    const wx = fromX(v, d.px);
+    let near = this.track.pts[1] ?? this.track.pts[0];
+    for (const p of this.track.pts) if (Math.abs(p.x - wx) < Math.abs(near.x - wx)) near = p;
+    g.save();
+    g.strokeStyle = '#ff5d8f';
+    g.fillStyle = 'rgba(255,93,143,.18)';
+    g.lineWidth = 4;
+    g.setLineDash([6, 6]);
+    g.beginPath();
+    if (d.part === 'loop') g.arc(toX(v, near.x + 0.5), toY(v, near.y + 1.25), v.s * 1.25, 0, Math.PI * 2);
+    else {
+      const w = PART_SPAN[d.part] * v.s;
+      g.roundRect(d.px - w / 2, toY(v, near.y) - v.s * 1.1, w, v.s * 2.2, 14);
+      g.fill();
+    }
+    g.stroke();
+    g.setLineDash([]);
+    g.font = `${Math.round(v.s * 0.9)}px system-ui, sans-serif`;
+    g.textAlign = 'center';
+    g.fillText({ loop: '🔁', chain: '⛓️', tunnel: '🚇', splash: '💦' }[d.part], d.px, d.py);
+    g.restore();
   }
 
   /** the car is inside the loop now (for screenshots and the sound of the loop) */
@@ -505,6 +661,17 @@ export class Builder {
       else g.lineTo(mx(p.x[i]), my(p.y[i]));
     }
     g.stroke();
+    for (const o of this.goals.obstacles) {
+      g.fillStyle = 'rgba(120,120,140,.7)';
+      g.fillRect(mx(o.x0), my(o.y1), Math.max(3, mx(o.x1) - mx(o.x0)), Math.max(3, my(o.y0) - my(o.y1)));
+    }
+    g.fillStyle = '#ffb800';
+    this.goals.stars.forEach((st, i) => {
+      if (this.collected[i]) return;
+      g.beginPath();
+      g.arc(mx(st.x), my(st.y), 3, 0, Math.PI * 2);
+      g.fill();
+    });
     // the end station, a flag
     g.fillStyle = '#333';
     g.fillRect(mx(END.x + 1.4) - 1, my(3.2), 2, my(1.5) - my(3.2));

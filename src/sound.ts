@@ -13,7 +13,7 @@ export type SoundName =
   // block puzzle: a block lands, a block bursts (pitch rises with every block), a combo arpeggio, a streak step (pitch), a new tray, a clean board, a soft happy tune for a full board
   | 'thock' | 'blast' | 'arpeggio' | 'streak' | 'trayin' | 'fanfare' | 'gentle'
   // roller coaster: the chain on the way up (a tick), the wind (pitch = how fast), the passengers' "wheee" on the way down, a star collected
-  | 'chain' | 'wind' | 'wheee' | 'starpop';
+  | 'chain' | 'wind' | 'wheee' | 'starpop' | 'splash';
 
 export interface SoundApi {
   /** `pitch` (Hz) applies to 'pop', 'bell' and 'tick'. */
@@ -141,6 +141,7 @@ export const sound: SoundApi = {
           break;
         }
         case 'wheee': tone(420, 0, 0.55, 'sine', 0.2, 1100); tone(630, 0.05, 0.5, 'triangle', 0.1, 1500); break;
+        case 'splash': tone(260, 0, 0.28, 'sine', 0.16, 90); tone(900, 0.02, 0.14, 'triangle', 0.09, 400); tone(1500, 0.05, 0.1, 'sine', 0.05); break;
         case 'starpop': tone(880, 0, 0.12, 'sine', 0.25, 1760); tone(1320, 0.07, 0.15, 'triangle', 0.15); break;
         case 'thock':
           tone(210, 0, 0.08, 'sine', 0.26, 120);

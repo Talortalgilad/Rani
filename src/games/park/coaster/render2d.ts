@@ -1,5 +1,8 @@
 /** The side view (SPEC-park.md 2 and 3.1): the sky and the hills of the candy hills, the track with its sleepers and its pillars, the train. Drawing only. */
 import { CHAIN_X0, CREST, END, G, START_PTS, WORLD_H, WORLD_W, at, type Path, type Pt, type Track } from './track';
+import { art, drawArt, panorama } from './art';
+import { drawPanorama } from './panorama';
+import type { Obstacle, SpeedGoal, StarGoal } from '../goals';
 
 export interface View {
   /** the world x at the left edge of the screen, the scale (px per unit) and the screen y of the ground */
@@ -36,8 +39,21 @@ const CAR_COLORS = ['#ff7aa8', '#ffb84d', '#5ad1ff'];
 const hill = (x: number, seed: number): number => Math.sin(x * 0.7 + seed) * 0.5 + Math.sin(x * 0.31 + seed * 2) * 0.7 + Math.sin(x * 1.3 + seed * 3) * 0.12;
 
 /** The sky and the three layers of the background (parallax): far hills, near hills, the ground with candy canes and lollipops. */
-export function drawBackground(g: CanvasRenderingContext2D, v: View, t: number): void {
+export function drawBackground(g: CanvasRenderingContext2D, v: View, t: number, bg: string | null = null): void {
   const { W, H } = v;
+  const pano = bg ? panorama(bg) : null;
+  if (pano) {
+    // the picture of the zone, moving at a third of the speed of the track; every second copy is turned over so that the copies meet
+    g.fillStyle = bg === 'space' ? '#202d5d' : '#b8caf6';
+    g.fillRect(0, 0, W, H);
+    drawPanorama(g, pano, v.x0, v.s, 0.3, 0, H, W);
+    // the ground under the track
+    g.fillStyle = 'rgba(255,255,255,.28)';
+    g.fillRect(0, v.y0, W, H - v.y0);
+    g.fillStyle = 'rgba(255,255,255,.55)';
+    g.fillRect(0, v.y0, W, Math.max(3, v.s * 0.08));
+    return;
+  }
   const sky = g.createLinearGradient(0, 0, 0, v.y0);
   sky.addColorStop(0, '#ffd6f0');
   sky.addColorStop(0.55, '#ffe9f7');
@@ -135,9 +151,12 @@ export function drawHeights(g: CanvasRenderingContext2D, v: View): void {
 /** The stations, with the chain of the lift. */
 export function drawStations(g: CanvasRenderingContext2D, v: View, path: Path): void {
   const s = v.s;
-  // the start: a little house
+  // the start: the station (the picture; a little house of lines until it has come)
   const px = toX(v, -0.3);
   const gy = toY(v, 1.5);
+  const st = art('station');
+  const stationH = drawArt(g, st, px - s * 0.5, gy + s * 0.12, s * 3.2);
+  if (!stationH) {
   g.fillStyle = '#ffffff';
   g.strokeStyle = '#ff5d8f';
   g.lineWidth = Math.max(3, s * 0.07);
@@ -151,6 +170,7 @@ export function drawStations(g: CanvasRenderingContext2D, v: View, path: Path): 
   g.lineTo(px - s * 0.5, gy - s * 1.75);
   g.lineTo(px + s * 0.75, gy - s * 1.2);
   g.fill();
+  }
   // the chain: little teeth along the lift
   g.strokeStyle = '#6a5a7a';
   g.lineWidth = Math.max(2, s * 0.05);
@@ -460,4 +480,126 @@ export function drawStarGate(g: CanvasRenderingContext2D, v: View, x: number, y:
     g.stroke();
   }
   g.restore();
+}
+
+/** An obstacle: its picture standing on the ground (a bridge on two posts); the box that the track must not touch is the one in the goals. */
+export function drawObstacle(g: CanvasRenderingContext2D, v: View, o: Obstacle, hit: boolean, t: number): void {
+  const s = v.s;
+  const cx = toX(v, (o.x0 + o.x1) / 2);
+  const w = (o.x1 - o.x0) * s;
+  if (cx < -w || cx > v.W + w) return;
+  const a = art(o.kind);
+  g.save();
+  if (o.kind === 'bridge') {
+    g.fillStyle = '#9a6a3c';
+    for (const dx of [-0.42, 0.42]) g.fillRect(cx + dx * w - s * 0.09, toY(v, o.y0), s * 0.18, toY(v, 0) - toY(v, o.y0));
+    drawArt(g, a, cx, toY(v, o.y0) + s * 0.05, w * 1.12);
+  } else {
+    // the picture is a little bigger than the box, and wobbles when the track is in it
+    const bw = w * (o.kind === 'rock' ? 1.15 : 1.5);
+    const h = drawArt(g, a, cx + (hit ? Math.sin(t * 30) * 2 : 0), toY(v, 0) + s * 0.04, bw);
+    if (!h) {
+      g.fillStyle = o.kind === 'rock' ? '#9aa0ad' : '#4fa36a';
+      g.beginPath();
+      g.roundRect(toX(v, o.x0), toY(v, o.y1), w, toY(v, o.y0) - toY(v, o.y1), s * 0.2);
+      g.fill();
+    }
+  }
+  g.restore();
+}
+
+/** The part of the track that is inside an obstacle is painted red. */
+export function drawHits(g: CanvasRenderingContext2D, v: View, path: Path, mask: Uint8Array, t: number): void {
+  g.save();
+  g.strokeStyle = `rgba(230,40,70,${0.65 + 0.3 * Math.sin(t * 8)})`;
+  g.lineWidth = Math.max(6, v.s * 0.2);
+  g.lineCap = 'round';
+  g.lineJoin = 'round';
+  let on = false;
+  g.beginPath();
+  for (let i = 0; i < path.n; i++) {
+    if (mask[i]) {
+      if (!on) g.moveTo(toX(v, path.x[i]), toY(v, path.y[i]));
+      else g.lineTo(toX(v, path.x[i]), toY(v, path.y[i]));
+      on = true;
+    } else on = false;
+  }
+  g.stroke();
+  g.restore();
+}
+
+/** A star to collect (a little bigger and shining while it is waiting; gone in sparkles when it is got). */
+export function drawStarGoal(g: CanvasRenderingContext2D, v: View, st: StarGoal, got: boolean, t: number, i: number): void {
+  const cx = toX(v, st.x), cy = toY(v, st.y);
+  if (cx < -40 || cx > v.W + 40) return;
+  const r = v.s * (got ? 0.3 : 0.4 + Math.sin(t * 4 + i) * 0.04);
+  g.save();
+  g.globalAlpha = got ? 0.35 : 1;
+  g.shadowColor = '#ffe36a';
+  g.shadowBlur = got ? 0 : 14;
+  g.fillStyle = got ? '#d8cf9a' : '#ffd23f';
+  g.strokeStyle = got ? '#b3a76a' : '#e0a100';
+  g.lineWidth = 2.5;
+  g.beginPath();
+  for (let k = 0; k < 10; k++) {
+    const a = -Math.PI / 2 + (k * Math.PI) / 5;
+    const rr = k % 2 === 0 ? r : r * 0.45;
+    if (k === 0) g.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+    else g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
+  }
+  g.closePath();
+  g.fill();
+  g.stroke();
+  g.restore();
+}
+
+/** The speed gate: the ring of stars with a snail (slow) or a rabbit (fast) on it. */
+export function drawSpeedGate(g: CanvasRenderingContext2D, v: View, goal: SpeedGoal, part: 'back' | 'front', hit: boolean): void {
+  drawStarGate(g, v, goal.x, goal.y, part, hit);
+  if (part === 'front') {
+    g.save();
+    g.font = `${Math.round(v.s * 0.8)}px system-ui, sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(goal.mode === 'fast' ? '🐇' : '🐢', toX(v, goal.x), toY(v, goal.y - 1.75));
+    g.restore();
+  }
+}
+
+/** The parts on the track: the teeth of a chain lift, and the pool of the water splash with its drops (the tunnel is drawn after the train). */
+export function drawParts(g: CanvasRenderingContext2D, v: View, path: Path, t: number, front: boolean): void {
+  const s = v.s;
+  if (!front) {
+    g.strokeStyle = '#4a4a5a';
+    g.lineWidth = Math.max(2.5, s * 0.07);
+    for (const [a, b] of path.chains) {
+      for (let d = a; d <= b; d += 0.3) {
+        const p = at(path, d);
+        const cx = toX(v, p.x), cy = toY(v, p.y);
+        g.beginPath();
+        g.moveTo(cx - Math.sin(p.th) * s * 0.2, cy - Math.cos(p.th) * s * 0.2);
+        g.lineTo(cx + Math.sin(p.th) * s * 0.2, cy + Math.cos(p.th) * s * 0.2);
+        g.stroke();
+      }
+    }
+    return;
+  }
+  for (const d of path.splashes) {
+    const p = at(path, d);
+    const cx = toX(v, p.x), cy = toY(v, p.y);
+    g.save();
+    g.fillStyle = 'rgba(70,170,235,.55)';
+    g.beginPath();
+    g.ellipse(cx, cy + s * 0.12, s * 0.95, s * 0.22, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = 'rgba(255,255,255,.9)';
+    for (let k = 0; k < 9; k++) {
+      const ph = (t * 1.6 + k * 0.37) % 1;
+      const dx = (k - 4) * s * 0.2 + Math.sin(k * 7) * s * 0.05;
+      g.beginPath();
+      g.arc(cx + dx, cy - Math.sin(ph * Math.PI) * s * (0.5 + (k % 3) * 0.22), s * 0.07, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.restore();
+  }
 }

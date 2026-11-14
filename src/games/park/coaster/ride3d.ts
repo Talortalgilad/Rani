@@ -24,6 +24,8 @@ export interface Ride3DOptions {
   onEnd(): void;
   /** the view is slow: the caller may go back to the side view */
   onSlow?(): void;
+  /** every frame: the distance of the car (for the dark of a tunnel and the water of a splash) */
+  onFrame?(s: number): void;
 }
 export interface Ride3D {
   setCamera(c: 'first' | 'side'): void;
@@ -271,6 +273,7 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
     monitor.sample(dt);
     t = Math.min(dur, t + dt);
     const { s, v } = sample(ride, t);
+    o.onFrame?.(s);
     // the cars on the track
     cars.forEach((c, k) => {
       const q = poseAt(Math.max(0.3, s - k * GAP));
