@@ -12,6 +12,7 @@ import { englishName, type Resident } from '../residents';
 import { Chatter, MAX_ALERTS, answered, nearCentre, tickAlerts } from './alerts';
 import { MATH_TYPE, SUBJECT, WORD_NAMES, makeTalk, nextKind, rng, type Talk, type TalkEnv, type TalkKind } from './gen';
 import { cv } from './lines';
+import { PILE, boardFor } from './layout';
 import { loadSave, writeSave, type CarnivalSave } from './state';
 import { opening, quiet, say } from './speak';
 
@@ -32,6 +33,12 @@ export interface TalkHost {
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const base = (): string => import.meta.env.BASE_URL;
 const OTHER_NAMES = ['דני', 'נועה', 'תמר', 'יוסי', 'מיכל', 'עידו', 'שירה'];
+/** the size of the things to count on a board (CSS variables): the same numbers that talk/layout.ts checks */
+const boardVars = (total: number): string => {
+  const b = boardFor(total);
+  return `--sz:${b.size}px;--gp:${b.gap}px;--cols:${b.cols}`;
+};
+void PILE;
 const sleep = (ms: number): Promise<void> => new Promise((r) => window.setTimeout(r, ms));
 
 export class Talks {
@@ -253,17 +260,17 @@ export class Talks {
     };
     if (t.kind === 'together') {
       this.sayText(`<span class="n">${counter(`${t.a}`)}</span> ${esc(t.item.he)} + <span class="n">${counter(`${t.b}`)}</span> ${esc(t.item.he)}<br>${esc(cv.howmany)}`);
-      act.innerHTML = `<div class="cv-items"><span class="grp">${items(t.item, t.a)}</span><b>+</b><span class="grp">${items(t.item, t.b, 'b')}</span></div><div class="cv-opts">${t.choices.map((c, i) => btn(counter(String(c)), i)).join('')}</div>`;
+      act.innerHTML = `<div class="cv-items" style="${boardVars(t.a + t.b)}"><span class="grp">${items(t.item, t.a)}</span><b>+</b><span class="grp">${items(t.item, t.b, 'b')}</span></div><div class="cv-opts">${t.choices.map((c, i) => btn(counter(String(c)), i)).join('')}</div>`;
       wrong = () => this.countRow(act, t.answer);
       bind();
     } else if (t.kind === 'missing') {
       this.sayText(`${esc(cv.had)} <span class="n">${counter(String(t.a))}</span> ${esc(t.item.he)}, ${esc(cv.ate)} <span class="n">${counter(String(t.b))}</span>${t.b === 1 ? '' : ` ${esc(t.item.he)}`}<br>${esc(cv.left)}`);
-      act.innerHTML = `<div class="cv-items"><span class="grp">${items(t.item, t.a - t.b)}${items(t.item, t.b, 'ate')}</span></div><div class="cv-opts">${t.choices.map((c, i) => btn(counter(String(c)), i)).join('')}</div>`;
+      act.innerHTML = `<div class="cv-items" style="${boardVars(t.a)}"><span class="grp">${items(t.item, t.a - t.b)}${items(t.item, t.b, 'ate')}</span></div><div class="cv-opts">${t.choices.map((c, i) => btn(counter(String(c)), i)).join('')}</div>`;
       wrong = () => this.countRow(act, t.answer, '.grp i:not(.ate)');
       bind();
     } else if (t.kind === 'more') {
       this.sayText(esc(t.ask === 'more' ? cv.more : cv.less));
-      act.innerHTML = `<div class="cv-stacks">${[t.a, t.b].map((n, i) => btn(`<span class="pile">${items(t.item, n)}</span>`, i, 'stack')).join('')}</div>`;
+      act.innerHTML = `<div class="cv-stacks" style="${boardVars(t.a + t.b)}">${[t.a, t.b].map((n, i) => btn(`<span class="pile">${items(t.item, n)}</span>`, i, 'stack')).join('')}</div>`;
       wrong = async () => {
         // the counts are shown on both piles, counted aloud
         const piles = act.querySelectorAll<HTMLElement>('.stack');

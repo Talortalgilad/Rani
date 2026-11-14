@@ -111,8 +111,9 @@ export function makeTalk(kind: TalkKind, seed: number, env: TalkEnv): Talk | nul
     return { kind, a: 3, b: 1, item, answer: 2, choices: choices3(2, max, r) };
   }
   if (kind === 'exact') {
-    const n = int(r, 2, max);
-    return { kind, n, pile: Math.min(24, n + int(r, 3, 5)), item };
+    // the pile is 12 things at most (each is 48 px to tap): so at most 9 are asked for
+    const n = int(r, 2, Math.min(max, 9));
+    return { kind, n, pile: Math.min(12, n + int(r, 3, 5)), item };
   }
   if (kind === 'more') {
     const cap = Math.min(max, 12);
@@ -151,7 +152,7 @@ export function validTalk(t: Talk, level: number): boolean {
     case 'missing':
       return t.item.food && t.b >= 1 && t.a > t.b && t.a <= max && t.a - t.b === t.answer && t.choices.length === 3 && new Set(t.choices).size === 3 && t.choices.filter((c) => c === t.answer).length === 1 && t.choices.every((c) => c >= 0 && c <= max);
     case 'exact':
-      return t.n >= 2 && t.n <= max && t.pile > t.n && t.pile <= 24;
+      return t.n >= 2 && t.n <= max && t.pile > t.n && t.pile <= 12;
     case 'more':
       return t.a !== t.b && (level < 3 || Math.abs(t.a - t.b) <= 3) && t.a <= max && t.b <= max && (t.ask === 'more' ? (t.a > t.b ? 0 : 1) : t.a < t.b ? 0 : 1) === t.answer;
     case 'can':
