@@ -1,0 +1,897 @@
+[
+ {
+  "take": 300,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_085309_c4998af5-d4a1-4c42-b0b0-400456badb25.mp3",
+  "lines": [
+   {
+    "id": "t_welcome",
+    "text": "שלום רני! אני המורה לולי. כל יום נלמד יחד משהו קטן באנגלית."
+   },
+   {
+    "id": "t_hi.0",
+    "text": "היי רני! כיף שבאת!"
+   },
+   {
+    "id": "t_hi.1",
+    "text": "רני! חיכיתי לך!"
+   },
+   {
+    "id": "t_hi.2",
+    "text": "שלום שלום! מוכנה לשיעור?"
+   },
+   {
+    "id": "t_feel_ask",
+    "text": "איך את מרגישה היום? הקישי על הפרצוף."
+   },
+   {
+    "id": "t_review",
+    "text": "קודם ניזכר בכמה מילים."
+   },
+   {
+    "id": "t_new",
+    "text": "ועכשיו משהו חדש!"
+   },
+   {
+    "id": "t_listen",
+    "text": "הקשיבי טוב."
+   },
+   {
+    "id": "t_your_turn",
+    "text": "עכשיו תורך!"
+   },
+   {
+    "id": "t_game",
+    "text": "זמן משחק!"
+   },
+   {
+    "id": "t_tap_picture",
+    "text": "הקישי על התמונה המתאימה."
+   },
+   {
+    "id": "t_who_said",
+    "text": "מי אמר את זה? הקישי עליו."
+   },
+   {
+    "id": "t_build",
+    "text": "בני את המשפט מהמילים."
+   },
+   {
+    "id": "t_say_aloud",
+    "text": "נסי להגיד את זה בקול רם!"
+   },
+   {
+    "id": "t_again_together",
+    "text": "עוד פעם, יחד איתי!"
+   }
+  ]
+ },
+ {
+  "take": 301,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_090550_b2969c3f-2cd3-464a-9ac8-9eb5e5c5a85c.mp3",
+  "lines": [
+   {
+    "id": "t_almost",
+    "text": "כמעט! הקשיבי שוב."
+   },
+   {
+    "id": "t_show",
+    "text": "בואי נראה יחד."
+   },
+   {
+    "id": "t_sentence_of_day",
+    "text": "זה משפט היום שלך. אפשר להגיד אותו לאבא ולאמא!"
+   },
+   {
+    "id": "t_sticker",
+    "text": "קיבלת מדבקה חדשה!"
+   },
+   {
+    "id": "t_bye.0",
+    "text": "נתראה מחר!"
+   },
+   {
+    "id": "t_bye.1",
+    "text": "היה כיף! להתראות!"
+   },
+   {
+    "id": "t_done_today",
+    "text": "כבר עשינו שיעור היום. בואי מחר לשיעור חדש! בינתיים אפשר לחזור על שיעור ישן."
+   },
+   {
+    "id": "t_unit_done",
+    "text": "סיימת יחידה שלמה! אני כל כך גאה בך!"
+   },
+   {
+    "id": "t_teacher_intro",
+    "text": "היום את המורה! אני אגיד משפט, ואת תגידי לי אם צדקתי."
+   },
+   {
+    "id": "t_right_or_wrong",
+    "text": "צדקתי או טעיתי?"
+   },
+   {
+    "id": "t_oops",
+    "text": "אוי, התבלבלתי! תודה שתיקנת אותי."
+   },
+   {
+    "id": "t_i_was_right",
+    "text": "נכון, הפעם צדקתי!"
+   },
+   {
+    "id": "t_fix_me",
+    "text": "אז מה נכון? הקישי על התשובה הנכונה."
+   },
+   {
+    "id": "t_chant_intro",
+    "text": "יש לנו שיר! מחאי כפיים בקצב."
+   },
+   {
+    "id": "t_chant_again",
+    "text": "רוצה לשמוע שוב?"
+   }
+  ]
+ },
+ {
+  "take": 302,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_101618_a1b10e25-245f-4153-a154-b4643489092d.mp3",
+  "lines": [
+   {
+    "id": "t_like_ask",
+    "text": "מה את אוהבת? הקישי על הלב או על האיכס."
+   },
+   {
+    "id": "t_i_remember",
+    "text": "אני זוכרת מה את אוהבת!"
+   },
+   {
+    "id": "t_m_hello",
+    "text": "זה אומר: שלום."
+   },
+   {
+    "id": "t_m_im",
+    "text": "זה אומר: אני."
+   },
+   {
+    "id": "t_m_whats_your_name",
+    "text": "זה אומר: מה השם שלך?"
+   },
+   {
+    "id": "t_m_nice_to_meet_you",
+    "text": "זה אומר: נעים להכיר."
+   },
+   {
+    "id": "t_m_how_are_you",
+    "text": "זה אומר: מה שלומך?"
+   },
+   {
+    "id": "t_m_happy",
+    "text": "זה אומר: שמחה."
+   },
+   {
+    "id": "t_m_sad",
+    "text": "זה אומר: עצובה."
+   },
+   {
+    "id": "t_m_sleepy",
+    "text": "זה אומר: עייפה."
+   },
+   {
+    "id": "t_m_hungry",
+    "text": "זה אומר: רעבה."
+   },
+   {
+    "id": "t_m_great",
+    "text": "זה אומר: מצוין!"
+   },
+   {
+    "id": "t_m_goodbye",
+    "text": "זה אומר: להתראות."
+   },
+   {
+    "id": "t_m_thank_you",
+    "text": "זה אומר: תודה."
+   },
+   {
+    "id": "t_m_yes",
+    "text": "זה אומר: כן."
+   }
+  ]
+ },
+ {
+  "take": 303,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_103048_2a26aedb-62dc-43d6-bf83-48b947111c7b.mp3",
+  "lines": [
+   {
+    "id": "t_m_no",
+    "text": "זה אומר: לא."
+   },
+   {
+    "id": "t_m_me_too",
+    "text": "זה אומר: גם אני."
+   },
+   {
+    "id": "t_m_i_like",
+    "text": "זה אומר: אני אוהבת."
+   },
+   {
+    "id": "t_m_i_dont_like",
+    "text": "זה אומר: אני לא אוהבת."
+   },
+   {
+    "id": "t_m_do_you_like",
+    "text": "זה אומר: את אוהבת?"
+   },
+   {
+    "id": "t_m_yummy",
+    "text": "זה אומר: טעים!"
+   },
+   {
+    "id": "t_m_yucky",
+    "text": "זה אומר: איכס!"
+   },
+   {
+    "id": "t_m_its_a",
+    "text": "זה אומר: זה..."
+   },
+   {
+    "id": "t_m_what_color",
+    "text": "זה אומר: איזה צבע זה?"
+   },
+   {
+    "id": "t_m_what_is_it",
+    "text": "זה אומר: מה זה?"
+   },
+   {
+    "id": "t_color_first",
+    "text": "שימי לב! באנגלית הצבע בא לפני הדבר. קודם אדום, ואחר כך בלון."
+   },
+   {
+    "id": "t_color_pick",
+    "text": "צבעי את הבלון בצבע שאני אומרת."
+   }
+  ]
+ },
+ {
+  "take": 320,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_104514_6c1994b9-a469-4845-98d6-035d0dfd7508.mp3",
+  "lines": [
+   {
+    "id": "t_very_good",
+    "text": "Very good!"
+   },
+   {
+    "id": "t_excellent",
+    "text": "Excellent!"
+   },
+   {
+    "id": "t_you_got_it",
+    "text": "You got it!"
+   },
+   {
+    "id": "t_well_done",
+    "text": "Well done, Rani!"
+   },
+   {
+    "id": "t_super",
+    "text": "Super!"
+   },
+   {
+    "id": "t_listen_en",
+    "text": "Listen!"
+   },
+   {
+    "id": "t_your_turn_en",
+    "text": "Your turn!"
+   },
+   {
+    "id": "t_say_it_with_me",
+    "text": "Say it with me!"
+   },
+   {
+    "id": "t_one_more_time",
+    "text": "One more time!"
+   },
+   {
+    "id": "t_lets_play",
+    "text": "Let's play!"
+   },
+   {
+    "id": "t_am_i_right",
+    "text": "Am I right?"
+   },
+   {
+    "id": "t_silly_me",
+    "text": "Oops! Silly me!"
+   },
+   {
+    "id": "t_thank_you_teacher",
+    "text": "Thank you, teacher Rani!"
+   },
+   {
+    "id": "t_yes",
+    "text": "Yes!"
+   },
+   {
+    "id": "t_no",
+    "text": "No!"
+   },
+   {
+    "id": "t_thank_you",
+    "text": "Thank you!"
+   },
+   {
+    "id": "t_me_too",
+    "text": "Me too!"
+   },
+   {
+    "id": "t_hello_rani",
+    "text": "Hello, Rani!"
+   }
+  ]
+ },
+ {
+  "take": 321,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_105941_c9a5b304-b281-489d-b903-f969570f0c52.mp3",
+  "lines": [
+   {
+    "id": "t_hello",
+    "text": "Hello!"
+   },
+   {
+    "id": "t_im_lolly",
+    "text": "I'm Miss Lolly."
+   },
+   {
+    "id": "t_im",
+    "text": "I'm..."
+   },
+   {
+    "id": "t_im_rani",
+    "text": "I'm Rani."
+   },
+   {
+    "id": "t_whats_your_name",
+    "text": "What's your name?"
+   },
+   {
+    "id": "t_nice_to_meet_you",
+    "text": "Nice to meet you!"
+   },
+   {
+    "id": "t_how_are_you",
+    "text": "How are you?"
+   },
+   {
+    "id": "t_how_are_you_today",
+    "text": "How are you today, Rani?"
+   },
+   {
+    "id": "t_im_great",
+    "text": "I'm great!"
+   },
+   {
+    "id": "t_goodbye",
+    "text": "Goodbye, Rani!"
+   },
+   {
+    "id": "t_see_you_tomorrow",
+    "text": "See you tomorrow!"
+   },
+   {
+    "id": "t_im_mozzi",
+    "text": "Hello! I'm Mozzi."
+   },
+   {
+    "id": "t_im_horiko",
+    "text": "Hello! I'm Horiko."
+   },
+   {
+    "id": "t_im_popcheese",
+    "text": "Hello! I'm Popcheese."
+   },
+   {
+    "id": "t_re_happy",
+    "text": "Happy! Me too!"
+   },
+   {
+    "id": "t_re_sad",
+    "text": "Oh, sad. Here is a big hug!"
+   },
+   {
+    "id": "t_re_sleepy",
+    "text": "Sleepy? Let's wake up! Jump, jump!"
+   },
+   {
+    "id": "t_re_hungry",
+    "text": "Hungry? Let's eat pizza!"
+   }
+  ]
+ },
+ {
+  "take": 322,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_111409_ddb12a01-f7ad-44c6-a05c-f9df634004da.mp3",
+  "lines": [
+   {
+    "id": "t_re_great",
+    "text": "Great! Let's start!"
+   },
+   {
+    "id": "t_happy",
+    "text": "Happy."
+   },
+   {
+    "id": "t_sad",
+    "text": "Sad."
+   },
+   {
+    "id": "t_sleepy",
+    "text": "Sleepy."
+   },
+   {
+    "id": "t_hungry",
+    "text": "Hungry."
+   },
+   {
+    "id": "t_im_happy",
+    "text": "I'm happy."
+   },
+   {
+    "id": "t_im_sad",
+    "text": "I'm sad."
+   },
+   {
+    "id": "t_im_sleepy",
+    "text": "I'm sleepy."
+   },
+   {
+    "id": "t_im_hungry",
+    "text": "I'm hungry."
+   },
+   {
+    "id": "t_i_like",
+    "text": "I like..."
+   },
+   {
+    "id": "t_i_dont_like",
+    "text": "I don't like..."
+   },
+   {
+    "id": "t_what_do_you_like",
+    "text": "What do you like?"
+   },
+   {
+    "id": "t_yummy",
+    "text": "Yummy!"
+   },
+   {
+    "id": "t_yucky",
+    "text": "Yucky!"
+   },
+   {
+    "id": "t_yes_i_do",
+    "text": "Yes, I do!"
+   },
+   {
+    "id": "t_no_i_dont",
+    "text": "No, I don't!"
+   },
+   {
+    "id": "t_like_pizza",
+    "text": "I like pizza."
+   },
+   {
+    "id": "t_like_cheese",
+    "text": "I like cheese."
+   }
+  ]
+ },
+ {
+  "take": 323,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_112855_624feab6-695a-423e-bada-678b2aed7d8e.mp3",
+  "lines": [
+   {
+    "id": "t_like_pasta",
+    "text": "I like pasta."
+   },
+   {
+    "id": "t_like_meat",
+    "text": "I like meat."
+   },
+   {
+    "id": "t_like_milk",
+    "text": "I like milk."
+   },
+   {
+    "id": "t_like_cake",
+    "text": "I like cake."
+   },
+   {
+    "id": "t_like_chocolate",
+    "text": "I like chocolate."
+   },
+   {
+    "id": "t_like_icecream",
+    "text": "I like ice cream."
+   },
+   {
+    "id": "t_like_apple",
+    "text": "I like apples."
+   },
+   {
+    "id": "t_like_banana",
+    "text": "I like bananas."
+   },
+   {
+    "id": "t_like_egg",
+    "text": "I like eggs."
+   },
+   {
+    "id": "t_like_cookie",
+    "text": "I like cookies."
+   },
+   {
+    "id": "t_dont_like_pizza",
+    "text": "I don't like pizza."
+   },
+   {
+    "id": "t_dont_like_cheese",
+    "text": "I don't like cheese."
+   },
+   {
+    "id": "t_dont_like_pasta",
+    "text": "I don't like pasta."
+   },
+   {
+    "id": "t_dont_like_meat",
+    "text": "I don't like meat."
+   },
+   {
+    "id": "t_dont_like_milk",
+    "text": "I don't like milk."
+   },
+   {
+    "id": "t_dont_like_cake",
+    "text": "I don't like cake."
+   },
+   {
+    "id": "t_dont_like_chocolate",
+    "text": "I don't like chocolate."
+   },
+   {
+    "id": "t_dont_like_icecream",
+    "text": "I don't like ice cream."
+   }
+  ]
+ },
+ {
+  "take": 324,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_114400_755b8170-cb8d-4e05-a27a-44ff5bebdb33.mp3",
+  "lines": [
+   {
+    "id": "t_dont_like_apple",
+    "text": "I don't like apples."
+   },
+   {
+    "id": "t_dont_like_banana",
+    "text": "I don't like bananas."
+   },
+   {
+    "id": "t_dont_like_egg",
+    "text": "I don't like eggs."
+   },
+   {
+    "id": "t_dont_like_cookie",
+    "text": "I don't like cookies."
+   },
+   {
+    "id": "t_do_you_like_pizza",
+    "text": "Do you like pizza?"
+   },
+   {
+    "id": "t_do_you_like_cheese",
+    "text": "Do you like cheese?"
+   },
+   {
+    "id": "t_do_you_like_pasta",
+    "text": "Do you like pasta?"
+   },
+   {
+    "id": "t_do_you_like_meat",
+    "text": "Do you like meat?"
+   },
+   {
+    "id": "t_do_you_like_milk",
+    "text": "Do you like milk?"
+   },
+   {
+    "id": "t_do_you_like_cake",
+    "text": "Do you like cake?"
+   },
+   {
+    "id": "t_do_you_like_chocolate",
+    "text": "Do you like chocolate?"
+   },
+   {
+    "id": "t_do_you_like_icecream",
+    "text": "Do you like ice cream?"
+   },
+   {
+    "id": "t_do_you_like_apple",
+    "text": "Do you like apples?"
+   },
+   {
+    "id": "t_do_you_like_banana",
+    "text": "Do you like bananas?"
+   },
+   {
+    "id": "t_do_you_like_egg",
+    "text": "Do you like eggs?"
+   },
+   {
+    "id": "t_do_you_like_cookie",
+    "text": "Do you like cookies?"
+   },
+   {
+    "id": "t_you_like_pizza",
+    "text": "You like pizza!"
+   },
+   {
+    "id": "t_you_like_cheese",
+    "text": "You like cheese!"
+   }
+  ]
+ },
+ {
+  "take": 325,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_120101_1093d7cb-3b52-48cb-846b-a152f7c23385.mp3",
+  "lines": [
+   {
+    "id": "t_you_like_pasta",
+    "text": "You like pasta!"
+   },
+   {
+    "id": "t_you_like_meat",
+    "text": "You like meat!"
+   },
+   {
+    "id": "t_you_like_milk",
+    "text": "You like milk!"
+   },
+   {
+    "id": "t_you_like_cake",
+    "text": "You like cake!"
+   },
+   {
+    "id": "t_you_like_chocolate",
+    "text": "You like chocolate!"
+   },
+   {
+    "id": "t_you_like_icecream",
+    "text": "You like ice cream!"
+   },
+   {
+    "id": "t_you_like_apple",
+    "text": "You like apples!"
+   },
+   {
+    "id": "t_you_like_banana",
+    "text": "You like bananas!"
+   },
+   {
+    "id": "t_you_like_egg",
+    "text": "You like eggs!"
+   },
+   {
+    "id": "t_you_like_cookie",
+    "text": "You like cookies!"
+   },
+   {
+    "id": "t_its_a",
+    "text": "It's a..."
+   },
+   {
+    "id": "t_what_color_is_it",
+    "text": "What color is it?"
+   },
+   {
+    "id": "t_what_is_it",
+    "text": "What is it?"
+   },
+   {
+    "id": "t_its_red",
+    "text": "It's red."
+   },
+   {
+    "id": "t_its_blue",
+    "text": "It's blue."
+   },
+   {
+    "id": "t_its_yellow",
+    "text": "It's yellow."
+   },
+   {
+    "id": "t_its_pink",
+    "text": "It's pink."
+   },
+   {
+    "id": "t_its_purple",
+    "text": "It's purple."
+   }
+  ]
+ },
+ {
+  "take": 326,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_121621_ec8d0436-8df5-462d-92fb-37b605113e47.mp3",
+  "lines": [
+   {
+    "id": "t_its_green",
+    "text": "It's green."
+   },
+   {
+    "id": "t_its_a_balloon",
+    "text": "It's a balloon."
+   },
+   {
+    "id": "t_its_a_ball",
+    "text": "It's a ball."
+   },
+   {
+    "id": "t_its_a_star",
+    "text": "It's a star."
+   },
+   {
+    "id": "t_its_a_hat",
+    "text": "It's a hat."
+   },
+   {
+    "id": "t_its_a_flower",
+    "text": "It's a flower."
+   },
+   {
+    "id": "t_its_a_kite",
+    "text": "It's a kite."
+   },
+   {
+    "id": "t_its_a_book",
+    "text": "It's a book."
+   },
+   {
+    "id": "t_its_a_apple",
+    "text": "It's an apple."
+   },
+   {
+    "id": "t_red_balloon",
+    "text": "It's a red balloon."
+   },
+   {
+    "id": "t_blue_balloon",
+    "text": "It's a blue balloon."
+   },
+   {
+    "id": "t_yellow_balloon",
+    "text": "It's a yellow balloon."
+   },
+   {
+    "id": "t_red_ball",
+    "text": "It's a red ball."
+   },
+   {
+    "id": "t_green_ball",
+    "text": "It's a green ball."
+   },
+   {
+    "id": "t_pink_ball",
+    "text": "It's a pink ball."
+   },
+   {
+    "id": "t_yellow_star",
+    "text": "It's a yellow star."
+   },
+   {
+    "id": "t_purple_star",
+    "text": "It's a purple star."
+   },
+   {
+    "id": "t_blue_star",
+    "text": "It's a blue star."
+   }
+  ]
+ },
+ {
+  "take": 327,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_123145_dded7c4b-a3a3-4f52-908d-2f083872ba26.mp3",
+  "lines": [
+   {
+    "id": "t_pink_hat",
+    "text": "It's a pink hat."
+   },
+   {
+    "id": "t_green_hat",
+    "text": "It's a green hat."
+   },
+   {
+    "id": "t_purple_hat",
+    "text": "It's a purple hat."
+   },
+   {
+    "id": "t_red_flower",
+    "text": "It's a red flower."
+   },
+   {
+    "id": "t_yellow_flower",
+    "text": "It's a yellow flower."
+   },
+   {
+    "id": "t_pink_flower",
+    "text": "It's a pink flower."
+   },
+   {
+    "id": "t_blue_kite",
+    "text": "It's a blue kite."
+   },
+   {
+    "id": "t_purple_kite",
+    "text": "It's a purple kite."
+   },
+   {
+    "id": "t_green_kite",
+    "text": "It's a green kite."
+   },
+   {
+    "id": "t_blue_book",
+    "text": "It's a blue book."
+   },
+   {
+    "id": "t_yellow_book",
+    "text": "It's a yellow book."
+   },
+   {
+    "id": "t_purple_book",
+    "text": "It's a purple book."
+   },
+   {
+    "id": "t_red_apple",
+    "text": "It's a red apple."
+   },
+   {
+    "id": "t_green_apple",
+    "text": "It's a green apple."
+   },
+   {
+    "id": "t_pink_apple",
+    "text": "It's a pink apple."
+   }
+  ]
+ },
+ {
+  "take": 340,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_124703_5e2950db-3efb-4173-a1e7-998064992994.mp3",
+  "lines": [
+   {
+    "id": "t_chant_1",
+    "text": "Hello, hello, how are you? I'm happy, I'm happy, me too! Hello, hello, what's your name? I'm Rani, I'm Rani, let's play a game!"
+   },
+   {
+    "id": "t_chant_2",
+    "text": "I like pizza, yummy, yummy! I like cake in my tummy! I don't like fish, no, no, no! I like ice cream, go, go, go!"
+   },
+   {
+    "id": "t_chant_3",
+    "text": "Red, red, a red balloon! Blue, blue, a blue balloon! Yellow, pink, purple, green, the best balloons I've ever seen!"
+   }
+  ]
+ }
+]

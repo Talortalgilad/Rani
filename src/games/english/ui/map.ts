@@ -9,7 +9,7 @@ import type { SoundApi } from '../../../sound';
 const worldStars = (map: MapProgress, n: number): number => Array.from({ length: STATIONS_PER_WORLD }, (_, s) => map.stars[`${n}-${s}`] ?? 0).reduce((a, b) => a + b, 0);
 
 /** The map of the worlds: a winding path, a world on each bend. A world opens when the one before it is finished. */
-export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onBook(): void; onJourney(j: Journey): void; onHome(): void }): () => void {
+export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean; map: MapProgress; sound: SoundApi; onWorld(n: number): void; onShelf(): void; onBook(): void; onJourney(j: Journey): void; onTutor(): void; onHome(): void }): () => void {
   const open = WORLDS.map((w) => w.ready && worldOpen(o.map, w.n, o.openAll));
   const current = WORLDS.findIndex((w, i) => open[i] && (o.map.done[w.n] ?? 0) < STATIONS_PER_WORLD);
   root.innerHTML = `
@@ -37,7 +37,7 @@ export function showMap(root: HTMLElement, o: { name: string; openAll?: boolean;
   root.querySelector('#mh')!.addEventListener('click', o.onHome);
   root.querySelector('#msh')!.addEventListener('click', o.onShelf);
   root.querySelector('#mbk')!.addEventListener('click', o.onBook);
-  bindJourneyTabs(root, 'words', o.onJourney);
+  bindJourneyTabs(root, 'words', o.onJourney, o.onTutor);
   root.querySelectorAll<HTMLButtonElement>('.map-world').forEach((b) =>
     b.addEventListener('click', () => {
       const n = Number(b.dataset.n);

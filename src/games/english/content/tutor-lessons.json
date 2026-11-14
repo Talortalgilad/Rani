@@ -1,0 +1,1374 @@
+{
+ "version": 1,
+ "feelings": [
+  "happy",
+  "sad",
+  "sleepy",
+  "hungry",
+  "great"
+ ],
+ "foods": [
+  "pizza",
+  "cheese",
+  "pasta",
+  "meat",
+  "milk",
+  "cake",
+  "chocolate",
+  "icecream",
+  "apple",
+  "banana",
+  "egg",
+  "cookie"
+ ],
+ "colors": [
+  "red",
+  "blue",
+  "yellow",
+  "pink",
+  "purple",
+  "green"
+ ],
+ "things": [
+  "balloon",
+  "ball",
+  "star",
+  "hat",
+  "flower",
+  "kite",
+  "book",
+  "apple"
+ ],
+ "pairs": [
+  [
+   "red",
+   "balloon"
+  ],
+  [
+   "blue",
+   "balloon"
+  ],
+  [
+   "yellow",
+   "balloon"
+  ],
+  [
+   "red",
+   "ball"
+  ],
+  [
+   "green",
+   "ball"
+  ],
+  [
+   "pink",
+   "ball"
+  ],
+  [
+   "yellow",
+   "star"
+  ],
+  [
+   "purple",
+   "star"
+  ],
+  [
+   "blue",
+   "star"
+  ],
+  [
+   "pink",
+   "hat"
+  ],
+  [
+   "green",
+   "hat"
+  ],
+  [
+   "purple",
+   "hat"
+  ],
+  [
+   "red",
+   "flower"
+  ],
+  [
+   "yellow",
+   "flower"
+  ],
+  [
+   "pink",
+   "flower"
+  ],
+  [
+   "blue",
+   "kite"
+  ],
+  [
+   "purple",
+   "kite"
+  ],
+  [
+   "green",
+   "kite"
+  ],
+  [
+   "blue",
+   "book"
+  ],
+  [
+   "yellow",
+   "book"
+  ],
+  [
+   "purple",
+   "book"
+  ],
+  [
+   "red",
+   "apple"
+  ],
+  [
+   "green",
+   "apple"
+  ],
+  [
+   "pink",
+   "apple"
+  ]
+ ],
+ "lessons": [
+  {
+   "id": "u1l1",
+   "unit": 1,
+   "kind": "regular",
+   "titleHe": "שלום!",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_welcome"
+     ]
+    },
+    {
+     "type": "teach",
+     "en": "t_hello",
+     "he": "t_m_hello",
+     "picture": null
+    },
+    {
+     "type": "teach",
+     "en": "t_im",
+     "he": "t_m_im",
+     "picture": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_im_lolly"
+     ]
+    },
+    {
+     "type": "repeat",
+     "clip": "t_im_rani"
+    },
+    {
+     "type": "whoSaid",
+     "clip": "t_im_mozzi",
+     "choices": [
+      "squishy:mozzi",
+      "squishy:horiko",
+      "squishy:popcheese"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "whoSaid",
+     "clip": "t_im_popcheese",
+     "choices": [
+      "squishy:mozzi",
+      "squishy:horiko",
+      "squishy:popcheese"
+     ],
+     "correct": 2
+    },
+    {
+     "type": "whoSaid",
+     "clip": "t_im_horiko",
+     "choices": [
+      "squishy:popcheese",
+      "squishy:horiko",
+      "squishy:mozzi"
+     ],
+     "correct": 1
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "I'm",
+      "Rani"
+     ],
+     "clip": "t_im_rani",
+     "picture": null
+    },
+    {
+     "type": "teach",
+     "en": "t_goodbye",
+     "he": "t_m_goodbye",
+     "picture": null
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_im_rani",
+     "en": "I'm Rani."
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u1l2",
+   "unit": 1,
+   "kind": "regular",
+   "titleHe": "מה השם שלך?",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "teach",
+     "en": "t_whats_your_name",
+     "he": "t_m_whats_your_name",
+     "picture": null
+    },
+    {
+     "type": "repeat",
+     "clip": "t_whats_your_name"
+    },
+    {
+     "type": "answerPick",
+     "clip": "t_whats_your_name",
+     "choices": [
+      "I'm Rani.",
+      "Goodbye!",
+      "Hello!"
+     ],
+     "choiceClips": [
+      "t_im_rani",
+      "t_goodbye",
+      "t_hello"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "teach",
+     "en": "t_nice_to_meet_you",
+     "he": "t_m_nice_to_meet_you",
+     "picture": null
+    },
+    {
+     "type": "dialogue",
+     "note": "סקווישי חדש נכנס. רני בוחרת מה לענות לו בכל תור.",
+     "turns": [
+      {
+       "squishy": "t_im_mozzi",
+       "choices": [
+        "t_im_rani",
+        "t_goodbye"
+       ],
+       "correct": 0
+      },
+      {
+       "squishy": "t_nice_to_meet_you",
+       "choices": [
+        "t_nice_to_meet_you",
+        "t_im_lolly"
+       ],
+       "correct": 0
+      }
+     ]
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "What's",
+      "your",
+      "name?"
+     ],
+     "clip": "t_whats_your_name",
+     "picture": null
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_whats_your_name",
+     "en": "What's your name?"
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u1l3",
+   "unit": 1,
+   "kind": "regular",
+   "titleHe": "מה שלומך?",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "teach",
+     "en": "t_how_are_you",
+     "he": "t_m_how_are_you",
+     "picture": null
+    },
+    {
+     "type": "teach",
+     "en": "t_happy",
+     "he": "t_m_happy",
+     "picture": "face:happy"
+    },
+    {
+     "type": "teach",
+     "en": "t_sad",
+     "he": "t_m_sad",
+     "picture": "face:sad"
+    },
+    {
+     "type": "teach",
+     "en": "t_sleepy",
+     "he": "t_m_sleepy",
+     "picture": "face:sleepy"
+    },
+    {
+     "type": "teach",
+     "en": "t_hungry",
+     "he": "t_m_hungry",
+     "picture": "face:hungry"
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_im_happy",
+     "choices": [
+      "face:happy",
+      "face:sad",
+      "face:sleepy"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_im_hungry",
+     "choices": [
+      "face:sleepy",
+      "face:hungry",
+      "face:happy"
+     ],
+     "correct": 1
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_im_sad",
+     "choices": [
+      "face:sad",
+      "face:hungry",
+      "face:happy"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_im_sleepy",
+     "choices": [
+      "face:hungry",
+      "face:sad",
+      "face:sleepy"
+     ],
+     "correct": 2
+    },
+    {
+     "type": "feel",
+     "note": "מכאן והלאה כל שיעור נפתח בשאלה הזו."
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "I'm",
+      "happy"
+     ],
+     "clip": "t_im_happy",
+     "picture": "face:happy"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_how_are_you",
+     "en": "How are you?"
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u1l4",
+   "unit": 1,
+   "kind": "teacher",
+   "titleHe": "רני המורה",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_teacher_intro"
+     ]
+    },
+    {
+     "type": "trueFalse",
+     "picture": "face:happy",
+     "clip": "t_im_sad",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_im_happy",
+       "t_im_sleepy"
+      ],
+      "correct": 0
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "face:sleepy",
+     "clip": "t_im_sleepy",
+     "truth": true,
+     "fixChoices": null
+    },
+    {
+     "type": "trueFalse",
+     "picture": "face:hungry",
+     "clip": "t_im_happy",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_im_sad",
+       "t_im_hungry"
+      ],
+      "correct": 1
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "squishy:mozzi",
+     "clip": "t_im_popcheese",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_im_mozzi",
+       "t_im_horiko"
+      ],
+      "correct": 0
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "face:sad",
+     "clip": "t_im_sad",
+     "truth": true,
+     "fixChoices": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_thank_you_teacher"
+     ]
+    },
+    {
+     "type": "chant",
+     "clip": "t_chant_1",
+     "lines": [
+      "Hello, hello, how are you?",
+      "I'm happy, I'm happy, me too!",
+      "Hello, hello, what's your name?",
+      "I'm Rani, I'm Rani, let's play a game!"
+     ]
+    },
+    {
+     "type": "unitDone"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_nice_to_meet_you",
+     "en": "Nice to meet you!"
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u2l1",
+   "unit": 2,
+   "kind": "regular",
+   "titleHe": "אני אוהבת",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "teach",
+     "en": "t_i_like",
+     "he": "t_m_i_like",
+     "picture": null
+    },
+    {
+     "type": "teach",
+     "en": "t_yummy",
+     "he": "t_m_yummy",
+     "picture": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_like_pizza"
+     ]
+    },
+    {
+     "type": "repeat",
+     "clip": "t_like_pizza"
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_like_cake",
+     "choices": [
+      "word:cake",
+      "word:milk",
+      "word:egg"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_like_banana",
+     "choices": [
+      "word:apple",
+      "word:banana",
+      "word:cheese"
+     ],
+     "correct": 1
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_like_icecream",
+     "choices": [
+      "word:pasta",
+      "word:meat",
+      "word:icecream"
+     ],
+     "correct": 2
+    },
+    {
+     "type": "likes",
+     "foods": [
+      "pizza",
+      "cake",
+      "banana",
+      "icecream"
+     ],
+     "note": "רני מסמנת לב או איכס לכל מאכל. נשמר בטלפון. המורה אומרת 'You like pizza!' על מה שסומן בלב."
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "I",
+      "like",
+      "pizza"
+     ],
+     "clip": "t_like_pizza",
+     "picture": "word:pizza"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_like_pizza",
+     "en": "I like pizza."
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u2l2",
+   "unit": 2,
+   "kind": "regular",
+   "titleHe": "אני לא אוהבת",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "teach",
+     "en": "t_i_dont_like",
+     "he": "t_m_i_dont_like",
+     "picture": null
+    },
+    {
+     "type": "teach",
+     "en": "t_yucky",
+     "he": "t_m_yucky",
+     "picture": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_dont_like_egg"
+     ]
+    },
+    {
+     "type": "repeat",
+     "clip": "t_dont_like_egg"
+    },
+    {
+     "type": "likeOrNot",
+     "note": "פרצוף עם לב או פרצוף איכס. רני בוחרת לפי מה ששמעה.",
+     "items": [
+      {
+       "clip": "t_like_cheese",
+       "food": "cheese",
+       "like": true
+      },
+      {
+       "clip": "t_dont_like_milk",
+       "food": "milk",
+       "like": false
+      },
+      {
+       "clip": "t_dont_like_meat",
+       "food": "meat",
+       "like": false
+      },
+      {
+       "clip": "t_like_chocolate",
+       "food": "chocolate",
+       "like": true
+      }
+     ]
+    },
+    {
+     "type": "likes",
+     "foods": [
+      "cheese",
+      "milk",
+      "meat",
+      "chocolate",
+      "egg"
+     ]
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "I",
+      "don't",
+      "like",
+      "eggs"
+     ],
+     "clip": "t_dont_like_egg",
+     "picture": "word:egg"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_dont_like_egg",
+     "en": "I don't like eggs."
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u2l3",
+   "unit": 2,
+   "kind": "regular",
+   "titleHe": "את אוהבת?",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "teach",
+     "en": "t_do_you_like_pizza",
+     "he": "t_m_do_you_like",
+     "picture": "word:pizza"
+    },
+    {
+     "type": "teach",
+     "en": "t_yes_i_do",
+     "he": "t_m_yes",
+     "picture": null
+    },
+    {
+     "type": "teach",
+     "en": "t_no_i_dont",
+     "he": "t_m_no",
+     "picture": null
+    },
+    {
+     "type": "ask",
+     "note": "המורה שואלת, רני עונה Yes או No, והמורה מגיבה: Me too! / Yummy! / Yucky!",
+     "items": [
+      {
+       "clip": "t_do_you_like_pasta",
+       "food": "pasta"
+      },
+      {
+       "clip": "t_do_you_like_apple",
+       "food": "apple"
+      },
+      {
+       "clip": "t_do_you_like_cookie",
+       "food": "cookie"
+      },
+      {
+       "clip": "t_do_you_like_milk",
+       "food": "milk"
+      }
+     ]
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_i_remember"
+     ]
+    },
+    {
+     "type": "recall",
+     "note": "המורה אומרת 2–3 משפטי 'You like ...!' ממה שרני סימנה."
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "Do",
+      "you",
+      "like",
+      "cake?"
+     ],
+     "clip": "t_do_you_like_cake",
+     "picture": "word:cake"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_do_you_like_pizza",
+     "en": "Do you like pizza?"
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u2l4",
+   "unit": 2,
+   "kind": "teacher",
+   "titleHe": "רני המורה",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_teacher_intro"
+     ]
+    },
+    {
+     "type": "note",
+     "text": "בתמונה: לולי עם לב או עם פרצוף איכס ליד מאכל. היא אומרת משפט, ורני מחליטה אם הוא מתאים לתמונה."
+    },
+    {
+     "type": "trueFalse",
+     "picture": "lolly:like:pizza",
+     "clip": "t_dont_like_pizza",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_like_pizza",
+       "t_like_pasta"
+      ],
+      "correct": 0
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "lolly:like:cake",
+     "clip": "t_like_cake",
+     "truth": true,
+     "fixChoices": null
+    },
+    {
+     "type": "trueFalse",
+     "picture": "lolly:dislike:meat",
+     "clip": "t_like_meat",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_dont_like_milk",
+       "t_dont_like_meat"
+      ],
+      "correct": 1
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "lolly:like:apple",
+     "clip": "t_like_banana",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_like_apple",
+       "t_like_egg"
+      ],
+      "correct": 0
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "lolly:dislike:cheese",
+     "clip": "t_dont_like_cheese",
+     "truth": true,
+     "fixChoices": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_thank_you_teacher"
+     ]
+    },
+    {
+     "type": "chant",
+     "clip": "t_chant_2",
+     "lines": [
+      "I like pizza, yummy, yummy!",
+      "I like cake in my tummy!",
+      "I don't like fish, no, no, no!",
+      "I like ice cream, go, go, go!"
+     ]
+    },
+    {
+     "type": "unitDone"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_what_do_you_like",
+     "en": "What do you like?"
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u3l1",
+   "unit": 3,
+   "kind": "regular",
+   "titleHe": "איזה צבע?",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "teach",
+     "en": "t_what_color_is_it",
+     "he": "t_m_what_color",
+     "picture": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_its_red"
+     ]
+    },
+    {
+     "type": "repeat",
+     "clip": "t_its_red"
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_its_blue",
+     "choices": [
+      "thing:balloon:blue",
+      "thing:balloon:red",
+      "thing:balloon:green"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_its_yellow",
+     "choices": [
+      "thing:star:pink",
+      "thing:star:purple",
+      "thing:star:yellow"
+     ],
+     "correct": 2
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_its_green",
+     "choices": [
+      "thing:ball:red",
+      "thing:ball:green",
+      "thing:ball:pink"
+     ],
+     "correct": 1
+    },
+    {
+     "type": "paint",
+     "intro": "t_color_pick",
+     "thing": "balloon",
+     "clips": [
+      "t_its_pink",
+      "t_its_purple",
+      "t_its_red"
+     ],
+     "note": "רני בוחרת צבע מהפלטה וצובעת את הבלון לפי מה ששמעה."
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "It's",
+      "red"
+     ],
+     "clip": "t_its_red",
+     "picture": "thing:apple:red"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_what_color_is_it",
+     "en": "What color is it?"
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u3l2",
+   "unit": 3,
+   "kind": "regular",
+   "titleHe": "מה זה?",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "teach",
+     "en": "t_what_is_it",
+     "he": "t_m_what_is_it",
+     "picture": null
+    },
+    {
+     "type": "teach",
+     "en": "t_its_a",
+     "he": "t_m_its_a",
+     "picture": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_its_a_balloon"
+     ]
+    },
+    {
+     "type": "repeat",
+     "clip": "t_its_a_balloon"
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_its_a_star",
+     "choices": [
+      "word:star",
+      "word:hat",
+      "word:kite"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_its_a_book",
+     "choices": [
+      "word:ball",
+      "word:flower",
+      "word:book"
+     ],
+     "correct": 2
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_its_a_kite",
+     "choices": [
+      "word:balloon",
+      "word:kite",
+      "word:apple"
+     ],
+     "correct": 1
+    },
+    {
+     "type": "answerPick",
+     "clip": "t_what_is_it",
+     "picture": "word:hat",
+     "choices": [
+      "It's a hat.",
+      "It's a ball.",
+      "It's a flower."
+     ],
+     "choiceClips": [
+      "t_its_a_hat",
+      "t_its_a_ball",
+      "t_its_a_flower"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "It's",
+      "a",
+      "ball"
+     ],
+     "clip": "t_its_a_ball",
+     "picture": "word:ball"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_what_is_it",
+     "en": "What is it?"
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u3l3",
+   "unit": 3,
+   "kind": "regular",
+   "titleHe": "בלון אדום",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_color_first"
+     ]
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_red_balloon"
+     ]
+    },
+    {
+     "type": "repeat",
+     "clip": "t_red_balloon"
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_blue_kite",
+     "choices": [
+      "thing:kite:blue",
+      "thing:book:blue",
+      "thing:kite:green"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_yellow_flower",
+     "choices": [
+      "thing:flower:pink",
+      "thing:star:yellow",
+      "thing:flower:yellow"
+     ],
+     "correct": 2
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_green_hat",
+     "choices": [
+      "thing:ball:green",
+      "thing:hat:green",
+      "thing:hat:purple"
+     ],
+     "correct": 1
+    },
+    {
+     "type": "listenPick",
+     "intro": "t_tap_picture",
+     "clip": "t_purple_star",
+     "choices": [
+      "thing:star:purple",
+      "thing:kite:purple",
+      "thing:star:yellow"
+     ],
+     "correct": 0
+    },
+    {
+     "type": "paint",
+     "intro": "t_color_pick",
+     "thing": "balloon",
+     "clips": [
+      "t_yellow_balloon",
+      "t_blue_balloon",
+      "t_red_balloon"
+     ]
+    },
+    {
+     "type": "build",
+     "tiles": [
+      "It's",
+      "a",
+      "red",
+      "balloon"
+     ],
+     "clip": "t_red_balloon",
+     "picture": "thing:balloon:red"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_red_balloon",
+     "en": "It's a red balloon."
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  },
+  {
+   "id": "u3l4",
+   "unit": 3,
+   "kind": "teacher",
+   "titleHe": "רני המורה",
+   "steps": [
+    {
+     "type": "greet"
+    },
+    {
+     "type": "feel"
+    },
+    {
+     "type": "review",
+     "count": 3
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_teacher_intro"
+     ]
+    },
+    {
+     "type": "trueFalse",
+     "picture": "thing:apple:red",
+     "clip": "t_green_apple",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_red_apple",
+       "t_red_ball"
+      ],
+      "correct": 0
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "thing:ball:pink",
+     "clip": "t_pink_ball",
+     "truth": true,
+     "fixChoices": null
+    },
+    {
+     "type": "trueFalse",
+     "picture": "thing:book:blue",
+     "clip": "t_blue_kite",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_yellow_book",
+       "t_blue_book"
+      ],
+      "correct": 1
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "thing:hat:purple",
+     "clip": "t_pink_hat",
+     "truth": false,
+     "fixChoices": {
+      "clips": [
+       "t_purple_hat",
+       "t_purple_kite"
+      ],
+      "correct": 0
+     }
+    },
+    {
+     "type": "trueFalse",
+     "picture": "thing:flower:pink",
+     "clip": "t_pink_flower",
+     "truth": true,
+     "fixChoices": null
+    },
+    {
+     "type": "say",
+     "clips": [
+      "t_thank_you_teacher"
+     ]
+    },
+    {
+     "type": "chant",
+     "clip": "t_chant_3",
+     "lines": [
+      "Red, red, a red balloon!",
+      "Blue, blue, a blue balloon!",
+      "Yellow, pink, purple, green,",
+      "the best balloons I've ever seen!"
+     ]
+    },
+    {
+     "type": "unitDone"
+    },
+    {
+     "type": "sentenceOfDay",
+     "clip": "t_red_apple",
+     "en": "It's a red apple."
+    },
+    {
+     "type": "sticker"
+    },
+    {
+     "type": "bye"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1610 @@
+[
+ {
+  "id": "t_welcome",
+  "text": "שלום רני! אני המורה לולי. כל יום נלמד יחד משהו קטן באנגלית.",
+  "lang": "he",
+  "take": 300,
+  "dur": 5.93,
+  "flag": ""
+ },
+ {
+  "id": "t_hi.0",
+  "text": "היי רני! כיף שבאת!",
+  "lang": "he",
+  "take": 300,
+  "dur": 2.26,
+  "flag": "tight"
+ },
+ {
+  "id": "t_hi.1",
+  "text": "רני! חיכיתי לך!",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.85,
+  "flag": "tight"
+ },
+ {
+  "id": "t_hi.2",
+  "text": "שלום שלום! מוכנה לשיעור?",
+  "lang": "he",
+  "take": 300,
+  "dur": 2.47,
+  "flag": ""
+ },
+ {
+  "id": "t_feel_ask",
+  "text": "איך את מרגישה היום? הקישי על הפרצוף.",
+  "lang": "he",
+  "take": 300,
+  "dur": 3.46,
+  "flag": "pause"
+ },
+ {
+  "id": "t_review",
+  "text": "קודם ניזכר בכמה מילים.",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.92,
+  "flag": "tight"
+ },
+ {
+  "id": "t_new",
+  "text": "ועכשיו משהו חדש!",
+  "lang": "he",
+  "take": 300,
+  "dur": 2.3,
+  "flag": "tight"
+ },
+ {
+  "id": "t_listen",
+  "text": "הקשיבי טוב.",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.22,
+  "flag": "tight"
+ },
+ {
+  "id": "t_your_turn",
+  "text": "עכשיו תורך!",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.61,
+  "flag": "tight"
+ },
+ {
+  "id": "t_game",
+  "text": "זמן משחק!",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.34,
+  "flag": "tight"
+ },
+ {
+  "id": "t_tap_picture",
+  "text": "הקישי על התמונה המתאימה.",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.9,
+  "flag": ""
+ },
+ {
+  "id": "t_who_said",
+  "text": "מי אמר את זה? הקישי עליו.",
+  "lang": "he",
+  "take": 300,
+  "dur": 3.24,
+  "flag": "pause,tight"
+ },
+ {
+  "id": "t_build",
+  "text": "בני את המשפט מהמילים.",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.9,
+  "flag": "tight"
+ },
+ {
+  "id": "t_say_aloud",
+  "text": "נסי להגיד את זה בקול רם!",
+  "lang": "he",
+  "take": 300,
+  "dur": 2.06,
+  "flag": "tight"
+ },
+ {
+  "id": "t_again_together",
+  "text": "עוד פעם, יחד איתי!",
+  "lang": "he",
+  "take": 300,
+  "dur": 1.75,
+  "flag": "tight"
+ },
+ {
+  "id": "t_almost",
+  "text": "כמעט! הקשיבי שוב.",
+  "lang": "he",
+  "take": 301,
+  "dur": 2.02,
+  "flag": "tight"
+ },
+ {
+  "id": "t_show",
+  "text": "בואי נראה יחד.",
+  "lang": "he",
+  "take": 301,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "id": "t_sentence_of_day",
+  "text": "זה משפט היום שלך. אפשר להגיד אותו לאבא ולאמא!",
+  "lang": "he",
+  "take": 301,
+  "dur": 1.73,
+  "flag": "tight"
+ },
+ {
+  "id": "t_sticker",
+  "text": "קיבלת מדבקה חדשה!",
+  "lang": "he",
+  "take": 301,
+  "dur": 2.57,
+  "flag": "tight"
+ },
+ {
+  "id": "t_bye.0",
+  "text": "נתראה מחר!",
+  "lang": "he",
+  "take": 301,
+  "dur": 1.75,
+  "flag": "tight"
+ },
+ {
+  "id": "t_bye.1",
+  "text": "היה כיף! להתראות!",
+  "lang": "he",
+  "take": 301,
+  "dur": 3.91,
+  "flag": "tight"
+ },
+ {
+  "id": "t_done_today",
+  "text": "כבר עשינו שיעור היום. בואי מחר לשיעור חדש! בינתיים אפשר לחזור על שיעור ישן.",
+  "lang": "he",
+  "take": 301,
+  "dur": 6.74,
+  "flag": "pause"
+ },
+ {
+  "id": "t_unit_done",
+  "text": "סיימת יחידה שלמה! אני כל כך גאה בך!",
+  "lang": "he",
+  "take": 301,
+  "dur": 3.58,
+  "flag": "tight"
+ },
+ {
+  "id": "t_teacher_intro",
+  "text": "היום את המורה! אני אגיד משפט, ואת תגידי לי אם צדקתי.",
+  "lang": "he",
+  "take": 301,
+  "dur": 5.3,
+  "flag": "pause,tight"
+ },
+ {
+  "id": "t_right_or_wrong",
+  "text": "צדקתי או טעיתי?",
+  "lang": "he",
+  "take": 301,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "id": "t_oops",
+  "text": "אוי, התבלבלתי! תודה שתיקנת אותי.",
+  "lang": "he",
+  "take": 301,
+  "dur": 2.76,
+  "flag": ""
+ },
+ {
+  "id": "t_i_was_right",
+  "text": "נכון, הפעם צדקתי!",
+  "lang": "he",
+  "take": 301,
+  "dur": 2.21,
+  "flag": "tight"
+ },
+ {
+  "id": "t_fix_me",
+  "text": "אז מה נכון? הקישי על התשובה הנכונה.",
+  "lang": "he",
+  "take": 301,
+  "dur": 3.07,
+  "flag": "tight"
+ },
+ {
+  "id": "t_chant_intro",
+  "text": "יש לנו שיר! מחאי כפיים בקצב.",
+  "lang": "he",
+  "take": 301,
+  "dur": 2.74,
+  "flag": "tight"
+ },
+ {
+  "id": "t_chant_again",
+  "text": "רוצה לשמוע שוב?",
+  "lang": "he",
+  "take": 301,
+  "dur": 1.49,
+  "flag": "tight"
+ },
+ {
+  "id": "t_like_ask",
+  "text": "מה את אוהבת? הקישי על הלב או על האיכס.",
+  "lang": "he",
+  "take": 302,
+  "dur": 4.32,
+  "flag": ""
+ },
+ {
+  "id": "t_i_remember",
+  "text": "אני זוכרת מה את אוהבת!",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.18,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_hello",
+  "text": "זה אומר: שלום.",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.18,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_im",
+  "text": "זה אומר: אני.",
+  "lang": "he",
+  "take": 302,
+  "dur": 1.8,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_whats_your_name",
+  "text": "זה אומר: מה השם שלך?",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.5,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_nice_to_meet_you",
+  "text": "זה אומר: נעים להכיר.",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.33,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_how_are_you",
+  "text": "זה אומר: מה שלומך?",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.09,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_happy",
+  "text": "זה אומר: שמחה.",
+  "lang": "he",
+  "take": 302,
+  "dur": 1.94,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_sad",
+  "text": "זה אומר: עצובה.",
+  "lang": "he",
+  "take": 302,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_sleepy",
+  "text": "זה אומר: עייפה.",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.02,
+  "flag": ""
+ },
+ {
+  "id": "t_m_hungry",
+  "text": "זה אומר: רעבה.",
+  "lang": "he",
+  "take": 302,
+  "dur": 1.92,
+  "flag": ""
+ },
+ {
+  "id": "t_m_great",
+  "text": "זה אומר: מצוין!",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.47,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_goodbye",
+  "text": "זה אומר: להתראות.",
+  "lang": "he",
+  "take": 302,
+  "dur": 2.4,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_thank_you",
+  "text": "זה אומר: תודה.",
+  "lang": "he",
+  "take": 302,
+  "dur": 1.78,
+  "flag": "tight"
+ },
+ {
+  "id": "t_m_yes",
+  "text": "זה אומר: כן.",
+  "lang": "he",
+  "take": 302,
+  "dur": 1.92,
+  "flag": ""
+ },
+ {
+  "id": "t_m_no",
+  "text": "זה אומר: לא.",
+  "lang": "he",
+  "take": 303,
+  "dur": 1.78,
+  "flag": ""
+ },
+ {
+  "id": "t_m_me_too",
+  "text": "זה אומר: גם אני.",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.04,
+  "flag": ""
+ },
+ {
+  "id": "t_m_i_like",
+  "text": "זה אומר: אני אוהבת.",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.14,
+  "flag": ""
+ },
+ {
+  "id": "t_m_i_dont_like",
+  "text": "זה אומר: אני לא אוהבת.",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.59,
+  "flag": ""
+ },
+ {
+  "id": "t_m_do_you_like",
+  "text": "זה אומר: את אוהבת?",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.35,
+  "flag": ""
+ },
+ {
+  "id": "t_m_yummy",
+  "text": "זה אומר: טעים!",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.06,
+  "flag": ""
+ },
+ {
+  "id": "t_m_yucky",
+  "text": "זה אומר: איכס!",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.14,
+  "flag": ""
+ },
+ {
+  "id": "t_m_its_a",
+  "text": "זה אומר: זה...",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.21,
+  "flag": ""
+ },
+ {
+  "id": "t_m_what_color",
+  "text": "זה אומר: איזה צבע זה?",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.45,
+  "flag": ""
+ },
+ {
+  "id": "t_m_what_is_it",
+  "text": "זה אומר: מה זה?",
+  "lang": "he",
+  "take": 303,
+  "dur": 1.94,
+  "flag": ""
+ },
+ {
+  "id": "t_color_first",
+  "text": "שימי לב! באנגלית הצבע בא לפני הדבר. קודם אדום, ואחר כך בלון.",
+  "lang": "he",
+  "take": 303,
+  "dur": 6.38,
+  "flag": "tight"
+ },
+ {
+  "id": "t_color_pick",
+  "text": "צבעי את הבלון בצבע שאני אומרת.",
+  "lang": "he",
+  "take": 303,
+  "dur": 2.4,
+  "flag": "tight"
+ },
+ {
+  "id": "t_very_good",
+  "text": "Very good!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "id": "t_excellent",
+  "text": "Excellent!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.2,
+  "flag": "tight"
+ },
+ {
+  "id": "t_you_got_it",
+  "text": "You got it!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.34,
+  "flag": "tight"
+ },
+ {
+  "id": "t_well_done",
+  "text": "Well done, Rani!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.85,
+  "flag": "tight"
+ },
+ {
+  "id": "t_super",
+  "text": "Super!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.3,
+  "flag": "tight"
+ },
+ {
+  "id": "t_listen_en",
+  "text": "Listen!",
+  "lang": "en",
+  "take": 320,
+  "dur": 0.84,
+  "flag": "tight"
+ },
+ {
+  "id": "t_your_turn_en",
+  "text": "Your turn!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.1,
+  "flag": "tight"
+ },
+ {
+  "id": "t_say_it_with_me",
+  "text": "Say it with me!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.3,
+  "flag": "tight"
+ },
+ {
+  "id": "t_one_more_time",
+  "text": "One more time!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "t_lets_play",
+  "text": "Let's play!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.73,
+  "flag": ""
+ },
+ {
+  "id": "t_am_i_right",
+  "text": "Am I right?",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.22,
+  "flag": ""
+ },
+ {
+  "id": "t_silly_me",
+  "text": "Oops! Silly me!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.97,
+  "flag": "tight"
+ },
+ {
+  "id": "t_thank_you_teacher",
+  "text": "Thank you, teacher Rani!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.85,
+  "flag": "tight"
+ },
+ {
+  "id": "t_yes",
+  "text": "Yes!",
+  "lang": "en",
+  "take": 320,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "t_no",
+  "text": "No!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.18,
+  "flag": "long"
+ },
+ {
+  "id": "t_thank_you",
+  "text": "Thank you!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.15,
+  "flag": ""
+ },
+ {
+  "id": "t_me_too",
+  "text": "Me too!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.22,
+  "flag": ""
+ },
+ {
+  "id": "t_hello_rani",
+  "text": "Hello, Rani!",
+  "lang": "en",
+  "take": 320,
+  "dur": 1.22,
+  "flag": ""
+ },
+ {
+  "id": "t_hello",
+  "text": "Hello!",
+  "lang": "en",
+  "take": 321,
+  "dur": 0.96,
+  "flag": "tight"
+ },
+ {
+  "id": "t_im_lolly",
+  "text": "I'm Miss Lolly.",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.39,
+  "flag": "tight"
+ },
+ {
+  "id": "t_im",
+  "text": "I'm...",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.2,
+  "flag": "long,tight"
+ },
+ {
+  "id": "t_im_rani",
+  "text": "I'm Rani.",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.08,
+  "flag": "tight"
+ },
+ {
+  "id": "t_whats_your_name",
+  "text": "What's your name?",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.2,
+  "flag": ""
+ },
+ {
+  "id": "t_nice_to_meet_you",
+  "text": "Nice to meet you!",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.44,
+  "flag": ""
+ },
+ {
+  "id": "t_how_are_you",
+  "text": "How are you?",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.18,
+  "flag": ""
+ },
+ {
+  "id": "t_how_are_you_today",
+  "text": "How are you today, Rani?",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.75,
+  "flag": ""
+ },
+ {
+  "id": "t_im_great",
+  "text": "I'm great!",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "t_goodbye",
+  "text": "Goodbye, Rani!",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.37,
+  "flag": "tight"
+ },
+ {
+  "id": "t_see_you_tomorrow",
+  "text": "See you tomorrow!",
+  "lang": "en",
+  "take": 321,
+  "dur": 1.58,
+  "flag": "tight"
+ },
+ {
+  "id": "t_im_mozzi",
+  "text": "Hello! I'm Mozzi.",
+  "lang": "en",
+  "take": 321,
+  "dur": 2.14,
+  "flag": ""
+ },
+ {
+  "id": "t_im_horiko",
+  "text": "Hello! I'm Horiko.",
+  "lang": "en",
+  "take": 321,
+  "dur": 2.38,
+  "flag": ""
+ },
+ {
+  "id": "t_im_popcheese",
+  "text": "Hello! I'm Popcheese.",
+  "lang": "en",
+  "take": 321,
+  "dur": 2.5,
+  "flag": ""
+ },
+ {
+  "id": "t_re_happy",
+  "text": "Happy! Me too!",
+  "lang": "en",
+  "take": 321,
+  "dur": 2.64,
+  "flag": "long"
+ },
+ {
+  "id": "t_re_sad",
+  "text": "Oh, sad. Here is a big hug!",
+  "lang": "en",
+  "take": 321,
+  "dur": 3.65,
+  "flag": ""
+ },
+ {
+  "id": "t_re_sleepy",
+  "text": "Sleepy? Let's wake up! Jump, jump!",
+  "lang": "en",
+  "take": 321,
+  "dur": 4.25,
+  "flag": "pause"
+ },
+ {
+  "id": "t_re_hungry",
+  "text": "Hungry? Let's eat pizza!",
+  "lang": "en",
+  "take": 321,
+  "dur": 3,
+  "flag": "pause"
+ },
+ {
+  "id": "t_re_great",
+  "text": "Great! Let's start!",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.37,
+  "flag": ""
+ },
+ {
+  "id": "t_happy",
+  "text": "Happy.",
+  "lang": "en",
+  "take": 322,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "t_sad",
+  "text": "Sad.",
+  "lang": "en",
+  "take": 322,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "t_sleepy",
+  "text": "Sleepy.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "id": "t_hungry",
+  "text": "Hungry.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "t_im_happy",
+  "text": "I'm happy.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "t_im_sad",
+  "text": "I'm sad.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.25,
+  "flag": ""
+ },
+ {
+  "id": "t_im_sleepy",
+  "text": "I'm sleepy.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.39,
+  "flag": ""
+ },
+ {
+  "id": "t_im_hungry",
+  "text": "I'm hungry.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.3,
+  "flag": ""
+ },
+ {
+  "id": "t_i_like",
+  "text": "I like...",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "t_i_dont_like",
+  "text": "I don't like...",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.32,
+  "flag": ""
+ },
+ {
+  "id": "t_what_do_you_like",
+  "text": "What do you like?",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.34,
+  "flag": ""
+ },
+ {
+  "id": "t_yummy",
+  "text": "Yummy!",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.1,
+  "flag": ""
+ },
+ {
+  "id": "t_yucky",
+  "text": "Yucky!",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "t_yes_i_do",
+  "text": "Yes, I do!",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.32,
+  "flag": ""
+ },
+ {
+  "id": "t_no_i_dont",
+  "text": "No, I don't!",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.92,
+  "flag": "long"
+ },
+ {
+  "id": "t_like_pizza",
+  "text": "I like pizza.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "id": "t_like_cheese",
+  "text": "I like cheese.",
+  "lang": "en",
+  "take": 322,
+  "dur": 1.56,
+  "flag": ""
+ },
+ {
+  "id": "t_like_pasta",
+  "text": "I like pasta.",
+  "lang": "en",
+  "take": 323,
+  "dur": 1.3,
+  "flag": ""
+ },
+ {
+  "id": "t_like_meat",
+  "text": "I like meat.",
+  "lang": "en",
+  "take": 323,
+  "dur": 1.58,
+  "flag": ""
+ },
+ {
+  "id": "t_like_milk",
+  "text": "I like milk.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.06,
+  "flag": "pause"
+ },
+ {
+  "id": "t_like_cake",
+  "text": "I like cake.",
+  "lang": "en",
+  "take": 323,
+  "dur": 1.75,
+  "flag": ""
+ },
+ {
+  "id": "t_like_chocolate",
+  "text": "I like chocolate.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.04,
+  "flag": ""
+ },
+ {
+  "id": "t_like_icecream",
+  "text": "I like ice cream.",
+  "lang": "en",
+  "take": 323,
+  "dur": 1.7,
+  "flag": ""
+ },
+ {
+  "id": "t_like_apple",
+  "text": "I like apples.",
+  "lang": "en",
+  "take": 323,
+  "dur": 1.9,
+  "flag": ""
+ },
+ {
+  "id": "t_like_banana",
+  "text": "I like bananas.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.21,
+  "flag": ""
+ },
+ {
+  "id": "t_like_egg",
+  "text": "I like eggs.",
+  "lang": "en",
+  "take": 323,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "id": "t_like_cookie",
+  "text": "I like cookies.",
+  "lang": "en",
+  "take": 323,
+  "dur": 1.94,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_pizza",
+  "text": "I don't like pizza.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.5,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_cheese",
+  "text": "I don't like cheese.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.66,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_pasta",
+  "text": "I don't like pasta.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.45,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_meat",
+  "text": "I don't like meat.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.35,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_milk",
+  "text": "I don't like milk.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.16,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_cake",
+  "text": "I don't like cake.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.18,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_chocolate",
+  "text": "I don't like chocolate.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.21,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_icecream",
+  "text": "I don't like ice cream.",
+  "lang": "en",
+  "take": 323,
+  "dur": 2.3,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_apple",
+  "text": "I don't like apples.",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.66,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_banana",
+  "text": "I don't like bananas.",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.78,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_egg",
+  "text": "I don't like eggs.",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.78,
+  "flag": ""
+ },
+ {
+  "id": "t_dont_like_cookie",
+  "text": "I don't like cookies.",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.7,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_pizza",
+  "text": "Do you like pizza?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.32,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_cheese",
+  "text": "Do you like cheese?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_pasta",
+  "text": "Do you like pasta?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.44,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_meat",
+  "text": "Do you like meat?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.46,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_milk",
+  "text": "Do you like milk?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_cake",
+  "text": "Do you like cake?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_chocolate",
+  "text": "Do you like chocolate?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.44,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_icecream",
+  "text": "Do you like ice cream?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.61,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_apple",
+  "text": "Do you like apples?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.56,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_banana",
+  "text": "Do you like bananas?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_egg",
+  "text": "Do you like eggs?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.58,
+  "flag": ""
+ },
+ {
+  "id": "t_do_you_like_cookie",
+  "text": "Do you like cookies?",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.49,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_pizza",
+  "text": "You like pizza!",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_cheese",
+  "text": "You like cheese!",
+  "lang": "en",
+  "take": 324,
+  "dur": 1.73,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_pasta",
+  "text": "You like pasta!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.44,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_meat",
+  "text": "You like meat!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.27,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_milk",
+  "text": "You like milk!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.73,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_cake",
+  "text": "You like cake!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.58,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_chocolate",
+  "text": "You like chocolate!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.61,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_icecream",
+  "text": "You like ice cream!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_apple",
+  "text": "You like apples!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.82,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_banana",
+  "text": "You like bananas!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.99,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_egg",
+  "text": "You like eggs!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.75,
+  "flag": ""
+ },
+ {
+  "id": "t_you_like_cookie",
+  "text": "You like cookies!",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.9,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a",
+  "text": "It's a...",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.44,
+  "flag": "long"
+ },
+ {
+  "id": "t_what_color_is_it",
+  "text": "What color is it?",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "id": "t_what_is_it",
+  "text": "What is it?",
+  "lang": "en",
+  "take": 325,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "id": "t_its_red",
+  "text": "It's red.",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.49,
+  "flag": ""
+ },
+ {
+  "id": "t_its_blue",
+  "text": "It's blue.",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "id": "t_its_yellow",
+  "text": "It's yellow.",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "id": "t_its_pink",
+  "text": "It's pink.",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.7,
+  "flag": ""
+ },
+ {
+  "id": "t_its_purple",
+  "text": "It's purple.",
+  "lang": "en",
+  "take": 325,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "id": "t_its_green",
+  "text": "It's green.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.15,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_balloon",
+  "text": "It's a balloon.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.27,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_ball",
+  "text": "It's a ball.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_star",
+  "text": "It's a star.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.15,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_hat",
+  "text": "It's a hat.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_flower",
+  "text": "It's a flower.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.22,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_kite",
+  "text": "It's a kite.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.03,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_book",
+  "text": "It's a book.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.01,
+  "flag": ""
+ },
+ {
+  "id": "t_its_a_apple",
+  "text": "It's an apple.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "id": "t_red_balloon",
+  "text": "It's a red balloon.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.49,
+  "flag": ""
+ },
+ {
+  "id": "t_blue_balloon",
+  "text": "It's a blue balloon.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.46,
+  "flag": ""
+ },
+ {
+  "id": "t_yellow_balloon",
+  "text": "It's a yellow balloon.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.54,
+  "flag": ""
+ },
+ {
+  "id": "t_red_ball",
+  "text": "It's a red ball.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.49,
+  "flag": ""
+ },
+ {
+  "id": "t_green_ball",
+  "text": "It's a green ball.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.54,
+  "flag": ""
+ },
+ {
+  "id": "t_pink_ball",
+  "text": "It's a pink ball.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "t_yellow_star",
+  "text": "It's a yellow star.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.58,
+  "flag": ""
+ },
+ {
+  "id": "t_purple_star",
+  "text": "It's a purple star.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "id": "t_blue_star",
+  "text": "It's a blue star.",
+  "lang": "en",
+  "take": 326,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "id": "t_pink_hat",
+  "text": "It's a pink hat.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.75,
+  "flag": ""
+ },
+ {
+  "id": "t_green_hat",
+  "text": "It's a green hat.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.61,
+  "flag": ""
+ },
+ {
+  "id": "t_purple_hat",
+  "text": "It's a purple hat.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.56,
+  "flag": ""
+ },
+ {
+  "id": "t_red_flower",
+  "text": "It's a red flower.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.7,
+  "flag": ""
+ },
+ {
+  "id": "t_yellow_flower",
+  "text": "It's a yellow flower.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.78,
+  "flag": ""
+ },
+ {
+  "id": "t_pink_flower",
+  "text": "It's a pink flower.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.82,
+  "flag": ""
+ },
+ {
+  "id": "t_blue_kite",
+  "text": "It's a blue kite.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.73,
+  "flag": ""
+ },
+ {
+  "id": "t_purple_kite",
+  "text": "It's a purple kite.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.7,
+  "flag": ""
+ },
+ {
+  "id": "t_green_kite",
+  "text": "It's a green kite.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "id": "t_blue_book",
+  "text": "It's a blue book.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.75,
+  "flag": ""
+ },
+ {
+  "id": "t_yellow_book",
+  "text": "It's a yellow book.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.54,
+  "flag": ""
+ },
+ {
+  "id": "t_purple_book",
+  "text": "It's a purple book.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.7,
+  "flag": ""
+ },
+ {
+  "id": "t_red_apple",
+  "text": "It's a red apple.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.82,
+  "flag": ""
+ },
+ {
+  "id": "t_green_apple",
+  "text": "It's a green apple.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.75,
+  "flag": ""
+ },
+ {
+  "id": "t_pink_apple",
+  "text": "It's a pink apple.",
+  "lang": "en",
+  "take": 327,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "id": "t_chant_1",
+  "text": "Hello, hello, how are you? I'm happy, I'm happy, me too! Hello, hello, what's your name? I'm Rani, I'm Rani, let's play a game!",
+  "lang": "en",
+  "take": 340,
+  "dur": 9.77,
+  "flag": ""
+ },
+ {
+  "id": "t_chant_2",
+  "text": "I like pizza, yummy, yummy! I like cake in my tummy! I don't like fish, no, no, no! I like ice cream, go, go, go!",
+  "lang": "en",
+  "take": 340,
+  "dur": 9.38,
+  "flag": ""
+ },
+ {
+  "id": "t_chant_3",
+  "text": "Red, red, a red balloon! Blue, blue, a blue balloon! Yellow, pink, purple, green, the best balloons I've ever seen!",
+  "lang": "en",
+  "take": 340,
+  "dur": 9.14,
+  "flag": ""
+ }
+]

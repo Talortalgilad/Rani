@@ -204,6 +204,9 @@ function stopClip(): void {
   }
   clip = null;
 }
+/** A screen that wants to see the sound of every recording that starts (the mouth of the tutor moves with its volume). */
+let clipHook: ((a: HTMLAudioElement) => void) | null = null;
+export const onClipStart = (f: ((a: HTMLAudioElement) => void) | null): void => void (clipHook = f);
 /** Plays one recording to its end. False when it cannot play (then the caller reads the text instead). */
 export function playClip(url: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -211,6 +214,7 @@ export function playClip(url: string): Promise<boolean> {
       if (typeof Audio === 'undefined' || !getState().settings.tts) return resolve(false);
       const a = new Audio(url);
       clip = a;
+      try { clipHook?.(a); } catch { /* the mouth is a nicety */ }
       const done = (ok: boolean): void => resolve(ok);
       a.onended = () => done(true);
       a.onerror = () => done(false);
