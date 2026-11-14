@@ -47,3 +47,12 @@ describe('the word that "can I have" asks for is played from its recording', () 
     }
   });
 });
+
+import { ALT_KEYS, linePartsFor } from '../../../games/english/content/heLines';
+import { ALT_NAMES } from '../residents';
+describe('the ids of the five other names are ready for the recordings', () => {
+  it('name.<key> in Hebrew and carn_hello_im_<key> in English', () => {
+    expect(ALT_NAMES.map((n) => ALT_KEYS[n])).toEqual(['pitzi', 'bobi', 'noni', 'koki', 'tofi']);
+    expect(linePartsFor('carnival_name', 'קוקי')[0].clip).toBe('name.koki');
+  });
+});

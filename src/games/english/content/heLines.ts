@@ -85,7 +85,9 @@ export const HE_LINES: HeLine[] = [
   ...WORDS.map((w): HeLine => ({ id: `w_${w.id}`, world: w.world, parts: [w.he] })),
 ];
 
-export const NAME_KEYS: Record<string, string> = { 'צ׳יזי': 'cheesy', 'מוצי': 'mozzi', 'חוריקו': 'horiko', 'פופצ׳יז': 'popcheese', ...Object.fromEntries(FAMILY_NAMES.map((n) => [n.he, n.key])) };
+/** the five other names of the carnival residents (src/lobby/carnival/residents.ts ALT_NAMES): recorded as name.<key> (he) and carn_hello_im_<key> (en) once take 403 and its English take arrive */
+export const ALT_KEYS: Record<string, string> = { 'פיצי': 'pitzi', 'בובי': 'bobi', 'נוני': 'noni', 'קוקי': 'koki', 'טופי': 'tofi' };
+export const NAME_KEYS: Record<string, string> = { 'צ׳יזי': 'cheesy', 'מוצי': 'mozzi', 'חוריקו': 'horiko', 'פופצ׳יז': 'popcheese', ...ALT_KEYS, ...Object.fromEntries(FAMILY_NAMES.map((n) => [n.he, n.key])) };
 
 export interface Clip { id: string; text: string; world: number; /** a letter sound (the studio shows the letter and its word, not a sentence) */ sound?: { letter: string; word: string } }
 
