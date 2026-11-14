@@ -1,5 +1,6 @@
 import { ACCESSORIES } from '../art/accessories';
 import { BLOCKS_LINES } from '../../blocks/lines';
+import { CARNIVAL_LINES } from '../../../lobby/carnival/talk/lines';
 import { FAMILY_NAMES, MEMORY_LINES } from '../../memory/lines';
 import { ISLANDS, LETTERS } from '../letters/journey';
 import { COLORS } from './colors';
@@ -64,8 +65,8 @@ export const HE_LINES: HeLine[] = [
   { id: 'l_trace_blur', world: 0, parts: [he.traceBlur] },
   { id: 'l_trace_again', world: 0, parts: [he.traceAgain] },
   { id: 'soon', world: 0, parts: [he.soon] },
-  // the carnival: the name of a resident (the name is one of the recorded ones)
-  { id: 'carnival_name', world: 0, parts: [null] },
+  // the carnival: the name of a resident (the name is one of the recorded ones), the talks of the residents, the numbers 1-20
+  ...CARNIVAL_LINES.map((l): HeLine => ({ id: l.id, world: 0, parts: l.parts })),
   // the memory game
   ...MEMORY_LINES.map((l): HeLine => ({ id: l.id, world: 0, parts: l.parts })),
   // the block game

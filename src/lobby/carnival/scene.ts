@@ -45,6 +45,10 @@ export interface CarnivalOpts {
   /** every frame: where the sign of each plot is on the screen (the page puts the labels there, inside the screen) */
   onSigns?(signs: { x: number; y: number; behind: boolean }[]): void;
   /** the page's bands that the island has to stay out of by default: the title above (px) and the games row below (px) */
+  /** every frame, with the time that passed */
+  onTick?(dt: number): void;
+  /** a resident was tapped: true when the page took it (a talk opened), then nothing else happens */
+  onResidentTap?(index: number): boolean;
   safeTop?: number;
   safeBottom?: number;
 }
@@ -52,6 +56,11 @@ export interface CarnivalHandle {
   fadeIn(ms: number): void;
   dispose(): void;
   home(): void;
+  /** where a resident's head is on the screen (null: not in view), the camera comes close to one (null: back), a resident stands still or walks on, waves */
+  residentScreen(i: number): { x: number; y: number } | null;
+  focus(i: number | null): void;
+  hold(i: number, on: boolean): void;
+  wave(i: number): void;
   readonly info: { calls: number; residents: number; plots: number; cam: CamState };
   tapPlot(i: number): void;
 }
@@ -71,7 +80,7 @@ export async function startCarnival(o: CarnivalOpts): Promise<CarnivalHandle> {
     },
     { autoDowngrade: o.autoDowngrade, onFallback: o.onFallback },
   );
-  return { fadeIn: (ms) => handle.fadeIn(ms), dispose: () => handle.dispose(), home: () => api.home(), get info() { return api.info; }, tapPlot: (i) => api.tapPlot(i) };
+  return { fadeIn: (ms) => handle.fadeIn(ms), dispose: () => handle.dispose(), home: () => api.home(), residentScreen: (i) => api.residentScreen(i), focus: (i) => api.focus(i), hold: (i, on) => api.hold(i, on), wave: (i) => api.wave(i), get info() { return api.info; }, tapPlot: (i) => api.tapPlot(i) };
 }
 
 const loader = new T.TextureLoader();
@@ -322,19 +331,30 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   drawFlagpole(poleG, null, 0);
   const poleTex = keep(new T.CanvasTexture(poleCanvas));
   poleTex.colorSpace = T.SRGBColorSpace;
-  const poleMat = keep(new T.SpriteMaterial({ map: poleTex, transparent: true, depthWrite: false, color: night ? '#8a8fc8' : '#ffffff' }));
-  const poles: T.Sprite[] = [];
-  for (const [x, z] of [[-2.2, ISLAND_R * ZS - 0.9], [2.2, ISLAND_R * ZS - 0.9], [-2.6, 0.6], [2.6, 0.6], [-2.6, -1.8], [2.6, -1.8]]) {
-    const sp = new T.Sprite(poleMat);
-    sp.scale.set(4, 4, 1);
-    sp.position.set(x, 1.9, z);
-    scene.add(sp);
-    poles.push(sp);
-  }
+  // one instanced mesh for all the poles (the camera never turns, so a plane tilted to it is enough: one draw call instead of six)
+  const poleMat = keep(new T.MeshBasicMaterial({ map: poleTex, transparent: true, depthWrite: false, color: night ? '#8a8fc8' : '#ffffff' }));
+  const facing = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), -PITCH);
+  const billboards = (name: string, spots: [number, number, number, number][], tint?: T.Material): T.InstancedMesh => {
+    const mat = tint ?? keep(new T.MeshBasicMaterial({ transparent: true, depthWrite: false, color: night ? '#8a8fc8' : '#ffffff' }));
+    if (!tint) new T.TextureLoader().load(itemUrl(name), (tex: T.Texture) => {
+      if (disposed) return tex.dispose();
+      tex.colorSpace = T.SRGBColorSpace;
+      owned.push(tex);
+      (mat as T.MeshBasicMaterial).map = tex;
+      mat.needsUpdate = true;
+    });
+    const im = new T.InstancedMesh(keep(new T.PlaneGeometry(1, 1)), mat, spots.length);
+    spots.forEach(([x, y, z, size], i) => {
+      m4.compose(new T.Vector3(x, y, z), facing, new T.Vector3(size, size, 1));
+      im.setMatrixAt(i, m4);
+    });
+    im.frustumCulled = false;
+    scene.add(im);
+    return im;
+  };
+  billboards('', [[-2.2, 1.9, ISLAND_R * ZS - 0.9, 4], [2.2, 1.9, ISLAND_R * ZS - 0.9, 4], [-2.6, 1.9, 0.6, 4], [2.6, 1.9, 0.6, 4], [-2.6, 1.9, -1.8, 4], [2.6, 1.9, -1.8, 4]], poleMat);
   // balloons and a hot air balloon
-  itemSprite('balloons', 3.6, -4.6, 3.2, -4.2, 0.25);
-  itemSprite('balloons', 3.2, 4.8, 3.0, 5.2, 0.3);
-  itemSprite('balloons', 3, 3.8, 3.2, -9.6, 0.25);
+  billboards('balloons', [[-4.6, 3.2, -4.2, 3.6], [4.8, 3.0, 5.2, 3.2], [3.8, 3.2, -9.6, 3]]);
   itemSprite('hotairballoon', 4.2, -1.2, 8.5, -6.8, 0.5);
   // strings of coloured pennants between posts along the ring path (all drawn in code)
   const POSTS = 16;
@@ -487,6 +507,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   cam = home();
   let goal: CamState = { ...cam };
   let homing = false;
+  let focusIdx: number | null = null;
 
   const canvas = env.canvas;
   const pts = new Map<number, { x: number; y: number }>();
@@ -562,6 +583,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       return;
     }
     if (i >= 1000) {
+      if (o.onResidentTap?.(i - 1000)) return;
       const p = people[i - 1000];
       p.taps = p.tapped > 0 ? p.taps + 1 : 1;
       const again = p.tapped > 0;
@@ -603,6 +625,11 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     lookAt.set(c2.x, 0, c2.z);
     camera.lookAt(lookAt);
 
+    o.onTick?.(dt);
+    if (focusIdx !== null) {
+      const fp = people[focusIdx];
+      goal = { x: fp.w.x, z: fp.w.z + 1.5, dist: 11 };
+    }
     updaters.forEach((f) => f(dt, time));
     pads.forEach((p) => {
       if (p.jump < 1) {
@@ -695,6 +722,28 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       return info();
     },
     tapPlot,
+    residentScreen(i) {
+      const q = people[i];
+      if (!q) return null;
+      const v = q.sp.position.clone().add(new T.Vector3(0, 0.9, 0));
+      const ndc = v.clone().project(camera);
+      if (ndc.z > 1) return null;
+      const sc = screenOf(v);
+      return sc.x < -30 || sc.x > width + 30 || sc.y < 0 || sc.y > height ? null : sc;
+    },
+    focus(i) {
+      focusIdx = i;
+      if (i === null) homing = true;
+    },
+    hold(i, on) {
+      const q = people[i];
+      if (!q) return;
+      q.w.held = on;
+      if (on) q.tapped = 0;
+    },
+    wave(i) {
+      if (people[i]) people[i].hop = 1;
+    },
   };
   if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__carnival = { api, cam: () => cam, setCam: (c: CamState) => (goal = c), tapAt, people, scene, project: (x: number, y: number, z: number) => screenOf(new T.Vector3(x, y, z)), plotAt: (i: number) => ps[i], count: () => { const out: Record<string, number> = {}; scene.traverse((ob) => { const m = ob as T.Mesh; if (m.isMesh || (ob as T.Sprite).isSprite) { let top: T.Object3D = ob; while (top.parent && top.parent !== scene) top = top.parent; const k = `${top.type}:${top.userData.index ?? top.name ?? ''}`; out[k] = (out[k] ?? 0) + 1; } }); return out; } };
   void clamp;

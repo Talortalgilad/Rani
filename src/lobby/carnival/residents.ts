@@ -25,3 +25,7 @@ export function residents(companionName: string | null, buddy: string | null): R
   };
   return [first, ...NAMES.map((n) => ({ id: n.id, name: n.name, img: n.img(b) }))];
 }
+
+/** How a resident says his name in English ("I'm Mozzi"): the four names of the companion have an English way; another name is said as it is. */
+export const EN_NAME: Record<string, string> = { 'צ׳יזי': 'Cheesy', 'מוצי': 'Mozzi', 'חוריקו': 'Horiko', 'פופצ׳יז': 'Pop Cheese' };
+export const englishName = (he: string): string => EN_NAME[he] ?? he;

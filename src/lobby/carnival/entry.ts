@@ -14,6 +14,7 @@ import { renderHomeAuto as renderOldLobby } from '../../lobby3d/entry';
 import '../../lobby3d/lobby.css';
 import './ui/carnival.css';
 import { residents, type Resident } from './residents';
+import { Talks, type TalkHost } from './talk/ui';
 
 const OLD_KEY = 'rani-lobby-old';
 const SHOWN_KEY = 'rani-jar-shown';
@@ -103,8 +104,46 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
   const plain = (): (() => void) => {
     const c = renderHome(root);
     const sc = root.querySelector('.screen.home');
-    sc?.insertBefore(strip(), sc.querySelector('.grid'));
-    return c;
+    const st = strip();
+    sc?.insertBefore(st, sc.querySelector('.grid'));
+    // the residents talk here too: the same bubbles, from the strip
+    const layer = document.createElement('div');
+    layer.className = 'cv-layer';
+    (sc ?? root).appendChild(layer);
+    const rs = people();
+    const btns = [...st.querySelectorAll<HTMLElement>('.cv-res')];
+    const host: TalkHost = {
+      layer,
+      residents: rs,
+      pos: (i) => {
+        const r = btns[i]?.getBoundingClientRect();
+        return r ? { x: r.left + r.width / 2, y: r.top } : null;
+      },
+      focus: () => void 0,
+      hold: () => void 0,
+      wave: (i) => {
+        btns[i]?.classList.remove('hop');
+        void btns[i]?.offsetWidth;
+        btns[i]?.classList.add('hop');
+      },
+    };
+    const talks = new Talks(host);
+    (window as unknown as Record<string, unknown>).__talks = talks;
+    btns.forEach((b, i) => b.addEventListener('click', () => void talks.tapResident(i)));
+    let raf = 0;
+    let last = performance.now();
+    const loop = (t: number): void => {
+      raf = requestAnimationFrame(loop);
+      talks.tick(Math.min(0.1, (t - last) / 1000));
+      last = t;
+    };
+    raf = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(raf);
+      talks.dispose();
+      layer.remove();
+      c();
+    };
   };
   if (sessionTier(pref) === '2d') return plain();
 
@@ -113,6 +152,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
   let lobby: { dispose(): void } | null = null;
   const fallback = (): void => {
     if (dead) return;
+    (window as unknown as { __talks?: Talks }).__talks?.dispose();
     lobby?.dispose();
     lobby = null;
     document.querySelectorAll('.cv-sign').forEach((e) => e.remove());
@@ -130,6 +170,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       label.className = 'cv-label';
       let hideTimer = 0;
       const signs: HTMLElement[] = [];
+      let talks: Talks | null = null;
       const l = await mod.startCarnival({
         plots: [
           ...games.map((g) => ({ kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
@@ -156,6 +197,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           sound.play(again ? 'bonus' : 'pop', again ? 900 : 700);
           if (!again) void sayLine('carnival_name', r.name);
         },
+        onTick: (dt) => talks?.tick(dt),
+        onResidentTap: (i) => talks?.tapResident(i) ?? false,
         safeTop: 150,
         safeBottom: 104,
         onSigns: (list) => {
@@ -220,6 +263,12 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         homeBtn.textContent = '🏠';
         homeBtn.addEventListener('click', () => l.home());
         screen.append(gamesBar(), homeBtn, label);
+        const layer = document.createElement('div');
+        layer.className = 'cv-layer';
+        screen.appendChild(layer);
+        const host: TalkHost = { layer, residents: people(), pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i) };
+        talks = new Talks(host);
+        (window as unknown as Record<string, unknown>).__talks = talks;
         document.body.classList.add('lobby3d-on', 'carnival-on');
         performance.mark?.('carnival-ready');
         (window as unknown as Record<string, unknown>).__carnivalHandle = l;
@@ -230,6 +279,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
   })();
   return () => {
     dead = true;
+    (window as unknown as { __talks?: Talks }).__talks?.dispose();
     lobby?.dispose();
     cleanup2d?.();
     document.querySelectorAll('.cv-sign').forEach((e) => e.remove());
