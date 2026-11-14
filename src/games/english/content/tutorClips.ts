@@ -1009,5 +1009,60 @@ export const TUTOR_CLIPS: Record<string, { lang: 'he' | 'en'; text: string; take
   "lang": "en",
   "text": "Goodbye!",
   "take": 328
+ },
+ "t_now_you_he": {
+  "lang": "he",
+  "text": "עכשיו את קודם! אמרי באנגלית, ואחר כך אני.",
+  "take": 304
+ },
+ "t_self_check": {
+  "lang": "he",
+  "text": "אמרת כמו שאני אמרתי?",
+  "take": 304
+ },
+ "t_challenge_intro": {
+  "lang": "he",
+  "text": "אתגר! שלוש שאלות קשות יותר. מוכנה?",
+  "take": 304
+ },
+ "t_challenge_perfect": {
+  "lang": "he",
+  "text": "וואו! בלי אף טעות! קיבלת מדבקה מנצנצת!",
+  "take": 304
+ },
+ "t_challenge_ok": {
+  "lang": "he",
+  "text": "כל הכבוד שניסית! בפעם הבאה ננסה שוב.",
+  "take": 304
+ },
+ "t_now_you": {
+  "lang": "en",
+  "text": "Now you!",
+  "take": 329
+ },
+ "t_challenge": {
+  "lang": "en",
+  "text": "Challenge time!",
+  "take": 329
+ },
+ "t_perfect": {
+  "lang": "en",
+  "text": "Perfect!",
+  "take": 329
+ },
+ "t_amazing": {
+  "lang": "en",
+  "text": "Amazing!",
+  "take": 329
+ },
+ "t_listen_carefully": {
+  "lang": "en",
+  "text": "Listen carefully!",
+  "take": 329
+ },
+ "t_what_do_you_see": {
+  "lang": "en",
+  "text": "What do you see?",
+  "take": 329
  }
 } as never;

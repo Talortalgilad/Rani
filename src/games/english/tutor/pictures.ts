@@ -12,6 +12,12 @@ export const faceHtml = (feeling: string): string => `<img class="pic-img" src="
 const SQUISHY: Record<string, string> = { mozzi: 'pizza', horiko: 'panda', popcheese: 'cookie' };
 export const squishyPic = (name: string): string => (name === 'cheesy' ? cheesyUrl('happy') : squishyUrl(SQUISHY[name] ?? name));
 
+/** The names of the squishies, in Hebrew, as written under their pictures (the same names as the recorded name.* lines). */
+const HE_NAME: Record<string, string> = { cheesy: 'צ׳יזי', mozzi: 'מוצי', horiko: 'חוריקו', popcheese: 'פופצ׳יז' };
+export const squishyLabel = (name: string): string => HE_NAME[name] ?? name;
+/** The label under a picture, if it is a squishy (empty for the others). */
+export const labelOfPicture = (s: string): string => (s.startsWith('squishy:') ? squishyLabel(s.slice(8)) : '');
+
 export type Pic = { kind: 'word'; id: string } | { kind: 'face'; feeling: string } | { kind: 'squishy'; name: string } | { kind: 'thing'; thing: string; color: string } | { kind: 'lolly'; like: boolean; food: string };
 export function parsePic(s: string): Pic | null {
   const [k, a, b] = s.split(':');

@@ -2,7 +2,7 @@ import { WORDS } from '../../content/words';
 import { esc } from '../../ui/text';
 import { clipText } from '../audio';
 import { pictureHtml } from '../pictures';
-import { setFeeling, finish } from '../state';
+import { finish, markSeenSentence, setFeeling } from '../state';
 import { faceHtml } from '../pictures';
 import { bubbleHtml, type StepRun } from '../shell';
 
@@ -50,7 +50,10 @@ export const say: StepRun = async (sh, step) => {
   await sh.advance();
 };
 
-/** teach: the English clip with its picture, then the Hebrew explanation. Tap the bubble to hear it again. */
+/**
+ * teach: the English clip with its picture, then the Hebrew explanation. The explanation is said only the first time that Rani meets the sentence (it is kept in
+ * `tutor.seen`); after that only the English and the picture, and a tap on the bubble says the explanation for whoever wants it.
+ */
 export const teach: StepRun = async (sh, step) => {
   const c = sh.clear();
   sh.listenOnly();
@@ -59,7 +62,13 @@ export const teach: StepRun = async (sh, step) => {
   c.innerHTML = `<div class="tutor-card">${step.picture ? `<div class="tutor-pic">${pictureHtml(str(step.picture))}</div>` : ''}<div class="tutor-big" dir="ltr">${esc(clipText(en))}</div><div class="tutor-sub">${he ? bubbleHtml(clipText(he), 'he') : ''}</div></div>`;
   c.querySelector('.tutor-big')!.addEventListener('click', () => void sh.say(en).catch(() => {}));
   await sh.say(en, { look: 'happy', keep: true });
-  if (he) await sh.say(he, { look: 'listen' });
+  if (he) {
+    const st = sh.deps.state();
+    if (!st.seen.includes(en)) {
+      await sh.say(he, { look: 'listen' });
+      sh.deps.setState(markSeenSentence(sh.deps.state(), en));
+    } else sh.setLast(he);
+  }
   await sh.advance();
 };
 
@@ -98,7 +107,8 @@ export const sticker: StepRun = async (sh) => {
   const c = sh.clear();
   sh.listenOnly();
   const id = sh.deps.state().stickers[sh.lesson.id] ?? stickerOf(sh.lesson.id);
-  c.innerHTML = `<div class="tutor-sticker-stage"><div class="tutor-sticker">${pictureHtml(`word:${id}`)}</div><div class="tutor-album" aria-hidden="true">📒</div></div>`;
+  const sparkle = !!sh.deps.state().sparkle[sh.lesson.id];
+  c.innerHTML = `<div class="tutor-sticker-stage"><div class="tutor-sticker ${sparkle ? 'sparkle' : ''}">${pictureHtml(`word:${id}`)}</div><div class="tutor-album" aria-hidden="true">📒</div></div>`;
   sh.deps.setState(finish(sh.deps.state(), sh.lesson.id, id, sh.deps.today));
   sh.lolly.set('clap');
   sh.deps.sound.play('win');

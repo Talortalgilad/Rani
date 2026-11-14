@@ -40,7 +40,7 @@ export function runLesson(root: HTMLElement, deps: Deps, lesson: Lesson, from = 
         setStage(stage);
         await runOne(shell, step, i);
         // the place is kept for coming back (a lesson that is done is never "in the middle")
-        if (!isDone(deps.state(), lesson.id) && i + 1 < lesson.steps.length) deps.setState(saveProgress(deps.state(), lesson.id, i + 1));
+        if (!isDone(deps.state(), lesson.id) && i + 1 < lesson.steps.length) deps.setState(saveProgress(deps.state(), lesson.id, i + 1, lesson.steps.length));
       }
       setStage(6);
       return 'finished';

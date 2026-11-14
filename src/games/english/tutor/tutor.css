@@ -123,3 +123,29 @@
 .dlg .tutor-lolly-col .tutor-lolly { top: 40px; }
 .en-screen.tutor-screen > .tutor-sidebubble.tutor-sidebubble { position: absolute; top: 62px; left: 6px; width: 120px; height: 60px; z-index: 4; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 4px 8px; border: 3px solid var(--ink); border-radius: 16px; background: #fff; font: 700 14px/1.15 'Fredoka', sans-serif; color: var(--ink); text-align: center; box-shadow: 0 4px 0 rgba(58, 47, 75, .16); animation: tb-pop .2s ease-out; }
 .tutor-sidebubble::before { content: ''; position: absolute; left: 50%; bottom: -10px; width: 14px; height: 14px; margin-left: -7px; background: #fff; border: 3px solid var(--ink); border-width: 0 3px 3px 0; transform: rotate(45deg); }
+
+/* meet: the squishies in a row, each with its name under it */
+.tutor-meet { display: flex; gap: 8px; justify-content: center; width: 100%; direction: ltr; margin-top: 8px; }
+.tutor-meetone { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 31%; }
+.tutor-meetcard { width: 100%; aspect-ratio: 1; border: 4px solid var(--ink); border-radius: 24px; background: #fff; padding: 6px; box-shadow: 0 5px 0 rgba(58, 47, 75, .18); cursor: pointer; touch-action: manipulation; }
+.tutor-meetcard.hop, .tutor-opt.hop { animation: tutor-hop .6s ease-out; }
+@keyframes tutor-hop { 0% { transform: translateY(0) scale(1); } 35% { transform: translateY(-16px) scale(1.12); } 70% { transform: translateY(0) scale(1.06); } 100% { transform: translateY(0) scale(1); } }
+.tutor-optwrap { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 28%; min-width: 92px; }
+.tutor-optwrap .tutor-opt { width: 100%; }
+.tutor-optlabel { font: 800 17px/1.1 'Fredoka', sans-serif; color: var(--ink); min-height: 20px; text-align: center; opacity: 0; font-style: normal; }
+.tutor-optwrap .tutor-optlabel, .tutor-optlabel.on { opacity: 1; }
+.tutor-guest { flex-direction: column; align-items: center; justify-content: flex-end; }
+.tutor-guest .pic-img { height: auto; max-height: calc(100% - 26px); }
+.tutor-guestlabel { font: 800 18px/1.1 'Fredoka', sans-serif; color: var(--ink); font-style: normal; margin-top: 2px; }
+/* challenge: four bubbles fit above the thumb */
+.tutor-choices.bubbles.four { gap: 8px; }
+.tutor-choices.bubbles.four .tutor-opt { min-height: 48px; padding: 4px 14px; }
+.tutor-choices.bubbles.four .tutor-speech { font-size: 21px; }
+/* the sparkling sticker */
+.sparkle-big { font-size: 56px; width: auto; height: auto; border: 0; background: none; box-shadow: none; transform: none; animation: lolly-hop .6s ease-in-out infinite; }
+.tutor-sticker.sparkle { box-shadow: 0 0 0 6px rgba(255, 220, 90, .9), 0 0 28px 10px rgba(255, 220, 90, .85), 0 8px 18px rgba(58, 47, 75, .25); animation: spark-glow 1.2s ease-in-out infinite; }
+@keyframes spark-glow { 50% { box-shadow: 0 0 0 10px rgba(255, 235, 140, .95), 0 0 40px 16px rgba(255, 235, 140, .95), 0 8px 18px rgba(58, 47, 75, .25); } }
+.tl-badge.sparkle { box-shadow: 0 0 0 3px #ffd84a, 0 0 12px 4px rgba(255, 216, 74, .9); }
+.tutor-choices.four.ch4 { gap: 10px; }
+.tutor-choices.four.ch4 .tutor-opt { width: 40%; min-width: 0; aspect-ratio: 1.25; }
+.tutor-speaker.lone { width: 40px; height: 40px; font-size: 20px; }

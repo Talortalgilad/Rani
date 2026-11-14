@@ -1,0 +1,60 @@
+[
+ {
+  "take": 304,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_191547_b18a5138-6b71-4582-aada-67eb2a101333.mp3",
+  "lines": [
+   {
+    "id": "t_now_you_he",
+    "text": "עכשיו את קודם! אמרי באנגלית, ואחר כך אני."
+   },
+   {
+    "id": "t_self_check",
+    "text": "אמרת כמו שאני אמרתי?"
+   },
+   {
+    "id": "t_challenge_intro",
+    "text": "אתגר! שלוש שאלות קשות יותר. מוכנה?"
+   },
+   {
+    "id": "t_challenge_perfect",
+    "text": "וואו! בלי אף טעות! קיבלת מדבקה מנצנצת!"
+   },
+   {
+    "id": "t_challenge_ok",
+    "text": "כל הכבוד שניסית! בפעם הבאה ננסה שוב."
+   }
+  ]
+ },
+ {
+  "take": 329,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_193148_b69fce78-10fe-4980-83d8-fc77e06d3045.mp3",
+  "lines": [
+   {
+    "id": "t_now_you",
+    "text": "Now you!"
+   },
+   {
+    "id": "t_challenge",
+    "text": "Challenge time!"
+   },
+   {
+    "id": "t_perfect",
+    "text": "Perfect!"
+   },
+   {
+    "id": "t_amazing",
+    "text": "Amazing!"
+   },
+   {
+    "id": "t_listen_carefully",
+    "text": "Listen carefully!"
+   },
+   {
+    "id": "t_what_do_you_see",
+    "text": "What do you see?"
+   }
+  ]
+ }
+]

@@ -28,7 +28,7 @@ export interface Shell {
   stage: HTMLElement;
   lolly: Lolly;
   alive(): boolean;
-  say(id: string, o?: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number; side?: boolean }): Promise<void>;
+  say(id: string, o?: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number; side?: boolean; asGuest?: boolean }): Promise<void>;
   /** a guest (a squishy) takes Lolly's place in the middle; she is small in the corner */
   guest(html: string): void;
   /** Lolly's bubble with a text of its own (no clip) */
@@ -47,7 +47,10 @@ export interface Shell {
   /** per-lesson memory of the things that are said once ("tap the picture") */
   once(key: string): boolean;
   /** how many `kind` of step came before in this lesson run */
-  praise(): Promise<void>;
+  /** a short praise and on: no waiting after a right answer. `keepBubble`: the bubble is not changed (the name of the squishy stays) */
+  praise(keepBubble?: boolean): Promise<void>;
+  /** what a tap on the bubble says */
+  setLast(id: string): void;
   tapTwice: boolean;
 }
 
@@ -93,11 +96,12 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
   const guestOn = (): boolean => !!root.querySelector('.tutor-screen.dlg');
   /** a pose without a moving mouth is shown before and after a clip, never during it (the mouth changes between idle, talk1 and talk2 while she speaks) */
   const PRE: Partial<Record<Look, number>> = { wave: 600, clap: 500, confused: 500, think: 400 };
-  const say = async (id: string, o: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number; side?: boolean } = {}): Promise<void> => {
+  const say = async (id: string, o: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number; side?: boolean; asGuest?: boolean } = {}): Promise<void> => {
     check();
     if (skipping) return;
     busy++;
-    const guest = guestOn();
+    // a squishy speaks (the guest of the dialogue, the squishies that are met): Lolly does not move her mouth
+    const guest = guestOn() || !!o.asGuest;
     // Lolly's own words while a guest talks (almost, let me show you): a small bubble next to the small Lolly; the guest's bubble is left alone
     const side = guest && !!o.side;
     const mine = !guest || side;
@@ -216,15 +220,12 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
     },
     roomy: () => root.querySelector('.tutor-screen')?.classList.add('roomy'),
     once: (key) => (seen.has(key) ? false : (seen.add(key), true)),
-    praise: async () => {
+    praise: async (keepBubble = false) => {
       deps.sound.play('bonus');
-      // the happy pose first, then the praise with the mouth moving, then happy again for a moment
       lolly.set('happy');
-      await wait(400);
-      await say(PRAISE[Math.floor(Math.random() * PRAISE.length)], { look: 'happy', keep: true });
-      await wait(450);
-      lolly.set('idle');
+      await say(PRAISE[Math.floor(Math.random() * PRAISE.length)], { look: 'happy', keep: false, nobubble: keepBubble });
     },
+    setLast: (id) => void (last = id),
     tapTwice: true,
   };
   return {
@@ -246,7 +247,7 @@ export interface Option { html: string; clip?: string; label?: string }
  * the third shows it ("let me show you") and goes on. Never a score, never "failed". Resolves with the number of tries (1..3).
  * `twice`: a bubble is played by the first tap and chosen by the second (answerPick, dialogue).
  */
-export async function pickRound(sh: Shell, o: { options: Option[]; correct: number; replay?: () => Promise<void>; twice?: boolean; cls?: string; praise?: boolean; onRight?: () => void; restore?: () => void }): Promise<number> {
+export async function pickRound(sh: Shell, o: { options: Option[]; correct: number; replay?: () => Promise<void>; twice?: boolean; cls?: string; praise?: boolean; onRight?: () => void; restore?: () => void; keepBubble?: boolean; hopRight?: boolean }): Promise<number> {
   const box = document.createElement('div');
   box.className = `tutor-choices ${o.cls ?? ''}`;
   sh.stage.appendChild(box);
@@ -257,7 +258,17 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
     b.className = 'tutor-opt';
     b.dataset.i = String(i);
     b.innerHTML = op.html;
-    box.appendChild(b);
+    if (op.label) {
+      // the name stays under the card
+      const w = document.createElement('div');
+      w.className = 'tutor-optwrap';
+      w.appendChild(b);
+      const l = document.createElement('i');
+      l.className = 'tutor-optlabel';
+      l.textContent = op.label;
+      w.appendChild(l);
+      box.appendChild(w);
+    } else box.appendChild(b);
     return b;
   });
   let tries = 0;
@@ -265,11 +276,8 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
   const finish = async (): Promise<number> => {
     btns.forEach((b, i) => b.classList.toggle('right', i === o.correct));
     sh.deps.sound.play('bonus');
-    if (o.onRight) {
-      o.onRight();
-      await sh.wait(1000);
-    }
-    if (o.praise !== false && tries === 1) await sh.praise();
+    o.onRight?.();
+    if (o.praise !== false && tries === 1) await sh.praise(o.keepBubble);
     return Math.min(3, tries);
   };
   return new Promise<number>((resolve, reject) => {
@@ -296,9 +304,11 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
         if (tries === 1) {
           await sh.say('t_almost', { look: 'listen', side: true });
           o.restore?.();
+          if (o.hopRight) hop(btns[o.correct]);
           await o.replay?.();
         } else if (tries === 2) {
           btns[o.correct].classList.add('glow');
+          if (o.hopRight) hop(btns[o.correct]);
           await o.replay?.();
         } else {
           btns[o.correct].classList.add('glow');
@@ -314,6 +324,13 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
     };
     btns.forEach((b, i) => b.addEventListener('click', () => void onTap(i)));
   });
+}
+
+/** the card jumps and grows a little */
+export function hop(b: HTMLElement): void {
+  b.classList.remove('hop');
+  void b.offsetWidth;
+  b.classList.add('hop');
 }
 
 export type StepRun = (sh: Shell, step: Step, i: number) => Promise<{ tries?: number } | void>;

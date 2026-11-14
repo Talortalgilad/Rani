@@ -1560,59 +1560,147 @@
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "t_like_milk",
   "text": "I like milk.",
-  "lang": "en",
   "take": 328,
   "dur": 1.08,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "t_im",
   "text": "I'm",
-  "lang": "en",
   "take": 328,
   "dur": 1.03,
   "flag": "long"
  },
  {
+  "lang": "en",
   "id": "t_its_a",
   "text": "It's a",
-  "lang": "en",
   "take": 328,
   "dur": 1.08,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "t_no",
   "text": "No!",
-  "lang": "en",
   "take": 328,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "t_goodbye_plain",
   "text": "Goodbye!",
-  "lang": "en",
   "take": 328,
   "dur": 1.27,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "t_im_sleepy",
   "text": "I'm sleepy.",
-  "lang": "en",
   "take": 328,
   "dur": 1.15,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "t_im_great",
   "text": "I'm great!",
-  "lang": "en",
   "take": 328,
   "dur": 1.3,
+  "flag": ""
+ },
+ {
+  "id": "t_now_you_he",
+  "text": "עכשיו את קודם! אמרי באנגלית, ואחר כך אני.",
+  "lang": "he",
+  "take": 304,
+  "dur": 3.17,
+  "flag": ""
+ },
+ {
+  "id": "t_self_check",
+  "text": "אמרת כמו שאני אמרתי?",
+  "lang": "he",
+  "take": 304,
+  "dur": 1.58,
+  "flag": ""
+ },
+ {
+  "id": "t_challenge_intro",
+  "text": "אתגר! שלוש שאלות קשות יותר. מוכנה?",
+  "lang": "he",
+  "take": 304,
+  "dur": 3.46,
+  "flag": ""
+ },
+ {
+  "id": "t_challenge_perfect",
+  "text": "וואו! בלי אף טעות! קיבלת מדבקה מנצנצת!",
+  "lang": "he",
+  "take": 304,
+  "dur": 3.67,
+  "flag": "tight"
+ },
+ {
+  "id": "t_challenge_ok",
+  "text": "כל הכבוד שניסית! בפעם הבאה ננסה שוב.",
+  "lang": "he",
+  "take": 304,
+  "dur": 3.34,
+  "flag": "tight"
+ },
+ {
+  "id": "t_now_you",
+  "text": "Now you!",
+  "lang": "en",
+  "take": 329,
+  "dur": 0.94,
+  "flag": "tight"
+ },
+ {
+  "id": "t_challenge",
+  "text": "Challenge time!",
+  "lang": "en",
+  "take": 329,
+  "dur": 1.61,
+  "flag": "tight"
+ },
+ {
+  "id": "t_perfect",
+  "text": "Perfect!",
+  "lang": "en",
+  "take": 329,
+  "dur": 1.01,
+  "flag": "tight"
+ },
+ {
+  "id": "t_amazing",
+  "text": "Amazing!",
+  "lang": "en",
+  "take": 329,
+  "dur": 1.39,
+  "flag": "tight"
+ },
+ {
+  "id": "t_listen_carefully",
+  "text": "Listen carefully!",
+  "lang": "en",
+  "take": 329,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "id": "t_what_do_you_see",
+  "text": "What do you see?",
+  "lang": "en",
+  "take": 329,
+  "dur": 1.54,
   "flag": ""
  }
 ]

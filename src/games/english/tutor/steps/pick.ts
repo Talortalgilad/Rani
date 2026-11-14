@@ -2,14 +2,14 @@ import { WORDS, labelOf } from '../../content/words';
 import { dueWords, review as leitner } from '../../engine/progress';
 import { playWord } from '../../voice';
 import { clipText } from '../audio';
-import { pictureHtml } from '../pictures';
+import { labelOfPicture, pictureHtml, squishyLabel } from '../pictures';
 import { pickRound, type Option, type StepRun } from '../shell';
 import { esc } from '../../ui/text';
 
 const arr = <T>(x: unknown): T[] => (Array.isArray(x) ? (x as T[]) : []);
 const str = (x: unknown): string => (typeof x === 'string' ? x : '');
 const shuffle = <T>(a: T[]): T[] => a.map((v) => [Math.random(), v] as const).sort((x, y) => x[0] - y[0]).map((p) => p[1]);
-const picOpt = (p: string): Option => ({ html: `<span class="tutor-pic">${pictureHtml(p)}</span>` });
+const picOpt = (p: string): Option => ({ html: `<span class="tutor-pic">${pictureHtml(p)}</span>`, label: labelOfPicture(p) || undefined });
 const speaker = (sh: Parameters<StepRun>[0], again: () => Promise<void>): void => {
   const b = document.createElement('button');
   b.className = 'tutor-speaker lone';
@@ -68,11 +68,11 @@ export const whoSaid: StepRun = async (sh, step) => {
   if (sh.once('whoSaid')) await sh.say('t_who_said', { look: 'listen' });
   // the name is hidden until she answers right: "Hello! I'm ___."
   const masked = clipText(clip).replace(/(I'm\s+)(.+?)([.!?]*)$/, '$1___$3');
-  const hear = (): Promise<void> => sh.say(clip, { look: 'listen', text: masked });
+  const hear = (): Promise<void> => sh.say(clip, { look: 'listen', text: masked, asGuest: true });
   await hear();
   speaker(sh, hear);
   const ch = arr<string>(step.choices);
-  const tries = await pickRound(sh, { options: ch.map(picOpt), correct: Number(step.correct) || 0, replay: hear, cls: 'three', onRight: () => sh.bubble(clipText(clip), 'en') });
+  const tries = await pickRound(sh, { options: ch.map(picOpt), correct: Number(step.correct) || 0, replay: hear, cls: 'three', onRight: () => sh.bubble(clipText(clip), 'en'), keepBubble: true, hopRight: true });
   return { tries };
 };
 
@@ -97,14 +97,13 @@ export const dialogue: StepRun = async (sh, step) => {
   let worst = 1;
   const turns = arr<{ squishy: string; choices: string[]; correct: number }>(step.turns);
   sh.clear();
-  sh.guest(pictureHtml('squishy:mozzi'));
+  sh.guest(`${pictureHtml('squishy:mozzi')}<i class="tutor-guestlabel">${squishyLabel('mozzi')}</i>`);
   for (const t of turns) {
     sh.stage.innerHTML = '';
     const hear = (): Promise<void> => sh.say(t.squishy);
     await hear();
     const tries = await pickRound(sh, { options: t.choices.map((id) => bubbleOpt(clipText(id), id)), correct: t.correct, replay: hear, twice: true, cls: 'bubbles', praise: false, onRight: () => sh.lolly.set('happy') });
     worst = Math.max(worst, tries);
-    await sh.wait(600);
   }
   // the guest leaves, Lolly is big again and praises
   sh.clear();

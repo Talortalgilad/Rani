@@ -8,7 +8,8 @@ export interface TutorState {
   /** the day number of the last NEW lesson that was finished (one new lesson a day) */
   lastDay: number;
   /** a lesson that was left in the middle: it continues from this step next time */
-  progress: { lesson: string; step: number } | null;
+  /** `n`: how many steps the lesson had when the place was saved (if the lesson changed since, the place is not trusted) */
+  progress: { lesson: string; step: number; n?: number } | null;
   /** how she felt today (only the last day is kept) */
   feeling: { day: number; feel: string } | null;
   /** what she likes (true) and does not like (false) */
@@ -17,14 +18,34 @@ export interface TutorState {
   weak: string[];
   /** the sticker of each finished lesson: lesson id -> picture id */
   stickers: Record<string, string>;
+  /** the lessons whose challenge was passed with no mistake: their sticker sparkles */
+  sparkle: Record<string, boolean>;
+  /** the sentences whose Hebrew explanation was already heard (the clip of the English sentence) */
+  seen: string[];
 }
-export const emptyTutor = (): TutorState => ({ v: 1, done: [], lastDay: -1, progress: null, feeling: null, likes: {}, weak: [], stickers: {} });
+export const emptyTutor = (): TutorState => ({ v: 1, done: [], lastDay: -1, progress: null, feeling: null, likes: {}, weak: [], stickers: {}, sparkle: {}, seen: [] });
 
-/** What of the state is safe to use: an old or damaged save becomes an empty one. */
-export function loadTutor(x: unknown): TutorState {
+/**
+ * What of the state is safe to use: an old or damaged save becomes an empty one. A lesson that was finished stays finished; the place in the middle of a lesson is
+ * kept only if the lesson has the same number of steps as when it was saved (`steps` tells how many each lesson has now): otherwise the lesson starts from its beginning.
+ */
+export function loadTutor(x: unknown, steps?: Record<string, number>): TutorState {
   const s = x as Partial<TutorState> | null;
   if (!s || s.v !== 1) return emptyTutor();
-  return { ...emptyTutor(), ...s, done: Array.isArray(s.done) ? s.done : [], likes: s.likes ?? {}, weak: Array.isArray(s.weak) ? s.weak : [], stickers: s.stickers ?? {} };
+  const prog = s.progress && typeof s.progress.lesson === 'string' ? s.progress : null;
+  const known = prog && steps ? steps[prog.lesson] : undefined;
+  const keep = !!prog && (steps === undefined || (known !== undefined && prog.n === known));
+  return {
+    ...emptyTutor(),
+    ...s,
+    done: Array.isArray(s.done) ? s.done : [],
+    likes: s.likes ?? {},
+    weak: Array.isArray(s.weak) ? s.weak : [],
+    stickers: s.stickers ?? {},
+    sparkle: s.sparkle ?? {},
+    seen: Array.isArray(s.seen) ? s.seen : [],
+    progress: prog ? { lesson: prog.lesson, step: keep ? prog.step : 0, n: known ?? prog.n } : null,
+  };
 }
 
 export const isDone = (s: TutorState, id: string): boolean => s.done.includes(id);
@@ -54,7 +75,9 @@ export function access(lessons: Lesson[], s: TutorState, lesson: Lesson, today: 
   return doneToday(s, today) && !openAll ? 'doneToday' : 'ok';
 }
 
-export const saveProgress = (s: TutorState, lesson: string, step: number): TutorState => ({ ...s, progress: { lesson, step } });
+export const saveProgress = (s: TutorState, lesson: string, step: number, n: number): TutorState => ({ ...s, progress: { lesson, step, n } });
+export const markSeenSentence = (s: TutorState, key: string): TutorState => (s.seen.includes(key) ? s : { ...s, seen: [...s.seen, key] });
+export const setSparkle = (s: TutorState, lesson: string): TutorState => ({ ...s, sparkle: { ...s.sparkle, [lesson]: true } });
 export const leave = (s: TutorState): TutorState => s;
 
 /** The lesson ends with its sticker: it is done (the first time: the new lesson of today), and the place in it is forgotten. */

@@ -9,7 +9,7 @@ import { join, resolve } from 'node:path';
 const ROOT = resolve(new URL('..', import.meta.url).pathname);
 interface Take { take: number; lang: 'he' | 'en'; lines: { id: string; text: string }[] }
 const takes = JSON.parse(readFileSync(join(ROOT, 'assets/voice-raw/voice-takes-tutor.json'), 'utf8')) as Take[];
-for (const f of ['voice-takes-tutor-2.json']) takes.push(...(JSON.parse(readFileSync(join(ROOT, 'assets/voice-raw', f), 'utf8')) as Take[]));
+for (const f of ['voice-takes-tutor-2.json', 'voice-takes-tutor-3.json']) takes.push(...(JSON.parse(readFileSync(join(ROOT, 'assets/voice-raw', f), 'utf8')) as Take[]));
 const out: Record<string, { lang: string; text: string; take: number }> = {};
 for (const t of takes) for (const l of t.lines) out[l.id] = { lang: t.lang, text: l.text, take: t.take };
 writeFileSync(

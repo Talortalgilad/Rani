@@ -25,7 +25,8 @@ export interface TutorDeps {
 
 export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
   preloadTutor();
-  let state = loadTutor(d.load());
+  const stepCounts = Object.fromEntries(LESSONS.map((l) => [l.id, l.steps.length]));
+  let state = loadTutor(d.load(), stepCounts);
   let run: Run | null = null;
   let alive = true;
   const today = (): number => dayNumber();
@@ -91,7 +92,7 @@ export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
     const cls = done ? 'done' : mid ? 'mid' : l.id === next?.id ? 'new' : a === 'doneToday' ? 'wait' : 'locked';
     const sticker = state.stickers[l.id];
     const badge = done ? (sticker ? `<img src="${imageUrl(sticker)}" alt="" draggable="false">` : '✅') : mid ? '▶' : cls === 'new' ? '⭐' : a === 'doneToday' ? '🌙' : canRun(l) ? '🔒' : '🚧';
-    return `<button class="tl-card ${cls}" data-id="${l.id}" type="button"><span class="tl-badge">${badge}</span><span class="tl-t"><b>${esc(l.titleHe)}</b>${(l.kind === 'teacher' && l.titleHe !== 'רני המורה' ? 'רני המורה' : mid ? 'ממשיכים' : cls === 'new' ? 'שיעור חדש' : done ? 'לחזור' : '') ? `<small>${l.kind === 'teacher' && l.titleHe !== 'רני המורה' ? 'רני המורה' : mid ? 'ממשיכים' : cls === 'new' ? 'שיעור חדש' : done ? 'לחזור' : ''}</small>` : ''}</span></button>`;
+    return `<button class="tl-card ${cls}" data-id="${l.id}" type="button"><span class="tl-badge ${state.sparkle[l.id] ? 'sparkle' : ''}">${badge}</span><span class="tl-t"><b>${esc(l.titleHe)}</b>${(l.kind === 'teacher' && l.titleHe !== 'רני המורה' ? 'רני המורה' : mid ? 'ממשיכים' : cls === 'new' ? 'שיעור חדש' : done ? 'לחזור' : '') ? `<small>${l.kind === 'teacher' && l.titleHe !== 'רני המורה' ? 'רני המורה' : mid ? 'ממשיכים' : cls === 'new' ? 'שיעור חדש' : done ? 'לחזור' : ''}</small>` : ''}</span></button>`;
   }
 
   function start(l: Lesson): void {

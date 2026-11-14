@@ -1,5 +1,5 @@
 {
- "version": 2,
+ "version": 4,
  "feelings": [
   "happy",
   "sad",
@@ -176,6 +176,20 @@
      "clip": "t_im_rani"
     },
     {
+     "type": "meet",
+     "squishies": [
+      "squishy:mozzi",
+      "squishy:horiko",
+      "squishy:popcheese"
+     ],
+     "clips": [
+      "t_im_mozzi",
+      "t_im_horiko",
+      "t_im_popcheese"
+     ],
+     "note": "כל סקווישי מציג את עצמו בתורו לפני שמתחילים לשאול."
+    },
+    {
      "type": "whoSaid",
      "clip": "t_im_mozzi",
      "choices": [
@@ -310,6 +324,50 @@
      "picture": null
     },
     {
+     "type": "sayFirst",
+     "prompt": "t_whats_your_name",
+     "picture": null,
+     "answer": "t_im_rani"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "answer",
+       "clip": "t_whats_your_name",
+       "choiceClips": [
+        "t_im_rani",
+        "t_nice_to_meet_you",
+        "t_goodbye_plain",
+        "t_hello"
+       ],
+       "correct": 0
+      },
+      {
+       "kind": "answer",
+       "clip": "t_nice_to_meet_you",
+       "choiceClips": [
+        "t_goodbye_plain",
+        "t_nice_to_meet_you",
+        "t_im_rani",
+        "t_hello"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "answer",
+       "clip": "t_hello",
+       "choiceClips": [
+        "t_goodbye_plain",
+        "t_im_lolly",
+        "t_hello",
+        "t_nice_to_meet_you"
+       ],
+       "correct": 2
+      }
+     ]
+    },
+    {
      "type": "sentenceOfDay",
      "clip": "t_whats_your_name",
      "en": "What's your name?"
@@ -423,6 +481,56 @@
      "picture": "face:happy"
     },
     {
+     "type": "sayFirst",
+     "prompt": "t_how_are_you",
+     "picture": "face:happy",
+     "answer": "t_im_happy"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_how_are_you",
+     "picture": "face:sleepy",
+     "answer": "t_im_sleepy"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_im_sad",
+       "choices": [
+        "face:happy",
+        "face:sad",
+        "face:sleepy",
+        "face:hungry"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_im_hungry",
+       "choices": [
+        "face:happy",
+        "face:sad",
+        "face:sleepy",
+        "face:hungry"
+       ],
+       "correct": 3
+      },
+      {
+       "kind": "pick",
+       "clip": "t_im_sleepy",
+       "choices": [
+        "face:happy",
+        "face:sad",
+        "face:sleepy",
+        "face:hungry"
+       ],
+       "correct": 2
+      }
+     ]
+    },
+    {
      "type": "sentenceOfDay",
      "clip": "t_how_are_you",
      "en": "How are you?"
@@ -514,6 +622,50 @@
      "type": "say",
      "clips": [
       "t_thank_you_teacher"
+     ]
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_how_are_you",
+     "picture": "face:hungry",
+     "answer": "t_im_hungry"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_im_hungry",
+       "choices": [
+        "face:happy",
+        "face:sad",
+        "face:sleepy",
+        "face:hungry"
+       ],
+       "correct": 3
+      },
+      {
+       "kind": "answer",
+       "clip": "t_whats_your_name",
+       "choiceClips": [
+        "t_nice_to_meet_you",
+        "t_im_rani",
+        "t_im_happy",
+        "t_goodbye_plain"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_im_sad",
+       "choices": [
+        "face:happy",
+        "face:sad",
+        "face:sleepy",
+        "face:hungry"
+       ],
+       "correct": 1
+      }
      ]
     },
     {
@@ -634,6 +786,56 @@
      "picture": "word:pizza"
     },
     {
+     "type": "sayFirst",
+     "prompt": "t_what_do_you_like",
+     "picture": "word:pizza",
+     "answer": "t_like_pizza"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_what_do_you_like",
+     "picture": "word:cake",
+     "answer": "t_like_cake"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_like_cheese",
+       "choices": [
+        "word:cheese",
+        "word:cake",
+        "word:cookie",
+        "word:chocolate"
+       ],
+       "correct": 0
+      },
+      {
+       "kind": "pick",
+       "clip": "t_like_egg",
+       "choices": [
+        "word:apple",
+        "word:egg",
+        "word:banana",
+        "word:milk"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_like_pasta",
+       "choices": [
+        "word:pizza",
+        "word:meat",
+        "word:pasta",
+        "word:cheese"
+       ],
+       "correct": 2
+      }
+     ]
+    },
+    {
      "type": "sentenceOfDay",
      "clip": "t_like_pizza",
      "en": "I like pizza."
@@ -732,6 +934,56 @@
      "picture": "word:egg"
     },
     {
+     "type": "sayFirst",
+     "prompt": null,
+     "picture": "lolly:dislike:egg",
+     "answer": "t_dont_like_egg"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": null,
+     "picture": "lolly:like:cheese",
+     "answer": "t_like_cheese"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_dont_like_milk",
+       "choices": [
+        "lolly:like:milk",
+        "lolly:dislike:milk",
+        "lolly:like:meat",
+        "lolly:dislike:meat"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_like_meat",
+       "choices": [
+        "lolly:like:milk",
+        "lolly:dislike:milk",
+        "lolly:like:meat",
+        "lolly:dislike:meat"
+       ],
+       "correct": 2
+      },
+      {
+       "kind": "pick",
+       "clip": "t_dont_like_meat",
+       "choices": [
+        "lolly:like:milk",
+        "lolly:dislike:milk",
+        "lolly:like:meat",
+        "lolly:dislike:meat"
+       ],
+       "correct": 3
+      }
+     ]
+    },
+    {
      "type": "sentenceOfDay",
      "clip": "t_dont_like_egg",
      "en": "I don't like eggs."
@@ -820,6 +1072,50 @@
      ],
      "clip": "t_do_you_like_cake",
      "picture": "word:cake"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": null,
+     "picture": "word:cake",
+     "answer": "t_do_you_like_cake"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "answer",
+       "clip": "t_do_you_like_pizza",
+       "choiceClips": [
+        "t_yes_i_do",
+        "t_im_happy",
+        "t_nice_to_meet_you",
+        "t_goodbye_plain"
+       ],
+       "correct": 0
+      },
+      {
+       "kind": "pick",
+       "clip": "t_do_you_like_banana",
+       "choices": [
+        "word:apple",
+        "word:banana",
+        "word:egg",
+        "word:cookie"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_dont_like_chocolate",
+       "choices": [
+        "lolly:like:chocolate",
+        "lolly:dislike:chocolate",
+        "lolly:like:cake",
+        "lolly:dislike:cake"
+       ],
+       "correct": 1
+      }
+     ]
     },
     {
      "type": "sentenceOfDay",
@@ -917,6 +1213,56 @@
      "type": "say",
      "clips": [
       "t_thank_you_teacher"
+     ]
+    },
+    {
+     "type": "sayFirst",
+     "prompt": null,
+     "picture": "lolly:dislike:meat",
+     "answer": "t_dont_like_meat"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": null,
+     "picture": "lolly:like:apple",
+     "answer": "t_like_apple"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_dont_like_pasta",
+       "choices": [
+        "lolly:like:pizza",
+        "lolly:dislike:pizza",
+        "lolly:like:pasta",
+        "lolly:dislike:pasta"
+       ],
+       "correct": 3
+      },
+      {
+       "kind": "pick",
+       "clip": "t_like_banana",
+       "choices": [
+        "lolly:like:apple",
+        "lolly:like:banana",
+        "lolly:dislike:apple",
+        "lolly:dislike:banana"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_do_you_like_cookie",
+       "choices": [
+        "word:cookie",
+        "word:cake",
+        "word:chocolate",
+        "word:icecream"
+       ],
+       "correct": 0
+      }
      ]
     },
     {
@@ -1031,6 +1377,56 @@
      "picture": "thing:apple:red"
     },
     {
+     "type": "sayFirst",
+     "prompt": "t_what_color_is_it",
+     "picture": "thing:ball:green",
+     "answer": "t_its_green"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_what_color_is_it",
+     "picture": "thing:star:yellow",
+     "answer": "t_its_yellow"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_its_purple",
+       "choices": [
+        "thing:balloon:purple",
+        "thing:balloon:pink",
+        "thing:balloon:blue",
+        "thing:balloon:red"
+       ],
+       "correct": 0
+      },
+      {
+       "kind": "pick",
+       "clip": "t_its_pink",
+       "choices": [
+        "thing:balloon:purple",
+        "thing:balloon:pink",
+        "thing:balloon:blue",
+        "thing:balloon:red"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_its_blue",
+       "choices": [
+        "thing:balloon:purple",
+        "thing:balloon:pink",
+        "thing:balloon:blue",
+        "thing:balloon:red"
+       ],
+       "correct": 2
+      }
+     ]
+    },
+    {
      "type": "sentenceOfDay",
      "clip": "t_what_color_is_it",
      "en": "What color is it?"
@@ -1139,6 +1535,56 @@
      ],
      "clip": "t_its_a_ball",
      "picture": "word:ball"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_what_is_it",
+     "picture": "word:kite",
+     "answer": "t_its_a_kite"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_what_is_it",
+     "picture": "word:flower",
+     "answer": "t_its_a_flower"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_its_a_hat",
+       "choices": [
+        "word:hat",
+        "word:ball",
+        "word:book",
+        "word:kite"
+       ],
+       "correct": 0
+      },
+      {
+       "kind": "pick",
+       "clip": "t_its_a_flower",
+       "choices": [
+        "word:star",
+        "word:balloon",
+        "word:flower",
+        "word:apple"
+       ],
+       "correct": 2
+      },
+      {
+       "kind": "pick",
+       "clip": "t_its_a_apple",
+       "choices": [
+        "word:ball",
+        "word:apple",
+        "word:balloon",
+        "word:hat"
+       ],
+       "correct": 1
+      }
+     ]
     },
     {
      "type": "sentenceOfDay",
@@ -1251,6 +1697,56 @@
      "picture": "thing:balloon:red"
     },
     {
+     "type": "sayFirst",
+     "prompt": "t_what_is_it",
+     "picture": "thing:ball:red",
+     "answer": "t_red_ball"
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_what_is_it",
+     "picture": "thing:kite:blue",
+     "answer": "t_blue_kite"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_red_balloon",
+       "choices": [
+        "thing:ball:red",
+        "thing:balloon:red",
+        "thing:balloon:blue",
+        "thing:ball:green"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_pink_flower",
+       "choices": [
+        "thing:star:yellow",
+        "thing:flower:yellow",
+        "thing:flower:pink",
+        "thing:star:purple"
+       ],
+       "correct": 2
+      },
+      {
+       "kind": "pick",
+       "clip": "t_purple_kite",
+       "choices": [
+        "thing:book:blue",
+        "thing:kite:blue",
+        "thing:book:purple",
+        "thing:kite:purple"
+       ],
+       "correct": 3
+      }
+     ]
+    },
+    {
      "type": "sentenceOfDay",
      "clip": "t_red_balloon",
      "en": "It's a red balloon."
@@ -1342,6 +1838,50 @@
      "type": "say",
      "clips": [
       "t_thank_you_teacher"
+     ]
+    },
+    {
+     "type": "sayFirst",
+     "prompt": "t_what_is_it",
+     "picture": "thing:star:yellow",
+     "answer": "t_yellow_star"
+    },
+    {
+     "type": "challenge",
+     "items": [
+      {
+       "kind": "pick",
+       "clip": "t_green_apple",
+       "choices": [
+        "thing:apple:red",
+        "thing:apple:green",
+        "thing:ball:green",
+        "thing:hat:green"
+       ],
+       "correct": 1
+      },
+      {
+       "kind": "pick",
+       "clip": "t_pink_hat",
+       "choices": [
+        "thing:hat:pink",
+        "thing:hat:purple",
+        "thing:ball:pink",
+        "thing:flower:pink"
+       ],
+       "correct": 0
+      },
+      {
+       "kind": "pick",
+       "clip": "t_yellow_book",
+       "choices": [
+        "thing:book:blue",
+        "thing:book:yellow",
+        "thing:star:yellow",
+        "thing:balloon:yellow"
+       ],
+       "correct": 1
+      }
      ]
     },
     {
