@@ -301,7 +301,7 @@ export class Talks {
       };
     } else if (t.kind === 'can') {
       this.sayText(`<span dir="ltr" class="en">Can I have the ${esc(WORD_NAMES.get(t.word) ?? t.word)}, please?</span><br><small>${esc(cv.tapthis)}</small>`);
-      act.innerHTML = `<div class="cv-opts pics">${t.options.map((w, i) => btn(`<img src="${base()}english/words/${w}.webp" alt="" draggable="false">`, i, 'pic')).join('')}</div>`;
+      act.innerHTML = `<div class="cv-opts cvpics">${t.options.map((w, i) => btn(`<img src="${base()}english/words/${w}.webp" alt="" draggable="false">`, i, 'cvpic')).join('')}</div>`;
       bind();
     } else if (t.kind === 'what') {
       this.sayText(`<span dir="ltr" class="en">What is it?</span><br><small>${esc(cv.tapword)}</small>`);

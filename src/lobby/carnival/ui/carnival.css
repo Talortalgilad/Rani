@@ -54,8 +54,8 @@
 .cv-opt.show { background: linear-gradient(#7ad7a0, #2aa86a); box-shadow: 0 5px 0 #1a7a4a, 0 0 18px #fff; animation: cv-pulse .8s infinite; }
 @keyframes cv-shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 @keyframes cv-pulse { 50% { transform: scale(1.08); } }
-.cv-opt.pic { padding: 4px; background: #fff; box-shadow: 0 5px 0 #b9a8d9; min-width: 96px; min-height: 96px; }
-.cv-opt.pic img { width: 88px; height: 88px; object-fit: contain; }
+.cv-opt.cvpic { padding: 4px; background: #fff; box-shadow: 0 5px 0 #b9a8d9; min-width: 96px; min-height: 96px; }
+.cv-opt.cvpic img { width: 88px; height: 88px; object-fit: contain; }
 .cv-opt.word { font-size: 26px; background: linear-gradient(#ffb84d, #f08a14); box-shadow: 0 5px 0 #b05f08; }
 .cv-opt.ok { background: linear-gradient(#7ad7a0, #2aa86a); box-shadow: 0 5px 0 #1a7a4a; font-size: 22px; }
 .cv-bigpic img { width: 130px; height: 130px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .3)); }
