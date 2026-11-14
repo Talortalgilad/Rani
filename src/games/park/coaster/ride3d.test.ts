@@ -12,7 +12,7 @@ describe('the bends of the 3D track', () => {
     let a = 0;
     for (let s = 0; s < p.s[p.n - 1]; s += 0.5) a = Math.max(a, Math.abs(sway(p, s, 7)));
     expect(a).toBeLessThan(6.5);
-    const m = (p.loopS![1] + p.endS) / 2;
+    const m = p.loopS![1] + (p.endS - 7 - p.loopS![1]) * 0.75;
     expect(sway(p, m, 7)).toBe(sway(p, m, 7));
     expect(sway(p, m, 7)).not.toBe(sway(p, m, 8));
   });

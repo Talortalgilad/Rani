@@ -7,6 +7,7 @@ import { QualityMonitor } from '../../../lobby3d/quality';
 import type { SoundApi } from '../../../sound';
 import { sample, duration, type Ride } from './physics';
 import { END, type Path } from './track';
+import { buildCurve, placeScenery, STRIDE, sway } from './scenery';
 
 export interface Ride3DOptions {
   /** less motion: no shake of the camera, no widening of the view ("calm ride", in the parents area) */
@@ -37,20 +38,7 @@ export interface Ride3D {
 }
 
 const GAP = 0.95;
-const smooth = (a: number, b: number, x: number): number => {
-  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
-};
-
-/** The sideways bend of the track at distance s: gentle, zero on the lift, inside the loop and at the station. */
-export function sway(path: Path, s: number, seed: number): number {
-  const a = ((seed * 9301 + 49297) % 233280) / 233280;
-  const b = ((seed * 7919 + 1013) % 4096) / 4096;
-  let mask = smooth(path.crestS + 1, path.crestS + 6, s);
-  if (path.loopS) mask *= 1 - smooth(path.loopS[0] - 5, path.loopS[0] - 1, s) * (1 - smooth(path.loopS[1] + 1, path.loopS[1] + 5, s));
-  if (path.endS < Infinity) mask *= 1 - smooth(path.endS - 7, path.endS - 1, s);
-  return mask * (2.6 * Math.sin(s * 0.13 + a * 6.28) + 3.4 * Math.sin(s * 0.047 + b * 6.28));
-}
+export { sway };
 
 export async function startRide3d(container: HTMLElement, path: Path, ride: Ride, o: Ride3DOptions): Promise<Ride3D> {
   const renderer = new T.WebGLRenderer({ antialias: o.tier === 'high', powerPreference: 'high-performance' });
@@ -69,34 +57,11 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   const disposables: { dispose(): void }[] = [];
   const keep = <X extends { dispose(): void }>(x: X): X => (disposables.push(x), x);
 
-  // ---- the 3D curve: the points of the side view, bent sideways ----
-  const stride = 3;
-  const n = Math.floor((path.n - 1) / stride) + 1;
-  const P: T.Vector3[] = [];
-  for (let i = 0; i < n; i++) {
-    const k = Math.min(path.n - 1, i * stride);
-    P.push(new T.Vector3(path.x[k], path.y[k], sway(path, path.s[k], o.seed)));
-  }
-  // the frames: parallel transport of "up" (it turns upside down in the loop and comes back), and a lean into the bends
-  const Tg: T.Vector3[] = [], Up: T.Vector3[] = [], Rt: T.Vector3[] = [];
-  let up = new T.Vector3(0, 1, 0);
-  for (let i = 0; i < n; i++) {
-    const t = P[Math.min(n - 1, i + 1)].clone().sub(P[Math.max(0, i - 1)]).normalize();
-    up = up.clone().sub(t.clone().multiplyScalar(up.dot(t))).normalize();
-    Tg.push(t);
-    Up.push(up);
-  }
-  const lean = new Float32Array(n);
-  for (let i = 2; i < n - 2; i++) {
-    // the sideways acceleration of the bend, as an angle
-    const acc = (P[i + 2].z - 2 * P[i].z + P[i - 2].z) / 0.9;
-    lean[i] = Math.max(-0.5, Math.min(0.5, -acc * 0.35));
-  }
-  for (let i = 0; i < n; i++) {
-    const q = new T.Quaternion().setFromAxisAngle(Tg[i], o.calm ? 0 : lean[i]);
-    Up[i] = Up[i].clone().applyQuaternion(q);
-    Rt.push(Tg[i].clone().cross(Up[i]).normalize());
-  }
+  // ---- the 3D curve: the points of the side view, bent sideways (scenery.ts) ----
+  const stride = STRIDE;
+  const curve = buildCurve(path, o.seed, o.calm);
+  const { P, Tg, Up, Rt, n } = curve;
+  const land = placeScenery(path, curve, o.seed, o.tier);
   const idxOf = (s: number): number => Math.min(n - 1.001, Math.max(0, s / (path.s[1] * stride)));
   const poseAt = (s: number): { p: T.Vector3; t: T.Vector3; u: T.Vector3; r: T.Vector3 } => {
     const f = idxOf(s);
@@ -152,14 +117,7 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   scene.add(ties);
   const pillarGeo = keep(new T.CylinderGeometry(0.07, 0.09, 1, 6));
   const pillarMat = keep(new T.MeshStandardMaterial({ color: '#e3d2f7', roughness: 0.7 }));
-  const pillars: T.Matrix4[] = [];
-  let lastX = -9;
-  for (let i = 0; i < n; i += 4) {
-    if (path.inLoop[Math.min(path.n - 1, i * stride)] || P[i].x - lastX < 1.8 || P[i].y < 0.6) continue;
-    lastX = P[i].x;
-    const h = P[i].y - 0.1;
-    pillars.push(new T.Matrix4().compose(new T.Vector3(P[i].x, h / 2, P[i].z), new T.Quaternion(), new T.Vector3(1, h, 1)));
-  }
+  const pillars = land.pillars.map((q) => new T.Matrix4().compose(new T.Vector3(q.x, q.h / 2, q.z), new T.Quaternion(), new T.Vector3(1, q.h, 1)));
   const pil = new T.InstancedMesh(pillarGeo, pillarMat, Math.max(1, pillars.length));
   pillars.forEach((m, i) => pil.setMatrixAt(i, m));
   pil.count = pillars.length;
@@ -226,10 +184,6 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
     let a = o.seed + 17;
     return () => ((a = (a * 1664525 + 1013904223) >>> 0) / 4294967296);
   })();
-  const zAtX = (x: number): number => {
-    const i = Math.min(n - 1, Math.max(0, Math.round((x - P[0].x) / ((P[n - 1].x - P[0].x) / (n - 1)))));
-    return P[i].z;
-  };
   const hillGeo = keep(new T.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2));
   const hillMat = keep(new T.MeshStandardMaterial({ color: '#ffffff', roughness: 1 }));
   const hills = new T.InstancedMesh(hillGeo, hillMat, 22);
@@ -247,21 +201,15 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   const stemMat = keep(new T.MeshStandardMaterial({ color: '#ffffff' }));
   const popGeo = keep(new T.SphereGeometry(0.5, 10, 8));
   const popMat = keep(new T.MeshStandardMaterial({ color: '#ffffff', roughness: 0.4 }));
-  const trees = o.tier === 'high' ? 90 : 48;
+  const trees = land.trees.length;
   const stems = new T.InstancedMesh(stemGeo, stemMat, trees);
   const pops = new T.InstancedMesh(popGeo, popMat, trees);
   const col = new T.Color();
-  const palette = ['#ff5d8f', '#ffb84d', '#7ad7ff', '#b58cff', '#8fe36b'];
-  const x0 = P[0].x + 2, x1 = P[n - 1].x + 4;
-  for (let i = 0; i < trees; i++) {
-    const x = x0 + ((i + rnd() * 0.8) / trees) * (x1 - x0);
-    const z = zAtX(x) + (i % 2 ? 1 : -1) * (3.5 + rnd() * 11);
-    const h = 1.4 + rnd() * 2.2;
-    stems.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(x, h / 2, z), new T.Quaternion(), new T.Vector3(1, h, 1)));
-    const r = 0.8 + rnd() * 0.7;
-    pops.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(x, h + r * 0.35, z), new T.Quaternion(), new T.Vector3(r, r, r)));
-    pops.setColorAt(i, col.set(palette[i % palette.length]));
-  }
+  land.trees.forEach((q, i) => {
+    stems.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(q.x, q.h / 2, q.z), new T.Quaternion(), new T.Vector3(1, q.h, 1)));
+    pops.setMatrixAt(i, new T.Matrix4().compose(new T.Vector3(q.x, q.y, q.z), new T.Quaternion(), new T.Vector3(q.r, q.r, q.r)));
+    pops.setColorAt(i, col.set(q.c));
+  });
   scene.add(stems, pops);
   const cloudGeo = keep(new T.SphereGeometry(1, 10, 8));
   const cloudMat = keep(new T.MeshStandardMaterial({ color: '#ffffff', roughness: 1 }));
@@ -274,12 +222,7 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   // posts with flags close to the track, one every few units on both sides: they rush by and give the feeling of speed
   const postGeo = keep(new T.CylinderGeometry(0.05, 0.05, 1, 5));
   const flagGeo = keep(new T.BoxGeometry(0.75, 0.42, 0.03));
-  const posts: { x: number; z: number; h: number; c: string }[] = [];
-  for (let i = 3; i < n - 3; i += 22) {
-    const k = Math.min(path.n - 1, i * stride);
-    if (path.inLoop[k] || P[i].y < 0.2) continue;
-    for (const side of [-1, 1]) posts.push({ x: P[i].x + 0.0, z: P[i].z + side * 2.2, h: 1.6 + (i % 3) * 0.3, c: palette[(i + (side > 0 ? 2 : 0)) % palette.length] });
-  }
+  const posts = land.posts;
   const postMesh = new T.InstancedMesh(postGeo, stemMat, Math.max(1, posts.length));
   const flagMesh = new T.InstancedMesh(flagGeo, popMat, Math.max(1, posts.length));
   posts.forEach((q, i) => {

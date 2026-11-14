@@ -378,3 +378,86 @@ export function drawHand(g: CanvasRenderingContext2D, v: View, t: number): void 
 export const GRAVITY = G;
 export type { Pt };
 export { START_PTS };
+
+/** A tunnel drawn in code: a candy hill that the track goes into, between two portals. The track is drawn first, and then this over it. */
+export function drawTunnel(g: CanvasRenderingContext2D, v: View, path: Path, xa: number, xb: number): void {
+  const s = v.s;
+  let top = 0;
+  for (let i = 0; i < path.n; i++) if (path.x[i] >= xa && path.x[i] <= xb) top = Math.max(top, path.y[i]);
+  const pxa = toX(v, xa), pxb = toX(v, xb), gy = toY(v, 0);
+  const crown = toY(v, top + 1.2);
+  const grad = g.createLinearGradient(0, crown, 0, gy);
+  grad.addColorStop(0, '#ffb3d9');
+  grad.addColorStop(1, '#d9a3ff');
+  g.save();
+  g.fillStyle = grad;
+  g.beginPath();
+  g.moveTo(pxa - s * 0.5, gy);
+  g.bezierCurveTo(pxa - s * 0.5, crown, pxa + s * 0.4, crown - s * 0.2, (pxa + pxb) / 2, crown);
+  g.bezierCurveTo(pxb - s * 0.4, crown - s * 0.2, pxb + s * 0.5, crown, pxb + s * 0.5, gy);
+  g.closePath();
+  g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.7)';
+  g.lineWidth = Math.max(3, s * 0.08);
+  g.stroke();
+  // sprinkles
+  for (let k = 0; k < 9; k++) {
+    g.fillStyle = ['#fff', '#ffe36a', '#7ad7ff'][k % 3];
+    g.beginPath();
+    g.arc(pxa + ((k + 0.5) / 9) * (pxb - pxa), crown + s * (0.3 + (k % 3) * 0.25), s * 0.07, 0, Math.PI * 2);
+    g.fill();
+  }
+  // the portals: dark arches where the track goes in and comes out
+  for (const [px, xw] of [[pxa, xa], [pxb, xb]] as const) {
+    let ty = top;
+    for (let i = 0; i < path.n; i++) if (Math.abs(path.x[i] - xw) < 0.06) ty = path.y[i];
+    g.fillStyle = '#4a2a5a';
+    g.beginPath();
+    g.ellipse(px, toY(v, ty), s * 0.38, s * 0.72, 0, Math.PI, 0, false);
+    g.lineTo(px + s * 0.38, toY(v, ty) + s * 0.1);
+    g.lineTo(px - s * 0.38, toY(v, ty) + s * 0.1);
+    g.fill();
+    g.strokeStyle = '#fff';
+    g.lineWidth = Math.max(2, s * 0.06);
+    g.beginPath();
+    g.ellipse(px, toY(v, ty), s * 0.38, s * 0.72, 0, Math.PI, 0, false);
+    g.stroke();
+  }
+  g.restore();
+}
+
+/**
+ * The gate of stars, a ring seen a little from the side: its back half is drawn before the track and the train ('back'), its front half after them
+ * ('front'), so that the car goes through the ring.
+ */
+export function drawStarGate(g: CanvasRenderingContext2D, v: View, x: number, y: number, part: 'back' | 'front', hit = false): void {
+  const s = v.s;
+  const cx = toX(v, x), cy = toY(v, y + 0.2);
+  const rx = s * 0.55, ry = s * 1.3;
+  g.save();
+  g.lineWidth = Math.max(5, s * 0.17);
+  g.lineCap = 'round';
+  g.strokeStyle = part === 'back' ? (hit ? '#e0a800' : '#d9a21c') : hit ? '#fff3a0' : '#ffd23f';
+  g.beginPath();
+  if (part === 'back') g.ellipse(cx, cy, rx, ry, 0, Math.PI / 2, (3 * Math.PI) / 2, false);
+  else g.ellipse(cx, cy, rx, ry, 0, -Math.PI / 2, Math.PI / 2, false);
+  g.stroke();
+  if (part === 'front') {
+    // the star on top of the ring
+    g.fillStyle = hit ? '#fff3a0' : '#ffd23f';
+    g.strokeStyle = '#b8860b';
+    g.lineWidth = 2;
+    g.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5;
+      const r = i % 2 === 0 ? s * 0.34 : s * 0.15;
+      const px = cx + Math.cos(a) * r, py = cy - ry - s * 0.2 + Math.sin(a) * r;
+      if (i === 0) g.moveTo(px, py);
+      else g.lineTo(px, py);
+    }
+    g.closePath();
+    g.fill();
+    g.stroke();
+  }
+  g.restore();
+}

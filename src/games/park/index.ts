@@ -148,7 +148,7 @@ const park: GameModule = {
     ctx = c;
     root = document.createElement('div');
     root.className = 'pk';
-    root.innerHTML = `<div class="pk-top"><button class="pk-round pk-home" type="button" aria-label="home">🏠</button><h1 data-say="park_title">${pk.title}</h1>${btn('pk-view round', 'overview', pk.overview, '🔭')}</div>
+    root.innerHTML = `<div class="pk-top"><button class="pk-round pk-home" type="button" aria-label="home">🏠</button><h1 data-say="park_title">${pk.title}</h1><span class="pk-sp"></span></div>
       <div class="pk-stage"><canvas class="pk-canvas"></canvas><div class="pk-bubble"></div><div class="pk-three"></div>
         <div class="pk-after">${btn('pk-3d big', 'ride', pk.ride, '🎢')}${btn('pk-again', 'again', pk.again, '↺')}</div>
         <div class="pk-3d-ui">${btn('pk-cam round', 'carView', pk.carView, '🎥')}${btn('pk-backb round', 'back', pk.back, '⬅️')}${btn('pk-again3 round', 'again', pk.again, '↺')}</div>
@@ -186,6 +186,7 @@ const park: GameModule = {
           paint();
         },
         onMode: setUi,
+        onLayout: (bottom) => r.style.setProperty('--pk-map-bottom', `${bottom + 8}px`),
         onRefused: () => {
           const l = r.querySelector('.pk-loop')!;
           l.classList.remove('bounce');
@@ -205,7 +206,6 @@ const park: GameModule = {
       b.fixIt();
       paint();
     });
-    r.querySelector('.pk-view')!.addEventListener('click', () => b.toggleOverview());
     r.querySelector('.pk-3d')!.addEventListener('click', () => void go3d());
     r.querySelector('.pk-again')!.addEventListener('click', () => {
       b.rideOk = false;

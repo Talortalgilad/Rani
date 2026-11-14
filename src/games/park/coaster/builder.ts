@@ -6,7 +6,7 @@ import type { SoundApi } from '../../../sound';
 import { diagnose, fix, type Diagnosis } from './hints';
 import { sample, simulate, duration, type Ride } from './physics';
 import { drawBackground, drawHand, drawHandles, drawHeights, drawStations, drawStop, drawTrack, drawTrain, fromX, fromY, makeView, toX, toY, type Look, type View } from './render2d';
-import { END, WORLD_W, addLoop, at, buildPath, cloneTrack, deleteFrom, extend, finish, moveY, newTrack, removeLoop, type Path, type Track } from './track';
+import { END, WORLD_H, WORLD_W, addLoop, at, buildPath, cloneTrack, deleteFrom, extend, finish, moveY, newTrack, removeLoop, type Path, type Track } from './track';
 
 export interface BuilderHooks {
   sound: SoundApi;
@@ -18,13 +18,15 @@ export interface BuilderHooks {
   onFinished(): void;
   /** the screen state changed: 'build' | 'ride' */
   onMode(mode: 'build' | 'ride', hasRide: boolean): void;
+  /** the bottom of the mini map (px from the top of the canvas): the speech bubble goes under it */
+  onLayout?(mapBottom: number): void;
   /** a place where something was refused (a bounce of the loop button, say) */
   onRefused?(what: 'loop'): void;
 }
 
 interface Confetti { x: number; y: number; vx: number; vy: number; c: string; r: number; life: number }
 
-type Drag = { kind: 'draw' } | { kind: 'move'; i: number } | { kind: 'pan'; x: number; x0: number } | { kind: 'loop'; px: number; py: number };
+type Drag = { kind: 'map' } | { kind: 'draw' } | { kind: 'move'; i: number } | { kind: 'pan'; x: number; x0: number } | { kind: 'loop'; px: number; py: number };
 
 export class Builder {
   track: Track;
@@ -54,6 +56,8 @@ export class Builder {
   private wheeeDone = false;
   private ro: ResizeObserver;
   private doneAt = -1;
+  /** the mini map of the whole track, in the empty sky above the track */
+  mapRect = { x: 12, y: 72, w: 300, h: 60 };
 
   constructor(private canvas: HTMLCanvasElement, private hooks: BuilderHooks, private look: Look, track?: Track) {
     this.g = canvas.getContext('2d')!;
@@ -101,6 +105,23 @@ export class Builder {
     const maxX0 = Math.max(0, WORLD_W + 2 - this.W / makeView(this.W, this.H, 0, false).s);
     this.x0 = Math.min(maxX0, Math.max(-1.6, this.x0));
     this.view = makeView(this.W, this.H, this.x0, this.overview);
+    const sky = this.view.y0 - WORLD_H * this.view.s - 72;
+    const h = Math.max(36, Math.min(70, sky * 0.42));
+    this.mapRect = { x: 12, y: 72, w: this.W - 24, h };
+    this.hooks.onLayout?.(72 + h);
+  }
+
+  private inMap(x: number, y: number): boolean {
+    const m = this.mapRect;
+    return x >= m.x - 6 && x <= m.x + m.w + 6 && y >= m.y - 6 && y <= m.y + m.h + 6;
+  }
+
+  /** A tap or a drag on the mini map jumps there: the view is centred on that place. */
+  private jumpTo(px: number): void {
+    const m = this.mapRect;
+    const wx = ((px - m.x - 4) / (m.w - 8)) * (WORLD_W + 3) - 1.5;
+    this.x0 = wx - this.W / this.view.s / 2;
+    this.updateView();
   }
 
   /** The view shows all the track (or goes back to the part where Rani is working). */
@@ -142,7 +163,10 @@ export class Builder {
     const last = this.track.pts[this.track.pts.length - 1];
     const endD = Math.hypot(toX(v, last.x) - x, toY(v, last.y) - y);
     const i = this.hit(x, y, true);
-    if (i > 0) {
+    if (this.inMap(x, y)) {
+      this.drag = { kind: 'map' };
+      this.jumpTo(x);
+    } else if (i > 0) {
       this.drag = { kind: 'move', i };
       this.selected = i;
     } else if (!this.track.complete && endD < Math.max(70, v.s * 1.2)) {
@@ -158,7 +182,8 @@ export class Builder {
     if (!d) return;
     const { x, y } = this.pt(e);
     const v = this.view;
-    if (d.kind === 'pan') {
+    if (d.kind === 'map') this.jumpTo(x);
+    else if (d.kind === 'pan') {
       this.x0 = d.x0 - (x - d.x) / v.s;
       this.updateView();
     } else if (d.kind === 'move') {
@@ -435,6 +460,7 @@ export class Builder {
     } else {
       drawTrain(g, v, this.path, 2.9, 0, this.look, this.time);
     }
+    this.drawMap();
     for (const c of this.confetti) {
       g.fillStyle = c.c;
       g.fillRect(c.x, c.y, c.r * 1.6, c.r);
@@ -444,6 +470,67 @@ export class Builder {
   /** the car is inside the loop now (for screenshots and the sound of the loop) */
   carInLoop(): boolean {
     return this.mode === 'ride' && !!this.ride && at(this.path, this.carPose().s).inLoop;
+  }
+
+  /** The whole track in small, with a frame for what is on the screen. */
+  private drawMap(): void {
+    const g = this.g;
+    const m = this.mapRect;
+    const v = this.view;
+    g.save();
+    g.fillStyle = 'rgba(255,255,255,.78)';
+    g.beginPath();
+    g.roundRect(m.x, m.y, m.w, m.h, 14);
+    g.fill();
+    g.strokeStyle = 'rgba(138,47,102,.35)';
+    g.lineWidth = 1.5;
+    g.stroke();
+    const kx = (m.w - 8) / (WORLD_W + 3);
+    const ky = (m.h - 10) / 10.5;
+    const mx = (x: number): number => m.x + 4 + (x + 1.5) * kx;
+    const my = (y: number): number => m.y + m.h - 5 - y * ky;
+    g.strokeStyle = 'rgba(255,143,184,.8)';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(m.x + 4, my(0));
+    g.lineTo(m.x + m.w - 4, my(0));
+    g.stroke();
+    g.strokeStyle = '#ff5d8f';
+    g.lineWidth = 2.2;
+    g.lineJoin = 'round';
+    g.beginPath();
+    const p = this.path;
+    for (let i = 0; i < p.n; i += 4) {
+      if (i === 0) g.moveTo(mx(p.x[i]), my(p.y[i]));
+      else g.lineTo(mx(p.x[i]), my(p.y[i]));
+    }
+    g.stroke();
+    // the end station, a flag
+    g.fillStyle = '#333';
+    g.fillRect(mx(END.x + 1.4) - 1, my(3.2), 2, my(1.5) - my(3.2));
+    if (this.diag) {
+      g.fillStyle = '#e0245e';
+      g.beginPath();
+      g.arc(mx(this.diag.mx), my(this.diag.my), 4, 0, Math.PI * 2);
+      g.fill();
+    }
+    if (this.mode === 'ride' && this.ride) {
+      const q = at(this.path, this.carPose().s);
+      g.fillStyle = '#ffb84d';
+      g.beginPath();
+      g.arc(mx(q.x), my(q.y), 4, 0, Math.PI * 2);
+      g.fill();
+    }
+    // what is on the screen
+    const vx0 = mx(v.x0), vx1 = mx(v.x0 + v.W / v.s);
+    g.strokeStyle = '#8a2f66';
+    g.lineWidth = 2;
+    g.fillStyle = 'rgba(138,47,102,.12)';
+    g.beginPath();
+    g.roundRect(Math.max(m.x + 2, vx0), m.y + 3, Math.min(m.x + m.w - 2, vx1) - Math.max(m.x + 2, vx0), m.h - 6, 6);
+    g.fill();
+    g.stroke();
+    g.restore();
   }
 
   /** The ride, for the 3D view (the same one). */

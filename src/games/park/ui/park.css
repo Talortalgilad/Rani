@@ -7,7 +7,8 @@
 .pk-btn.round .lbl { display: none; }
 .pk-stage { position: absolute; inset: 0; }
 .pk-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-.pk-bubble { position: absolute; top: calc(64px + env(safe-area-inset-top)); inset-inline: 12px; margin: 0 auto; width: fit-content; max-width: 92%; display: flex; align-items: center; gap: 8px; background: #fff; color: #7a2a5e; font-weight: 800; font-size: 21px; padding: 6px 18px; border-radius: 22px; box-shadow: 0 6px 16px rgba(120,40,100,.28); text-align: center; pointer-events: none; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .2s; z-index: 5; }
+.pk-sp { width: 52px; }
+.pk-bubble { position: absolute; top: var(--pk-map-bottom, calc(64px + env(safe-area-inset-top))); inset-inline: 12px; margin: 0 auto; width: fit-content; max-width: 92%; display: flex; align-items: center; gap: 8px; background: #fff; color: #7a2a5e; font-weight: 800; font-size: 21px; padding: 6px 18px; border-radius: 22px; box-shadow: 0 6px 16px rgba(120,40,100,.28); text-align: center; pointer-events: none; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .2s; z-index: 5; }
 .pk-bubble.on { opacity: 1; transform: none; }
 .pk-who { flex: none; width: 46px; height: 44px; margin: -4px 0; }
 .pk-three { position: absolute; inset: 0; display: none; z-index: 4; background: #bfe6ff; }
