@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { meetSequence } from './letters/tasks/meet';
-import { guardMs, playClip, SOUND_GUARD } from './voice';
+import { guardMs, playClip, SOUND_GUARD, stopSpeech } from './voice';
 
 /** A sound that never ends: the `ended` event does not come (a phone that loses it, a clip that does not load, an empty file). */
 class FakeAudio {
@@ -76,6 +76,13 @@ describe('a sound never holds the game', () => {
     await vi.advanceTimersByTimeAsync(0);
     expect(r).toBe(true);
     await vi.advanceTimersByTimeAsync(20000);
+    expect(r).toBe(true);
+  });
+  it('a clip that is stopped on purpose lets its waiter go at once, as heard (nothing is read in its place)', async () => {
+    let r: boolean | null = null;
+    void playClip('x.mp3').then((v) => (r = v));
+    stopSpeech();
+    await vi.advanceTimersByTimeAsync(0);
     expect(r).toBe(true);
   });
   it('the wait is the length plus a second, at most 15 s (a song of 9 s is not cut)', () => {

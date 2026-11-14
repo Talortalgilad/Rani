@@ -43,22 +43,24 @@ export const feel: StepRun = async (sh) => {
 export const say: StepRun = async (sh, step) => {
   sh.clear();
   sh.roomy();
+  sh.listenOnly();
   for (const id of (step.clips as string[]) ?? []) {
     await sh.say(id, { look: 'idle' });
-    await sh.wait(250);
   }
+  await sh.advance();
 };
 
 /** teach: the English clip with its picture, then the Hebrew explanation. Tap the bubble to hear it again. */
 export const teach: StepRun = async (sh, step) => {
   const c = sh.clear();
+  sh.listenOnly();
   const en = str(step.en);
   const he = str(step.he);
   c.innerHTML = `<div class="tutor-card">${step.picture ? `<div class="tutor-pic">${pictureHtml(str(step.picture))}</div>` : ''}<div class="tutor-big" dir="ltr">${esc(clipText(en))}</div><div class="tutor-sub">${he ? bubbleHtml(clipText(he), 'he') : ''}</div></div>`;
   c.querySelector('.tutor-big')!.addEventListener('click', () => void sh.say(en).catch(() => {}));
   await sh.say(en, { look: 'happy', keep: true });
   if (he) await sh.say(he, { look: 'listen' });
-  await sh.next();
+  await sh.advance();
 };
 
 /** repeat: Lolly says it, "say it with me", and again; Rani is invited to say it aloud. No check: she taps "I said it!". */
@@ -78,12 +80,13 @@ export const repeat: StepRun = async (sh, step) => {
 /** sentenceOfDay: the sentence, big, with a speaker; "tell dad and mom". */
 export const sentenceOfDay: StepRun = async (sh, step) => {
   const c = sh.clear();
+  sh.listenOnly();
   const clip = str(step.clip);
   c.innerHTML = `<div class="tutor-card day"><div class="tutor-big xl" dir="ltr">${esc(str(step.en) || clipText(clip))}</div><button class="tutor-speaker" type="button" aria-label="🔊">🔊</button></div>`;
   c.querySelector('.tutor-speaker')!.addEventListener('click', () => void sh.say(clip).catch(() => {}));
   await sh.say(clip, { look: 'happy', keep: true });
   await sh.say('t_sentence_of_day', { look: 'happy' });
-  await sh.next();
+  await sh.advance();
 };
 
 const hash = (s: string): number => [...s].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
@@ -93,6 +96,7 @@ export const stickerOf = (lesson: string): string => WORDS[hash(lesson) % WORDS.
 /** sticker: a new sticker sticks into the album. The lesson is finished (and remembered) here. */
 export const sticker: StepRun = async (sh) => {
   const c = sh.clear();
+  sh.listenOnly();
   const id = sh.deps.state().stickers[sh.lesson.id] ?? stickerOf(sh.lesson.id);
   c.innerHTML = `<div class="tutor-sticker-stage"><div class="tutor-sticker">${pictureHtml(`word:${id}`)}</div><div class="tutor-album" aria-hidden="true">📒</div></div>`;
   sh.deps.setState(finish(sh.deps.state(), sh.lesson.id, id, sh.deps.today));
@@ -101,18 +105,19 @@ export const sticker: StepRun = async (sh) => {
   await sh.say('t_sticker', { look: 'clap', keep: true });
   c.querySelector('.tutor-sticker')?.classList.add('stuck');
   await sh.wait(900);
-  await sh.next();
+  await sh.advance();
 };
 
 /** unitDone: confetti and "a whole unit!". */
 export const unitDone: StepRun = async (sh) => {
   const c = sh.clear();
+  sh.listenOnly();
   const bits = Array.from({ length: 36 }, (_, i) => `<i style="left:${(i * 29) % 100}%;animation-delay:${(i % 9) * 0.12}s;background:${['#ff6fa8', '#ffc83a', '#4fd1c5', '#7b5cff', '#ff8a3d'][i % 5]}"></i>`).join('');
   c.innerHTML = `<div class="tutor-confetti" aria-hidden="true">${bits}</div><div class="tutor-card"><div class="tutor-crown">👑</div></div>`;
   sh.lolly.set('clap');
   sh.deps.sound.play('fanfare');
   await sh.say('t_unit_done', { look: 'clap', keep: true });
-  await sh.next();
+  await sh.advance();
 };
 
 /** bye: "See you tomorrow!" and one of the two Hebrew goodbyes. */

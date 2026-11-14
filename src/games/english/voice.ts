@@ -196,7 +196,11 @@ export const resetRecorded = (): void => {
 };
 
 let clip: HTMLAudioElement | null = null;
+let stopCurrent: (() => void) | null = null;
 function stopClip(): void {
+  // whoever waits for this clip is let go (it was stopped on purpose: nothing is read in its place)
+  stopCurrent?.();
+  stopCurrent = null;
   try {
     clip?.pause();
   } catch {
@@ -229,6 +233,7 @@ export function playClip(url: string): Promise<boolean> {
         window.clearTimeout(timer);
         resolve(ok);
       };
+      stopCurrent = () => done(true);
       // the guard: the length of the clip is not known yet (6 s), then its length plus a second
       timer = window.setTimeout(() => (a.pause?.(), done((a.currentTime ?? 0) > 0)), SOUND_GUARD.unknownMs);
       a.addEventListener?.('loadedmetadata', () => {
