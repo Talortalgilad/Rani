@@ -1,0 +1,294 @@
+[
+ {
+  "take": 400,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_091924_e2b4e03b-0f61-4efc-a140-a7c709bdb442.mp3",
+  "lines": [
+   {
+    "id": "cv_have",
+    "text": "יש לי"
+   },
+   {
+    "id": "cv_got",
+    "text": "וקיבלתי עוד"
+   },
+   {
+    "id": "cv_howmany",
+    "text": "כמה יש לי בסך הכול?"
+   },
+   {
+    "id": "cv_want",
+    "text": "אני רוצה"
+   },
+   {
+    "id": "cv_more",
+    "text": "למי יש יותר?"
+   },
+   {
+    "id": "cv_less",
+    "text": "למי יש פחות?"
+   },
+   {
+    "id": "cv_had",
+    "text": "היו לי"
+   },
+   {
+    "id": "cv_ate",
+    "text": "ואכלתי"
+   },
+   {
+    "id": "cv_left",
+    "text": "כמה נשארו?"
+   },
+   {
+    "id": "cv_enough",
+    "text": "זה מספיק"
+   },
+   {
+    "id": "cv_thanks",
+    "text": "תודה רבה!"
+   },
+   {
+    "id": "cv_great",
+    "text": "יופי!"
+   },
+   {
+    "id": "cv_almost",
+    "text": "כמעט! בואי נספור יחד."
+   },
+   {
+    "id": "cv_tryagain",
+    "text": "עכשיו נסי שוב."
+   },
+   {
+    "id": "cv_rani",
+    "text": "רני! רני!"
+   },
+   {
+    "id": "cv_tapthis",
+    "text": "הקישי על מה שהוא מבקש."
+   },
+   {
+    "id": "cv_tapword",
+    "text": "הקישי על המילה הנכונה."
+   }
+  ]
+ },
+ {
+  "take": 401,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_093300_9b3dda46-e5aa-48aa-ba37-ffa8b1aafb4a.mp3",
+  "lines": [
+   {
+    "id": "cv_tapname",
+    "text": "הקישי על השם שלך."
+   },
+   {
+    "id": "cv_chat_hi",
+    "text": "היי רני!"
+   },
+   {
+    "id": "cv_chat_day",
+    "text": "איזה יום יפה!"
+   },
+   {
+    "id": "cv_chat_play",
+    "text": "בואי נשחק!"
+   },
+   {
+    "id": "cv_chat_fun",
+    "text": "כיף לי כאן!"
+   },
+   {
+    "id": "cv_hearts",
+    "text": "לבבות"
+   },
+   {
+    "id": "cv_item_candy",
+    "text": "סוכריות"
+   },
+   {
+    "id": "cv_item_cookie",
+    "text": "עוגיות"
+   },
+   {
+    "id": "cv_item_icecream",
+    "text": "גלידות"
+   },
+   {
+    "id": "cv_item_pizza",
+    "text": "פיצות"
+   },
+   {
+    "id": "cv_item_car",
+    "text": "מכוניות"
+   },
+   {
+    "id": "cv_num_1",
+    "text": "אחת"
+   },
+   {
+    "id": "cv_num_2",
+    "text": "שתיים"
+   },
+   {
+    "id": "cv_num_3",
+    "text": "שלוש"
+   },
+   {
+    "id": "cv_num_4",
+    "text": "ארבע"
+   },
+   {
+    "id": "cv_num_5",
+    "text": "חמש"
+   },
+   {
+    "id": "cv_num_6",
+    "text": "שש"
+   }
+  ]
+ },
+ {
+  "take": 402,
+  "lang": "he",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_094723_e2276382-068e-4f7a-a52b-2097fff1cbd7.mp3",
+  "lines": [
+   {
+    "id": "cv_num_7",
+    "text": "שבע"
+   },
+   {
+    "id": "cv_num_8",
+    "text": "שמונה"
+   },
+   {
+    "id": "cv_num_9",
+    "text": "תשע"
+   },
+   {
+    "id": "cv_num_10",
+    "text": "עשר"
+   },
+   {
+    "id": "cv_num_11",
+    "text": "אחת עשרה"
+   },
+   {
+    "id": "cv_num_12",
+    "text": "שתים עשרה"
+   },
+   {
+    "id": "cv_num_13",
+    "text": "שלוש עשרה"
+   },
+   {
+    "id": "cv_num_14",
+    "text": "ארבע עשרה"
+   },
+   {
+    "id": "cv_num_15",
+    "text": "חמש עשרה"
+   },
+   {
+    "id": "cv_num_16",
+    "text": "שש עשרה"
+   },
+   {
+    "id": "cv_num_17",
+    "text": "שבע עשרה"
+   },
+   {
+    "id": "cv_num_18",
+    "text": "שמונה עשרה"
+   },
+   {
+    "id": "cv_num_19",
+    "text": "תשע עשרה"
+   },
+   {
+    "id": "cv_num_20",
+    "text": "עשרים"
+   },
+   {
+    "id": "cv_num_2c",
+    "text": "שתי"
+   }
+  ]
+ },
+ {
+  "take": 410,
+  "lang": "en",
+  "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_100143_498791d2-feec-4a41-ae1f-a63ddeac8773.mp3",
+  "lines": [
+   {
+    "id": "carn_can_i_have_the",
+    "text": "Can I have the..."
+   },
+   {
+    "id": "carn_please",
+    "text": "please?"
+   },
+   {
+    "id": "carn_what_is_it",
+    "text": "What is it?"
+   },
+   {
+    "id": "carn_hello_im",
+    "text": "Hello! I'm..."
+   },
+   {
+    "id": "carn_whats_your_name",
+    "text": "What's your name?"
+   },
+   {
+    "id": "carn_i_love_pizza",
+    "text": "I love pizza!"
+   },
+   {
+    "id": "carn_hi_rani",
+    "text": "Hi Rani!"
+   },
+   {
+    "id": "carn_nice_day",
+    "text": "Nice day!"
+   },
+   {
+    "id": "carn_hello_im_cheesy",
+    "text": "Hello! I'm Cheesy."
+   },
+   {
+    "id": "carn_hello_im_mozzi",
+    "text": "Hello! I'm Mozzi."
+   },
+   {
+    "id": "carn_hello_im_horiko",
+    "text": "Hello! I'm Horiko."
+   },
+   {
+    "id": "carn_hello_im_popcheese",
+    "text": "Hello! I'm Pop Cheese."
+   },
+   {
+    "id": "carn_lets_play",
+    "text": "Let's play!"
+   },
+   {
+    "id": "carn_i_am_hungry",
+    "text": "I'm hungry!"
+   },
+   {
+    "id": "carn_i_like_ice_cream",
+    "text": "I like ice cream!"
+   },
+   {
+    "id": "carn_look_at_me",
+    "text": "Look at me!"
+   },
+   {
+    "id": "carn_thank_you_rani",
+    "text": "Thank you, Rani!"
+   }
+  ]
+ }
+]
