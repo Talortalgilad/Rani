@@ -28,7 +28,7 @@ export const trueFalse: StepRun = async (sh, step) => {
   // Lolly was wrong: she is confused, thanks Rani, and Rani fixes the sentence
   sh.lolly.set('confused');
   await sh.say('t_silly_me', { look: 'confused', keep: true });
-  await sh.say('t_oops', { look: 'confused' });
+  await sh.say('t_oops', { look: 'confused', pre: 0 });
   const fix = step.fixChoices as { clips: string[]; correct: number } | null;
   if (fix) {
     sh.clear().innerHTML = `<div class="tutor-pic big">${pictureHtml(String(step.picture ?? ''))}</div>`;

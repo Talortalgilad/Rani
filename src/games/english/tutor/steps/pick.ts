@@ -66,11 +66,13 @@ export const whoSaid: StepRun = async (sh, step) => {
   sh.clear();
   const clip = str(step.clip);
   if (sh.once('whoSaid')) await sh.say('t_who_said', { look: 'listen' });
-  const hear = (): Promise<void> => sh.say(clip, { look: 'listen' });
+  // the name is hidden until she answers right: "Hello! I'm ___."
+  const masked = clipText(clip).replace(/(I'm\s+)(.+?)([.!?]*)$/, '$1___$3');
+  const hear = (): Promise<void> => sh.say(clip, { look: 'listen', text: masked });
   await hear();
   speaker(sh, hear);
   const ch = arr<string>(step.choices);
-  const tries = await pickRound(sh, { options: ch.map(picOpt), correct: Number(step.correct) || 0, replay: hear, cls: 'three' });
+  const tries = await pickRound(sh, { options: ch.map(picOpt), correct: Number(step.correct) || 0, replay: hear, cls: 'three', onRight: () => sh.bubble(clipText(clip), 'en') });
   return { tries };
 };
 
@@ -85,22 +87,27 @@ export const answerPick: StepRun = async (sh, step) => {
   await hear();
   const ch = arr<string>(step.choices);
   const cc = arr<string>(step.choiceClips);
-  const tries = await pickRound(sh, { options: ch.map((t, i) => bubbleOpt(t, cc[i])), correct: Number(step.correct) || 0, replay: hear, twice: true, cls: 'bubbles' });
+  // the question stays in Lolly's bubble the whole time; a tap on an answer plays it and marks it, the bubble does not change
+  const tries = await pickRound(sh, { options: ch.map((t, i) => bubbleOpt(t, cc[i])), correct: Number(step.correct) || 0, replay: hear, twice: true, cls: 'bubbles', restore: () => sh.bubble(clipText(clip), 'en') });
   return { tries };
 };
 
-/** dialogue: a squishy talks, Rani answers by choosing one of two bubbles, turn after turn. */
+/** dialogue: a squishy takes Lolly's place in the middle (she is small in the corner, listening) and talks; Rani answers by choosing one of two bubbles, turn after turn. A right answer: Lolly is happy. */
 export const dialogue: StepRun = async (sh, step) => {
   let worst = 1;
   const turns = arr<{ squishy: string; choices: string[]; correct: number }>(step.turns);
+  sh.clear();
+  sh.guest(pictureHtml('squishy:mozzi'));
   for (const t of turns) {
-    const c = sh.clear();
-    c.innerHTML = `<div class="tutor-pic big small">${pictureHtml('squishy:mozzi')}</div>`;
-    const hear = (): Promise<void> => sh.say(t.squishy, { look: 'listen' });
+    sh.stage.innerHTML = '';
+    const hear = (): Promise<void> => sh.say(t.squishy);
     await hear();
-    const tries = await pickRound(sh, { options: t.choices.map((id) => bubbleOpt(clipText(id), id)), correct: t.correct, replay: hear, twice: true, cls: 'bubbles', praise: false });
+    const tries = await pickRound(sh, { options: t.choices.map((id) => bubbleOpt(clipText(id), id)), correct: t.correct, replay: hear, twice: true, cls: 'bubbles', praise: false, onRight: () => sh.lolly.set('happy') });
     worst = Math.max(worst, tries);
+    await sh.wait(600);
   }
+  // the guest leaves, Lolly is big again and praises
+  sh.clear();
   await sh.praise();
   return { tries: worst >= 3 ? 3 : 1 };
 };

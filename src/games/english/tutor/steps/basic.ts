@@ -16,7 +16,8 @@ export const greet: StepRun = async (sh) => {
   sh.lolly.set('wave');
   const welcomeNext = sh.lesson.steps.some((s) => s.type === 'say' && ((s.clips as string[]) ?? []).includes('t_welcome'));
   if (!welcomeNext) await sh.say(`t_hi.${Math.floor(Math.random() * 3)}`, { look: 'wave', keep: true });
-  await sh.say('t_hello_rani', { look: 'wave' });
+  await sh.say('t_hello_rani', { look: 'wave', pre: welcomeNext ? 600 : 0, keep: true });
+  await sh.wait(500);
 };
 
 /** feel: five faces; Lolly answers the one she taps, and it is remembered (only the last day). */
@@ -121,7 +122,7 @@ export const bye: StepRun = async (sh) => {
   sh.roomy();
   sh.lolly.set('wave');
   await sh.say('t_see_you_tomorrow', { look: 'wave', keep: true });
-  await sh.say(`t_bye.${Math.floor(Math.random() * 2)}`, { look: 'wave' });
+  await sh.say(`t_bye.${Math.floor(Math.random() * 2)}`, { look: 'wave', pre: 0, keep: true });
   await sh.wait(500);
 };
 

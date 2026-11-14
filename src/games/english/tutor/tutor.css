@@ -110,3 +110,10 @@
 .tutor-lolly-col .tutor-lolly { transition: height .25s ease; }
 .roomy .tutor-lolly-col .tutor-lolly { height: clamp(220px, 52vh, 360px); }
 .tutor-pic.big.small { width: 84px; height: 84px; }
+
+/* dialogue: the squishy that talks is big in the middle, Lolly is small in the corner (listening) */
+.tutor-guest { width: 100%; height: clamp(150px, 30vh, 230px); display: flex; align-items: flex-end; justify-content: center; }
+.tutor-guest .pic-img { height: 100%; width: auto; max-width: 62%; filter: drop-shadow(0 8px 6px rgba(58, 47, 75, .2)); animation: lolly-breathe 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.dlg .tutor-lolly-col .tutor-lolly { position: absolute; top: 58px; left: 8px; width: 84px; height: 84px; z-index: 3; }
+/* the list: the bubble with the long sentence of the day */
+.tutor-list .tutor-bubble { max-height: none; padding: 12px 20px; font-size: 16px; line-height: 1.3; }

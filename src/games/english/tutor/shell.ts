@@ -28,7 +28,9 @@ export interface Shell {
   stage: HTMLElement;
   lolly: Lolly;
   alive(): boolean;
-  say(id: string, o?: { look?: Look; keep?: boolean }): Promise<void>;
+  say(id: string, o?: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number }): Promise<void>;
+  /** a guest (a squishy) takes Lolly's place in the middle; she is small in the corner */
+  guest(html: string): void;
   /** Lolly's bubble with a text of its own (no clip) */
   bubble(text: string, lang?: 'he' | 'en'): void;
   wait(ms: number): Promise<void>;
@@ -80,19 +82,28 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
     new Promise((res, rej) => {
       window.setTimeout(() => (dead ? rej(new Aborted()) : res()), fast() ? Math.min(ms, 30) : ms);
     });
-  const say = async (id: string, o: { look?: Look; keep?: boolean } = {}): Promise<void> => {
+  const guestOn = (): boolean => !!root.querySelector('.tutor-screen.dlg');
+  /** a pose without a moving mouth is shown before and after a clip, never during it (the mouth changes between idle, talk1 and talk2 while she speaks) */
+  const PRE: Partial<Record<Look, number>> = { wave: 600, clap: 500, confused: 500, think: 400 };
+  const say = async (id: string, o: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number } = {}): Promise<void> => {
     check();
-    last = id;
-    setBubble(clipText(id), clipLang(id));
-    if (o.look) lolly.set(o.look);
-    lolly.speaking(true);
+    const guest = guestOn();
+    if (!o.nobubble) {
+      last = id;
+      setBubble(o.text ?? clipText(id), clipLang(id));
+    }
+    // while a guest (a squishy) talks, Lolly stays small in the corner and does not move her mouth
+    if (o.look && !guest) lolly.set(o.look);
+    const pre = o.pre ?? (o.look ? PRE[o.look] ?? 0 : 0);
+    if (pre && !guest) await wait(pre);
+    if (!guest) lolly.speaking(true);
     const t0 = Date.now();
     const ok = await playTutor(id);
-    lolly.speaking(false);
+    if (!guest) lolly.speaking(false);
     check();
     // no sound (or the voice of the phone failed): the text is left to be read
     if (!ok) await wait(Math.min(2200, 500 + clipText(id).length * 45) - (Date.now() - t0));
-    if (!o.keep && o.look) lolly.set('idle');
+    if (!o.keep && o.look && !guest) lolly.set('idle');
   };
   q('#tb').addEventListener('click', () => {
     if (last) void say(last).catch(() => {});
@@ -128,15 +139,28 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
       }),
     clear: () => {
       stage.innerHTML = '';
-      root.querySelector('.tutor-screen')?.classList.remove('roomy');
+      root.querySelector('.tutor-screen')?.classList.remove('roomy', 'dlg');
+      root.querySelector('.tutor-guest')?.remove();
       return stage;
+    },
+    guest: (html) => {
+      const g = document.createElement('div');
+      g.className = 'tutor-guest';
+      g.innerHTML = html;
+      q('.tutor-lolly-col').insertBefore(g, q('#tb'));
+      root.querySelector('.tutor-screen')?.classList.add('dlg');
+      lolly.set('listen');
     },
     roomy: () => root.querySelector('.tutor-screen')?.classList.add('roomy'),
     once: (key) => (seen.has(key) ? false : (seen.add(key), true)),
     praise: async () => {
       deps.sound.play('bonus');
+      // the happy pose first, then the praise with the mouth moving, then happy again for a moment
       lolly.set('happy');
-      await say(PRAISE[Math.floor(Math.random() * PRAISE.length)], { look: 'happy', keep: false });
+      await wait(400);
+      await say(PRAISE[Math.floor(Math.random() * PRAISE.length)], { look: 'happy', keep: true });
+      await wait(450);
+      lolly.set('idle');
     },
     tapTwice: true,
   };
@@ -159,7 +183,7 @@ export interface Option { html: string; clip?: string; label?: string }
  * the third shows it ("let me show you") and goes on. Never a score, never "failed". Resolves with the number of tries (1..3).
  * `twice`: a bubble is played by the first tap and chosen by the second (answerPick, dialogue).
  */
-export async function pickRound(sh: Shell, o: { options: Option[]; correct: number; replay?: () => Promise<void>; twice?: boolean; cls?: string; praise?: boolean }): Promise<number> {
+export async function pickRound(sh: Shell, o: { options: Option[]; correct: number; replay?: () => Promise<void>; twice?: boolean; cls?: string; praise?: boolean; onRight?: () => void; restore?: () => void }): Promise<number> {
   const box = document.createElement('div');
   box.className = `tutor-choices ${o.cls ?? ''}`;
   sh.stage.appendChild(box);
@@ -178,6 +202,10 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
   const finish = async (): Promise<number> => {
     btns.forEach((b, i) => b.classList.toggle('right', i === o.correct));
     sh.deps.sound.play('bonus');
+    if (o.onRight) {
+      o.onRight();
+      await sh.wait(1000);
+    }
     if (o.praise !== false && tries === 1) await sh.praise();
     return Math.min(3, tries);
   };
@@ -190,7 +218,7 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
         // the first tap only plays the bubble (and does not hold the second tap back)
         picked = i;
         btns.forEach((b, j) => b.classList.toggle('sel', j === i));
-        if (op.clip) void sh.say(op.clip).catch(() => {});
+        if (op.clip) void sh.say(op.clip, { nobubble: true }).catch(() => {});
         return;
       }
       busy = true;
@@ -204,6 +232,7 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
         btns.forEach((b) => b.classList.remove('sel'));
         if (tries === 1) {
           await sh.say('t_almost', { look: 'listen' });
+          o.restore?.();
           await o.replay?.();
         } else if (tries === 2) {
           btns[o.correct].classList.add('glow');
@@ -211,6 +240,7 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
         } else {
           btns[o.correct].classList.add('glow');
           await sh.say('t_show', { look: 'happy' });
+          o.restore?.();
           return void resolve(await finish());
         }
         btns[i].classList.remove('wrong');

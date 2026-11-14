@@ -10,8 +10,20 @@ export type Look = 'idle' | 'listen' | 'happy' | 'confused' | 'clap' | 'wave' | 
 export const LOOKS: Look[] = ['idle', 'listen', 'happy', 'confused', 'clap', 'wave', 'think'];
 type Frame = Look | 'talk1' | 'talk2';
 const FRAMES: Frame[] = ['idle', 'talk1', 'talk2', 'listen', 'happy', 'confused', 'clap', 'wave', 'think'];
-/** the poses in which the mouth moves with the voice (the others keep their own face) */
-const TALKS = new Set<Look>(['idle', 'listen', 'happy']);
+/**
+ * One size for every pose: each picture is scaled so that the head (the width of the glasses, measured on the pictures) is as wide as in lolly_idle, and its base
+ * (the bottom of the body) is put on the base of lolly_idle. `s` is the scale, `b` the bottom of the body in the 512 square. Without this the poses with a bigger
+ * body (listen, clap, think) jump when they replace idle.
+ */
+const FIT: Record<Frame, { s: number; b: number }> = {
+  idle: { s: 1, b: 439 }, talk1: { s: 1, b: 439 }, talk2: { s: 1, b: 438 }, confused: { s: 1, b: 439 },
+  listen: { s: 0.97, b: 449 }, clap: { s: 0.83, b: 480 }, think: { s: 0.9, b: 460 }, happy: { s: 1.04, b: 430 }, wave: { s: 1, b: 436 },
+};
+const BASE = 439;
+export const fitStyle = (f: Frame): string => {
+  const { s, b } = FIT[f];
+  return `transform-origin: 50% ${((b / 512) * 100).toFixed(1)}%; transform: translateY(${(((BASE - b) / 512) * 100).toFixed(2)}%) scale(${s});`;
+};
 
 export const lollyUrl = (f: string): string => `${import.meta.env.BASE_URL}english/tutor/lolly_${f}.webp`;
 export const faceUrl = (f: string): string => `${import.meta.env.BASE_URL}english/tutor/face_${f}.webp`;
@@ -41,15 +53,17 @@ export function mountLolly(el: HTMLElement, first: Look = 'idle'): Lolly {
     shown = f;
     const next = imgs[1 - front];
     next.src = lollyUrl(f);
+    next.setAttribute('style', fitStyle(f));
     next.classList.add('on');
     imgs[front].classList.remove('on');
     front = 1 - front;
     el.dataset.look = look;
     el.dataset.frame = f;
   };
-  const frame = (): Frame => (talking && TALKS.has(look) ? (open > 0.5 ? 'talk2' : open > 0.12 ? 'talk1' : 'idle') : look);
+  const frame = (): Frame => (talking ? (open > 0.5 ? 'talk2' : open > 0.12 ? 'talk1' : 'idle') : look);
   const paint = (): void => show(frame());
   imgs[0].src = lollyUrl(first);
+  imgs[0].setAttribute('style', fitStyle(first));
   shown = first;
   el.dataset.look = first;
   el.dataset.frame = first;
