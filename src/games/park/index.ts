@@ -87,6 +87,8 @@ function refresh(landLast = false): void {
   root.querySelector('.pk-close')!.classList.toggle('off', closed || track.pieces.length === 0 || busy);
   root.querySelector('.pk-undo')!.classList.toggle('off', track.pieces.length === 0 || busy);
   scene.setTrack(track, landLast);
+  const panel = root.querySelector<HTMLElement>('.pk-panel');
+  if (panel) scene.setBand(140, panel.getBoundingClientRect().top - 10);
   const sp = speedAtEnd(track);
   const chain = !track.pieces.includes('down');
   const lvl = chain ? 'green' : sp.level;

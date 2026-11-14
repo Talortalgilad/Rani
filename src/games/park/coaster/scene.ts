@@ -33,6 +33,8 @@ export interface ParkScene {
   setView(view: 'first' | 'outside'): void;
   /** the whole plot in view (after the track is closed) and the train's first lap by itself */
   overview(): void;
+  /** the free part of the screen (px from the top): the camera centres the end of the track in it */
+  setBand(top: number, bottom: number): void;
   startLap(): void;
   stopRide(): void;
   home(): void;
@@ -227,7 +229,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
   let goal: Cam = { ...cam };
   let homing = false;
   const lookAt = new T.Vector3();
-  const clampCam = (c: Cam): Cam => ({ x: Math.min(PLOT + 4, Math.max(-4, c.x)), z: Math.min(PLOT + 4, Math.max(-4, c.z)), dist: Math.min(70, Math.max(14, c.dist)) });
+  const clampCam = (c: Cam): Cam => ({ x: Math.min(PLOT + 6, Math.max(-6, c.x)), z: Math.min(PLOT + 6, Math.max(-6, c.z)), dist: Math.min(70, Math.max(14, c.dist)) });
 
   // ---- the ride
   type View = 'first' | 'outside';
@@ -409,23 +411,20 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
     }
   }
 
-  // when no finger is down the camera drifts so that the end of the track, and two tiles beyond it, are in view
-  const ahead = new T.Vector3();
+  // when no finger is down the camera drifts so that the end of the track is in the middle of the free part of the screen
+  // (between the speech bubble at the top and the buttons at the bottom)
+  let band = { top: 140, bottom: 600 };
   function followEnd(dt: number): void {
     const w = walk(track);
     const e = worldOf(w.end);
-    const dir = [[1, 0], [0, 1], [-1, 0], [0, -1]][w.end.d];
-    const pts3 = [new T.Vector3(e[0], e[1], e[2]), new T.Vector3(e[0] + dir[0] * 2 * TILE, e[1], e[2] + dir[1] * 2 * TILE)];
     camera.updateMatrixWorld();
-    let outside = false;
-    for (const p of pts3) {
-      const q = p.clone().project(camera);
-      if (q.x < -0.62 || q.x > 0.62 || q.y > 0.7 || q.y < -0.28) outside = true;
-    }
-    if (!outside) return;
-    ahead.copy(pts3[1]).lerp(pts3[0], 0.35);
-    const k = 1 - Math.exp(-dt * 1.6);
-    goal = clampCam({ ...goal, x: goal.x + (ahead.x - goal.x) * k, z: goal.z + (ahead.z + 2 - goal.z) * k });
+    const q = new T.Vector3(e[0], e[1], e[2]).project(camera);
+    const px = ((q.x + 1) / 2) * width, py = ((1 - q.y) / 2) * height;
+    const ex = px - width / 2, ey = py - (band.top + band.bottom) / 2;
+    if (Math.abs(ex) < 6 && Math.abs(ey) < 6) return;
+    const kpx = (2 * Math.tan((46 / 2) * (Math.PI / 180)) * cam.dist) / height;
+    const k = 1 - Math.exp(-dt * 2.2);
+    goal = clampCam({ ...goal, x: goal.x + ex * kpx * k, z: goal.z + (ey * kpx * k) / Math.sin(PITCH) });
   }
 
   // ---- every frame
@@ -585,6 +584,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
     },
     startRide,
     setView: (v) => void (view = v),
+    setBand: (top, bottom) => void (band = { top, bottom }),
     overview: () => {
       overview = true;
       goal = fit();
