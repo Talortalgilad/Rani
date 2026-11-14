@@ -156,35 +156,28 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           sound.play(again ? 'bonus' : 'pop', again ? 900 : 700);
           if (!again) void sayLine('carnival_name', r.name);
         },
+        safeTop: 150,
+        safeBottom: 104,
         onSigns: (list) => {
+          // one small sign for each game (not for the locked tents), right above its plot; a sign that is outside the screen is hidden
           if (!signs.length) {
-            const all = [...games.map((g) => ({ title: g.title, icon: g.icon, color: g.color })), ...comingSoon.map(() => ({ title: 'בקרוב', icon: '🔒', color: '#8a8497' }))];
-            all.forEach((g, i) => {
+            games.forEach((g) => {
               const el = document.createElement('div');
               el.className = 'cv-sign';
               el.style.setProperty('--c', g.color);
               el.innerHTML = `<i>${g.icon}</i><b>${esc(g.title)}</b>`;
               (root.querySelector('.screen.home') ?? root).appendChild(el);
               signs.push(el);
-              void i;
             });
           }
-          // inside the screen, and not on top of each other (the lower one moves down)
-          const placed: { x: number; y: number; hw: number }[] = [];
-          list
-            .map((p, i) => ({ p, i }))
-            .sort((a, b) => a.p.y - b.p.y)
-            .forEach(({ p, i }) => {
-              const el = signs[i];
-              if (!el) return;
-              const hw = (el.offsetWidth || 110) / 2 + 6;
-              const x = Math.min(window.innerWidth - hw, Math.max(hw, p.x));
-              let y = Math.max(160, p.y);
-              for (const q of placed) if (Math.abs(x - q.x) < hw + q.hw && Math.abs(y - q.y) < 36) y = q.y + 36;
-              y = Math.min(window.innerHeight - 96, y);
-              placed.push({ x, y, hw });
-              el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-            });
+          list.forEach((p, i) => {
+            const el = signs[i];
+            if (!el) return;
+            const hw = (el.offsetWidth || 90) / 2;
+            const inside = !p.behind && p.x - hw >= 0 && p.x + hw <= window.innerWidth && p.y >= 120 && p.y <= window.innerHeight - 104;
+            el.style.visibility = inside ? 'visible' : 'hidden';
+            if (inside) el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -100%)`;
+          });
         },
         onLabelMove: (p) => {
           if (!p) {

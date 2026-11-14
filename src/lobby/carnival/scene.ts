@@ -44,6 +44,9 @@ export interface CarnivalOpts {
   onLabelMove?(screen: { x: number; y: number } | null): void;
   /** every frame: where the sign of each plot is on the screen (the page puts the labels there, inside the screen) */
   onSigns?(signs: { x: number; y: number; behind: boolean }[]): void;
+  /** the page's bands that the island has to stay out of by default: the title above (px) and the games row below (px) */
+  safeTop?: number;
+  safeBottom?: number;
 }
 export interface CarnivalHandle {
   fadeIn(ms: number): void;
@@ -88,19 +91,20 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   const now = new Date();
   const sky = skyFor(now);
   const night = isNight(now) || now.getHours() >= 19;
-  setSky(sky.top, sky.bottom);
-  const hemi = new T.HemisphereLight('#ffffff', '#c9b79f', night ? 1.5 : 2.5);
-  const sun = new T.DirectionalLight(sky.light, sky.intensity * (night ? 1.2 : 1.9));
+  // at night the sky is deep blue, the light is low and blue, and the lamps are lit
+  setSky(night ? '#070b2e' : sky.top, night ? '#232a72' : sky.bottom);
+  const hemi = new T.HemisphereLight(night ? '#7f8fff' : '#ffffff', night ? '#2a2f5a' : '#c9b79f', night ? 0.9 : 2.5);
+  const sun = new T.DirectionalLight(night ? '#9fb0ff' : sky.light, night ? 0.45 : sky.intensity * 1.9);
   sun.position.set(8, 16, 9);
   sun.castShadow = tier === 'high';
   sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 4, far: 40 });
   sun.shadow.bias = -0.0008;
   scene.add(hemi, sun);
-  scene.fog = new T.Fog(sky.bottom, 40, 90);
+  scene.fog = new T.Fog(night ? '#232a72' : sky.bottom, 40, 90);
 
   // ---- the island, the water, the paths, the plaza
-  const water = new T.Mesh(keep(new T.CircleGeometry(70, 24)), keep(new T.MeshBasicMaterial({ color: '#19b4ee' })));
+  const water = new T.Mesh(keep(new T.CircleGeometry(70, 24)), keep(new T.MeshBasicMaterial({ color: night ? '#0b1c52' : '#19b4ee' })));
   water.rotation.x = -Math.PI / 2;
   water.position.y = -0.9;
   const foam = new T.Mesh(keep(new T.RingGeometry(ISLAND_R + 0.2, ISLAND_R + 1.1, 40)), mats.get('#e8fbff', { rough: 0.6 }));
@@ -269,7 +273,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   const itemUrl = (n: string): string => `${import.meta.env.BASE_URL}park/items/${n}.webp`;
   const sprites: { sp: T.Sprite; base: T.Vector3; bob: number; ph: number }[] = [];
   const itemSprite = (name: string, size: number, x: number, y: number, z: number, bob = 0): void => {
-    const mat = keep(new T.SpriteMaterial({ transparent: true, depthWrite: false }));
+    const mat = keep(new T.SpriteMaterial({ transparent: true, depthWrite: false, color: night ? '#8a8fc8' : '#ffffff' }));
     new T.TextureLoader().load(itemUrl(name), (tex: T.Texture) => {
       if (disposed) return tex.dispose();
       tex.colorSpace = T.SRGBColorSpace;
@@ -304,10 +308,10 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   });
   if (tentGeos.length) {
     const merged = T.mergeGeometries(tentGeos, false);
-    if (merged) scene.add(new T.Mesh(keep(merged), keep(new T.MeshBasicMaterial({ vertexColors: true, side: T.DoubleSide }))));
+    if (merged) scene.add(new T.Mesh(keep(merged), keep(new T.MeshBasicMaterial({ vertexColors: true, side: T.DoubleSide, color: night ? '#6c70b0' : '#ffffff' }))));
   }
   // the entrance arch at the front (the camera side) of the island, with a flagpole on each side
-  itemSprite('entrancearch', 7.5, 0, 3.6, ISLAND_R * ZS - 1.6);
+  itemSprite('entrancearch', 3.75, 0, 1.8, ISLAND_R * ZS - 0.9);
   // flagpoles (the picture of the pole with the flags drawn on it in code)
   const poleCanvas = document.createElement('canvas');
   poleCanvas.width = poleCanvas.height = 512;
@@ -318,12 +322,12 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   drawFlagpole(poleG, null, 0);
   const poleTex = keep(new T.CanvasTexture(poleCanvas));
   poleTex.colorSpace = T.SRGBColorSpace;
-  const poleMat = keep(new T.SpriteMaterial({ map: poleTex, transparent: true, depthWrite: false }));
+  const poleMat = keep(new T.SpriteMaterial({ map: poleTex, transparent: true, depthWrite: false, color: night ? '#8a8fc8' : '#ffffff' }));
   const poles: T.Sprite[] = [];
-  for (const [x, z] of [[-3.4, ISLAND_R * ZS - 1.4], [3.4, ISLAND_R * ZS - 1.4], [-2.6, 0.6], [2.6, 0.6], [-2.6, -1.8], [2.6, -1.8]]) {
+  for (const [x, z] of [[-2.2, ISLAND_R * ZS - 0.9], [2.2, ISLAND_R * ZS - 0.9], [-2.6, 0.6], [2.6, 0.6], [-2.6, -1.8], [2.6, -1.8]]) {
     const sp = new T.Sprite(poleMat);
-    sp.scale.set(5, 5, 1);
-    sp.position.set(x, 2.4, z);
+    sp.scale.set(4, 4, 1);
+    sp.position.set(x, 1.9, z);
     scene.add(sp);
     poles.push(sp);
   }
@@ -331,7 +335,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   itemSprite('balloons', 3.6, -4.6, 3.2, -4.2, 0.25);
   itemSprite('balloons', 3.2, 4.8, 3.0, 5.2, 0.3);
   itemSprite('balloons', 3, 3.8, 3.2, -9.6, 0.25);
-  itemSprite('hotairballoon', 5, -7.5, 11, -10, 0.6);
+  itemSprite('hotairballoon', 4.2, -1.2, 8.5, -6.8, 0.5);
   // strings of coloured pennants between posts along the ring path (all drawn in code)
   const POSTS = 16;
   const postPos = Array.from({ length: POSTS }, (_, i) => {
@@ -385,7 +389,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   let bulbs: T.InstancedMesh | null = null;
   if (night) {
     const n = 32;
-    bulbs = new T.InstancedMesh(keep(new T.SphereGeometry(0.11, 6, 5)), new T.MeshBasicMaterial({ color: '#ffffff' }), n);
+    bulbs = new T.InstancedMesh(keep(new T.SphereGeometry(0.2, 8, 6)), keep(new T.MeshBasicMaterial({ color: '#ffffff' })), n);
     const lc = ['#ffd23f', '#ff6b8f', '#6fd1ff', '#8fe36b'];
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2;
@@ -395,6 +399,15 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       bulbs.setColorAt(i, c4.set(lc[i % 4]));
     }
     scene.add(bulbs);
+    // a soft glow round each bulb
+    const glow = new T.InstancedMesh(keep(new T.SphereGeometry(0.65, 8, 6)), keep(new T.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.28, depthWrite: false, blending: T.AdditiveBlending })), n);
+    for (let i = 0; i < n; i++) {
+      bulbs.getMatrixAt(i, m4);
+      glow.setMatrixAt(i, m4);
+      glow.setColorAt(i, c4.set(lc[i % 4]));
+    }
+    glow.frustumCulled = false;
+    scene.add(glow);
     const posts = new T.InstancedMesh(keep(new T.CylinderGeometry(0.03, 0.03, 0.9, 4)), mats.get('#6b5a4a'), 16);
     for (let i = 0; i < 16; i++) {
       const a = (i / 16) * Math.PI * 2;
@@ -438,7 +451,33 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
 
   // ---- the camera: a fixed slant; the finger moves it (and nothing else does)
   let cam: CamState = { x: 0, z: 0.8, dist: 30 };
-  const home = (): CamState => ({ x: 0, z: 0.8, dist: fitDist(width / height, ISLAND_R * 1.25) });
+  /** The default view: the biggest island that fits between the title and the games row (and inside the width), found by trying distances. */
+  const fitCam = new T.PerspectiveCamera(FOV, 1, 0.5, 200);
+  const home = (): CamState => {
+    const top = o.safeTop ?? 150, bottom = height - (o.safeBottom ?? 104), mid = (top + bottom) / 2;
+    fitCam.aspect = width / height;
+    fitCam.updateProjectionMatrix();
+    const at = (z: number, d: number, x: number, y: number, zz: number): { x: number; y: number } => {
+      const e = eye({ x: 0, z, dist: d });
+      fitCam.position.set(e.x, e.y, e.z);
+      fitCam.lookAt(0, 0, z);
+      fitCam.updateMatrixWorld();
+      const v = new T.Vector3(x, y, zz).project(fitCam);
+      return { x: ((v.x + 1) / 2) * width, y: ((1 - v.y) / 2) * height };
+    };
+    for (let d = 8; d <= 70; d += 0.5) {
+      let lo = -16, hi = 16;
+      for (let k = 0; k < 16; k++) {
+        const m = (lo + hi) / 2;
+        if (at(m, d, 0, 0, 0).y > mid) lo = m;
+        else hi = m;
+      }
+      const z = (lo + hi) / 2;
+      const t = at(z, d, 0, 0, -ISLAND_R * ZS), b = at(z, d, 0, 0, ISLAND_R * ZS), l = at(z, d, -ISLAND_R, 0, 0), r = at(z, d, ISLAND_R, 0, 0);
+      if (t.y >= top && b.y <= bottom && l.x >= width * 0.03 && r.x <= width * 0.97) return { x: 0, z, dist: d };
+    }
+    return { x: 0, z: 0.8, dist: fitDist(width / height, ISLAND_R * 1.25) };
+  };
   const lookAt = new T.Vector3();
   function layout(): void {
     camera.aspect = width / height;
@@ -547,7 +586,10 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
 
   function update(dt: number, time: number): void {
     // the camera eases to where the finger (or "home") put it
-    if (homing) goal = home();
+    if (homing) {
+      goal = home();
+      homing = false;
+    }
     const k = 1 - Math.exp(-dt * (reduced ? 40 : 14));
     cam = { x: cam.x + (goal.x - cam.x) * k, z: cam.z + (goal.z - cam.z) * k, dist: cam.dist + (goal.dist - cam.dist) * k };
     // a plot that is entered: the camera comes a little closer
@@ -599,8 +641,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       poleTex.needsUpdate = true;
     }
     if (o.onSigns) {
-      o.onSigns(pads.map((p, i) => {
-        const v = new T.Vector3(ps[i].x, p.spec.kind === 'game' ? 3.5 : 2.9, ps[i].z);
+      o.onSigns(pads.map((_p, i) => {
+        const v = new T.Vector3(ps[i].x, 2.9, ps[i].z + 0.4);
         const sc = screenOf(v);
         const ndc = v.clone().project(camera);
         return { x: sc.x, y: sc.y, behind: ndc.z > 1 };

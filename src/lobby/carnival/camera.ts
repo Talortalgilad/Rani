@@ -6,7 +6,7 @@
 export const TAP_MOVE = 10;
 export const TAP_MS = 400;
 export const PITCH = (62 * Math.PI) / 180;
-export const DIST_MIN = 15;
+export const DIST_MIN = 8;
 export const DIST_MAX = 48;
 export const PAN_LIMIT = 8.5;
 /** the island is a tall ellipse: the camera may go further along it than across */
