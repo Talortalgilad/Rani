@@ -15,7 +15,7 @@ describe('the camera', () => {
   it('zoom and pan stay inside the limits', () => {
     expect(clampDist(1)).toBe(DIST_MIN);
     expect(clampDist(999)).toBe(DIST_MAX);
-    const s = clampTarget({ x: 50, z: 0, dist: 10 });
+    const s = clampTarget({ x: 50, z: 0, dist: 1 });
     expect(Math.hypot(s.x / PAN_LIMIT, s.z / PAN_Z)).toBeCloseTo(1);
     expect(s.dist).toBe(DIST_MIN);
   });
