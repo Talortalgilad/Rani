@@ -116,6 +116,8 @@ function place(k: Kind): boolean {
   if (isClosed(track)) {
     ctx?.sound.play('bonus');
     say('park_closedOk');
+    scene?.overview();
+    later(() => scene?.startLap(), 900);
   }
   return true;
 }
@@ -158,6 +160,9 @@ function closeIt(): void {
     save();
     ctx?.sound.play('bonus');
     say('park_closedOk');
+    // the camera shows all of it, and the train goes round once by itself
+    scene?.overview();
+    later(() => scene?.startLap(), 900);
   }, 500 + steps.length * 230 + 400);
 }
 

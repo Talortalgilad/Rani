@@ -104,3 +104,16 @@ export function buildTrackGeos(c: Curve, f: Frames, s0: number, s1: number): Tra
 
 /** Every geometry of the set in one (for the ghost). */
 export const mergeGeos = (g: TrackGeos): T.BufferGeometry => mergeAll([g.rails, g.spine, g.wood]);
+
+/** The shadow of the track: its rails, spine and legs flattened on the ground, pushed away from the sun (a little to the side). */
+export function shadowGeo(g: TrackGeos): T.BufferGeometry {
+  const src = mergeAll([g.rails, g.spine, g.legs].filter((x) => x.attributes.position));
+  const pos = src.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i);
+    pos.setXYZ(i, pos.getX(i) - y * 0.45, 0.035, pos.getZ(i) - y * 0.25);
+  }
+  pos.needsUpdate = true;
+  src.deleteAttribute('normal');
+  return src;
+}

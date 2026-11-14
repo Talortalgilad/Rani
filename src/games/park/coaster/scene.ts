@@ -9,9 +9,9 @@ import { placeBalloons } from './balloons';
 import { decor } from './decor';
 import { framesOf, poseAt, wrap, type Frames } from './frames';
 import { duration, sample, simulate, type Ride } from './physics';
-import { buildTrackGeos, mergeGeos } from './trackMesh';
+import { buildTrackGeos, mergeGeos, shadowGeo } from './trackMesh';
 import { buildTrain, CAR_GAP, type Train } from './trainMesh';
-import { N, STATION, T as TILE, Y0, buildCurve, cloneTrack, worldOf, walk, type Curve, type Kind, type Track } from './track';
+import { isClosed, N, STATION, T as TILE, Y0, buildCurve, cloneTrack, worldOf, walk, type Curve, type Kind, type Track } from './track';
 import type { SoundApi } from '../../../sound';
 
 export interface SceneOpts {
@@ -31,6 +31,9 @@ export interface ParkScene {
   /** the plot is shown again after a ride, from where Rani left it */
   startRide(view: 'first' | 'outside'): void;
   setView(view: 'first' | 'outside'): void;
+  /** the whole plot in view (after the track is closed) and the train's first lap by itself */
+  overview(): void;
+  startLap(): void;
   stopRide(): void;
   home(): void;
   /** the screen position (CSS px) of the end of the track, for the speed meter, or null when it is not in front of the camera */
@@ -47,7 +50,7 @@ export interface ParkScene {
 }
 
 const PLOT = N * TILE;
-const PITCH = (58 * Math.PI) / 180;
+const PITCH = (40 * Math.PI) / 180;
 
 export async function startScene(host: HTMLElement, o: SceneOpts): Promise<ParkScene> {
   let api!: ParkScene;
@@ -94,6 +97,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
     tiles.setMatrixAt(r * N + c, m4);
     tiles.setColorAt(r * N + c, col.set((r + c) % 2 ? '#a5ec8c' : '#98e47f'));
   }
+  tiles.frustumCulled = false;
   scene.add(tiles);
   // the station: a platform, four posts and a striped roof
   const stationG = new T.Group();
@@ -125,6 +129,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
     crowns.setMatrixAt(i, m4);
     crowns.setColorAt(i, col.set(th.color));
   });
+  trunks.frustumCulled = crowns.frustumCulled = false;
   scene.add(trunks, crowns);
 
   // ---- the track
@@ -134,6 +139,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
   const matLegs = keep(new T.MeshStandardMaterial({ color: '#e6d8f5', roughness: 0.7 }));
   const matChain = keep(new T.MeshStandardMaterial({ color: '#3d3d4d', roughness: 0.5 }));
   const matGhost = keep(new T.MeshBasicMaterial({ color: '#5ad1ff', transparent: true, opacity: 0.75, depthWrite: false }));
+  const matShadow = keep(new T.MeshBasicMaterial({ color: '#1d3a1f', transparent: true, opacity: 0.28, depthWrite: false }));
   const staticG = new T.Group();
   const lastG = new T.Group();
   const ghostG = new T.Group();
@@ -146,6 +152,10 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
   };
   const addSet = (g: T.Group, geos: ReturnType<typeof buildTrackGeos>): void => {
     g.add(new T.Mesh(geos.rails, matRails), new T.Mesh(geos.spine, matSpine), new T.Mesh(geos.wood, matWood), new T.Mesh(geos.legs, matLegs), new T.Mesh(geos.chain, matChain));
+    // the shadow of the track on the ground (the sun is high and a little to the side)
+    const sh = new T.Mesh(shadowGeo(geos), matShadow);
+    sh.renderOrder = 1;
+    g.add(sh);
   };
   let track: Track = { pieces: [] };
   let curve: Curve = buildCurve(track);
@@ -155,6 +165,8 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
 
   function setTrack(t: Track, landLast = false): void {
     track = cloneTrack(t);
+    lapping = false;
+    if (!isClosed(track)) overview = false;
     // an open track is drawn up to its end (the run after it is only for the energy); a closed one all round
     curve = buildCurve(track);
     frames = framesOf(curve);
@@ -207,7 +219,11 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
   // ---- the camera: a fixed slant, moved only by a finger
   type Cam = { x: number; z: number; dist: number };
   const fit = (): Cam => ({ x: PLOT / 2, z: PLOT / 2 + 2, dist: Math.min(70, Math.max(26, (PLOT * 0.57) / (Math.tan((46 / 2) * (Math.PI / 180)) * Math.min(width / height, 1.2)))) });
-  let cam: Cam = fit();
+  /** the view near the end of the track, where the building goes on */
+  const near = (): Cam => ({ x: (STATION.c + 1.5) * TILE, z: (STATION.r - 1) * TILE, dist: 34 });
+  let cam: Cam = near();
+  let overview = false;
+  let lapping = false;
   let goal: Cam = { ...cam };
   let homing = false;
   const lookAt = new T.Vector3();
@@ -393,6 +409,25 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
     }
   }
 
+  // when no finger is down the camera drifts so that the end of the track, and two tiles beyond it, are in view
+  const ahead = new T.Vector3();
+  function followEnd(dt: number): void {
+    const w = walk(track);
+    const e = worldOf(w.end);
+    const dir = [[1, 0], [0, 1], [-1, 0], [0, -1]][w.end.d];
+    const pts3 = [new T.Vector3(e[0], e[1], e[2]), new T.Vector3(e[0] + dir[0] * 2 * TILE, e[1], e[2] + dir[1] * 2 * TILE)];
+    camera.updateMatrixWorld();
+    let outside = false;
+    for (const p of pts3) {
+      const q = p.clone().project(camera);
+      if (q.x < -0.62 || q.x > 0.62 || q.y > 0.7 || q.y < -0.28) outside = true;
+    }
+    if (!outside) return;
+    ahead.copy(pts3[1]).lerp(pts3[0], 0.35);
+    const k = 1 - Math.exp(-dt * 1.6);
+    goal = clampCam({ ...goal, x: goal.x + (ahead.x - goal.x) * k, z: goal.z + (ahead.z + 2 - goal.z) * k });
+  }
+
   // ---- every frame
   const sideCam = new T.Vector3();
   function update(dt: number, time: number): void {
@@ -402,6 +437,14 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
       const e = landT < 0.7 ? 1 - (landT / 0.7) ** 2 : Math.sin(((landT - 0.7) / 0.3) * Math.PI) * 0.12;
       lastG.position.y = reduced ? 0 : e * 3.2;
       if (landT >= 1) lastG.position.y = 0;
+    }
+    if (lapping && ride && !riding) {
+      t = Math.min(dur + 1, t + dt);
+      placeTrain(sample(ride, Math.min(t, dur)).s);
+      if (t >= dur + 1) {
+        lapping = false;
+        placeTrain(1.2);
+      }
     }
     if (riding && ride) {
       t = Math.min(dur, t + dt);
@@ -463,7 +506,13 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
       }
     } else {
       // building: the camera eases to where the finger put it
-      if (homing) goal = fit();
+      if (homing) {
+        goal = overview ? fit() : near();
+        homing = false;
+      }
+      if (overview) {
+        if (pts.size === 0 && !homing) goal = fit();
+      } else if (pts.size === 0) followEnd(dt);
       const k = 1 - Math.exp(-dt * (reduced ? 40 : 14));
       cam = { x: cam.x + (goal.x - cam.x) * k, z: cam.z + (goal.z - cam.z) * k, dist: cam.dist + (goal.dist - cam.dist) * k };
       camera.fov = 46;
@@ -476,7 +525,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
       train.cars[0].visible = true;
       train.riders[0].visible = true;
       // the train waits in the station, and moves a little (a hop) when it is just alive
-      placeTrain(1.2);
+      if (!lapping) placeTrain(1.2);
     }
     // confetti of a popped balloon
     for (let i = bits.length - 1; i >= 0; i--) {
@@ -507,7 +556,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       if (!down && !riding) {
-        cam = fit();
+        cam = overview ? fit() : near();
         goal = { ...cam };
       }
     },
@@ -525,7 +574,7 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
   };
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  cam = fit();
+  cam = near();
   goal = { ...cam };
   placeTrain(1.2);
   const api: ParkScene = {
@@ -536,6 +585,17 @@ function createScene(env: SceneEnv, o: SceneOpts, host: HTMLElement): { scene: S
     },
     startRide,
     setView: (v) => void (view = v),
+    overview: () => {
+      overview = true;
+      goal = fit();
+    },
+    startLap: () => {
+      if (!curve.complete) return;
+      ride = simulate(curve);
+      dur = duration(ride);
+      t = 0;
+      lapping = true;
+    },
     stopRide,
     home: () => void (homing = true),
     endScreen() {
