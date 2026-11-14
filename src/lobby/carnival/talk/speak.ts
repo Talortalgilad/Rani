@@ -57,7 +57,7 @@ export function opening(t: Talk, who?: Pick<Resident, 'id' | 'fixed' | 'name'>, 
       // "I ate one": the number alone; "I ate two cookies": before the noun
       return [{ he: 'cv_had' }, { num: t.a, before: true }, { item: t.item }, { he: 'cv_ate' }, ...(t.b === 1 ? [{ num: 1 }] : [{ num: t.b, before: true }, { item: t.item }]), { he: 'cv_left' }];
     case 'can':
-      return [{ en: 'Can I have the' }, { word: t.word }, { en: 'please?' }];
+      return [{ enc: { id: 'carn_can_i_have_the', text: 'Can I have the' } }, { word: t.word }, { enc: { id: 'carn_please', text: 'please?' } }];
     case 'what':
       return [{ enc: { id: 'carn_what_is_it', text: 'What is it?' } }];
     case 'hello':

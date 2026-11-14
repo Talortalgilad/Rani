@@ -44,7 +44,7 @@ export const CHATS: Chat[] = [
   { text: 'Hi Rani!', en: 'Hi Rani!', enId: 'carn_hi_rani' },
   { text: 'Nice day!', en: 'Nice day!', enId: 'carn_nice_day' },
   { text: "Let's play!", en: "Let's play!", enId: 'carn_lets_play' },
-  { text: 'I am hungry!', en: 'I am hungry!', enId: 'carn_i_am_hungry' },
+  { text: "I'm hungry!", en: "I'm hungry!", enId: 'carn_i_am_hungry' },
   { text: 'I like ice cream!', en: 'I like ice cream!', enId: 'carn_i_like_ice_cream' },
   { text: 'Look at me!', en: 'Look at me!', enId: 'carn_look_at_me' },
 ];

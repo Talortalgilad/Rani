@@ -75,7 +75,7 @@ describe('the questions', () => {
     expect(ids.length).toBeGreaterThan(3);
     for (const p of opening(t)) if ('he' in p) expect(linePartsFor(p.he).length).toBeGreaterThan(0);
     const c = makeTalk('can', 3, env(3, MANY))!;
-    expect(opening(c).map((p) => ('en' in p ? p.en : 'word' in p ? 'WORD' : '?'))).toEqual(['Can I have the', 'WORD', 'please?']);
+    expect(opening(c).map((p) => ('enc' in p ? p.enc.text : 'word' in p ? 'WORD' : '?'))).toEqual(['Can I have the', 'WORD', 'please?']);
     expect(CARNIVAL_EN.map((x) => x.text)).toContain('Can I have the');
   });
 });

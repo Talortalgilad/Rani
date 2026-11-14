@@ -13,7 +13,7 @@ English sentences of the carnival talks
 10. Hi Rani!    [carn_hi_rani]  (small bubble)
 11. Nice day!    [carn_nice_day]  (small bubble)
 12. Let's play!    [carn_lets_play]  (small bubble)
-13. I am hungry!    [carn_i_am_hungry]  (small bubble)
+13. I'm hungry!    [carn_i_am_hungry]  (small bubble)
 14. I like ice cream!    [carn_i_like_ice_cream]  (small bubble)
 15. Look at me!    [carn_look_at_me]  (small bubble)
 16. Thank you, Rani!    [carn_thank_you_rani]  (after a right answer in an English talk)

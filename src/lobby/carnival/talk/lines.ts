@@ -51,7 +51,7 @@ export const CARNIVAL_EN: { id: string; text: string; note: string }[] = [
   { id: 'carn_hi_rani', text: 'Hi Rani!', note: 'small bubble' },
   { id: 'carn_nice_day', text: 'Nice day!', note: 'small bubble' },
   { id: 'carn_lets_play', text: "Let's play!", note: 'small bubble' },
-  { id: 'carn_i_am_hungry', text: 'I am hungry!', note: 'small bubble' },
+  { id: 'carn_i_am_hungry', text: "I'm hungry!", note: 'small bubble' },
   { id: 'carn_i_like_ice_cream', text: 'I like ice cream!', note: 'small bubble' },
   { id: 'carn_look_at_me', text: 'Look at me!', note: 'small bubble' },
   { id: 'carn_thank_you_rani', text: 'Thank you, Rani!', note: 'after a right answer in an English talk' },
