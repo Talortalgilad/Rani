@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { END, G, MAX_SLOPE, addLoop, buildPath, deleteFrom, extend, finish, moveY, newTrack, pathLength, type Track } from './track';
+import { addPart, END, G, MAX_SLOPE, addLoop, buildPath, deleteFrom, extend, finish, moveY, newTrack, pathLength, type Track } from './track';
 import { sample, simulate } from './physics';
 
 /** A track from points (after the crest), finished at the station when it reaches it. */
 function make(points: [number, number][], loopAt: number | null = null): Track {
   const t = newTrack();
   for (const [x, y] of points) t.pts.push({ x, y });
-  t.loopAt = loopAt;
   finish(t);
   return t;
 }
@@ -195,5 +194,44 @@ describe('help when the car does not get to the end', () => {
     expect(u.complete).toBe(true);
     expect(u.pts[u.pts.length - 1].x).toBe(STATION.x);
     expect(run(u).ride.outcome).toBe('finished');
+  });
+});
+
+describe('the special parts', () => {
+  it('a chain lift pulls the car up a hill that it could not climb by itself', () => {
+    const pts: [number, number][] = [[8.5, 3], [10.5, 1], [13, 7.6], [15.5, 1.2], [18, 3], [20.4, 1.6]];
+    const without = make(pts);
+    expect(simulate(buildPath(without)).outcome).toBe('stalled');
+    const withChain = make(pts);
+    expect(addPart(withChain, 'chain', 11.8)).toBe(true);
+    const r = simulate(buildPath(withChain));
+    expect(r.outcome).toBe('finished');
+  });
+
+  it('a tunnel and a splash are decorations: they do not change the ride; and they do not go inside a loop or over another of the same kind', () => {
+    const a = make(EASY);
+    const b = make(EASY);
+    expect(addPart(b, 'tunnel', 10.8)).toBe(true);
+    expect(addPart(b, 'splash', 14)).toBe(true);
+    expect(addPart(b, 'tunnel', 11)).toBe(false);
+    expect(Array.from(simulate(buildPath(a)).s)).toEqual(Array.from(simulate(buildPath(b)).s));
+    const path = buildPath(b);
+    expect(path.tunnels).toHaveLength(1);
+    expect(path.splashes).toHaveLength(1);
+    const l = make([[8.5, 0.9], [12, 0.9], [15, 1.5], [18, 2.2], [20.4, 1.6]]);
+    expect(addLoop(l, 8.5)).toBe(true);
+    expect(addPart(l, 'tunnel', 9)).toBe(false);
+  });
+
+  it('two loops: the second one does not touch the first, and the ride with deep drops goes through both', () => {
+    const t = make([[8.5, 0.8], [11.8, 0.8], [15.2, 0.8], [18.5, 1.6], [20.4, 1.6]]);
+    expect(addLoop(t, 8.5)).toBe(true);
+    expect(addLoop(t, 9.5)).toBe(false); // too near the first
+    expect(addLoop(t, 15.2)).toBe(true);
+    expect(t.loops).toHaveLength(2);
+    const p = buildPath(t);
+    expect(p.loops).toHaveLength(2);
+    expect(p.loops[1][0]).toBeGreaterThan(p.loops[0][1]);
+    expect(simulate(p).outcome).toBe('finished');
   });
 });

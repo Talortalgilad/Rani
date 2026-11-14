@@ -51,6 +51,10 @@ export function simulate(p: Path): Ride {
       // the chain lift: a steady speed (and from the platform a gentle start)
       v = Math.min(V_CHAIN, v + 3 * DT);
       s += v * DT;
+    } else if (v >= 0 && p.chains.some(([c0, c1]) => s >= c0 && s <= c1)) {
+      // a chain lift pulls the car up by itself, whatever its speed
+      v = Math.max(v, V_CHAIN);
+      s += v * DT;
     } else {
       let a = -G * Math.sin(pt.th);
       const fr = FRICTION;

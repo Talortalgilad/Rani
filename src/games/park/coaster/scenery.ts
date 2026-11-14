@@ -20,12 +20,11 @@ export function sway(path: Path, s: number, seed: number): number {
   const a = ((seed * 9301 + 49297) % 233280) / 233280;
   const b = ((seed * 7919 + 1013) % 4096) / 4096;
   let mask = smooth(path.crestS + 1, path.crestS + 6, s);
-  if (path.loopS) mask *= 1 - smooth(path.loopS[0] - 5, path.loopS[0] - 1, s) * (1 - smooth(path.loopS[1] + 4, path.loopS[1] + 8, s));
+  for (const [l0, l1] of path.loops) mask *= 1 - smooth(l0 - 5, l0 - 1, s) * (1 - smooth(l1 + 4, l1 + 8, s));
   if (path.endS < Infinity) mask *= 1 - smooth(path.endS - 7, path.endS - 1, s);
   let z = mask * (2.6 * Math.sin(s * 0.13 + a * 6.28) + 3.4 * Math.sin(s * 0.047 + b * 6.28));
-  if (path.loopS) {
+  for (const [l0, l1] of path.loops) {
     // the way in goes to one side, through the loop to the other, and out to the middle again
-    const [l0, l1] = path.loopS;
     if (s < l0) z -= (LOOP_LANE / 2) * smooth(l0 - 5, l0, s);
     else if (s <= l1) z += LOOP_LANE * ((s - l0) / (l1 - l0) - 0.5);
     else z += (LOOP_LANE / 2) * (1 - smooth(l1 + 3, l1 + 10, s)); // it stays on its side until the loop is behind (the loop hangs over the first units of the way out)
@@ -120,7 +119,7 @@ export function placeScenery(path: Path, c: Curve3D, seed: number, tier: 'high' 
   for (let i = 0; i < n; i += 4) {
     const k = Math.min(path.n - 1, i * STRIDE);
     if (path.inLoop[k] || P[i].x - lastX < 1.8 || P[i].y < 0.6) continue;
-    const near = path.loopS ? k * 0.05 > path.loopS[0] - 2.5 && k * 0.05 < path.loopS[1] + 2.5 : false;
+    const near = path.loops.some(([l0, l1]) => k * 0.05 > l0 - 2.5 && k * 0.05 < l1 + 2.5);
     if (near) continue;
     lastX = P[i].x;
     pillars.push({ x: P[i].x, y: P[i].y - 0.1, z: P[i].z, r: 0.09, h: P[i].y - 0.1, c: '', s: path.s[k] });

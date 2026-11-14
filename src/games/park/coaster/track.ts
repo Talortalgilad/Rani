@@ -24,16 +24,22 @@ export const LOOP_R = 1.25;
 export const LOOP_DRIFT = 1.7;
 export const POINT_GAP = 0.7;
 
+/** The special parts: a chain lift (pulls the car up by itself), a tunnel and a water splash (decorations); they cover x0..x1 of the track. */
+export type PartKind = 'chain' | 'tunnel' | 'splash';
+export interface Part { kind: PartKind; x0: number; x1: number }
+export const PART_SPAN: Record<PartKind, number> = { chain: 3.2, tunnel: 3.4, splash: 1.2 };
+
 export interface Track {
   /** the control points; pts[0] is the crest. When `complete`, the last one is END. */
   pts: Pt[];
-  /** the loop starts at this point (an index in pts), or null */
-  loopAt: number | null;
+  /** the loops: each starts at one of the points (an index in pts), in order */
+  loops: number[];
+  parts: Part[];
   complete: boolean;
 }
 
-export const newTrack = (): Track => ({ pts: [{ ...CREST }], loopAt: null, complete: false });
-export const cloneTrack = (t: Track): Track => ({ pts: t.pts.map((p) => ({ ...p })), loopAt: t.loopAt, complete: t.complete });
+export const newTrack = (): Track => ({ pts: [{ ...CREST }], loops: [], parts: [], complete: false });
+export const cloneTrack = (t: Track): Track => ({ pts: t.pts.map((p) => ({ ...p })), loops: [...t.loops], parts: t.parts.map((p) => ({ ...p })), complete: t.complete });
 
 /** The y a point can have next to a neighbour so that the slope stays under 70 degrees. */
 export const reach = (from: Pt, x: number): { lo: number; hi: number } => {
@@ -50,7 +56,7 @@ export function extend(t: Track, x: number, y: number): boolean {
   if (t.complete) return false;
   const last = t.pts[t.pts.length - 1];
   // a loop needs room: its exit is to the right of its entry
-  const minX = last.x + POINT_GAP + (t.loopAt === t.pts.length - 1 ? LOOP_DRIFT + 0.3 : 0);
+  const minX = last.x + POINT_GAP + (t.loops.includes(t.pts.length - 1) ? LOOP_DRIFT + 0.3 : 0);
   if (x < minX || x > END.x + 0.001) return false;
   const r = reach(last, x);
   t.pts.push({ x, y: clamp(y, r.lo, r.hi) });
@@ -95,11 +101,13 @@ export function deleteFrom(t: Track, i: number): void {
   const k = Math.max(1, i);
   t.pts.length = Math.min(t.pts.length, k);
   t.complete = false;
-  if (t.loopAt !== null && t.loopAt >= t.pts.length) t.loopAt = null;
+  t.loops = t.loops.filter((i) => i < t.pts.length);
+  const lastX = t.pts[t.pts.length - 1].x;
+  t.parts = t.parts.filter((p) => p.x0 < lastX);
 }
 
-/** The loop is put at the point nearest to x. Returns false when it does not fit (too low, too high, or no room before the station). */
-export function addLoop(t: Track, x: number): boolean {
+/** A loop is put at the point nearest to x. Returns false when it does not fit (too low, too high, no room before the station, or too near another loop). */
+export function addLoop(t: Track, x: number, maxLoops = 2): boolean {
   let best = 1;
   let d = Infinity;
   t.pts.forEach((p, i) => {
@@ -108,14 +116,23 @@ export function addLoop(t: Track, x: number): boolean {
       best = i;
     }
   });
-  if (t.pts.length < 2) return false;
+  if (t.pts.length < 2 || t.loops.length >= maxLoops) return false;
   const p = t.pts[best];
   if (p.y < MIN_Y + 0.2 || p.y + 2 * LOOP_R > MAX_Y + 0.3) return false;
   if (p.x + LOOP_DRIFT + 0.8 > END.x) return false;
-  // the points that are inside the loop (between its entry and its exit) go
-  t.pts = t.pts.filter((q, i) => i <= best || q.x > p.x + LOOP_DRIFT + 0.5 || (t.complete && i === t.pts.length - 1));
-  t.loopAt = best;
-  const next = t.pts[best + 1];
+  // not on a loop, and not so near another one that they would touch
+  if (t.loops.some((l) => Math.abs(t.pts[l].x - p.x) < LOOP_DRIFT + 2.6)) return false;
+  // the points that are inside the loop (between its entry and its exit) go; the loops that were after them shift with the points
+  const keep: boolean[] = t.pts.map((q, i) => i <= best || q.x > p.x + LOOP_DRIFT + 0.5 || (t.complete && i === t.pts.length - 1));
+  const remap: number[] = [];
+  let k = 0;
+  keep.forEach((kp, i) => (remap[i] = kp ? k++ : -1));
+  t.loops = t.loops.map((l) => remap[l]).filter((l) => l >= 0);
+  t.pts = t.pts.filter((_, i) => keep[i]);
+  t.loops.push(remap[best]);
+  t.loops.sort((a, b) => a - b);
+  const bi = remap[best];
+  const next = t.pts[bi + 1];
   if (next) {
     // the track leaves the loop at the height of its entry
     const r = reach({ x: p.x + LOOP_DRIFT, y: p.y }, next.x);
@@ -123,7 +140,32 @@ export function addLoop(t: Track, x: number): boolean {
   }
   return true;
 }
-export const removeLoop = (t: Track): void => void (t.loopAt = null);
+/** Takes off the loop nearest to x (or all of them without x). */
+export function removeLoop(t: Track, x?: number): void {
+  if (x === undefined || t.loops.length <= 1) {
+    t.loops = [];
+    return;
+  }
+  let best = 0;
+  t.loops.forEach((l, i) => {
+    if (Math.abs(t.pts[l].x - x) < Math.abs(t.pts[t.loops[best]].x - x)) best = i;
+  });
+  t.loops.splice(best, 1);
+}
+
+/** A special part is put on the track around x (it covers its span, not inside a loop or on the lift). Returns false when it does not fit. */
+export function addPart(t: Track, kind: PartKind, x: number): boolean {
+  const span = PART_SPAN[kind];
+  const x0 = Math.max(CREST.x + 0.3, x - span / 2);
+  const x1 = Math.min(t.pts[t.pts.length - 1].x, x0 + span);
+  if (x1 - x0 < span * 0.6) return false;
+  if (t.loops.some((l) => t.pts[l].x < x1 + 0.4 && t.pts[l].x + LOOP_DRIFT > x0 - 0.4)) return false;
+  // not over another part of the same kind
+  if (t.parts.some((q) => q.kind === kind && q.x0 < x1 && q.x1 > x0)) return false;
+  t.parts.push({ kind, x0, x1 });
+  return true;
+}
+export const removePart = (t: Track, kind: PartKind): void => void (t.parts = t.parts.filter((p) => p.kind !== kind));
 
 // ---- the curve ----
 
@@ -145,7 +187,12 @@ export interface Path {
   endS: number;
   /** the distance of each control point, and of the entry and the exit of the loop */
   ctrlS: number[];
-  loopS: [number, number] | null;
+  /** the entry and the exit of each loop, by distance */
+  loops: [number, number][];
+  /** the special parts, by distance: chain lifts and tunnels (from, to), splashes (the place) */
+  chains: [number, number][];
+  tunnels: [number, number][];
+  splashes: number[];
   complete: boolean;
 }
 
@@ -183,7 +230,6 @@ export function buildPath(t: Track): Path {
   const n0 = START_PTS.length;
   const phantomBefore: Pt = { x: START_PTS[0].x - 1, y: START_PTS[0].y };
   const all: Pt[] = [...START_PTS, ...t.pts];
-  const iLoop = t.loopAt === null ? -1 : t.loopAt + n0; // index in `all`
   const curve = (pts: Pt[], first: Pt, lastP: Pt, base: number, marks: boolean): void => {
     const sp = spline(pts, first, lastP);
     const per = 28;
@@ -194,18 +240,18 @@ export function buildPath(t: Track): Path {
       push(p.x, p.y, marks && isCtrl ? { kind: 'ctrl', i: base + idx - n0 } : undefined);
     });
   };
-  if (iLoop < 0) {
-    const n = all.length;
-    curve(all, phantomBefore, { x: all[n - 1].x + 1, y: all[n - 1].y }, 0, true);
-  } else {
-    const before = all.slice(0, iLoop + 1);
-    const nb = before.length;
-    const prev = before[nb - 2];
-    const entry = before[nb - 1];
+  // the curve goes through the points, one piece up to each loop, the loop (a circle turned to the direction of the entry; its exit is a little to the
+  // right of its entry), and the next piece starts at the exit
+  let segStart: Pt[] = [];
+  let idx0 = 0;
+  let phantom: Pt = phantomBefore;
+  for (const L of t.loops.map((i) => i + n0)) {
+    const pts = [...segStart, ...all.slice(idx0, L + 1)];
+    const nb = pts.length;
+    const prev = pts[nb - 2];
+    const entry = pts[nb - 1];
     const a = Math.atan2(entry.y - prev.y, entry.x - prev.x);
-    const lastPhantom = { x: entry.x + Math.cos(a), y: entry.y + Math.sin(a) };
-    curve(before, phantomBefore, lastPhantom, 0, true);
-    // the loop: a circle, turned to the direction of the entry; the exit is a little to the right of the entry
+    curve(pts, phantom, { x: entry.x + Math.cos(a), y: entry.y + Math.sin(a) }, idx0 - segStart.length, true);
     const ca = Math.cos(a), sa = Math.sin(a);
     const steps = Math.ceil((2 * Math.PI * LOOP_R + LOOP_DRIFT) / DS);
     for (let k = 1; k <= steps; k++) {
@@ -213,22 +259,15 @@ export function buildPath(t: Track): Path {
       const lx = LOOP_R * Math.sin(u) + (LOOP_DRIFT * u) / (2 * Math.PI);
       const ly = LOOP_R - LOOP_R * Math.cos(u);
       const ccx = (LOOP_DRIFT * u) / (2 * Math.PI);
-      const wx = entry.x + lx * ca - ly * sa;
-      const wy = entry.y + lx * sa + ly * ca;
-      const cwx = entry.x + ccx * ca - LOOP_R * sa;
-      const cwy = entry.y + ccx * sa + LOOP_R * ca;
-      push(wx, wy, k === 1 ? { kind: 'loopIn' } : k === steps ? { kind: 'loopOut' } : undefined, { cx: cwx, cy: cwy });
+      push(entry.x + lx * ca - ly * sa, entry.y + lx * sa + ly * ca, k === 1 ? { kind: 'loopIn' } : k === steps ? { kind: 'loopOut' } : undefined, { cx: entry.x + ccx * ca - LOOP_R * sa, cy: entry.y + ccx * sa + LOOP_R * ca });
     }
     const exitP = poly[poly.length - 1];
-    const after = all.slice(iLoop + 1);
-    if (after.length) {
-      const exit: Pt = { x: exitP.x, y: exitP.y };
-      const firstPhantom = { x: exit.x - ca, y: exit.y - sa };
-      const rest = [exit, ...after];
-      const lastN = rest[rest.length - 1];
-      curve(rest, firstPhantom, { x: lastN.x + 1, y: lastN.y }, iLoop, true);
-    }
+    segStart = [{ x: exitP.x, y: exitP.y }];
+    idx0 = L + 1;
+    phantom = { x: exitP.x - ca, y: exitP.y - sa };
   }
+  const pts = [...segStart, ...all.slice(idx0)];
+  if (pts.length >= 2) curve(pts, phantom, { x: pts[pts.length - 1].x + 1, y: pts[pts.length - 1].y }, idx0 - segStart.length, true);
   if (t.complete) {
     for (let x = END.x; x <= WORLD_W + 1; x += DS) push(x, END.y, x === END.x ? { kind: 'end' } : undefined);
   }
@@ -263,18 +302,34 @@ export function buildPath(t: Track): Path {
   // where the marks are, by distance
   const ctrlS: number[] = [];
   let crestS = 0, endS = Infinity;
-  let loopIn = -1, loopOut = -1;
+  const loopIns: number[] = [], loopOuts: number[] = [];
   raw.forEach((p, i) => {
     if (!p.mark) return;
     if (p.mark.kind === 'ctrl') {
       if (p.mark.i >= 0 && ctrlS[p.mark.i] === undefined) ctrlS[p.mark.i] = cum[i];
     }
-    else if (p.mark.kind === 'loopIn') loopIn = cum[i];
-    else if (p.mark.kind === 'loopOut') loopOut = cum[i];
+    else if (p.mark.kind === 'loopIn') loopIns.push(cum[i]);
+    else if (p.mark.kind === 'loopOut') loopOuts.push(cum[i]);
     else if (p.mark.kind === 'end') endS = cum[i];
   });
   crestS = ctrlS[0] ?? 0;
-  return { x, y, s, th, inLoop, cx, cy, n, crestS, endS, ctrlS, loopS: loopIn >= 0 ? [loopIn, loopOut] : null, complete: t.complete };
+  const loops: [number, number][] = loopIns.map((a, k) => [a, loopOuts[k]]);
+  // the special parts by distance: the first and the last point of the track in their span (never inside a loop)
+  const range = (x0: number, x1: number): [number, number] | null => {
+    let a = -1, b = -1;
+    for (let i = 0; i < n; i++) {
+      if (inLoop[i] || s[i] < crestS) continue;
+      if (x[i] >= x0 && x[i] <= x1) {
+        if (a < 0) a = i;
+        b = i;
+      }
+    }
+    return a < 0 ? null : [s[a], s[b]];
+  };
+  const chains = t.parts.filter((q) => q.kind === 'chain').map((q) => range(q.x0, q.x1)).filter((r): r is [number, number] => !!r);
+  const tunnels = t.parts.filter((q) => q.kind === 'tunnel').map((q) => range(q.x0, q.x1)).filter((r): r is [number, number] => !!r);
+  const splashes = t.parts.filter((q) => q.kind === 'splash').map((q) => range(q.x0, q.x1)).filter((r): r is [number, number] => !!r).map((r) => (r[0] + r[1]) / 2);
+  return { x, y, s, th, inLoop, cx, cy, n, crestS, endS, ctrlS, loops, chains, tunnels, splashes, complete: t.complete };
 }
 
 /** The point at distance s along the path (clamped at both ends), with the direction. */

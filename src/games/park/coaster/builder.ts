@@ -285,7 +285,7 @@ export class Builder {
     this.changed();
   }
   hasLoop(): boolean {
-    return this.track.loopAt !== null;
+    return this.track.loops.length > 0;
   }
   /** "Fix it for me" (after 3 tries that did not work). */
   fixIt(): boolean {

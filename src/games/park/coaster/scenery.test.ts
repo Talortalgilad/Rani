@@ -69,7 +69,7 @@ describe('the 3D ride keeps a clean corridor round the track', () => {
   it('the two lanes of the loop are apart sideways, so that the track does not cross itself', () => {
     const t = TRACKS[0][1];
     const path = buildPath(t);
-    const [a, b] = path.loopS!;
+    const [a, b] = path.loops[0];
     expect(Math.abs(sway(path, a + 0.01, 7) - sway(path, b - 0.01, 7))).toBeGreaterThan(1.5);
     expect(pathLength(path)).toBeGreaterThan(20);
   });

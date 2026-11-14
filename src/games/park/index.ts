@@ -13,7 +13,7 @@ import { cloneTrack, newTrack, type Track } from './coaster/track';
 import { pk } from './lines';
 import './ui/park.css';
 
-interface Saved { pts: { x: number; y: number }[]; loopAt: number | null; complete: boolean }
+interface Saved { pts: { x: number; y: number }[]; loops?: number[]; loopAt?: number | null; parts?: { kind: 'chain' | 'tunnel' | 'splash'; x0: number; x1: number }[]; complete: boolean }
 let ctx: GameContext | null = null;
 let root: HTMLElement | null = null;
 let builder: Builder | null = null;
@@ -58,10 +58,12 @@ function say(id: string): void {
   void sayLine(id);
 }
 
-const toSaved = (t: Track): Saved => ({ pts: t.pts.map((p) => ({ ...p })), loopAt: t.loopAt, complete: t.complete });
+const toSaved = (t: Track): Saved => ({ pts: t.pts.map((p) => ({ ...p })), loops: [...t.loops], parts: t.parts.map((p) => ({ ...p })), complete: t.complete });
 const fromSaved = (s: Saved | null | undefined): Track | null => {
   if (!s || !Array.isArray(s.pts) || s.pts.length < 1 || !s.pts.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))) return null;
-  return { pts: s.pts.map((p) => ({ ...p })), loopAt: typeof s.loopAt === 'number' ? s.loopAt : null, complete: !!s.complete };
+  // (a track saved before there were several loops has one loopAt)
+  const loops = Array.isArray(s.loops) ? s.loops.filter((l) => Number.isInteger(l)) : typeof s.loopAt === 'number' ? [s.loopAt] : [];
+  return { pts: s.pts.map((p) => ({ ...p })), loops, parts: Array.isArray(s.parts) ? s.parts.map((p) => ({ ...p })) : [], complete: !!s.complete };
 };
 function save(t: Track): void {
   if (!ctx) return;

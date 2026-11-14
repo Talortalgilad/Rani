@@ -32,7 +32,7 @@ export interface Ride3D {
   dispose(): void;
   /** jumps to a moment of the ride, in seconds (for the screenshots), and to the middle of the loop (false when there is no loop) */
   seek(t: number): void;
-  seekLoop(fraction: number): boolean;
+  seekLoop(fraction: number, which?: number): boolean;
   /** for tests and the numbers of the display */
   stats(): { calls: number; triangles: number };
 }
@@ -322,9 +322,10 @@ export async function startRide3d(container: HTMLElement, path: Path, ride: Ride
   return {
     setCamera: (c) => void (camMode = c),
     seek: (x) => void (t = Math.min(sampleFns.dur, Math.max(0, x))),
-    seekLoop: (f) => {
-      if (!path.loopS) return false;
-      const target = path.loopS[0] + (path.loopS[1] - path.loopS[0]) * f;
+    seekLoop: (f, which = 0) => {
+      const lp = path.loops[which];
+      if (!lp) return false;
+      const target = lp[0] + (lp[1] - lp[0]) * f;
       let k = 0;
       while (k < ride.s.length - 1 && ride.s[k] < target) k++;
       t = ride.t[k];

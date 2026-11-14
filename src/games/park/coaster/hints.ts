@@ -18,6 +18,8 @@ export interface Diagnosis {
   capY: number;
   /** the control point at the top of the hill that is too high (for high and first) */
   peak: number | null;
+  /** the loop that the car could not do (an index in the loops of the track) */
+  loop: number | null;
 }
 
 /** What went wrong with a ride that did not finish (null when it finished). */
@@ -27,9 +29,13 @@ export function diagnose(t: Track, path: Path, ride: Ride): Diagnosis | null {
   const stop = at(path, stopS);
   if (ride.outcome === 'short') {
     const last = t.pts[t.pts.length - 1];
-    return { kind: 'short', x: last.x, y: last.y, mx: last.x, my: last.y, capY: last.y, peak: null };
+    return { kind: 'short', x: last.x, y: last.y, mx: last.x, my: last.y, capY: last.y, peak: null, loop: null };
   }
-  if (ride.outcome === 'loop') return { kind: 'loop', x: stop.x, y: stop.y, mx: stop.x, my: stop.y, capY: stop.y, peak: null };
+  if (ride.outcome === 'loop') {
+    let loop = path.loops.findIndex(([a, b]) => stopS >= a - 0.5 && stopS <= b + 0.5);
+    if (loop < 0) loop = Math.max(0, path.loops.findIndex(([a]) => a > stopS) - 1);
+    return { kind: 'loop', x: stop.x, y: stop.y, mx: stop.x, my: stop.y, capY: stop.y, peak: null, loop };
+  }
   // the hill that the car could not climb: the next top ahead of the stop
   let k = path.ctrlS.findIndex((s) => s > stopS - 0.05);
   if (k < 0) k = t.pts.length - 1;
@@ -41,7 +47,7 @@ export function diagnose(t: Track, path: Path, ride: Ride): Diagnosis | null {
   for (let i = 1; i <= peak; i++) if (t.pts[i].y >= t.pts[i - 1].y && (i + 1 >= t.pts.length || t.pts[i + 1].y < t.pts[i].y)) hills++;
   const second = hills <= 1;
   const top = t.pts[peak];
-  return { kind: second && top.y > CREST.y + 0.05 ? 'first' : 'high', x: stop.x, y: stop.y, mx: top.x, my: top.y, capY: stop.y, peak };
+  return { kind: second && top.y > CREST.y + 0.05 ? 'first' : 'high', x: stop.x, y: stop.y, mx: top.x, my: top.y, capY: stop.y, peak, loop: null };
 }
 
 /** Slopes that are too steep after a change are brought back, from the left to the right (the end station stays). */
@@ -73,8 +79,8 @@ export function fix(t: Track, d: Diagnosis): boolean {
     return true;
   }
   if (d.kind === 'loop') {
-    const a = t.loopAt;
-    if (a === null) return false;
+    const a = t.loops[d.loop ?? 0];
+    if (a === undefined) return false;
     // a deeper drop before the loop: the speed at the bottom grows with the height that it fell
     const target = Math.max(MIN_Y + 0.1, Math.min(t.pts[a].y - 0.8, CREST.y - 5.2 + LOOP_R * 0.1));
     if (t.pts[a].y <= MIN_Y + 0.15) return false;
