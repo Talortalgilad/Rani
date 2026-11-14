@@ -1,0 +1,27 @@
+{
+ "note": "Second batch for the park game. Download and process exactly like park-art.json. Items with the same id REPLACE the earlier ones (flagpole, ticket, ticketbooth). bg-park-island replaces the earlier island.",
+ "sheets": [
+  {
+   "file": "sheet-29-park-fixes.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_000903_68586969-aa27-49e7-8c5f-879dfa56c850.png",
+   "order": [
+    "flagpole",
+    "ticket",
+    "ticketbooth",
+    "bench",
+    "hotairballoon",
+    "photobooth",
+    "trophy",
+    "cottoncandycart",
+    "wishingwell"
+   ]
+  }
+ ],
+ "backgrounds": [
+  {
+   "file": "bg-park-island.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_000347_fc9d0593-4bac-4211-b9c9-f372c4be1649.png",
+   "use": "park island, 9:16, replaces the first island"
+  }
+ ]
+}

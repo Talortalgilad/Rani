@@ -1,0 +1,21 @@
+{
+ "note": "Third batch: carnival stands and shops for SPEC-carnival.md. Process exactly like park-art.json (cut to public/park/items/<id>.webp).",
+ "sheets": [
+  {
+   "file": "sheet-30-carnival-stands.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_053317_bb6e245d-592d-4921-9232-23959ee4ca73.png",
+   "order": [
+    "juicestand",
+    "lemonadestand",
+    "cheesestand",
+    "pastastand",
+    "grillstand",
+    "toyshop",
+    "hatshop",
+    "waterfountain",
+    "hammock"
+   ]
+  }
+ ],
+ "backgrounds": []
+}
