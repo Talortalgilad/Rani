@@ -8,8 +8,8 @@ export {
   CubicBezierCurve3, DoubleSide, Float32BufferAttribute, Matrix4, NoToneMapping, PMREMGenerator, Quaternion, Sprite,
   SpriteMaterial, TubeGeometry, BufferGeometry, CanvasTexture, CircleGeometry, Color, ConeGeometry, CylinderGeometry,
   DirectionalLight, ExtrudeGeometry, Fog, Group, HemisphereLight, InstancedMesh, MathUtils, Mesh,
-  MeshBasicMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry,
-  Raycaster, SRGBColorSpace, Scene, Shape, SphereGeometry, TorusGeometry, Vector2, Vector3, WebGLRenderer,
+  MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry,
+  Raycaster, SRGBColorSpace, Scene, Shape, SphereGeometry, TextureLoader, TorusGeometry, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 export type { Material, Texture } from 'three';
 // shipped with Three.js (examples/jsm): built in code, nothing to download

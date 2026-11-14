@@ -64,6 +64,8 @@ export const HE_LINES: HeLine[] = [
   { id: 'l_trace_blur', world: 0, parts: [he.traceBlur] },
   { id: 'l_trace_again', world: 0, parts: [he.traceAgain] },
   { id: 'soon', world: 0, parts: [he.soon] },
+  // the carnival: the name of a resident (the name is one of the recorded ones)
+  { id: 'carnival_name', world: 0, parts: [null] },
   // the memory game
   ...MEMORY_LINES.map((l): HeLine => ({ id: l.id, world: 0, parts: l.parts })),
   // the block game

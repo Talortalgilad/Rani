@@ -6,7 +6,7 @@ import '@fontsource/rubik/hebrew-600.css';
 import '@fontsource/rubik/hebrew-800.css';
 import './ui/styles.css';
 import { onRoute, go, type Route } from './router';
-import { renderHomeAuto } from './lobby3d/entry';
+import { renderHomeCarnival as renderHomeAuto } from './lobby/carnival/entry';
 import { fpsEnabled } from './lobby3d/quality';
 import { renderGate } from './ui/gate';
 import { initInstall } from './install';
