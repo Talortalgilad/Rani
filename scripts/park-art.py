@@ -1,7 +1,7 @@
 """Cuts the art of the park game (assets/english/raw/park-art.json lists it; the raw files are saved next to it):
   the 4 sheets (sheet-25 .. sheet-28) -> public/park/items/<id>.webp (36 objects, 512 x 512 transparent WebP, rembg), in the order of the json
   (left to right, top to bottom); the panoramas -> public/park/bg/<zone>.webp (2520 wide, quality 80), the island -> public/park/bg/island.webp (1080 x 1920).
-Run: python3 scripts/park-art.py"""
+Run: python3 scripts/park-art.py [park-art-2.json]  (items with the same id replace the earlier ones)"""
 import importlib.util, json, os
 import numpy as np
 from PIL import Image
@@ -12,7 +12,8 @@ art = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(art)
 
 RAW = 'assets/english/raw/'
-DATA = json.load(open(RAW + 'park-art.json'))
+import sys
+DATA = json.load(open(RAW + (sys.argv[1] if len(sys.argv) > 1 else 'park-art.json')))
 ZONE = {'bg-park-candy.png': 'candy', 'bg-park-beach.png': 'beach', 'bg-park-snow.png': 'snow', 'bg-park-space.png': 'space', 'bg-park-island.png': 'island'}
 
 
