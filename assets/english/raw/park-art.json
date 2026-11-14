@@ -1,0 +1,92 @@
+{
+ "note": "Art for SPEC-park.md. Download each url, save the raw file to assets/english/raw/<file>, cut sheets in 'order' (left to right, top to bottom) to public/park/items/<id>.webp, resize backgrounds to public/park/bg/.",
+ "sheets": [
+  {
+   "file": "sheet-25-park-rides-a.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_231203_a029b34d-5a86-49ff-9cb4-3fa82948e34f.png",
+   "order": [
+    "carousel",
+    "ferriswheel",
+    "pizzastand",
+    "icecreamstand",
+    "ninjacourse",
+    "bumpercars",
+    "swingride",
+    "bouncycastle",
+    "showstage"
+   ]
+  },
+  {
+   "file": "sheet-26-park-rides-b.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_230852_9fcc3559-5d7c-4d08-bd2c-4562795b1111.png",
+   "order": [
+    "balloonstand",
+    "fountain",
+    "minitrain",
+    "ticketbooth",
+    "parklamp",
+    "flagpole",
+    "roundtree",
+    "flowerbed",
+    "popcorncart"
+   ]
+  },
+  {
+   "file": "sheet-27-park-decor.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_231500_25122866-d910-47d2-be8d-2bc11b0865f8.png",
+   "order": [
+    "balloons",
+    "starstatue",
+    "picnictable",
+    "entrancearch",
+    "bush",
+    "signpost",
+    "ticket",
+    "heart",
+    "fireworksbox"
+   ]
+  },
+  {
+   "file": "sheet-28-coaster-side.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_231714_de306c2a-a663-460a-bafb-d4200e723ab9.png",
+   "order": [
+    "train",
+    "cart",
+    "station",
+    "tunnel",
+    "palm",
+    "rock",
+    "pine",
+    "bridge",
+    "stargate"
+   ]
+  }
+ ],
+ "backgrounds": [
+  {
+   "file": "bg-park-candy.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_231926_036ffb90-3a5d-411f-b4ab-b17ec158b0a5.png",
+   "use": "zone 1 candy hills, 21:9 panorama"
+  },
+  {
+   "file": "bg-park-beach.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_232145_9aa754da-1fb4-4b97-bdd5-8088640c2d29.png",
+   "use": "zone 2 beach, 21:9 panorama"
+  },
+  {
+   "file": "bg-park-snow.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_232358_6614b5cf-e622-4561-b3c6-33b7a48f76aa.png",
+   "use": "zone 3 snow mountain, 21:9 panorama"
+  },
+  {
+   "file": "bg-park-space.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_232616_5b7b54ae-4335-4bb4-86b0-78b611cc3da0.png",
+   "use": "zone 4 space, 21:9 panorama"
+  },
+  {
+   "file": "bg-park-island.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261113_232855_13d565d5-af3a-4373-85fb-64b1758720b0.png",
+   "use": "park island, 9:16"
+  }
+ ]
+}
