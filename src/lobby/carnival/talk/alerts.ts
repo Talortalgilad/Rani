@@ -39,7 +39,7 @@ export const CHATS: Chat[] = [
   { text: 'איזה יום יפה!', he: 'cv_chat_day' },
   { text: 'בואי נשחק!', he: 'cv_chat_play' },
   { text: 'כיף לי כאן!', he: 'cv_chat_fun' },
-  { text: 'Hello!', en: 'Hello!', enId: 'carn_hello' },
+  { text: 'Hello!', en: 'Hello!', enId: 'hello' },
   { text: 'I love pizza!', en: 'I love pizza!', enId: 'carn_i_love_pizza' },
   { text: 'Hi Rani!', en: 'Hi Rani!', enId: 'carn_hi_rani' },
   { text: 'Nice day!', en: 'Nice day!', enId: 'carn_nice_day' },

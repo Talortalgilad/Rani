@@ -41,6 +41,8 @@ export const quiet = (): void => {
   stopSpeech();
 };
 
+/** "Hello!" is the clip that already exists (no recording of its own) */
+export const HELLO_CLIP = 'hello';
 export const WHATS_YOUR_NAME = { id: 'carn_whats_your_name', text: "What's your name?" };
 /** What a talk says when it opens. `who` is the resident that talks (a fixed name has its own whole clip). */
 export function opening(t: Talk, who?: Pick<Resident, 'id' | 'fixed' | 'name'>, enName = ''): Piece[] {
@@ -62,7 +64,7 @@ export function opening(t: Talk, who?: Pick<Resident, 'id' | 'fixed' | 'name'>, 
       // a friend with a fixed name has his own whole clip; the friend that Rani named says a plain hello
       return who?.fixed
         ? [{ enc: { id: `carn_hello_im_${who.id}`, text: `Hello! I'm ${enName || t.self}` } }, { enc: WHATS_YOUR_NAME }]
-        : [{ enc: { id: 'carn_hello', text: 'Hello!' } }, { enc: WHATS_YOUR_NAME }];
+        : [{ enc: { id: HELLO_CLIP, text: 'Hello!' } }, { enc: WHATS_YOUR_NAME }];
   }
 }
 export const items = ITEMS;

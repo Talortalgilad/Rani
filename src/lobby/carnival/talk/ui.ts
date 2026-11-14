@@ -9,7 +9,7 @@ import { activeLevel, recordAnswer } from '../../../math/adaptive';
 import { dayNumber, type Words } from '../../../games/english/engine/progress';
 import { counter } from '../../../ui/counter';
 import { englishName, type Resident } from '../residents';
-import { Chatter, answered, nearCentre, tickAlerts } from './alerts';
+import { Chatter, MAX_ALERTS, answered, nearCentre, tickAlerts } from './alerts';
 import { MATH_TYPE, SUBJECT, WORD_NAMES, makeTalk, nextKind, rng, type Talk, type TalkEnv, type TalkKind } from './gen';
 import { cv } from './lines';
 import { loadSave, writeSave, type CarnivalSave } from './state';
@@ -53,6 +53,7 @@ export class Talks {
 
   constructor(readonly host: TalkHost, private now: () => number = () => Date.now()) {
     this.save = loadSave();
+    if (this.save.alerts.alerts.length > MAX_ALERTS) this.save.alerts.alerts.length = MAX_ALERTS;
     this.chatter = new Chatter(Math.random);
     this.chatEl = document.createElement('div');
     this.chatEl.className = 'cv-chat';
@@ -64,9 +65,12 @@ export class Talks {
   }
 
   /** for the screenshots and the tests: a bubble now, and its talk of a chosen kind */
-  debugTalk(r: number, kind: TalkKind): void {
+  debugTalk(r: number, kind: TalkKind, seed = 4242 + r): void {
     if (this.open) this.close();
-    if (!this.save.alerts.alerts.some((a) => a.r === r)) this.save.alerts.alerts.push({ r, seed: 4242 + r });
+    if (!this.save.alerts.alerts.some((a) => a.r === r)) {
+      this.save.alerts.alerts.push({ r, seed });
+      while (this.save.alerts.alerts.length > MAX_ALERTS) this.save.alerts.alerts.shift();
+    }
     this.openTalk(r, kind);
   }
 
@@ -89,6 +93,8 @@ export class Talks {
       if (p && nearCentre(p.x, p.y, w, h)) void say([{ he: 'cv_rani' }]);
       this.persist(true);
     }
+    // never more than two (whatever happened before: a save, a switch of tier, a talk opened for a test)
+    if (this.save.alerts.alerts.length > MAX_ALERTS) this.save.alerts.alerts.length = MAX_ALERTS;
     for (const al of this.save.alerts.alerts) {
       let el = this.alertEls.get(al.r);
       if (!el) {
@@ -129,7 +135,7 @@ export class Talks {
         this.placeChat(p0);
         this.chatEl.classList.add('on');
         // the sound only when he is near the middle of the screen
-        if (nearCentre(p0.x, p0.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ enc: { id: c.chat.enId ?? 'carn_hello', text: c.chat.en! } }]);
+        if (nearCentre(p0.x, p0.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ enc: { id: c.chat.enId ?? 'hello', text: c.chat.en! } }]);
       }
     } else if (!busy) {
       this.chatT -= dt;
@@ -252,8 +258,8 @@ export class Talks {
       bind();
     } else if (t.kind === 'missing') {
       this.sayText(`${esc(cv.had)} <span class="n">${counter(String(t.a))}</span> ${esc(t.item.he)}, ${esc(cv.ate)} <span class="n">${counter(String(t.b))}</span>${t.b === 1 ? '' : ` ${esc(t.item.he)}`}<br>${esc(cv.left)}`);
-      act.innerHTML = `<div class="cv-items"><span class="grp">${items(t.item, t.a - t.b)}</span><span class="grp ate">${items(t.item, t.b)}</span></div><div class="cv-opts">${t.choices.map((c, i) => btn(counter(String(c)), i)).join('')}</div>`;
-      wrong = () => this.countRow(act, t.answer, '.grp:not(.ate) i');
+      act.innerHTML = `<div class="cv-items"><span class="grp">${items(t.item, t.a - t.b)}${items(t.item, t.b, 'ate')}</span></div><div class="cv-opts">${t.choices.map((c, i) => btn(counter(String(c)), i)).join('')}</div>`;
+      wrong = () => this.countRow(act, t.answer, '.grp i:not(.ate)');
       bind();
     } else if (t.kind === 'more') {
       this.sayText(esc(t.ask === 'more' ? cv.more : cv.less));

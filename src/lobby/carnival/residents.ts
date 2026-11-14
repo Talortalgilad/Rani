@@ -6,7 +6,7 @@ import { SQUISHIES, squishyUrl } from '../../games/english/art/squishies';
 
 export interface Resident { id: string; /** the name, as it is written and said */ name: string; img: string; /** the name is one of the four recorded ones (Cheesy, Mozzi, Horiko, Pop Cheese) */ fixed: boolean }
 /** a name for a resident whose own name is taken by the friend that Rani named (the same, fixed list, in this order) */
-export const ALT_NAMES = ['פיצי', 'בובי', 'נוני', 'לולי', 'טופי'];
+export const ALT_NAMES = ['פיצי', 'בובי', 'נוני', 'קוקי', 'טופי'];
 
 const base = (): string => import.meta.env?.BASE_URL ?? '/';
 /** the four names of the companion, and the picture each has when it is not the companion */

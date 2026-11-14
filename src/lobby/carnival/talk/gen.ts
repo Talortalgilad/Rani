@@ -13,14 +13,14 @@ export const MATH_KINDS: TalkKind[] = ['together', 'exact', 'more', 'missing'];
 /** the maths type that the answer counts as, for the gate's adaptive level */
 export const MATH_TYPE: Record<string, 'add' | 'count' | 'compare' | 'sub'> = { together: 'add', exact: 'count', more: 'compare', missing: 'sub' };
 
-export interface Item { id: string; emoji: string; he: string }
+export interface Item { id: string; emoji: string; he: string; /** can be eaten ("what is missing": I ate...) */ food: boolean }
 /** feminine plurals, so that the numbers (one, two, three...) fit them */
 export const ITEMS: Item[] = [
-  { id: 'candy', emoji: '🍬', he: 'סוכריות' },
-  { id: 'cookie', emoji: '🍪', he: 'עוגיות' },
-  { id: 'icecream', emoji: '🍦', he: 'גלידות' },
-  { id: 'pizza', emoji: '🍕', he: 'פיצות' },
-  { id: 'car', emoji: '🚗', he: 'מכוניות' },
+  { id: 'candy', emoji: '🍬', he: 'סוכריות', food: true },
+  { id: 'cookie', emoji: '🍪', he: 'עוגיות', food: true },
+  { id: 'icecream', emoji: '🍦', he: 'גלידות', food: true },
+  { id: 'pizza', emoji: '🍕', he: 'פיצות', food: true },
+  { id: 'car', emoji: '🚗', he: 'מכוניות', food: false },
 ];
 
 export type Talk =
@@ -89,7 +89,9 @@ export function makeTalk(kind: TalkKind, seed: number, env: TalkEnv): Talk | nul
   const r = rng(seed);
   const cfg = levelConfig(env.level);
   const max = cfg.max;
-  const item = ITEMS[int(r, 0, ITEMS.length - 1)];
+  // "what is missing" is about eating: food only; cars stay in the other talks
+  const pool = kind === 'missing' ? ITEMS.filter((i) => i.food) : ITEMS;
+  const item = pool[int(r, 0, pool.length - 1)];
   if (kind === 'together') {
     for (let k = 0; k < 200; k++) {
       // the quantities that are said are 2 or more (a plural noun follows)
@@ -147,7 +149,7 @@ export function validTalk(t: Talk, level: number): boolean {
     case 'together':
       return t.a >= 2 && t.b >= 2 && t.a + t.b === t.answer && t.answer <= max && t.choices.length === 3 && new Set(t.choices).size === 3 && t.choices.filter((c) => c === t.answer).length === 1 && t.choices.every((c) => c >= 0 && c <= max);
     case 'missing':
-      return t.b >= 1 && t.a > t.b && t.a <= max && t.a - t.b === t.answer && t.choices.length === 3 && new Set(t.choices).size === 3 && t.choices.filter((c) => c === t.answer).length === 1 && t.choices.every((c) => c >= 0 && c <= max);
+      return t.item.food && t.b >= 1 && t.a > t.b && t.a <= max && t.a - t.b === t.answer && t.choices.length === 3 && new Set(t.choices).size === 3 && t.choices.filter((c) => c === t.answer).length === 1 && t.choices.every((c) => c >= 0 && c <= max);
     case 'exact':
       return t.n >= 2 && t.n <= max && t.pile > t.n && t.pile <= 24;
     case 'more':

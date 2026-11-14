@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { levelConfig } from '../../../math/levels';
 import type { Words } from '../../../games/english/engine/progress';
 import { ALERT_WAIT, CHATS, Chatter, FIRST_WAIT, MAX_ALERTS, answered, freshAlerts, nearCentre, tickAlerts } from './alerts';
-import { MATH_KINDS, SUBJECT, learnedWords, makeTalk, nextKind, rng, validTalk, type TalkEnv, type TalkKind } from './gen';
+import { ITEMS, MATH_KINDS, SUBJECT, learnedWords, makeTalk, nextKind, rng, validTalk, type TalkEnv, type TalkKind } from './gen';
 import { CARNIVAL_EN, CARNIVAL_LINES } from './lines';
 import { emptySave, loadSave, writeSave } from './state';
+import { ALT_NAMES } from '../residents';
 import { numberLine, opening } from './speak';
 import { WORDS } from '../../../games/english/content/words';
 import { ASKABLE } from './gen';
@@ -124,7 +125,7 @@ describe('the rules of the new corrections', () => {
     const fixed = opening(t, { id: 'mozzi', fixed: true, name: 'מוצי' }, 'Mozzi').map((p) => ('enc' in p ? p.enc.id : '?'));
     expect(fixed).toEqual(['carn_hello_im_mozzi', 'carn_whats_your_name']);
     const mine = opening(t, { id: 'companion', fixed: false, name: 'לילה' }).map((p) => ('enc' in p ? p.enc.id : '?'));
-    expect(mine).toEqual(['carn_hello', 'carn_whats_your_name']);
+    expect(mine).toEqual(['hello', 'carn_whats_your_name']);
     for (const id of ['cheesy', 'mozzi', 'horiko', 'popcheese']) expect(CARNIVAL_EN.some((x) => x.id === `carn_hello_im_${id}`)).toBe(true);
     for (const id of ['carn_lets_play', 'carn_i_am_hungry', 'carn_i_like_ice_cream', 'carn_look_at_me', 'carn_thank_you_rani']) expect(CARNIVAL_EN.some((x) => x.id === id), id).toBe(true);
     expect(CHATS.filter((c) => c.enId).map((c) => c.enId)).toEqual(expect.arrayContaining(['carn_lets_play', 'carn_i_am_hungry', 'carn_i_like_ice_cream', 'carn_look_at_me']));
@@ -136,6 +137,71 @@ describe('the rules of the new corrections', () => {
       expect(validTalk(t, level)).toBe(true);
       if (t.kind === 'more' && level >= 3) expect(Math.abs(t.a - t.b)).toBeLessThanOrEqual(3);
     }
+  });
+});
+
+describe('the second round of corrections', () => {
+  it('"what is missing" is only about food; cars stay in the other maths talks', () => {
+    const seen = new Set<string>();
+    for (let level = 1; level <= 5; level++) for (let seed = 1; seed <= 400; seed++) {
+      const m = makeTalk('missing', seed, env(level))!;
+      if (m.kind === 'missing') {
+        expect(m.item.food, m.item.id).toBe(true);
+        expect(m.item.id).not.toBe('car');
+      }
+      for (const k of ['together', 'exact', 'more'] as TalkKind[]) {
+        const t = makeTalk(k, seed, env(level))!;
+        if ('item' in t) seen.add(t.item.id);
+      }
+    }
+    expect(seen.has('car')).toBe(true);
+    expect(ITEMS.filter((i) => !i.food).map((i) => i.id)).toEqual(['car']);
+  });
+
+  it('never more than two "!" bubbles, in a long simulation: talks, leaving for a game and coming back, a switch of tier (the save is read again)', () => {
+    const store = new Map<string, string>();
+    const mem = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };
+    const rand = rng(2024);
+    let save = emptySave();
+    let busy = false;
+    let spawned = 0;
+    let busyFor = 0;
+    for (let i = 0; i < 400000; i++) {
+      const dt = 0.1;
+      const a = tickAlerts(save.alerts, dt, 5, i + 1, busy);
+      if (a) spawned++;
+      expect(save.alerts.alerts.length, `step ${i}`).toBeLessThanOrEqual(MAX_ALERTS);
+      expect(new Set(save.alerts.alerts.map((x) => x.r)).size).toBe(save.alerts.alerts.length);
+      if (busy && --busyFor <= 0) {
+        // a talk ends: answered, or closed with the X (the bubble stays)
+        if (rand() < 0.7 && save.alerts.alerts.length) answered(save.alerts, save.alerts.alerts[0].r);
+        busy = false;
+      }
+      const e = rand();
+      if (!busy && e < 0.002 && save.alerts.alerts.length) {
+        busy = true;
+        busyFor = 80;
+      } else if (e < 0.004) {
+        // out to a game and back: the save is written and the lobby starts again from it
+        writeSave(save, mem);
+        save = loadSave(mem);
+      } else if (e < 0.0055) {
+        // a switch of tier (the 3D carnival to the plain home or back): the same
+        writeSave(save, mem);
+        save = loadSave(mem);
+      }
+    }
+    expect(spawned).toBeGreaterThan(200);
+    // a save with too many in it (from an older build) is cut to two when it is read
+    const bad = emptySave();
+    bad.alerts.alerts = [1, 2, 3, 4, 0].map((r) => ({ r, seed: r }));
+    writeSave(bad, mem);
+    expect(loadSave(mem).alerts.alerts.length).toBeLessThanOrEqual(MAX_ALERTS);
+  });
+
+  it('the names that can replace a fixed one do not include a name kept for another character', () => {
+    expect(ALT_NAMES).not.toContain('לולי');
+    expect(ALT_NAMES).toContain('קוקי');
   });
 });
 
