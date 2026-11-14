@@ -28,7 +28,7 @@ export interface Shell {
   stage: HTMLElement;
   lolly: Lolly;
   alive(): boolean;
-  say(id: string, o?: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number }): Promise<void>;
+  say(id: string, o?: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number; side?: boolean }): Promise<void>;
   /** a guest (a squishy) takes Lolly's place in the middle; she is small in the corner */
   guest(html: string): void;
   /** Lolly's bubble with a text of its own (no clip) */
@@ -85,25 +85,38 @@ export function createShell(root: HTMLElement, deps: Deps, lesson: Lesson, onX: 
   const guestOn = (): boolean => !!root.querySelector('.tutor-screen.dlg');
   /** a pose without a moving mouth is shown before and after a clip, never during it (the mouth changes between idle, talk1 and talk2 while she speaks) */
   const PRE: Partial<Record<Look, number>> = { wave: 600, clap: 500, confused: 500, think: 400 };
-  const say = async (id: string, o: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number } = {}): Promise<void> => {
+  const say = async (id: string, o: { look?: Look; keep?: boolean; text?: string; nobubble?: boolean; pre?: number; side?: boolean } = {}): Promise<void> => {
     check();
     const guest = guestOn();
-    if (!o.nobubble) {
+    // Lolly's own words while a guest talks (almost, let me show you): a small bubble next to the small Lolly; the guest's bubble is left alone
+    const side = guest && !!o.side;
+    const mine = !guest || side;
+    let sb: HTMLElement | null = null;
+    if (side) {
+      sb = document.createElement('div');
+      sb.className = 'tutor-sidebubble';
+      sb.innerHTML = bubbleHtml(o.text ?? clipText(id), clipLang(id));
+      root.querySelector('.tutor-screen')!.appendChild(sb);
+    } else if (!o.nobubble) {
       last = id;
       setBubble(o.text ?? clipText(id), clipLang(id));
     }
     // while a guest (a squishy) talks, Lolly stays small in the corner and does not move her mouth
-    if (o.look && !guest) lolly.set(o.look);
+    if (o.look && mine) lolly.set(o.look);
     const pre = o.pre ?? (o.look ? PRE[o.look] ?? 0 : 0);
-    if (pre && !guest) await wait(pre);
-    if (!guest) lolly.speaking(true);
+    if (pre && mine) await wait(pre);
+    if (mine) lolly.speaking(true);
     const t0 = Date.now();
     const ok = await playTutor(id);
-    if (!guest) lolly.speaking(false);
-    check();
-    // no sound (or the voice of the phone failed): the text is left to be read
-    if (!ok) await wait(Math.min(2200, 500 + clipText(id).length * 45) - (Date.now() - t0));
-    if (!o.keep && o.look && !guest) lolly.set('idle');
+    if (mine) lolly.speaking(false);
+    try {
+      check();
+      // no sound (or the voice of the phone failed): the text is left to be read
+      if (!ok) await wait(Math.min(2200, 500 + clipText(id).length * 45) - (Date.now() - t0));
+    } finally {
+      sb?.remove();
+    }
+    if (!o.keep && o.look && mine) lolly.set('idle');
   };
   q('#tb').addEventListener('click', () => {
     if (last) void say(last).catch(() => {});
@@ -231,7 +244,7 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
         picked = -1;
         btns.forEach((b) => b.classList.remove('sel'));
         if (tries === 1) {
-          await sh.say('t_almost', { look: 'listen' });
+          await sh.say('t_almost', { look: 'listen', side: true });
           o.restore?.();
           await o.replay?.();
         } else if (tries === 2) {
@@ -239,7 +252,7 @@ export async function pickRound(sh: Shell, o: { options: Option[]; correct: numb
           await o.replay?.();
         } else {
           btns[o.correct].classList.add('glow');
-          await sh.say('t_show', { look: 'happy' });
+          await sh.say('t_show', { look: 'happy', side: true });
           o.restore?.();
           return void resolve(await finish());
         }

@@ -117,3 +117,7 @@
 .dlg .tutor-lolly-col .tutor-lolly { position: absolute; top: 58px; left: 8px; width: 84px; height: 84px; z-index: 3; }
 /* the list: the bubble with the long sentence of the day */
 .tutor-list .tutor-bubble { max-height: none; padding: 12px 20px; font-size: 16px; line-height: 1.3; }
+
+/* dialogue: Lolly's own words (almost, let me show you) in a small bubble next to the small Lolly */
+.tutor-sidebubble { position: absolute; top: 62px; left: 98px; max-width: 46%; z-index: 4; padding: 6px 12px; border: 3px solid var(--ink); border-radius: 16px; background: #fff; font: 700 15px/1.2 'Fredoka', sans-serif; color: var(--ink); text-align: center; box-shadow: 0 4px 0 rgba(58, 47, 75, .16); animation: tb-pop .2s ease-out; }
+.tutor-sidebubble::before { content: ''; position: absolute; left: -9px; top: 14px; width: 12px; height: 12px; background: #fff; border: 3px solid var(--ink); border-width: 0 0 3px 3px; transform: rotate(45deg); }
