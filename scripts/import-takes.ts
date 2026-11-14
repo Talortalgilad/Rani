@@ -113,14 +113,20 @@ function choose(sil: Sil[], lines: { id: string; text: string }[], total: number
   return { spans, cuts, candidates: K, lead: lead?.dur ?? 0, trail: trail?.dur ?? 0 };
 }
 
-// Takes from 400 on (carnival, tutor): a 10 ms fade-in (a take can start on the first sound, and a cut there would click).
+// Takes from 300 on (the tutor, the carnival): a 10 ms fade-in (a take can start on the first sound, and a cut there would click), and a silence of more than 0.35 s at the end of a clip is cut off (the last line of a take can come with the rest of the take's silence).
 // The older takes are not touched, so running everything again does not change a clip that was already approved.
-const POLISH_FROM = 400;
+const POLISH_FROM = 300;
 
 function clip(src: string, from: number, to: number, total: number, out: string, polish = false): boolean {
   const s = Math.max(0, from - MARGIN);
   const e = Math.min(total, to + MARGIN);
   const r = run('ffmpeg', ['-y', '-v', 'error', '-i', src, '-ss', s.toFixed(3), '-to', e.toFixed(3), '-af', `${polish ? 'afade=t=in:d=0.01,' : ''}loudnorm=I=-16:TP=-1.5:LRA=11`, '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '64k', out]);
+  if (r.ok && polish) {
+    const d = duration(out);
+    const tail = silences(out, -35, 0.35, d).find((x) => x.end >= d - 0.3 && x.start > 0.3);
+    // cut the long tail: the clip ends 0.15 s after the last sound
+    if (tail) return run('ffmpeg', ['-y', '-v', 'error', '-i', src, '-ss', s.toFixed(3), '-to', (s + tail.start + 0.15).toFixed(3), '-af', 'afade=t=in:d=0.01,loudnorm=I=-16:TP=-1.5:LRA=11', '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '64k', out]).ok;
+  }
   return r.ok;
 }
 
@@ -165,7 +171,7 @@ async function main(): Promise<void> {
       const extra: string[] = [];
       if (silences(join(dir, `${l.id}.mp3`), -35, 0.6, 1e9).some((x) => x.start > 0.25 && x.end < duration(join(dir, `${l.id}.mp3`)) - 0.25)) extra.push('pause');
       if ((i > 0 && cut!.cuts[i - 1].dur < 0.8) || (i < cut!.cuts.length && cut!.cuts[i].dur < 0.8)) extra.push('tight');
-      all.push({ id: l.id, text: l.text, lang: t.lang, take: t.take, from: sp.from, to: sp.to, dur: sp.to - sp.from, letters: letters(l.text), note: '', extra });
+      all.push({ id: l.id, text: l.text, lang: t.lang, take: t.take, from: sp.from, to: sp.to, dur: Math.max(0.05, duration(join(dir, `${l.id}.mp3`)) - 2 * MARGIN), letters: letters(l.text), note: '', extra });
     });
     if (cut.cuts.some((c) => c.dur < 0.8)) problems.push(`take ${t.take}: a cut at a silence shorter than 0.8 s (${cut.cuts.filter((c) => c.dur < 0.8).map((c) => `${c.start.toFixed(1)}s=${c.dur.toFixed(2)}`).join(', ')}) - check by ear`);
   }
