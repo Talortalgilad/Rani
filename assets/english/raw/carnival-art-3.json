@@ -1,0 +1,12 @@
+{
+ "note": "Replacement for one prop from carnival-art-2.json. The first envelope was white and was erased with the background. This is a single object (not a sheet): cut it like the others to public/park/items/envelope.webp and replace the heart-only file.",
+ "sheets": [],
+ "singles": [
+  {
+   "file": "item-envelope.png",
+   "id": "envelope",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_184410_5bc29062-5198-4d1f-a6b7-fa6a3cb49bb6.png"
+  }
+ ],
+ "backgrounds": []
+}

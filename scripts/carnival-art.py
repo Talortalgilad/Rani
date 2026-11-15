@@ -26,3 +26,15 @@ if __name__ == '__main__':
         for box, name in zip(objs, sh['order']):
             art.cut(img, box, session, None, True).save(f'{out}/{name}.webp', 'WEBP', quality=82, method=6)
         print(sh['file'], len(objs), 'items', flush=True)
+    # carnival-art-3.json: single objects (a replacement for one prop): rembg on the whole picture, crop to the object, square, 512
+    from rembg import remove
+    single = json.load(open(RAW + 'carnival-art-3.json'))
+    for sg in single.get('singles', []):
+        out = remove(Image.open(RAW + sg['file']).convert('RGB'), session=session)
+        c = out.crop(out.getchannel('A').point(lambda v: 255 if v > 20 else 0).getbbox())
+        n = max(c.size)
+        pad = int(n * 0.04)
+        big = Image.new('RGBA', (n + 2 * pad, n + 2 * pad), (0, 0, 0, 0))
+        big.paste(c, (pad + (n - c.width) // 2, pad + (n - c.height) // 2))
+        big.resize((512, 512), Image.LANCZOS).save(f"public/park/items/{sg['id']}.webp", 'WEBP', quality=82, method=6)
+        print(sg['file'], 'single', flush=True)
