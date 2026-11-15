@@ -1,6 +1,8 @@
 /** The Hebrew of the talks, each with an id (recorded like the other lines: src/games/english/content/heLines.ts takes this list). The numbers 1-20 are separate lines. */
 import { numberToHebrew } from '../../../math/hebrew';
 import { ITEMS } from './gen';
+import { CS_LINES } from '../csLines';
+import { QUESTS } from '../quests';
 
 export const cv = {
   have: 'יש לי',
@@ -34,6 +36,9 @@ export const CARNIVAL_LINES: { id: string; parts: (string | null)[] }[] = [
   ...(Object.keys(cv) as (keyof typeof cv)[]).map((k) => ({ id: `cv_${k}`, parts: [cv[k]] })),
   ...ITEMS.map((i) => ({ id: `cv_item_${i.id}`, parts: [i.he] })),
   ...Array.from({ length: 20 }, (_, i) => ({ id: `cv_num_${i + 1}`, parts: [numberToHebrew(i + 1)] })),
+  // stage 2: the lines that are recorded (voice-takes-carnival-3.json), and the quests (read by the phone until they are recorded)
+  ...CS_LINES.map((l) => ({ id: l.id, parts: [l.text] })),
+  ...QUESTS.map((q) => ({ id: `qs_${q.id}`, parts: [q.he] })),
 ];
 
 /** The English sentences of the talks, for the list that goes to the recording (the opening of a sentence is fixed; the word after it is the recording of the word). */
