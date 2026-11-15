@@ -33,6 +33,10 @@ export interface Agent {
   at: string | null;
   /** his place in the line (0 is the first) */
   place: number;
+  /** on the screen (false: at home, this visit) */
+  active: boolean;
+  /** standing still (tapped) */
+  held: boolean;
 }
 export type SimEvent =
   | { type: 'wish'; r: number; wish: Wish }
@@ -79,10 +83,18 @@ export class CarnivalSim {
     const speed = (1.15 + (i % 3) * 0.12) * TRAITS[r.personality].speed;
     const walker = new Walker(this.graph, start, rng(100 + i), speed);
     this.agents.push({
-      id: r.id, personality: r.personality, x: walker.x, z: walker.z, face: 1, walking: false, wish: null, mode: 'wander', at: null, place: 0,
+      id: r.id, personality: r.personality, x: walker.x, z: walker.z, face: 1, walking: false, wish: null, mode: 'wander', at: null, place: 0, active: true, held: false,
       walker, route: [], wishIn: (8 + this.rand() * 25) * this.tmult, retry: 0, timer: 0, game: r.game, slot: null,
     });
     return i;
+  }
+
+  hold(i: number, on: boolean): void {
+    if (this.agents[i]) this.agents[i].held = on;
+  }
+  /** the ones who are "at home" this visit (the carnival shows only as many as the tier can draw) do not wish and are not shown */
+  setActive(i: number, on: boolean): void {
+    if (this.agents[i]) this.agents[i].active = on;
   }
 
   setBuilt(built: Record<string, string>): void {
@@ -190,6 +202,7 @@ export class CarnivalSim {
   update(dt: number): SimEvent[] {
     const ev: SimEvent[] = [];
     this.agents.forEach((a, r) => {
+      if (!a.active) return;
       // wishes: a new one now and then (never two), and an old one that nothing filled is tried again
       if (!a.wish) {
         a.wishIn -= dt;
@@ -209,7 +222,9 @@ export class CarnivalSim {
         }
       }
       // moving
-      if (a.mode === 'wander') {
+      if (a.held && a.mode === 'wander') {
+        a.walking = false;
+      } else if (a.mode === 'wander') {
         a.walker.update(dt);
         a.x = a.walker.x;
         a.z = a.walker.z;

@@ -58,6 +58,31 @@ export class CarnivalWorld {
     this.lastHearts = d.save.hearts;
     this.knownOpen = new Set(ITEMS.filter((i) => isItemOpen(i, d.progress())).map((i) => i.id));
   }
+  /** the view for the scene */
+  agents(): { x: number; z: number; face: number; walking: boolean; active: boolean }[] {
+    return this.sim.agents;
+  }
+  rideProgress(slotId: string): number | null {
+    return this.sim.rideProgress(slotId);
+  }
+  hold(i: number, on: boolean): void {
+    this.sim.hold(i, on);
+  }
+  built(): Record<string, string> {
+    return this.d.save.built;
+  }
+  /**
+   * Who is on the screen: all, up to the limit of the tier. Beyond it some are "at home", and they change at every visit (`visit`): the resident of Rani (the first) is always out.
+   */
+  chooseHome(limit: number, visit: number): void {
+    const n = this.residents.length;
+    const away = new Set<number>();
+    if (n > limit) {
+      const order = Array.from({ length: n - 1 }, (_, i) => i + 1).sort((a, b) => ((a * 7919 + visit * 104729) % 1009) - ((b * 7919 + visit * 104729) % 1009));
+      order.slice(0, n - limit).forEach((i) => away.add(i));
+    }
+    this.sim.agents.forEach((_, i) => this.sim.setActive(i, !away.has(i)));
+  }
   private simOf(r: Resident): SimResident {
     return { id: r.id, personality: (r.personality ?? 'curious') as Personality, game: r.game };
   }
@@ -121,6 +146,17 @@ export class CarnivalWorld {
     this.sim.setBuilt(this.d.save.built);
     this.d.persist();
     this.pending.push({ type: 'removed', slot: slotId, item: item.id });
+    return true;
+  }
+  /** moves a built thing to another free place of the same kind (no stars change) */
+  move(from: string, to: string): boolean {
+    const item = this.d.save.built[from];
+    const a = this.slot(from), b = this.slot(to);
+    if (!item || !a || !b || a.kind !== b.kind || !this.isSlotOpen(b) || this.d.save.built[to]) return false;
+    delete this.d.save.built[from];
+    this.d.save.built[to] = item;
+    this.sim.setBuilt(this.d.save.built);
+    this.d.persist();
     return true;
   }
   private pending: WorldEvent[] = [];

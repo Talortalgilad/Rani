@@ -33,3 +33,10 @@ export function progressFromEnglish(en: unknown, lessonsByUnit: Record<number, s
   const units = Object.entries(lessonsByUnit).filter(([, ls]) => ls.length > 0 && ls.every((l) => had.has(l))).map(([u]) => Number(u));
   return { worlds, units };
 }
+
+/** The lessons of each unit of Miss Lolly (units 1-3 are written: SPEC-tutor.md 6). The unit is done when all of them are. */
+export const LESSONS_BY_UNIT: Record<number, string[]> = {
+  1: ['u1l1', 'u1l2', 'u1l3', 'u1l4'],
+  2: ['u2l1', 'u2l2', 'u2l3', 'u2l4'],
+  3: ['u3l1', 'u3l2', 'u3l3', 'u3l4'],
+};

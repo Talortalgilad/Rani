@@ -7,14 +7,20 @@ import { comingSoon, games } from '../../games/registry';
 import { sayLine } from '../../games/english/content/heLines';
 import { go } from '../../router';
 import { sound } from '../../sound';
-import { getState } from '../../storage';
+import { getState, update } from '../../storage';
 import { renderHome } from '../../ui/home';
 import { pinnedTier, sessionTier, setTier } from '../../lobby3d/quality';
 import { renderHomeAuto as renderOldLobby } from '../../lobby3d/entry';
 import '../../lobby3d/lobby.css';
 import './ui/carnival.css';
-import { residents, type Resident } from './residents';
+import './ui/world.css';
+import { type Resident } from './residents';
 import { Talks, type TalkHost } from './talk/ui';
+import { CarnivalWorld } from './world';
+import { WorldUI } from './ui/worldUi';
+import { loadSave, writeSave } from './save';
+import { LESSONS_BY_UNIT, progressFromEnglish } from './unlocks';
+import { plots } from './layout';
 
 const OLD_KEY = 'rani-lobby-old';
 const SHOWN_KEY = 'rani-jar-shown';
@@ -48,9 +54,41 @@ const writeShown = (n: number): void => {
   }
 };
 
-function people(): Resident[] {
+/** The world of the carnival (stage 2) for this visit: the save (one object, shared with the talks), the stars, what she finished in the learning games, and where the games' plots are. */
+function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>; visit: number } {
+  const save = loadSave();
+  let t = 0;
+  const persist = (): void => {
+    const now = Date.now();
+    if (now - t > 1500) {
+      t = now;
+      writeSave(save);
+    }
+  };
+  const ps = plots(games.length + comingSoon.length);
   const en = getState().games.english as { buddy?: string | null; companion?: { name?: string } } | undefined;
-  return residents(en?.companion?.name ?? null, en?.buddy ?? null);
+  const world = new CarnivalWorld({
+    save,
+    persist,
+    stars: () => getState().stars,
+    spend: (n) => update((s) => void (s.stars = Math.max(0, s.stars - n))),
+    give: (n) => update((s) => void (s.stars += n)),
+    progress: () => progressFromEnglish(getState().games.english, LESSONS_BY_UNIT),
+    games: games.map((g) => g.id),
+    plotCount: games.length + comingSoon.length,
+    // the front of a plot: on the ring path in front of it
+    plotFronts: Object.fromEntries(games.map((g, i) => [g.id, { x: ps[i].x * 0.72, z: ps[i].z * 0.72 }])),
+    companion: { name: en?.companion?.name ?? null, buddy: en?.buddy ?? null },
+  });
+  // a visit: the ones who were waiting for the rounds that she played, and who is "at home" this time
+  let visit = 0;
+  try {
+    visit = Number(localStorage.getItem('rani-carnival-visit') ?? 0) + 1;
+    localStorage.setItem('rani-carnival-visit', String(visit));
+  } catch {
+    /* ignore */
+  }
+  return Object.assign({ world, save }, { visit });
 }
 
 /** The games row at the bottom: a round icon for each game, one tap goes in. */
@@ -78,46 +116,49 @@ function gamesBar(): HTMLElement {
   return bar;
 }
 
-/** The strip of the residents for the regular home (tier 2d): a tap says the name. */
-function strip(): HTMLElement {
+/** The strip of the residents for the regular home (tier 2d): a tap says the name. It scrolls sideways when there are many. */
+function stripButton(r: Resident): HTMLButtonElement {
+  const b = document.createElement('button');
+  b.className = 'cv-res';
+  b.setAttribute('aria-label', r.name);
+  b.innerHTML = `<img src="${esc(r.img)}" alt="" draggable="false"><span>${esc(r.name)}</span>`;
+  return b;
+}
+function strip(list: Resident[]): HTMLElement {
   const s = document.createElement('div');
   s.className = 'cv-strip';
-  for (const r of people()) {
-    const b = document.createElement('button');
-    b.className = 'cv-res';
-    b.setAttribute('aria-label', r.name);
-    b.innerHTML = `<img src="${esc(r.img)}" alt="" draggable="false"><span>${esc(r.name)}</span>`;
-    b.addEventListener('click', () => {
-      b.classList.remove('hop');
-      void b.offsetWidth;
-      b.classList.add('hop');
-      void sayLine('carnival_name', r.name);
-    });
-    s.appendChild(b);
-  }
+  for (const r of list) s.appendChild(stripButton(r));
   return s;
 }
 
 /** The talks of the plain home (the strip): they stop when the 3D carnival takes over, so that two do not run at once. */
 let plainStop: (() => void) | null = null;
+/** the world of the visit that is on the screen (for the tests and the screenshots) */
+const expose = (o: Record<string, unknown>): void => void Object.assign(window as unknown as Record<string, unknown>, o);
 
 export function renderHomeCarnival(root: HTMLElement): () => void {
   if (wantsOldLobby()) return renderOldLobby(root);
   const pref = getState().settings.lobby;
+  const { world, save, visit } = makeWorld();
+  const tierGuess = sessionTier(pref);
+  world.chooseHome(CarnivalWorld.visibleLimit(tierGuess === 'high' ? 'high' : tierGuess === 'medium' ? 'medium' : '2d'), visit);
+  // the rounds that were played while she was away: the ones who waited for them give their hearts now
+  const settled = world.settleRounds();
+  expose({ __world: world });
+
   const plain = (): (() => void) => {
     const c = renderHome(root);
     const sc = root.querySelector('.screen.home');
-    const st = strip();
+    const st = strip(world.residents);
     sc?.insertBefore(st, sc.querySelector('.grid'));
     // the residents talk here too: the same bubbles, from the strip
     const layer = document.createElement('div');
     layer.className = 'cv-layer';
     (sc ?? root).appendChild(layer);
-    const rs = people();
     const btns = [...st.querySelectorAll<HTMLElement>('.cv-res')];
     const host: TalkHost = {
       layer,
-      residents: rs,
+      residents: world.residents,
       pos: (i) => {
         const r = btns[i]?.getBoundingClientRect();
         return r ? { x: r.left + r.width / 2, y: r.top } : null;
@@ -131,20 +172,74 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         btns[i]?.classList.add('hop');
       },
     };
-    const talks = new Talks(host);
-    (window as unknown as Record<string, unknown>).__talks = talks;
-    btns.forEach((b, i) => b.addEventListener('click', () => void talks.tapResident(i)));
+    const talks = new Talks(host, undefined, save);
+    expose({ __talks: talks });
+    const ui = new WorldUI({
+      layer,
+      world,
+      mode: '2d',
+      pos: (i) => host.pos(i),
+      takeMe: (i) => host.wave(i),
+      addResident: (r) => {
+        const b = stripButton(r);
+        st.appendChild(b);
+        btns.push(b);
+        b.addEventListener('click', () => void talks.tapResident(btns.length - 1));
+      },
+      goWorld: (kind) => go(kind === 'world' ? { name: 'gate', gameId: 'english' } : { name: 'gate', gameId: 'english' }),
+      heartsEl: () => layer.querySelector('.cv-hearts'),
+      gamesBar: () => root.querySelector('.grid'),
+      alerts: () => talks.save.alerts.alerts.map((a) => a.r),
+    });
+    ui.handle(settled);
+    btns.forEach((b, i) =>
+      b.addEventListener('click', () => {
+        b.classList.remove('hop');
+        void b.offsetWidth;
+        b.classList.add('hop');
+        if (!talks.tapResident(i)) {
+          void sayLine('carnival_name', world.residents[i].name);
+          ui.residentTapped(i);
+        }
+      }),
+    );
+    // the number of the ones who wait for a game, on its card
+    const cards = [...(sc?.querySelectorAll<HTMLElement>('.grid .card:not(.locked)') ?? [])];
+    cards.forEach((card) => (card.style.position = 'relative'));
+    const badge = (): void =>
+      cards.forEach((card, i) => {
+        const n = games[i] ? world.sim.waitingFor(games[i].id) : 0;
+        let el = card.querySelector<HTMLElement>('.cv-wait');
+        if (!n) return el?.remove();
+        if (!el) {
+          el = document.createElement('span');
+          el.className = 'cv-wait';
+          card.appendChild(el);
+        }
+        el.textContent = String(n);
+      });
     let raf = 0;
     let last = performance.now();
+    let hearts = save.hearts;
     const loop = (t: number): void => {
       raf = requestAnimationFrame(loop);
-      talks.tick(Math.min(0.1, (t - last) / 1000));
+      const dt = Math.min(0.1, (t - last) / 1000);
       last = t;
+      ui.handle(world.tick(dt));
+      talks.tick(dt);
+      ui.tick(dt);
+      if (save.hearts !== hearts) {
+        hearts = save.hearts;
+        talks.refreshHearts();
+      }
+      badge();
     };
     raf = requestAnimationFrame(loop);
     const stop = (): void => {
       cancelAnimationFrame(raf);
       talks.dispose();
+      ui.dispose();
+      writeSave(save);
       layer.remove();
     };
     plainStop = stop;
@@ -153,17 +248,20 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       c();
     };
   };
-  if (sessionTier(pref) === '2d') return plain();
+  if (tierGuess === '2d') return plain();
 
   let cleanup2d: (() => void) | null = plain();
   let dead = false;
   let lobby: { dispose(): void } | null = null;
+  let ui3: WorldUI | null = null;
   const fallback = (): void => {
     if (dead) return;
     (window as unknown as { __talks?: Talks }).__talks?.dispose();
+    ui3?.dispose();
+    ui3 = null;
     lobby?.dispose();
     lobby = null;
-    document.querySelectorAll('.cv-sign').forEach((e) => e.remove());
+    document.querySelectorAll('.cv-sign, .cvw-slot').forEach((e) => e.remove());
     document.body.classList.remove('lobby3d-on', 'carnival-on');
     setTier('2d');
     cleanup2d?.();
@@ -179,12 +277,14 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       let hideTimer = 0;
       const signs: HTMLElement[] = [];
       let talks: Talks | null = null;
+      let hearts = save.hearts;
       const l = await mod.startCarnival({
+        world,
         plots: [
           ...games.map((g) => ({ kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
           ...comingSoon.map((c) => ({ kind: 'locked' as const, title: c.title, color: c.color })),
         ],
-        residents: people(),
+        residents: [...world.residents],
         autoDowngrade: pref === 'auto' && !pinnedTier(),
         onEnter: (i) => {
           if (!games[i]) return;
@@ -203,10 +303,24 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           window.clearTimeout(hideTimer);
           hideTimer = window.setTimeout(() => label.classList.remove('on'), 3200);
           sound.play(again ? 'bonus' : 'pop', again ? 900 : 700);
-          if (!again) void sayLine('carnival_name', r.name);
+          if (!again) {
+            void sayLine('carnival_name', r.name);
+            ui3?.residentTapped(world.residents.indexOf(r));
+          }
         },
-        onTick: (dt) => talks?.tick(dt),
+        onTick: (dt) => {
+          const ev = world.tick(dt);
+          ui3?.handle(ev);
+          talks?.tick(dt);
+          ui3?.tick(dt);
+          if (save.hearts !== hearts) {
+            hearts = save.hearts;
+            talks?.refreshHearts();
+          }
+        },
         onResidentTap: (i) => talks?.tapResident(i) ?? false,
+        onBoardTap: () => ui3?.openBoard(),
+        onSlots: (list) => ui3?.onSlots(list),
         safeTop: 150,
         safeBottom: 104,
         onSigns: (list) => {
@@ -270,19 +384,41 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         homeBtn.setAttribute('aria-label', 'חזרה למרכז');
         homeBtn.textContent = '🏠';
         homeBtn.addEventListener('click', () => l.home());
-        screen.append(gamesBar(), homeBtn, label);
+        const bar = gamesBar();
+        screen.append(bar, homeBtn, label);
         const layer = document.createElement('div');
         layer.className = 'cv-layer';
         screen.appendChild(layer);
-        const host: TalkHost = { layer, residents: people(), pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i) };
+        const host: TalkHost = { layer, residents: world.residents, pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i) };
         // the talks of the strip stop, the carnival's own begin
         plainStop?.();
         plainStop = null;
-        talks = new Talks(host);
-        (window as unknown as Record<string, unknown>).__talks = talks;
+        talks = new Talks(host, undefined, save);
+        expose({ __talks: talks });
+        ui3 = new WorldUI({
+          layer,
+          world,
+          mode: '3d',
+          pos: (i) => l.residentScreen(i),
+          focusSlot: (id) => {
+            const p = world.slot(id);
+            if (p) l.lookAt(p.x, p.z, 17);
+          },
+          takeMe: (i) => {
+            l.focus(i);
+            l.wave(i);
+            window.setTimeout(() => l.focus(null), 3500);
+          },
+          addResident: (r) => void l.addResident(r),
+          goWorld: () => go({ name: 'gate', gameId: 'english' }),
+          heartsEl: () => layer.querySelector('.cv-hearts'),
+          gamesBar: () => bar,
+          alerts: () => talks?.save.alerts.alerts.map((a) => a.r) ?? [],
+        });
+        ui3.handle(settled);
         document.body.classList.add('lobby3d-on', 'carnival-on');
         performance.mark?.('carnival-ready');
-        (window as unknown as Record<string, unknown>).__carnivalHandle = l;
+        expose({ __carnivalHandle: l, __ui: ui3 });
       }, ms);
     } catch {
       fallback();
@@ -291,9 +427,11 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
   return () => {
     dead = true;
     (window as unknown as { __talks?: Talks }).__talks?.dispose();
+    ui3?.dispose();
+    writeSave(save);
     lobby?.dispose();
     cleanup2d?.();
-    document.querySelectorAll('.cv-sign').forEach((e) => e.remove());
+    document.querySelectorAll('.cv-sign, .cvw-slot').forEach((e) => e.remove());
     document.body.classList.remove('lobby3d-on', 'carnival-on');
   };
 }

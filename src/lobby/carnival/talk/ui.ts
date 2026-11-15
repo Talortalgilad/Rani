@@ -58,8 +58,9 @@ export class Talks {
   attempts = 0;
   private waveT = new Map<number, number>();
 
-  constructor(readonly host: TalkHost, private now: () => number = () => Date.now()) {
-    this.save = loadSave();
+  constructor(readonly host: TalkHost, private now: () => number = () => Date.now(), shared?: CarnivalSave) {
+    // the carnival's save is one object (the world shares it with the talks)
+    this.save = shared ?? loadSave();
     if (this.save.alerts.alerts.length > MAX_ALERTS) this.save.alerts.alerts.length = MAX_ALERTS;
     this.chatter = new Chatter(Math.random);
     this.chatEl = document.createElement('div');
@@ -83,6 +84,10 @@ export class Talks {
 
   get open(): boolean {
     return this.screen !== null;
+  }
+  /** the hearts counter shows the hearts of the save now (the world gave some) */
+  refreshHearts(): void {
+    this.paintHearts();
   }
   private paintHearts(): void {
     this.heartsEl.innerHTML = `❤️ ${counter(String(this.save.hearts))}`;
