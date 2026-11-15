@@ -89,3 +89,7 @@
 @keyframes cvw-pulse { 50% { transform: scale(1.18); } }
 .card .cv-wait { position: absolute; top: 6px; inset-inline-end: 6px; min-width: 22px; height: 22px; border-radius: 11px; background: #ff7b2e; color: #fff; font: 800 13px/22px inherit; font-family: inherit; text-align: center; padding: 0 5px; }
 @media (prefers-reduced-motion: reduce) { .cvw-slot.free.guide, .cvw-board .bar.top, .cvw-banner, .carnival-bar.pulse .cv-game { animation: none; } .cvw-conf { display: none; } }
+/* tier 2d: the buttons sit at the bottom corner, away from the strip of the residents */
+.cvw.m2d .cvw-book { top: auto; bottom: calc(14px + env(safe-area-inset-bottom)); }
+.cvw.m2d .cvw-boardbtn { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); }
+.cvw.m2d .cvw-level { display: none; }

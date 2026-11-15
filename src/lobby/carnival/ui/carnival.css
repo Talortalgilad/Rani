@@ -9,8 +9,8 @@
 .cv-home { position: fixed; z-index: 5; inset-inline-end: 12px; top: calc(96px + env(safe-area-inset-top)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: #fff; font-size: 24px; box-shadow: 0 3px 10px rgba(0, 0, 0, .25); pointer-events: auto; }
 .cv-label { position: fixed; z-index: 6; left: 0; top: 0; pointer-events: none; background: #fff; color: #5a3320; font-weight: 800; font-size: 22px; padding: 4px 16px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0, 0, 0, .25); opacity: 0; transition: opacity .2s; white-space: nowrap; }
 .cv-label.on { opacity: 1; }
-.cv-strip { display: flex; justify-content: center; gap: 10px; padding: 10px 8px calc(14px + env(safe-area-inset-bottom)); }
-.cv-res { background: rgba(255, 255, 255, .85); border: 0; border-radius: 18px; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: inherit; font-weight: 800; font-size: 13px; color: #5a3320; box-shadow: 0 3px 8px rgba(0, 0, 0, .15); }
+.cv-strip { display: flex; justify-content: safe center; overflow-x: auto; max-width: 100%; box-sizing: border-box; scrollbar-width: none; gap: 10px; padding: 10px 8px calc(14px + env(safe-area-inset-bottom)); }
+.cv-res { flex: 0 0 auto; background: rgba(255, 255, 255, .85); border: 0; border-radius: 18px; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: inherit; font-weight: 800; font-size: 13px; color: #5a3320; box-shadow: 0 3px 8px rgba(0, 0, 0, .15); }
 .cv-res img { width: 44px; height: 44px; object-fit: contain; }
 .cv-res.hop { animation: cv-hop .5s; }
 @keyframes cv-hop { 40% { transform: translateY(-12px); } }

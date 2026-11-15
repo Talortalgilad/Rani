@@ -71,7 +71,7 @@ export class WorldUI {
 
   constructor(private h: WorldHost) {
     this.root = document.createElement('div');
-    this.root.className = 'cvw';
+    this.root.className = `cvw ${h.mode === '2d' ? 'm2d' : ''}`;
     h.layer.appendChild(this.root);
     this.guide = !h.world.save.guided && Object.keys(h.world.save.built).length === 0;
     this.questEl = document.createElement('button');
