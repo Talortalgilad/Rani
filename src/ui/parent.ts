@@ -160,6 +160,12 @@ export function renderParent(root: HTMLElement): () => void {
       ${photosCardHtml()}
       ${voiceReviewCardHtml()}
 
+      <section class="p-card">
+        <h2>ניסוי: סדנת הסקווישים</h2>
+        <div class="p-sub">אב-טיפוס זמני (שלב 0): החתול, צביעה של כל חלק, ומבחן המעיכה. עדיין לא חלק מהמשחקים ומהלובי.</div>
+        <button class="btn alt" id="squishy-lab">🧪 פתיחת הניסוי</button>
+      </section>
+
       <section class="p-card danger">
         <h2>איפוס התקדמות</h2>
         ${
@@ -249,6 +255,15 @@ export function renderParent(root: HTMLElement): () => void {
     void bindPhotosCard(root);
     bindVoiceReview(root);
     root.querySelector('#done')!.addEventListener('click', () => go({ name: 'home' }));
+    root.querySelector('#squishy-lab')?.addEventListener('click', () => {
+      // the one door of the prototype (main.ts lets only this one in)
+      try {
+        sessionStorage.setItem('squishy-lab', '1');
+      } catch {
+        /* ignore */
+      }
+      go({ name: 'squishy' });
+    });
   }
 
   quiz();

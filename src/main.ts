@@ -16,7 +16,7 @@ import { showTimeUp } from './ui/timeup';
 import { isTimeUp, trackUsage } from './usage';
 import { games } from './games/registry';
 import { sound, unlockAudio } from './sound';
-import { clearPass, consumeParent, grantPass, hasFreshSession, startRound } from './access';
+import { allowParent, clearPass, consumeParent, grantPass, hasFreshSession, startRound } from './access';
 import { gameStore, getState, update } from './storage';
 import type { GameModule } from './games/types';
 
@@ -104,6 +104,27 @@ onRoute((route: Route) => {
     case 'game':
       mountGame(route.gameId);
       break;
+    case 'squishy': {
+      // the prototype of the squishy workshop: only through its door in the parents area
+      let ok = false;
+      try {
+        ok = sessionStorage.getItem('squishy-lab') === '1';
+      } catch {
+        /* ignore */
+      }
+      if (!ok) return go({ name: 'home' }, { replace: true });
+      let stop: (() => void) | null = null;
+      let gone = false;
+      void import('./games/squishy/lab').then((m) => {
+        if (gone) return;
+        stop = m.renderSquishyLab(app, () => (allowParent(), go({ name: 'parent' })));
+      });
+      cleanup = () => {
+        gone = true;
+        stop?.();
+      };
+      break;
+    }
     case 'parent':
       if (!consumeParent()) return go({ name: 'home' }, { replace: true });
       cleanup = renderParent(app);

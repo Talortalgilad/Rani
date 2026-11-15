@@ -1,0 +1,60 @@
+{
+ "note": "Art for SPEC-squishy.md. Shapes: every cell is a blank squishy (no face) whose parts are painted in different flat colors. Cut each cell like park-art.json (connected components + rembg, 512 WebP transparent) to public/squishy/shapes/<id>.webp, then derive the part map and the shading map with scripts/squishy-art.py (section 4 of the spec). Props go to public/squishy/props/<id>.webp, and 'kiosk' is also the carnival attraction building.",
+ "sheets": [
+  {
+   "file": "sheet-36-squishy-animals.png",
+   "kind": "shapes",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_154514_d604b7db-cb82-4b44-a476-b32e08b063d7.png",
+   "order": [
+    "cat",
+    "dog",
+    "rabbit",
+    "fish",
+    "bird",
+    "lion",
+    "monkey",
+    "elephant",
+    "giraffe"
+   ]
+  },
+  {
+   "file": "sheet-37-squishy-treats.png",
+   "kind": "shapes",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_155902_4b563e3e-08c7-43b1-baa7-cf83f8f8e9db.png",
+   "order": [
+    "cupcake",
+    "donut",
+    "icecream",
+    "cookie",
+    "lollipop",
+    "apple",
+    "star",
+    "flower",
+    "crown"
+   ]
+  },
+  {
+   "file": "sheet-38-squishy-props.png",
+   "kind": "props",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_160919_363e3077-202f-47ee-99e4-59e96246935d.png",
+   "order": [
+    "bowl",
+    "spoon",
+    "measuringcup",
+    "paintbottle",
+    "glitter",
+    "moldtray",
+    "kiosk",
+    "shelf",
+    "foamjar"
+   ]
+  }
+ ],
+ "backgrounds": [
+  {
+   "file": "bg-squishy-workshop.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_162320_9026bf1d-2f50-4cbe-bcd7-16694bc540ea.png",
+   "aspect": "9:16"
+  }
+ ]
+}

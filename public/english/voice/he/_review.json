@@ -1,530 +1,1178 @@
 [
  {
+  "lang": "he",
   "id": "cv_have",
   "text": "יש לי",
-  "lang": "he",
   "take": 400,
   "dur": 1.01,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_got",
   "text": "וקיבלתי עוד",
-  "lang": "he",
   "take": 400,
   "dur": 2.26,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_howmany",
   "text": "כמה יש לי בסך הכול?",
-  "lang": "he",
   "take": 400,
   "dur": 1.73,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_want",
   "text": "אני רוצה",
-  "lang": "he",
   "take": 400,
   "dur": 1.37,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_more",
   "text": "למי יש יותר?",
-  "lang": "he",
   "take": 400,
   "dur": 1.39,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_less",
   "text": "למי יש פחות?",
-  "lang": "he",
   "take": 400,
   "dur": 1.54,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_had",
   "text": "היו לי",
-  "lang": "he",
   "take": 400,
   "dur": 0.98,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_ate",
   "text": "ואכלתי",
-  "lang": "he",
   "take": 400,
   "dur": 1.22,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_left",
   "text": "כמה נשארו?",
-  "lang": "he",
   "take": 400,
   "dur": 1.18,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_enough",
   "text": "זה מספיק",
-  "lang": "he",
   "take": 400,
   "dur": 1.22,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_thanks",
   "text": "תודה רבה!",
-  "lang": "he",
   "take": 400,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_great",
   "text": "יופי!",
-  "lang": "he",
   "take": 400,
   "dur": 0.84,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_almost",
   "text": "כמעט! בואי נספור יחד.",
-  "lang": "he",
   "take": 400,
   "dur": 3.5,
   "flag": "pause"
  },
  {
+  "lang": "he",
   "id": "cv_tryagain",
   "text": "עכשיו נסי שוב.",
-  "lang": "he",
   "take": 400,
   "dur": 1.44,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_rani",
   "text": "רני! רני!",
-  "lang": "he",
   "take": 400,
   "dur": 0.89,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_tapthis",
   "text": "הקישי על מה שהוא מבקש.",
-  "lang": "he",
   "take": 400,
   "dur": 4.1,
   "flag": "pause,tight"
  },
  {
+  "lang": "he",
   "id": "cv_tapword",
   "text": "הקישי על המילה הנכונה.",
-  "lang": "he",
   "take": 400,
   "dur": 2.09,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_tapname",
   "text": "הקישי על השם שלך.",
-  "lang": "he",
   "take": 401,
   "dur": 1.75,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_chat_hi",
   "text": "היי רני!",
-  "lang": "he",
   "take": 401,
   "dur": 1.2,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_chat_day",
   "text": "איזה יום יפה!",
-  "lang": "he",
   "take": 401,
   "dur": 1.32,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_chat_play",
   "text": "בואי נשחק!",
-  "lang": "he",
   "take": 401,
   "dur": 1.27,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_chat_fun",
   "text": "כיף לי כאן!",
-  "lang": "he",
   "take": 401,
   "dur": 1.15,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_hearts",
   "text": "לבבות",
-  "lang": "he",
   "take": 401,
   "dur": 1.13,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_item_candy",
   "text": "סוכריות",
-  "lang": "he",
   "take": 401,
   "dur": 1.3,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_item_cookie",
   "text": "עוגיות",
-  "lang": "he",
   "take": 401,
   "dur": 1.18,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_item_icecream",
   "text": "גלידות",
-  "lang": "he",
   "take": 401,
   "dur": 1.22,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_item_pizza",
   "text": "פיצות",
-  "lang": "he",
   "take": 401,
   "dur": 1.06,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_item_car",
   "text": "מכוניות",
-  "lang": "he",
   "take": 401,
   "dur": 1.25,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_1",
   "text": "אחת",
-  "lang": "he",
   "take": 401,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_2",
   "text": "שתיים",
-  "lang": "he",
   "take": 401,
   "dur": 1.03,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_3",
   "text": "שלוש",
-  "lang": "he",
   "take": 401,
   "dur": 1.13,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_4",
   "text": "ארבע",
-  "lang": "he",
   "take": 401,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_5",
   "text": "חמש",
-  "lang": "he",
   "take": 401,
   "dur": 1.18,
   "flag": "long"
  },
  {
+  "lang": "he",
   "id": "cv_num_6",
   "text": "שש",
-  "lang": "he",
   "take": 401,
   "dur": 0.89,
   "flag": "long"
  },
  {
+  "lang": "he",
   "id": "cv_num_7",
   "text": "שבע",
-  "lang": "he",
   "take": 402,
   "dur": 0.77,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_8",
   "text": "שמונה",
-  "lang": "he",
   "take": 402,
   "dur": 0.96,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_9",
   "text": "תשע",
-  "lang": "he",
   "take": 402,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_10",
   "text": "עשר",
-  "lang": "he",
   "take": 402,
   "dur": 0.98,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_11",
   "text": "אחת עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.18,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_12",
   "text": "שתים עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.13,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_13",
   "text": "שלוש עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.25,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_14",
   "text": "ארבע עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.2,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_15",
   "text": "חמש עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.22,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_16",
   "text": "שש עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.15,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_17",
   "text": "שבע עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.13,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_18",
   "text": "שמונה עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.32,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_19",
   "text": "תשע עשרה",
-  "lang": "he",
   "take": 402,
   "dur": 1.13,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_20",
   "text": "עשרים",
-  "lang": "he",
   "take": 402,
   "dur": 0.91,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_num_2c",
   "text": "שתי",
-  "lang": "he",
   "take": 402,
   "dur": 0.82,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_can_i_have_the",
   "text": "Can I have the...",
-  "lang": "en",
   "take": 410,
   "dur": 1.7,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_please",
   "text": "please?",
-  "lang": "en",
   "take": 410,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_what_is_it",
   "text": "What is it?",
-  "lang": "en",
   "take": 410,
   "dur": 1.15,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im",
   "text": "Hello! I'm...",
-  "lang": "en",
   "take": 410,
   "dur": 2.11,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_whats_your_name",
   "text": "What's your name?",
-  "lang": "en",
   "take": 410,
   "dur": 1.42,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_i_love_pizza",
   "text": "I love pizza!",
-  "lang": "en",
   "take": 410,
   "dur": 2.26,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hi_rani",
   "text": "Hi Rani!",
-  "lang": "en",
   "take": 410,
   "dur": 1.37,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "carn_nice_day",
   "text": "Nice day!",
-  "lang": "en",
   "take": 410,
   "dur": 1.34,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_cheesy",
   "text": "Hello! I'm Cheesy.",
-  "lang": "en",
   "take": 410,
   "dur": 2.26,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_mozzi",
   "text": "Hello! I'm Mozzi.",
-  "lang": "en",
   "take": 410,
   "dur": 2.23,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_horiko",
   "text": "Hello! I'm Horiko.",
-  "lang": "en",
   "take": 410,
   "dur": 2.38,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_popcheese",
   "text": "Hello! I'm Pop Cheese.",
-  "lang": "en",
   "take": 410,
   "dur": 2.74,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "carn_lets_play",
   "text": "Let's play!",
-  "lang": "en",
   "take": 410,
   "dur": 1.44,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "carn_i_am_hungry",
   "text": "I'm hungry!",
-  "lang": "en",
   "take": 410,
   "dur": 1.56,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_i_like_ice_cream",
   "text": "I like ice cream!",
-  "lang": "en",
   "take": 410,
   "dur": 2.23,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_look_at_me",
   "text": "Look at me!",
-  "lang": "en",
   "take": 410,
   "dur": 1.51,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_thank_you_rani",
   "text": "Thank you, Rani!",
-  "lang": "en",
   "take": 410,
   "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "sq_title",
+  "text": "סדנת הסקווישים",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.44,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_mode",
+  "text": "הזמנות",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.18,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_free_mode",
+  "text": "יצירה חופשית",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.51,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_shelf",
+  "text": "המדף שלי",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.08,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_new_order",
+  "text": "יש הזמנה חדשה! הקשיבי טוב.",
+  "lang": "he",
+  "take": 500,
+  "dur": 3.05,
+  "flag": "pause,tight"
+ },
+ {
+  "id": "sq_listen_again",
+  "text": "הקישי על הכרטיס כדי לשמוע שוב.",
+  "lang": "he",
+  "take": 500,
+  "dur": 2.52,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_pick_mold",
+  "text": "בחרי תבנית.",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.66,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_recipe",
+  "text": "עכשיו מכינים את הצבע. שימי כפות בקערה.",
+  "lang": "he",
+  "take": 500,
+  "dur": 3.6,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_spoons_total",
+  "text": "כמה כפות יש בקערה ביחד?",
+  "lang": "he",
+  "take": 500,
+  "dur": 2.26,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_fill_line",
+  "text": "מלאי את הכוס בדיוק עד הקו.",
+  "lang": "he",
+  "take": 500,
+  "dur": 3.19,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_too_much",
+  "text": "קצת יותר מדי. בואי ננסה שוב.",
+  "lang": "he",
+  "take": 500,
+  "dur": 2.81,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_not_enough",
+  "text": "עוד קצת!",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.15,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_exact",
+  "text": "בדיוק!",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.18,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_mix",
+  "text": "ערבבי, ערבבי!",
+  "lang": "he",
+  "take": 500,
+  "dur": 2.21,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_pour",
+  "text": "גררי את הקערה ושפכי לתבנית.",
+  "lang": "he",
+  "take": 500,
+  "dur": 3.31,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_wait",
+  "text": "עכשיו מחכים שיתפח...",
+  "lang": "he",
+  "take": 500,
+  "dur": 2.09,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_pop",
+  "text": "הקישי כדי להוציא אותו!",
+  "lang": "he",
+  "take": 500,
+  "dur": 1.78,
+  "flag": ""
+ },
+ {
+  "id": "sq_paint",
+  "text": "זמן לצבוע! בחרי צבע והקישי על חלק.",
+  "lang": "he",
+  "take": 501,
+  "dur": 3.74,
+  "flag": ""
+ },
+ {
+  "id": "sq_decorate",
+  "text": "עכשיו קישוטים. כמה צריך?",
+  "lang": "he",
+  "take": 501,
+  "dur": 2.81,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_count_right",
+  "text": "ספרת נכון!",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.51,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_face",
+  "text": "בחרי לו פנים.",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.3,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_squeeze",
+  "text": "מבחן המעיכה! לחצי חזק.",
+  "lang": "he",
+  "take": 501,
+  "dur": 3.38,
+  "flag": ""
+ },
+ {
+  "id": "sq_so_soft",
+  "text": "איזה רך!",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.49,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_name",
+  "text": "איזה שם ניתן לו?",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.37,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_done",
+  "text": "הסקווישי מוכן!",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_check_order",
+  "text": "בואי נבדוק אם זה מה שהוזמן.",
+  "lang": "he",
+  "take": 501,
+  "dur": 2.04,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_match",
+  "text": "בדיוק מה שביקשתי! תודה!",
+  "lang": "he",
+  "take": 501,
+  "dur": 2.76,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_almost",
+  "text": "כמעט! הצבע לא מתאים. רוצה לתקן?",
+  "lang": "he",
+  "take": 501,
+  "dur": 3.53,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_count",
+  "text": "כמעט! מספר הקישוטים לא מתאים. רוצה לתקן?",
+  "lang": "he",
+  "take": 501,
+  "dur": 3.82,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_to_carnival",
+  "text": "הוא עובר לגור בקרנבל!",
+  "lang": "he",
+  "take": 501,
+  "dur": 2.95,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_to_shelf",
+  "text": "שמרנו אותו על המדף.",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.73,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_new_mold",
+  "text": "נפתחה תבנית חדשה!",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.8,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_what_likes",
+  "text": "מה הוא הכי אוהב לאכול?",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_gift_toy",
+  "text": "הנה הצעצוע החדש שלך!",
+  "lang": "he",
+  "take": 501,
+  "dur": 1.97,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_01",
+  "text": "A pink cat, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.82,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_02",
+  "text": "A blue fish, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_03",
+  "text": "A yellow star, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_04",
+  "text": "A purple rabbit, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 2.09,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_05",
+  "text": "A green apple, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.97,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_06",
+  "text": "A red flower, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_07",
+  "text": "A pink cupcake, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 2.16,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_08",
+  "text": "A blue bird, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.92,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_09",
+  "text": "A yellow lion, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.97,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_10",
+  "text": "A purple donut, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 2.09,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_11",
+  "text": "A green dog, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_12",
+  "text": "A red lollipop, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 2.06,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_13",
+  "text": "A pink ice cream, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 2.14,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_14",
+  "text": "A yellow crown, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_15",
+  "text": "A blue fish with three stars, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 3.05,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_16",
+  "text": "A pink cat with two flowers, please!",
+  "lang": "en",
+  "take": 520,
+  "dur": 3,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_17",
+  "text": "A yellow giraffe with five stars, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.17,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_18",
+  "text": "A green dog with four flowers, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.22,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_19",
+  "text": "A purple cupcake with three hearts, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.34,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_20",
+  "text": "A red apple with two stars, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.22,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_21",
+  "text": "A pink rabbit with four hearts, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.07,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_22",
+  "text": "A blue elephant with five flowers, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.22,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_23",
+  "text": "A yellow cookie with six stars, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.17,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_24",
+  "text": "A green monkey with three hearts, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.12,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_25",
+  "text": "A purple bird with two stars, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.14,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_26",
+  "text": "A red crown with six hearts, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 2.93,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_27",
+  "text": "A blue donut with four stars, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 3.14,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_28",
+  "text": "A pink star with five hearts, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 2.98,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_29",
+  "text": "A pink and blue cat, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 2.33,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_30",
+  "text": "A red and yellow lion, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 2.52,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_31",
+  "text": "A green and purple dog, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 2.57,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_32",
+  "text": "A blue and yellow fish, please!",
+  "lang": "en",
+  "take": 521,
+  "dur": 2.45,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_33",
+  "text": "A pink and purple cupcake, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 2.47,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_34",
+  "text": "A red and green apple, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 2.35,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_35",
+  "text": "A yellow and pink ice cream, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 3.05,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_36",
+  "text": "A blue and green elephant, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 3.14,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_37",
+  "text": "A purple and yellow monkey, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 3.38,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_38",
+  "text": "A red and pink flower, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 3.17,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_39",
+  "text": "A green and blue bird, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 3.17,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_order_40",
+  "text": "A yellow and purple giraffe, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 3.41,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_thank_you",
+  "text": "Thank you! I love it!",
+  "lang": "en",
+  "take": 522,
+  "dur": 2.28,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_so_squishy",
+  "text": "It's so squishy!",
+  "lang": "en",
+  "take": 522,
+  "dur": 2.21,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_squeeze_me",
+  "text": "Squeeze me!",
+  "lang": "en",
+  "take": 522,
+  "dur": 1.92,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_so_cute",
+  "text": "So cute!",
+  "lang": "en",
+  "take": 522,
+  "dur": 1.73,
+  "flag": "long,tight"
+ },
+ {
+  "id": "sq_one_more",
+  "text": "One more, please!",
+  "lang": "en",
+  "take": 522,
+  "dur": 1.8,
+  "flag": "tight"
+ },
+ {
+  "id": "sq_heart",
+  "text": "Heart.",
+  "lang": "en",
+  "take": 522,
+  "dur": 0.79,
+  "flag": ""
+ },
+ {
+  "id": "sq_hearts",
+  "text": "Hearts.",
+  "lang": "en",
+  "take": 522,
+  "dur": 0.84,
   "flag": ""
  }
 ]
