@@ -50,6 +50,11 @@ export const CARNIVAL_EN: { id: string; text: string; note: string }[] = [
   { id: 'carn_hello_im_mozzi', text: "Hello! I'm Mozzi", note: 'whole clip, then carn_whats_your_name' },
   { id: 'carn_hello_im_horiko', text: "Hello! I'm Horiko", note: 'whole clip, then carn_whats_your_name' },
   { id: 'carn_hello_im_popcheese', text: "Hello! I'm Pop Cheese", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_pitzi', text: "Hello! I'm Pitzi", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_bobi', text: "Hello! I'm Bobby", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_noni', text: "Hello! I'm Noni", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_koki', text: "Hello! I'm Cookie", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_tofi', text: "Hello! I'm Toffee", note: 'whole clip, then carn_whats_your_name' },
   // "Hello!" (the friend that Rani named, and a small bubble) is the clip that already exists: `hello`, no new recording
   { id: 'carn_whats_your_name', text: "What's your name?", note: 'after the hello' },
   { id: 'carn_i_love_pizza', text: 'I love pizza!', note: 'small bubble' },

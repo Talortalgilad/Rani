@@ -138,7 +138,18 @@ export class Talks {
       const c = this.chatter.tick(dt, this.host.residents.length, skip);
       const p0 = c ? this.host.pos(c.r) : null;
       // only a resident who can be seen says something
-      if (c && p0) {
+      // one that would fall on a bubble of the world waits for another moment
+      const hit = (): boolean => {
+        const half = 60;
+        return [...this.host.layer.querySelectorAll<HTMLElement>('.cvw-say')].some((e) => {
+          if (e.style.visibility === 'hidden') return false;
+          const b = e.getBoundingClientRect();
+          return p0 !== null && Math.abs((b.left + b.right) / 2 - p0.x) < half + b.width / 2 && Math.abs(b.bottom - (p0.y - 18)) < 34;
+        });
+      };
+      if (c && p0 && hit()) {
+        this.chatT = 0.8;
+      } else if (c && p0) {
         this.chatR = c.r;
         this.chatT = 3.4;
         this.chatEl.textContent = c.chat.text;

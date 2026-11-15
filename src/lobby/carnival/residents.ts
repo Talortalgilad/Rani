@@ -1,5 +1,5 @@
 /**
- * The first five residents (SPEC-carnival.md 4.1): the companion that Rani chose, and the other names that a companion can have (Cheesy, Mozzi,
+ * The first four residents (SPEC-carnival.md 4.1): the companion that Rani chose, and the other names that a companion can have (Cheesy, Mozzi,
  * Horiko, Pop Cheese), each with a picture from the English game. Pure data.
  */
 import { SQUISHIES, squishyUrl } from '../../games/english/art/squishies';
@@ -33,18 +33,17 @@ const newUrl = (id: string): string => `${import.meta.env?.BASE_URL ?? '/'}park/
 export const ALT_NAMES = ['פיצי', 'בובי', 'נוני', 'קוקי', 'טופי'];
 
 const base = (): string => import.meta.env?.BASE_URL ?? '/';
-/** the four names of the companion, and the picture each has when it is not the companion */
+/** the other three residents with fixed names, and the picture each has when it is not the companion */
 const NAMES: { id: string; name: string; img: (b: string) => string }[] = [
-  { id: 'cheesy', name: 'צ׳יזי', img: (b) => `${b}english/cheesy/wave.webp` },
   { id: 'mozzi', name: 'מוצי', img: () => squishyUrl('pizza') },
   { id: 'horiko', name: 'חוריקו', img: () => squishyUrl('panda') },
   { id: 'popcheese', name: 'פופצ׳יז', img: () => squishyUrl('cookie') },
 ];
 
-/** The companion (the name she gave, and the squishy she chose) first, then Cheesy, Mozzi, Horiko and Pop Cheese: 5 in all. */
+/** The companion (the name she gave, and the squishy she chose; Cheesy is the same character) first, then Mozzi, Horiko and Pop Cheese: 4 in all. */
 export function residents(companionName: string | null, buddy: string | null, arrived: string[] = []): Resident[] {
   const b = base();
-  const mine = companionName && companionName.trim() ? companionName.trim() : NAMES[0].name;
+  const mine = companionName && companionName.trim() ? companionName.trim() : 'צ׳יזי';
   const first: Resident = {
     id: 'companion',
     fixed: false,
@@ -60,17 +59,18 @@ export function residents(companionName: string | null, buddy: string | null, ar
     }
     return { id: n.id, name: '', img: n.img(b), fixed: false };
   });
-  for (const o of others) if (!o.name) o.name = ALT_NAMES.find((a) => !used.has(a) && !NAMES.some((n) => n.name === a)) ?? 'חבר', used.add(o.name);
-  const five = [first, ...others].map((r) => ({ ...r, personality: infoOf(r.id)?.personality, game: GAME_ID[infoOf(r.id)?.game ?? ''] }));
+  // the alternative names are recorded too (name.<key>, carn_hello_im_<key>), so the resident is "fixed" again
+  for (const o of others) if (!o.name) (o.name = ALT_NAMES.find((a) => !used.has(a) && !NAMES.some((n) => n.name === a)) ?? 'חבר'), (o.fixed = true), used.add(o.name);
+  const four = [first, ...others].map((r) => ({ ...r, personality: infoOf(r.id)?.personality, game: GAME_ID[infoOf(r.id)?.game ?? ''] }));
   const added = arrived
     .filter((id) => NEW_RESIDENTS.includes(id))
     .map((id): Resident => {
       const i = infoOf(id)!;
       return { id, name: i.he, img: newUrl(id), fixed: false, personality: i.personality, game: GAME_ID[i.game] };
     });
-  return [...five, ...added];
+  return [...four, ...added];
 }
 
 /** How a resident says his name in English ("I'm Mozzi"): the four names of the companion have an English way; another name is said as it is. */
-export const EN_NAME: Record<string, string> = { 'צ׳יזי': 'Cheesy', 'מוצי': 'Mozzi', 'חוריקו': 'Horiko', 'פופצ׳יז': 'Pop Cheese' };
+export const EN_NAME: Record<string, string> = { 'צ׳יזי': 'Cheesy', 'מוצי': 'Mozzi', 'חוריקו': 'Horiko', 'פופצ׳יז': 'Pop Cheese', 'פיצי': 'Pitzi', 'בובי': 'Bobby', 'נוני': 'Noni', 'קוקי': 'Cookie', 'טופי': 'Toffee' };
 export const englishName = (he: string): string => EN_NAME[he] ?? he;

@@ -33,7 +33,7 @@ export interface PlotSpec {
 export interface WorldView {
   slots: Slot[];
   built(): Record<string, string>;
-  agents(): { x: number; z: number; face: number; walking: boolean; active: boolean }[];
+  agents(): { x: number; z: number; face: number; walking: boolean; active: boolean; mode?: string }[];
   rideProgress(slotId: string): number | null;
   hold(i: number, on: boolean): void;
 }
@@ -97,7 +97,7 @@ export async function startCarnival(o: CarnivalOpts): Promise<CarnivalHandle> {
   const handle: SceneHandle = await showScene(
     async (env) => {
       const minis = await Promise.all(
-        o.plots.map((p) => (p.lobbyIsland ? Promise.resolve().then(() => p.lobbyIsland!({ shadows: env.tier === 'high', reduced: env.reduced })).catch(() => null) : null)),
+        o.plots.map((p) => (p.lobbyIsland ? Promise.resolve().then(() => p.lobbyIsland!({ shadows: false, reduced: env.reduced })).catch(() => null) : null)),
       );
       const built = await createScene(env, o, minis);
       api = built.api;
@@ -128,7 +128,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   const hemi = new T.HemisphereLight(night ? '#7f8fff' : '#ffffff', night ? '#2a2f5a' : '#c9b79f', night ? 0.9 : 2.5);
   const sun = new T.DirectionalLight(night ? '#9fb0ff' : sky.light, night ? 0.45 : sky.intensity * 1.9);
   sun.position.set(8, 16, 9);
-  sun.castShadow = tier === 'high';
+  // no shadow pass: it drew every miniature a second time (about 9 draw calls) and the budget is 60
+  sun.castShadow = false;
   sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 4, far: 40 });
   sun.shadow.bias = -0.0008;
@@ -720,9 +721,13 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       // a resident who just arrived drops in from above
       if (p.born >= 0 && p.born < 1) p.born = Math.min(1, p.born + dt / 0.7);
       const drop = p.born >= 0 && p.born < 1 ? (1 - p.born) * 3 : 0;
-      p.sp.position.set(a.x, 0.58 + bob + jump + drop, a.z);
-      resAtlas.set(shown, p.r.id, a.x, 0.62 + bob + jump + drop, a.z, 1.15 * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0)), a.face);
-      m4.compose(new T.Vector3(a.x, 0.04, a.z), shQ, new T.Vector3(1 - jump * 0.4, 1 - jump * 0.4, 1));
+      // a rider sits on the ride, in front of it (the picture of the ride is a standing sign: the rider has to be in front, or it is hidden behind it)
+      const ride = a.mode === 'riding';
+      const rz = ride ? a.z + 0.7 : a.z;
+      const ry = ride ? 0.45 : 0;
+      p.sp.position.set(a.x, 0.58 + bob + jump + drop + ry, rz);
+      resAtlas.set(shown, p.r.id, a.x, 0.62 + bob + jump + drop + ry, rz, (ride ? 0.85 : 1.15) * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0)), a.face);
+      m4.compose(new T.Vector3(a.x, 0.04, rz), shQ, new T.Vector3(1 - jump * 0.4, 1 - jump * 0.4, 1));
       shadowMesh.setMatrixAt(shown, m4);
       shown++;
     });
@@ -791,7 +796,6 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     },
     setTier(t) {
       tier = t;
-      sun.castShadow = t === 'high';
       puffs.visible = !night;
     },
     dispose() {

@@ -87,11 +87,11 @@ describe('the level of the carnival', () => {
     expect(arrivalOrder().length).toBe(6);
     expect(RESIDENT_INFO.length).toBe(22);
     const r = residents('מיצי', null, arrivalOrder());
-    expect(r.length).toBe(11);
-    expect(new Set(r.map((x) => x.id)).size).toBe(11);
-    expect(new Set(r.map((x) => x.name)).size).toBe(11);
+    expect(r.length).toBe(10);
+    expect(new Set(r.map((x) => x.id)).size).toBe(10);
+    expect(new Set(r.map((x) => x.name)).size).toBe(10);
     for (const x of r) expect(x.personality, x.id).toBeDefined();
-    expect(residents(null, null).length).toBe(5);
+    expect(residents(null, null).length).toBe(4);
   });
 });
 
@@ -177,6 +177,19 @@ describe('the carnival at work', () => {
     expect(longest).toBeLessThanOrEqual(RIDE_QUEUE);
     expect(ev.filter((e) => e.type === 'heart' && e.why === 'ride').length).toBeGreaterThan(2);
     expect(RIDE_SECONDS).toBe(6);
+  });
+  it('in a ride, only the first who gets on says that his turn came', () => {
+    const sim = new CarnivalSim({ slots, plotFronts: {} }, crowd(10, 'playful'), 11);
+    sim.setBuilt({ [ride.id]: 'carousel' });
+    let turns = 0;
+    let groups = 0;
+    run(sim, 900, (e) => {
+      const boarded = e.filter((x) => x.type === 'board').length;
+      groups += boarded;
+      if (boarded) turns += e.filter((x) => x.type === 'chat' && x.line === 'cs_my_turn').length;
+    });
+    expect(groups).toBeGreaterThan(1);
+    expect(turns).toBe(groups);
   });
   it('a resident who wants to play waits near the plot, and a round of that game gives each who waited a double heart', () => {
     const sim = new CarnivalSim({ slots, plotFronts: fronts }, crowd(30, 'playful'), 13);
@@ -275,13 +288,13 @@ describe('building and buying', () => {
 describe('hearts, levels, arrivals and quests', () => {
   it('hearts from the talks raise the level, a new resident arrives at level 2, and nothing goes down', () => {
     const { w } = mkWorld();
-    expect(w.residents.length).toBe(5);
+    expect(w.residents.length).toBe(4);
     w.save.hearts = 5;
     const ev = w.checkProgress();
     expect(ev.some((e) => e.type === 'levelUp' && e.level === 2)).toBe(true);
     expect(ev.some((e) => e.type === 'arrival')).toBe(true);
-    expect(w.residents.length).toBe(6);
-    expect(w.sim.agents.length).toBe(6);
+    expect(w.residents.length).toBe(5);
+    expect(w.sim.agents.length).toBe(5);
     expect(w.level).toBe(2);
     // the same level is not given twice
     expect(w.checkProgress().filter((e) => e.type === 'arrival' || e.type === 'levelUp')).toEqual([]);
@@ -293,7 +306,7 @@ describe('hearts, levels, arrivals and quests', () => {
     const { w } = mkWorld();
     w.save.hearts = 200;
     w.checkProgress();
-    expect(w.residents.length).toBe(11);
+    expect(w.residents.length).toBe(10);
     expect(new Set(w.save.arrived).size).toBe(6);
   });
   it('the quests come in order, each gives its hearts (and sometimes stars), and one that was done before its turn counts at once', () => {

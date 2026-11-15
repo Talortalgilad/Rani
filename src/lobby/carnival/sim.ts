@@ -342,10 +342,11 @@ export class CarnivalSim {
       l.waiting = l.waiting.filter((r) => !riders.includes(r));
       l.busy = riders;
       l.t = RIDE_SECONDS;
-      riders.forEach((r) => {
+      riders.forEach((r, k) => {
         this.agents[r].mode = 'riding';
         this.agents[r].timer = 0;
-        ev.push({ type: 'chat', r, line: 'cs_my_turn' });
+        // only the first says that his turn came
+        if (k === 0) ev.push({ type: 'chat', r, line: 'cs_my_turn' });
       });
       ev.push({ type: 'board', riders, item: item.id, slot: s.id });
     }

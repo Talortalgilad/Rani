@@ -39,6 +39,7 @@ export interface WorldHost {
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const csText = (id: string): string => CS_LINES.find((l) => l.id === id)?.text ?? '';
 const say = (id: string): void => void sayLine(id);
+const BUILD_QUESTS = ['pizza', 'drink', 'ride', 'three', 'five'];
 const WISH_KINDS: ItemKind[] = ['food', 'drink', 'fun', 'rest', 'shop', 'decor'];
 
 /** what a resident says in English when he is first in a line: the recording of his order, or the word and then "please" */
@@ -52,11 +53,15 @@ export class WorldUI {
   private slotEls = new Map<string, HTMLButtonElement>();
   private slotState = new Map<string, string>();
   private wishEls = new Map<number, HTMLElement>();
-  private says: { el: HTMLElement; r: number; ttl: number }[] = [];
+  /** the text bubbles: one that would fall on another waits (hidden) until the other is gone */
+  private says: { el: HTMLElement; r: number; ttl: number; shown: boolean; wait: number; line: string | null }[] = [];
   private questEl: HTMLButtonElement;
   private levelEl: HTMLElement;
   private bookBtn: HTMLButtonElement;
   private boardBtn: HTMLButtonElement;
+  private buildBtn: HTMLButtonElement;
+  /** build mode: the free places (and the locked ones, small) are shown. Off in the normal view, so the island stays clean. */
+  private build = false;
   private sheet: HTMLElement | null = null;
   private banners: { html: string; line?: string }[] = [];
   private bannerOn = false;
@@ -64,6 +69,7 @@ export class WorldUI {
   private dead = false;
   private lastQuest = '';
   private badgeT = 0;
+  private fitT = 0;
   /** the first stall is built with the guide (a hand points at a place, only the pizza can be picked) */
   private guide: boolean;
   private screenW = window.innerWidth;
@@ -80,13 +86,20 @@ export class WorldUI {
     this.questEl.addEventListener('click', () => {
       const q = this.h.world.quest;
       if (q) say(`qs_${q.id}`);
+      // a quest that is about opening something turns the build mode on by itself
+      if (q && BUILD_QUESTS.includes(q.id)) this.setBuild(true);
     });
     this.levelEl = document.createElement('div');
     this.levelEl.className = 'cvw-level';
     this.bookBtn = this.btn('📖', 'ספר התושבים', 'cvw-book', () => this.openBook());
     this.boardBtn = this.btn('📋', 'לוח המשאלות', 'cvw-boardbtn', () => this.openBoard());
+    this.buildBtn = this.btn('🔨', 'מצב בנייה', 'cvw-buildbtn', () => this.setBuild(!this.build));
     this.root.append(this.questEl, this.levelEl, this.bookBtn, this.boardBtn);
-    if (this.guide) this.showGuide();
+    if (h.mode === '3d') this.root.append(this.buildBtn);
+    if (this.guide) {
+      this.showGuide();
+      this.setBuild(true);
+    }
     this.paintHud();
   }
 
@@ -115,7 +128,25 @@ export class WorldUI {
     this.levelEl.classList.toggle('max', w.level >= MAX_LEVEL);
   }
 
+  /** the quest pill sits under the title, between the home button and the stars (its width follows the stars, which grow with the digits) */
+  private fitQuest(): void {
+    const st = document.querySelector<HTMLElement>('.stars')?.getBoundingClientRect();
+    const right = st && st.width ? st.left - 8 : window.innerWidth - 133;
+    this.questEl.style.width = `${Math.max(110, Math.min(280, right - 66))}px`;
+  }
+
   // ---------------------------------------------------------------- the places
+  setBuild(on: boolean): void {
+    if (this.build === on) return;
+    this.build = on;
+    this.buildBtn.classList.toggle('on', on);
+    this.root.classList.toggle('building', on);
+    this.slotState.clear();
+  }
+  get building(): boolean {
+    return this.build;
+  }
+
   /** the markers of the places follow the scene each frame */
   onSlots(list: { id: string; x: number; y: number; behind: boolean }[]): void {
     if (this.dead || this.h.mode !== '3d') return;
@@ -138,6 +169,7 @@ export class WorldUI {
       const q = built ? w.sim.queueOf(p.id).length : 0;
       const kindGuide = this.guide && s.kind === 'stall' && p.id === w.freeSlot('stall')?.id;
       const movingTarget = this.moving && !built && open && w.slot(this.moving)?.kind === s.kind;
+      const shown = !!built || this.build || !!this.moving;
       const state = `${built ? 'b' + built.id : open ? 'f' : 'l' + s.level}|${q}|${kindGuide ? 1 : 0}|${movingTarget ? 1 : 0}`;
       if (this.slotState.get(p.id) !== state) {
         this.slotState.set(p.id, state);
@@ -145,7 +177,7 @@ export class WorldUI {
         el.setAttribute('aria-label', built ? built.he : open ? 'מקום פנוי' : `ייפתח ברמה ${s.level}`);
         el.innerHTML = built ? (q ? `<em>${q}</em>` : '') : open ? '+' : `🔒<small>${s.level}</small>`;
       }
-      const vis = !p.behind && p.x > 14 && p.x < ww - 14 && p.y > 118 && p.y < hh - 96;
+      const vis = shown && !p.behind && p.x > 14 && p.x < ww - 14 && p.y > 118 && p.y < hh - 96;
       el.style.visibility = vis ? 'visible' : 'hidden';
       if (vis) el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
     }
@@ -275,6 +307,7 @@ export class WorldUI {
     if (!slot) return;
     const r = w.build(slot, item.id);
     if (!r.ok) return;
+    this.setBuild(false);
     sound.play('bell');
     this.closeSheet();
     if (this.guide) {
@@ -336,6 +369,7 @@ export class WorldUI {
         const k = b.dataset.k as WishType;
         if (k === 'play') return;
         // a tap on a column opens the catalog on that kind (with no place picked: the first free one)
+        this.setBuild(true);
         this.openCatalog({ kind: k as WishKind });
       }),
     );
@@ -489,15 +523,31 @@ export class WorldUI {
     const p = this.h.pos(r);
     if (!p || !text) return;
     for (const s of this.says.filter((x) => x.r === r)) s.el.remove();
-    this.says = this.says.filter((x) => x.r !== r).slice(-3);
+    this.says = this.says.filter((x) => x.r !== r).slice(-5);
     const el = document.createElement('div');
     el.className = 'cvw-say';
     el.dir = lang === 'en' ? 'ltr' : 'rtl';
     el.textContent = text;
+    el.style.visibility = 'hidden';
     this.h.layer.appendChild(el);
-    this.says.push({ el, r, ttl: 2.4 });
-    if (line && this.near(r)) say(line);
+    this.says.push({ el, r, ttl: 2.4, shown: false, wait: 0, line });
   }
+  /** where the bubble of a resident sits (the same rule as the frame uses) */
+  private sayRect(el: HTMLElement, p: { x: number; y: number }): { x: number; y: number; w: number; h: number } {
+    const w = el.offsetWidth || 90;
+    const h = el.offsetHeight || 28;
+    const half = w / 2 + 6;
+    const x = Math.min(window.innerWidth - half, Math.max(half, p.x));
+    return { x: x - w / 2, y: p.y - 30 - h, w, h };
+  }
+  private visibleBubbles(): DOMRect[] {
+    const out: DOMRect[] = [];
+    this.h.layer.querySelectorAll<HTMLElement>('.cvw-say, .cv-chat.on').forEach((e) => {
+      if (e.style.visibility !== 'hidden') out.push(e.getBoundingClientRect());
+    });
+    return out;
+  }
+
   private flyHeart(r: number, amount: number): void {
     const from = this.h.pos(r);
     const to = this.h.heartsEl()?.getBoundingClientRect();
@@ -539,6 +589,11 @@ export class WorldUI {
     this.screenH = window.innerHeight;
     const w = this.h.world;
     this.paintHud();
+    this.fitT -= dt;
+    if (this.fitT <= 0) {
+      this.fitT = 0.5;
+      this.fitQuest();
+    }
     // the bubbles with the icon of what each resident wants, over his head
     const seen = new Set<number>();
     w.sim.agents.forEach((a, i) => {
@@ -559,8 +614,23 @@ export class WorldUI {
     });
     for (const [i, el] of [...this.wishEls]) if (!seen.has(i)) (el.remove(), this.wishEls.delete(i));
     for (const s of this.says) {
-      s.ttl -= dt;
       const p = this.h.pos(s.r);
+      if (!s.shown) {
+        // it waits until it does not fall on another bubble (and gives up after a while: the moment passed)
+        s.wait += dt;
+        if (!p) continue;
+        const r = this.sayRect(s.el, p);
+        const hit = this.visibleBubbles().some((b) => r.x < b.right + 4 && r.x + r.w > b.left - 4 && r.y < b.bottom + 4 && r.y + r.h > b.top - 4);
+        if (hit) {
+          if (s.wait > 7) s.ttl = 0;
+          continue;
+        }
+        s.shown = true;
+        s.el.style.visibility = 'visible';
+        s.el.style.transform = `translate(${r.x + r.w / 2}px, ${p.y - 30}px) translate(-50%, -100%)`;
+        if (s.line && this.near(s.r)) say(s.line);
+      }
+      s.ttl -= dt;
       if (p) {
         const half = (s.el.offsetWidth || 90) / 2 + 6;
         s.el.style.transform = `translate(${Math.min(window.innerWidth - half, Math.max(half, p.x))}px, ${p.y - 30}px) translate(-50%, -100%)`;

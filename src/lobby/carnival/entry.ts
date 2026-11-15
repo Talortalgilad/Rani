@@ -153,7 +153,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
     sc?.insertBefore(st, sc.querySelector('.grid'));
     // the residents talk here too: the same bubbles, from the strip
     const layer = document.createElement('div');
-    layer.className = 'cv-layer';
+    layer.className = 'cv-layer cv-2d';
     (sc ?? root).appendChild(layer);
     const btns = [...st.querySelectorAll<HTMLElement>('.cv-res')];
     const host: TalkHost = {

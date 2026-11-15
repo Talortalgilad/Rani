@@ -9,14 +9,6 @@
  },
  {
   "lang": "he",
-  "id": "cv_got",
-  "text": "וקיבלתי עוד",
-  "take": 400,
-  "dur": 2.26,
-  "flag": "tight"
- },
- {
-  "lang": "he",
   "id": "cv_howmany",
   "text": "כמה יש לי בסך הכול?",
   "take": 400,
@@ -97,14 +89,6 @@
  },
  {
   "lang": "he",
-  "id": "cv_almost",
-  "text": "כמעט! בואי נספור יחד.",
-  "take": 400,
-  "dur": 3.5,
-  "flag": "pause"
- },
- {
-  "lang": "he",
   "id": "cv_tryagain",
   "text": "עכשיו נסי שוב.",
   "take": 400,
@@ -118,14 +102,6 @@
   "take": 400,
   "dur": 0.89,
   "flag": "tight"
- },
- {
-  "lang": "he",
-  "id": "cv_tapthis",
-  "text": "הקישי על מה שהוא מבקש.",
-  "take": 400,
-  "dur": 4.1,
-  "flag": "pause,tight"
  },
  {
   "lang": "he",
@@ -1400,163 +1376,267 @@
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cs_board_top",
   "text": "זה מה שהכי רוצים עכשיו!",
-  "lang": "he",
   "take": 424,
   "dur": 2.04,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_unlock_words",
   "text": "למדת מילים חדשות, ונפתחו דוכנים חדשים!",
-  "lang": "he",
   "take": 424,
   "dur": 3.72,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cs_locked_world",
   "text": "הדוכן הזה ייפתח כשתסיימי את העולם הזה במסע המילים.",
-  "lang": "he",
   "take": 424,
   "dur": 4.1,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cs_word_again",
   "text": "בואי ניזכר במילה הזאת!",
-  "lang": "he",
   "take": 424,
   "dur": 1.9,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_board",
   "text": "לוח המשאלות",
-  "lang": "he",
   "take": 424,
   "dur": 1.63,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_book",
   "text": "ספר התושבים",
-  "lang": "he",
   "take": 424,
   "dur": 1.63,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_wants_now",
   "text": "מה אני רוצה עכשיו:",
-  "lang": "he",
   "take": 424,
   "dur": 1.46,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_fav_color",
   "text": "הצבע האהוב עליי:",
-  "lang": "he",
   "take": 424,
   "dur": 1.68,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_fav_number",
   "text": "המספר האהוב עליי:",
-  "lang": "he",
   "take": 424,
   "dur": 1.82,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_hobby",
   "text": "התחביב שלי:",
-  "lang": "he",
   "take": 424,
   "dur": 1.22,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_my_friend",
   "text": "החבר הכי טוב שלי:",
-  "lang": "he",
   "take": 424,
   "dur": 1.68,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_take_me",
   "text": "קחי אותי אליו",
-  "lang": "he",
   "take": 424,
   "dur": 1.27,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_quiz_food",
   "text": "את זוכרת מה האוכל האהוב עליי?",
-  "lang": "he",
   "take": 424,
   "dur": 2.35,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_quiz_color",
   "text": "את זוכרת מה הצבע האהוב עליי?",
-  "lang": "he",
   "take": 424,
   "dur": 2.28,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_quiz_number",
   "text": "את זוכרת מה המספר האהוב עליי?",
-  "lang": "he",
   "take": 424,
   "dur": 2.42,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_quiz_right",
   "text": "נכון! את מכירה אותי!",
-  "lang": "he",
   "take": 424,
   "dur": 2.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_quiz_remind",
   "text": "כמעט! הנה, תראי.",
-  "lang": "he",
   "take": 424,
   "dur": 1.75,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cs_party_today",
   "text": "היום יום החגיגה שלי!",
-  "lang": "he",
   "take": 424,
   "dur": 2.45,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cs_party_gift",
   "text": "איזו מתנה תבחרי לי?",
-  "lang": "he",
   "take": 424,
   "dur": 1.68,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cs_party_thanks",
   "text": "איזו מתנה מושלמת! תודה!",
-  "lang": "he",
   "take": 424,
   "dur": 2.4,
+  "flag": ""
+ },
+ {
+  "id": "cv_tapthis",
+  "text": "הקישי על מה שהוא מבקש.",
+  "lang": "he",
+  "take": 403,
+  "dur": 2.14,
+  "flag": ""
+ },
+ {
+  "id": "cv_almost",
+  "text": "כמעט! בואי נספור יחד.",
+  "lang": "he",
+  "take": 403,
+  "dur": 2.42,
+  "flag": "tight"
+ },
+ {
+  "id": "cv_got",
+  "text": "וקיבלתי עוד",
+  "lang": "he",
+  "take": 403,
+  "dur": 2.54,
+  "flag": "pause,tight"
+ },
+ {
+  "id": "name.pitzi",
+  "text": "פיצי",
+  "lang": "he",
+  "take": 403,
+  "dur": 0.82,
+  "flag": "tight"
+ },
+ {
+  "id": "name.bobi",
+  "text": "בובי",
+  "lang": "he",
+  "take": 403,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "id": "name.noni",
+  "text": "נוני",
+  "lang": "he",
+  "take": 403,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "id": "name.koki",
+  "text": "קוקי",
+  "lang": "he",
+  "take": 403,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "id": "name.tofi",
+  "text": "טופי",
+  "lang": "he",
+  "take": 403,
+  "dur": 0.7,
+  "flag": ""
+ },
+ {
+  "id": "carn_hello_im_pitzi",
+  "text": "Hello! I'm Pitzi.",
+  "lang": "en",
+  "take": 411,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "id": "carn_hello_im_bobi",
+  "text": "Hello! I'm Bobby.",
+  "lang": "en",
+  "take": 411,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "carn_hello_im_noni",
+  "text": "Hello! I'm Noni.",
+  "lang": "en",
+  "take": 411,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "id": "carn_hello_im_koki",
+  "text": "Hello! I'm Cookie.",
+  "lang": "en",
+  "take": 411,
+  "dur": 1.39,
+  "flag": ""
+ },
+ {
+  "id": "carn_hello_im_tofi",
+  "text": "Hello! I'm Toffee.",
+  "lang": "en",
+  "take": 411,
+  "dur": 1.44,
   "flag": ""
  }
 ]
