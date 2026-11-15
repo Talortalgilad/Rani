@@ -1536,107 +1536,379 @@
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_tapthis",
   "text": "הקישי על מה שהוא מבקש.",
-  "lang": "he",
   "take": 403,
   "dur": 2.14,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "cv_almost",
   "text": "כמעט! בואי נספור יחד.",
-  "lang": "he",
   "take": 403,
   "dur": 2.42,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "cv_got",
   "text": "וקיבלתי עוד",
-  "lang": "he",
   "take": 403,
   "dur": 2.54,
   "flag": "pause,tight"
  },
  {
+  "lang": "he",
   "id": "name.pitzi",
   "text": "פיצי",
-  "lang": "he",
   "take": 403,
   "dur": 0.82,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "name.bobi",
   "text": "בובי",
-  "lang": "he",
   "take": 403,
   "dur": 0.89,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "name.noni",
   "text": "נוני",
-  "lang": "he",
   "take": 403,
   "dur": 0.94,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "name.koki",
   "text": "קוקי",
-  "lang": "he",
   "take": 403,
   "dur": 0.84,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "name.tofi",
   "text": "טופי",
-  "lang": "he",
   "take": 403,
   "dur": 0.7,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_pitzi",
   "text": "Hello! I'm Pitzi.",
-  "lang": "en",
   "take": 411,
   "dur": 1.51,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_bobi",
   "text": "Hello! I'm Bobby.",
-  "lang": "en",
   "take": 411,
   "dur": 1.42,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_noni",
   "text": "Hello! I'm Noni.",
-  "lang": "en",
   "take": 411,
   "dur": 1.42,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_koki",
   "text": "Hello! I'm Cookie.",
-  "lang": "en",
   "take": 411,
   "dur": 1.39,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "carn_hello_im_tofi",
   "text": "Hello! I'm Toffee.",
-  "lang": "en",
   "take": 411,
   "dur": 1.44,
+  "flag": ""
+ },
+ {
+  "id": "qs_pizza",
+  "text": "פתחי דוכן פיצה",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.56,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_name",
+  "text": "הקישי על סקווישי ושמעי איך קוראים לו",
+  "lang": "he",
+  "take": 425,
+  "dur": 3.02,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_drink",
+  "text": "פתחי דוכן שתייה",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.42,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_play",
+  "text": "שחקי באחד המשחקים",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl2",
+  "text": "הגיעי לרמה 2",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_talk",
+  "text": "עני על שיחה של סקווישי",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.04,
+  "flag": ""
+ },
+ {
+  "id": "qs_ride",
+  "text": "פתחי מתקן",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.22,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_three",
+  "text": "פתחי שלושה דוכנים",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.56,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl3",
+  "text": "הגיעי לרמה 3",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.85,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_five",
+  "text": "פתחי חמישה דברים בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.18,
+  "flag": ""
+ },
+ {
+  "id": "qs_book",
+  "text": "פתחי את ספר התושבים",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.97,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_board",
+  "text": "הציצי בלוח המשאלות",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.14,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_rest",
+  "text": "שימי ספסל בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.9,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_decor",
+  "text": "שימי קישוט בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.02,
+  "flag": ""
+ },
+ {
+  "id": "qs_three_games",
+  "text": "שחקי בשלושה משחקים שונים היום",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.74,
+  "flag": ""
+ },
+ {
+  "id": "qs_ten",
+  "text": "פתחי עשרה דברים בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.33,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl5",
+  "text": "הגיעי לרמה 5",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.75,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl10",
+  "text": "הגיעי לרמה 10",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.21,
+  "flag": ""
+ },
+ {
+  "id": "qs_friend",
+  "text": "הגיעי לרמת חברות 2 עם סקווישי",
+  "lang": "he",
+  "take": 426,
+  "dur": 3.43,
+  "flag": ""
+ },
+ {
+  "id": "qs_trick",
+  "text": "הקישי על סקווישי וראי את הטריק שלו",
+  "lang": "he",
+  "take": 426,
+  "dur": 3.12,
+  "flag": ""
+ },
+ {
+  "id": "qs_job",
+  "text": "שימי סקווישי לעבוד בדוכן",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.21,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_hat",
+  "text": "הלבישי כובע לסקווישי",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.99,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_remember",
+  "text": "עני לסקווישי ששואל אם את זוכרת אותו",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.95,
+  "flag": ""
+ },
+ {
+  "id": "qs_party",
+  "text": "בחרי מתנה ליום החגיגה",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.38,
+  "flag": ""
+ },
+ {
+  "id": "qs_egg",
+  "text": "בואי מחר לראות את הביצה בוקעת",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.64,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_mail",
+  "text": "פתחי את תיבת הדואר",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.54,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_gift",
+  "text": "פתחי את מתנת היום",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.68,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_visitor",
+  "text": "דברי עם אורח היום",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "id": "qs_bell",
+  "text": "עני על פעמון בדוכן",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "qs_lolly",
+  "text": "עשי שיעור עם המורה לולי",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.16,
+  "flag": ""
+ },
+ {
+  "id": "qs_workshop",
+  "text": "הכיני סקווישי בסדנה",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "qs_order",
+  "text": "הכיני הזמנה בסדנה",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.94,
+  "flag": ""
+ },
+ {
+  "id": "qs_coaster",
+  "text": "בני רכבת הרים",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.73,
+  "flag": ""
+ },
+ {
+  "id": "qs_parade",
+  "text": "בואי למצעד ביום שישי",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.8,
   "flag": ""
  }
 ]

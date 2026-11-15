@@ -215,6 +215,8 @@ async function main(): Promise<void> {
   const byText: Record<string, string> = {};
   for (const t of takes.filter((x) => x.lang === 'en')) {
     for (const l of t.lines) {
+      // only a clip that is in the folder (a branch that does not have the clips of a take yet does not point at them)
+      if (!existsSync(join(OUT('en'), `${l.id}.mp3`))) continue;
       const num = /^number_(\d+)$/.exec(l.id);
       for (const k of [clipKey(SAID[l.id] ?? l.text), clipKey(l.text), clipKey(l.id), num ? num[1] : '']) if (k && !(k in byText)) byText[k] = l.id;
     }

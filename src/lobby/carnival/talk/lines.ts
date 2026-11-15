@@ -31,6 +31,7 @@ export const cv = {
   /** "two" before a noun (שתי גלידות); the number alone is cv_num_2 */
   num_2c: 'שתי',
 };
+import QUESTS_LATER from '../quests-later.json';
 export const CARNIVAL_LINES: { id: string; parts: (string | null)[] }[] = [
   { id: 'carnival_name', parts: [null] },
   ...(Object.keys(cv) as (keyof typeof cv)[]).map((k) => ({ id: `cv_${k}`, parts: [cv[k]] })),
@@ -39,6 +40,8 @@ export const CARNIVAL_LINES: { id: string; parts: (string | null)[] }[] = [
   // stage 2: the lines that are recorded (voice-takes-carnival-3.json), and the quests (read by the phone until they are recorded)
   ...CS_LINES.map((l) => ({ id: l.id, parts: [l.text] })),
   ...QUESTS.map((q) => ({ id: `qs_${q.id}`, parts: [q.he] })),
+  // the quests of stages 3-5, recorded in advance (quests-later.json): ready in the list and in the manifest; the quests themselves are not built yet
+  ...QUESTS_LATER.filter((l) => !QUESTS.some((q) => `qs_${q.id}` === l.id)).map((l) => ({ id: l.id, parts: [l.text] })),
 ];
 
 /** The English sentences of the talks, for the list that goes to the recording (the opening of a sentence is fixed; the word after it is the recording of the word). */
