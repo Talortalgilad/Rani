@@ -9,10 +9,11 @@
  * of that folder is updated. The order of priority does not change: a recording made on the device, then a file of the repo, then TTS.
  *
  *   npx vite-node scripts/import-takes.ts            downloads what is missing (assets/voice-raw/takes/take-<n>.mp3), cuts, reports
- *   options: --only=<takes: 5, 100-107, 3,5,100-107>
+ *   options: --only=<takes: 5, 100-107, 3,5,100-107>   (the page of the parents area is fed by he/_review.json, written here; the lines of the takes that
+ *   are not cut now stay in it)
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const ROOT = resolve(new URL('..', import.meta.url).pathname);
@@ -112,18 +113,29 @@ function choose(sil: Sil[], lines: { id: string; text: string }[], total: number
   return { spans, cuts, candidates: K, lead: lead?.dur ?? 0, trail: trail?.dur ?? 0 };
 }
 
-function clip(src: string, from: number, to: number, total: number, out: string): boolean {
+// Takes from 300 on (the tutor, the carnival): a 10 ms fade-in (a take can start on the first sound, and a cut there would click), and a silence of more than 0.35 s at the end of a clip is cut off (the last line of a take can come with the rest of the take's silence).
+// The older takes are not touched, so running everything again does not change a clip that was already approved.
+const POLISH_FROM = 300;
+
+function clip(src: string, from: number, to: number, total: number, out: string, polish = false): boolean {
   const s = Math.max(0, from - MARGIN);
   const e = Math.min(total, to + MARGIN);
-  const r = run('ffmpeg', ['-y', '-v', 'error', '-i', src, '-ss', s.toFixed(3), '-to', e.toFixed(3), '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '64k', out]);
+  const r = run('ffmpeg', ['-y', '-v', 'error', '-i', src, '-ss', s.toFixed(3), '-to', e.toFixed(3), '-af', `${polish ? 'afade=t=in:d=0.01,' : ''}loudnorm=I=-16:TP=-1.5:LRA=11`, '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '64k', out]);
+  if (r.ok && polish) {
+    const d = duration(out);
+    const tail = silences(out, -35, 0.35, d).find((x) => x.end >= d - 0.3 && x.start > 0.3);
+    // cut the long tail: the clip ends 0.15 s after the last sound
+    if (tail) return run('ffmpeg', ['-y', '-v', 'error', '-i', src, '-ss', s.toFixed(3), '-to', (s + tail.start + 0.15).toFixed(3), '-af', 'afade=t=in:d=0.01,loudnorm=I=-16:TP=-1.5:LRA=11', '-ac', '1', '-ar', '24000', '-c:a', 'libmp3lame', '-b:a', '64k', out]).ok;
+  }
   return r.ok;
 }
 
 async function main(): Promise<void> {
-  const takes = JSON.parse(readFileSync(join(RAW, 'voice-takes.json'), 'utf8')) as Take[];
+  // every assets/voice-raw/voice-takes*.json (voice-takes.json, voice-takes-carnival.json, voice-takes-tutor.json ...): the take numbers are unique across the files
+  const takes = readdirSync(RAW).filter((f) => /^voice-takes.*\.json$/.test(f)).sort().flatMap((f) => JSON.parse(readFileSync(join(RAW, f), 'utf8')) as Take[]);
   mkdirSync(TAKES, { recursive: true });
   const problems: string[] = [];
-  const all: { id: string; text: string; lang: string; take: number; from: number; to: number; dur: number; letters: number; note: string }[] = [];
+  const all: { id: string; text: string; lang: string; take: number; from: number; to: number; dur: number; letters: number; note: string; extra: string[] }[] = [];
   for (const t of takes) {
     if (!wanted(t.take)) continue;
     const src = join(TAKES, `take-${t.take}.mp3`);
@@ -154,8 +166,12 @@ async function main(): Promise<void> {
     mkdirSync(dir, { recursive: true });
     t.lines.forEach((l, i) => {
       const sp = cut!.spans[i];
-      if (!clip(src, sp.from, sp.to, total, join(dir, `${l.id}.mp3`))) problems.push(`take ${t.take}: ${l.id}: ffmpeg failed`);
-      all.push({ id: l.id, text: l.text, lang: t.lang, take: t.take, from: sp.from, to: sp.to, dur: sp.to - sp.from, letters: letters(l.text), note: '' });
+      if (!clip(src, sp.from, sp.to, total, join(dir, `${l.id}.mp3`), t.take >= POLISH_FROM)) problems.push(`take ${t.take}: ${l.id}: ffmpeg failed`);
+      // for the review page: a pause of 0.6 s or more inside the clip, and a cut next to a silence shorter than 0.8 s
+      const extra: string[] = [];
+      if (silences(join(dir, `${l.id}.mp3`), -35, 0.6, 1e9).some((x) => x.start > 0.25 && x.end < duration(join(dir, `${l.id}.mp3`)) - 0.25)) extra.push('pause');
+      if ((i > 0 && cut!.cuts[i - 1].dur < 0.8) || (i < cut!.cuts.length && cut!.cuts[i].dur < 0.8)) extra.push('tight');
+      all.push({ id: l.id, text: l.text, lang: t.lang, take: t.take, from: sp.from, to: sp.to, dur: Math.max(0.05, duration(join(dir, `${l.id}.mp3`)) - 2 * MARGIN), letters: letters(l.text), note: '', extra });
     });
     if (cut.cuts.some((c) => c.dur < 0.8)) problems.push(`take ${t.take}: a cut at a silence shorter than 0.8 s (${cut.cuts.filter((c) => c.dur < 0.8).map((c) => `${c.start.toFixed(1)}s=${c.dur.toFixed(2)}`).join(', ')}) - check by ear`);
   }
@@ -195,6 +211,14 @@ async function main(): Promise<void> {
     }
   }
   writeFileSync(join(ROOT, 'src/games/english/content/enClips.ts'), `/** The English recordings by what the game says (written by scripts/import-takes.ts): letters and digits of the text only, lower case (a single letter keeps its case: "A" is the letter, "a" the word), to the id of the clip in public/english/voice/en. */\nexport const EN_CLIPS: Record<string, string> = ${JSON.stringify(byText, null, 1)};\n`);
+  // the temporary review page in the parents area reads this (the lines of the takes that were not cut now are kept)
+  mkdirSync(OUT('he'), { recursive: true });
+  const reviewFile = join(OUT('he'), '_review.json');
+  type Review = { id: string; text: string; lang: string; take: number; dur: number; flag: string };
+  const prev = existsSync(reviewFile) ? (JSON.parse(readFileSync(reviewFile, 'utf8')) as Review[]) : [];
+  const now: Review[] = all.map((a) => ({ id: a.id, text: a.text, lang: a.lang, take: a.take, dur: Math.round((a.dur + 2 * MARGIN) * 100) / 100, flag: [a.note, ...a.extra].filter(Boolean).join(',') }));
+  const keep = prev.map((r) => ({ lang: 'he', ...r })).filter((r) => !now.some((n) => n.id === r.id && n.lang === r.lang));
+  writeFileSync(reviewFile, JSON.stringify([...keep, ...now], null, 1) + '\n');
   const rate = rateOf.get('he')!;
   console.log(`\n${all.length} lines cut. Median ${rate.toFixed(3)} s per letter (Hebrew), ${rateOf.get('en')!.toFixed(3)} (English).`);
   console.log(problems.length ? `\nTo check:\n  ${problems.join('\n  ')}` : '\nEvery take matched its lines, and no line looks wrong.');
