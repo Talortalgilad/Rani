@@ -45,7 +45,7 @@ function say(text: string, lang: 'en' | 'he', rate: number): Promise<boolean> {
       const done = (): void => resolve(true);
       u.onend = done;
       u.onerror = done;
-      window.setTimeout(done, 9000 + text.length * 120); // a voice that never finishes must not stall the game
+      window.setTimeout(done, Math.min(SOUND_GUARD.unknownMs, 1500 + text.length * 120)); // a voice that never finishes must not stall the game
       s.speak(u);
     } catch {
       resolve(false);
@@ -204,18 +204,36 @@ function stopClip(): void {
   }
   clip = null;
 }
-/** Plays one recording to its end. False when it cannot play (then the caller reads the text instead). */
+/**
+ * How long the game waits for a sound (nothing in the game may be held by a sound that does not end: an `ended` that never comes, a clip that does not load or is empty).
+ * Until the length of the clip is known: at most 6 s. Then: its length plus one second (at most 15 s, so that a long song is not cut).
+ */
+export const SOUND_GUARD = { unknownMs: 6000, extraMs: 1000, longestMs: 15000 };
+export const guardMs = (duration: number): number => (Number.isFinite(duration) && duration > 0 ? Math.min(SOUND_GUARD.longestMs, duration * 1000 + SOUND_GUARD.extraMs) : SOUND_GUARD.extraMs);
+/** Plays one recording to its end. False when it cannot play (then the caller reads the text instead). Also ends (true if it was heard, false if not) when the guard time is over. */
 export function playClip(url: string): Promise<boolean> {
   return new Promise((resolve) => {
     try {
       if (typeof Audio === 'undefined' || !getState().settings.tts) return resolve(false);
       const a = new Audio(url);
       clip = a;
-      const done = (ok: boolean): void => resolve(ok);
+      let timer = 0;
+      let over = false;
+      const done = (ok: boolean): void => {
+        if (over) return;
+        over = true;
+        window.clearTimeout(timer);
+        resolve(ok);
+      };
+      // the guard: the length of the clip is not known yet (6 s), then its length plus a second
+      timer = window.setTimeout(() => (a.pause?.(), done((a.currentTime ?? 0) > 0)), SOUND_GUARD.unknownMs);
+      a.addEventListener?.('loadedmetadata', () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => (a.pause?.(), done((a.currentTime ?? 0) > 0)), guardMs(a.duration));
+      });
       a.onended = () => done(true);
       a.onerror = () => done(false);
       a.play().catch(() => done(false));
-      window.setTimeout(() => done(false), 20000);
     } catch {
       resolve(false);
     }
