@@ -41,9 +41,9 @@ OVERRIDE: dict[str, dict] = {
     'rabbit': {'lw': 0.2, 'seeds': [[(250, 180), (230, 260), (130, 410), (300, 440), (340, 330), (240, 110)], [(200, 95), (300, 110), (210, 120)], [(225, 385), (215, 350), (235, 410)], [(375, 385), (370, 370)]]},
     'fish': {'lw': 0.25, 'seeds': [[(130, 250), (250, 190), (300, 300), (180, 330), (330, 170), (200, 130)], [(170, 385), (230, 410), (390, 200)], [(238, 80), (358, 290), (308, 430), (98, 430)], [(428, 180), (438, 330)]]},
     'bird': {'lw': 0.25, 'seeds': [[(200, 100), (150, 250), (300, 300), (90, 330), (250, 420), (170, 60)], [(160, 340), (170, 400)], [(155, 195), (90, 410), (230, 430)], [(420, 260), (380, 300)]]},
-    'lion': {'lw': 0.7, 'island': 0.004, 'seeds': [[(108, 160), (188, 50), (338, 150), (128, 230), (338, 240), (188, 300), (120, 100), (240, 40), (330, 100), (300, 300), (100, 260), (250, 310), (150, 290)], [(208, 180), (208, 250), (288, 380), (138, 420), (248, 450), (338, 360), (178, 330), (208, 150), (250, 140), (170, 150), (250, 200), (200, 120), (108, 430), (268, 440), (318, 400), (188, 445), (128, 400), (88, 410), (330, 430)], [(198, 380), (203, 340)], [(403, 290), (168, 222), (415, 300)]]},
+    'lion': {'lw': 0.7, 'island': 0.005, 'seeds': [[(108, 160), (188, 50), (338, 150), (128, 230), (338, 240), (188, 300), (120, 100), (240, 40), (330, 100), (300, 300), (100, 260), (250, 310), (150, 290)], [(208, 180), (208, 250), (288, 380), (138, 420), (248, 450), (338, 360), (178, 330), (208, 150), (250, 140), (170, 150), (250, 200), (200, 120), (108, 430), (268, 440), (318, 400), (188, 445), (128, 400), (88, 410), (330, 430)], [(198, 380), (203, 340)], [(403, 290), (415, 300), (398, 280)]]},
     'monkey': {'lw': 0.4, 'seeds': [[(250, 60), (300, 160), (110, 300), (260, 300), (90, 400), (300, 420)], [(150, 150), (150, 220), (200, 350), (180, 400), (260, 150)], [(100, 125), (360, 150)], [(425, 270), (390, 380)]]},
-    'elephant': {'lw': 0.25, 'seeds': [[(248, 120), (268, 330), (128, 420), (168, 270), (78, 60), (418, 80), (388, 230), (98, 200)], [(108, 110), (368, 140)], [(128, 230), (243, 235), (358, 345), (283, 410), (113, 385)], [(428, 310)]]},
+    'elephant': {'lw': 0.25, 'white': (3, 84, 165), 'island': 0.005, 'protect': (3,), 'seeds': [[(248, 120), (268, 330), (128, 420), (168, 270), (78, 60), (418, 80), (388, 230), (98, 200)], [(108, 110), (368, 140)], [(128, 230), (243, 235), (358, 345), (283, 410), (113, 385)], [(428, 310)]]},
     'giraffe': {'lw': 0.3, 'seeds': [[(180, 130), (230, 260), (140, 350), (300, 400), (250, 160)], [(200, 190), (210, 380), (130, 420), (270, 440), (330, 375)], [(240, 60), (310, 240), (385, 325)], [(170, 85), (315, 95)]]},
     'cupcake': {'lw': 0.3, 'seeds': [[(238, 230), (380, 230), (188, 200), (348, 240), (288, 160)], [(253, 95)], [(188, 320), (368, 320), (263, 50)], [(248, 400), (148, 420), (368, 420)]]},
     # the other shapes: k-means, with the number of parts that the picture has
@@ -128,7 +128,7 @@ def kmeans(x, k, seed, iters=25):
     return c, lab, ((x - c[lab]) ** 2).sum()
 
 
-def divide(rgba, merge=MERGE, island=ISLAND, k0=8, k=None, lw=LW, seeds=None):
+def divide(rgba, merge=MERGE, island=ISLAND, k0=8, k=None, lw=LW, seeds=None, protect=(), white=None):
     """-> labels (0 outside, 1..n), L (the lightness 0..100), n"""
     a = rgba[:, :, 3]
     rgb = rgba[:, :, :3].astype(float) / 255
@@ -150,7 +150,13 @@ def divide(rgba, merge=MERGE, island=ISLAND, k0=8, k=None, lw=LW, seeds=None):
         d = ((f.reshape(-1, 1, 3) - sc[None]) ** 2).sum(-1)
         full = sl[np.argmin(d, axis=1)].reshape(a.shape)
         full[~inner] = 0
-        return refine(full, lab, a, inner, len(seeds), island)
+        if white:
+            # a part that is only pale and colourless (tusks, nails): by the lightness, not by a seed (the shine of the grey is near it in the colours, but not so light)
+            part, thr, ymin = white   # ymin: only below this row (the shine on the forehead and the ear is not a tusk)
+            rows = np.arange(full.shape[0])[:, None] >= ymin
+            full[(full == part) & ~rows] = 1
+            full[inner & rows & (lab[:, :, 0] > thr) & (np.abs(lab[:, :, 1]) < 8) & (np.abs(lab[:, :, 2]) < 8)] = part
+        return refine(full, lab, a, inner, len(seeds), island, protect)
     best = None
     if k:
         k0, merge = k, 0.0
@@ -183,15 +189,17 @@ def divide(rgba, merge=MERGE, island=ISLAND, k0=8, k=None, lw=LW, seeds=None):
     # every pixel of the inside to the nearest centre
     full = np.argmin(((f.reshape(-1, 3)[:, None, :] - cent[None]) ** 2).sum(-1), axis=1).reshape(a.shape) + 1
     full[~inner] = 0
-    return refine(full, lab, a, inner, len(cent), island)
+    return refine(full, lab, a, inner, len(cent), island, protect)
 
 
-def refine(full, lab, a, inner, n, island):
+def refine(full, lab, a, inner, n, island, protect=()):
     """the same clean-up for every way of finding the parts: islands, thin strips, borders, the edge of the shape"""
     total = float(inner.sum())
     # the small islands join what is around them (never the pattern: its pieces are big enough)
     for _ in range(3):
         for p in range(1, n + 1):
+            if p in protect:   # a part made of small pieces on purpose (the tusks and the nails of the elephant): its pieces are kept, as one part
+                continue
             comp, m = ndi.label(full == p)
             if not m:
                 continue
@@ -203,6 +211,22 @@ def refine(full, lab, a, inner, n, island):
                     if ring.any():
                         vals, cn = np.unique(full[ring], return_counts=True)
                         full[mask] = vals[np.argmax(cn)]
+    # the part of small pieces on purpose (the tusks and the nails): each piece is made whole (closed, so no holes and no ragged edge) and the specks around are dropped, so it shows as ONE clean part
+    for p in protect:
+        m = full == p
+        closed = ndi.binary_opening(ndi.binary_closing(m, iterations=2), iterations=1)
+        comp, k = ndi.label(closed)
+        keep = np.zeros_like(closed)
+        for ci in range(1, k + 1):
+            if (comp == ci).sum() >= 60:
+                keep |= comp == ci
+        idx = ndi.distance_transform_edt(~(full != p), return_distances=False, return_indices=True)
+        others = np.where(m & ~keep, 0, full)   # the specks go to the part around them
+        ring = ndi.binary_dilation(m & ~keep, iterations=2) & (full > 0) & ~m
+        if ring.any():
+            vals, cn = np.unique(full[ring], return_counts=True)
+            others[m & ~keep] = vals[np.argmax(cn)]
+        full = np.where(keep & (full > 0), p, others)
     # a lonely piece of a part (the shine on the forehead of the cat, white like the belly): when the part has only two or three pieces and this one is a small fraction of the
     # biggest, and one other part is all around it, it is not a part of its own (a pattern, with many pieces, is left alone)
     for p in range(1, n + 1):
@@ -286,7 +310,7 @@ def parts():
     for name in shapes:
         rgba = np.array(Image.open(f'public/squishy/shapes/{name}.webp').convert('RGBA'))
         ov = OVERRIDE.get(name, {})
-        full, L, n = divide(rgba, ov.get('merge', MERGE), ov.get('island', ISLAND), ov.get('k0', 8), ov.get('k'), ov.get('lw', LW), ov.get('seeds'))
+        full, L, n = divide(rgba, ov.get('merge', MERGE), ov.get('island', ISLAND), ov.get('k0', 8), ov.get('k'), ov.get('lw', LW), ov.get('seeds'), ov.get('protect', ()), ov.get('white'))
         # the shading: the lightness of every pixel against the median of its own part (so a part keeps its shine and its shade in any colour)
         shade = np.zeros(L.shape)
         spec = np.zeros(L.shape)

@@ -29,6 +29,25 @@ describe('painting', () => {
     expect(out[4]).toBe(200);
   });
 
+  it('the border between two parts is soft: the colours are mixed over 1-2 pixels, and far from the border they are not touched', () => {
+    const map = mapOf(32, (x) => [x < 16 ? 1 : 2, 100, 0, 255]);
+    const out = new Uint8ClampedArray(32 * 32 * 4);
+    compose(map, [[255, 0, 0], [0, 0, 255]], out, 2);
+    const px = (x: number): number[] => [...out.slice((16 * 32 + x) * 4, (16 * 32 + x) * 4 + 3)];
+    expect(px(5)).toEqual([255, 0, 0]);
+    expect(px(26)).toEqual([0, 0, 255]);
+    // the two pixels next to the border are in between
+    expect(px(15)[0]).toBeGreaterThan(80);
+    expect(px(15)[0]).toBeLessThan(250);
+    expect(px(16)[2]).toBeGreaterThan(80);
+    expect(px(16)[2]).toBeLessThan(250);
+    // the same without the softening: a hard edge
+    const hard = new Uint8ClampedArray(32 * 32 * 4);
+    compose(map, [[255, 0, 0], [0, 0, 255]], hard, 0);
+    expect(hard[(16 * 32 + 15) * 4]).toBe(255);
+    expect(hard[(16 * 32 + 16) * 4 + 2]).toBe(255);
+  });
+
   it('there are six colours of the palette, all different, all with a name in English', () => {
     expect(PALETTE).toHaveLength(6);
     expect(new Set(PALETTE.map((p) => p.rgb.join())).size).toBe(6);

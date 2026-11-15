@@ -6,7 +6,9 @@ body.lobby3d-on .sq-lab { pointer-events: none; }
 .sq-bar button { pointer-events: auto; width: 46px; height: 46px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .9); font-size: 20px; box-shadow: 0 3px 8px rgba(0, 0, 0, .22); }
 .sq-stage { position: fixed; z-index: 2; inset: 64px 0 150px; pointer-events: auto; touch-action: none; }
 .sq-flatview { position: absolute; inset: 0; display: grid; place-items: center; }
-.sq-flatcanvas { width: min(86vw, 52vh); aspect-ratio: 1; transform-origin: 50% 92%; will-change: transform; filter: drop-shadow(0 8px 6px rgba(60, 30, 50, .25)); }
+.sq-flatwrap { position: relative; width: min(86vw, 52vh); }
+.sq-flatshadow { position: absolute; left: 50%; bottom: -1%; width: 78%; height: 9%; border-radius: 50%; background: radial-gradient(closest-side, rgba(60, 30, 50, .55), rgba(60, 30, 50, .25) 60%, rgba(60, 30, 50, 0)); transform: translateX(-50%); }
+.sq-flatcanvas { position: relative; width: 100%; aspect-ratio: 1; transform-origin: 50% 92%; will-change: transform;  }
 .sq-dock { position: fixed; z-index: 5; inset-inline: 0; bottom: 0; padding: 8px 12px calc(14px + env(safe-area-inset-bottom)); display: grid; gap: 10px; justify-items: center; pointer-events: none; }
 .sq-dock > * { pointer-events: auto; }
 .sq-modes { display: flex; gap: 8px; }
@@ -28,3 +30,4 @@ body.lobby3d-on .sq-lab { pointer-events: none; }
 .sq-fps { font: 700 12px/1.2 monospace; direction: ltr; text-align: start; color: #7a5a70; }
 
 .sq-lab [hidden] { display: none !important; }
+.sq-copy { border: 0; border-radius: 10px; padding: 7px 12px; font: 800 14px/1 inherit; font-family: inherit; background: #ff7aa8; color: #fff; justify-self: start; }

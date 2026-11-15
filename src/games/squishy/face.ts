@@ -1,7 +1,8 @@
 /** The face of a squishy (SPEC-squishy.md 2.6), drawn in code in the style of the other squishies: dark shiny eyes, a small smile. Here only one face (the first of the six), with three states. */
 export type FaceState = 'open' | 'blink' | 'squeezed';
 
-export function drawFace(g: CanvasRenderingContext2D, x: number, y: number, size: number, state: FaceState): void {
+/** `look`: where the eyes look (-1..1 on both axes: towards a finger that came down on that side); the dark of the eye moves a little that way, and the white shine stays on the top. */
+export function drawFace(g: CanvasRenderingContext2D, x: number, y: number, size: number, state: FaceState, look: { x: number; y: number } = { x: 0, y: 0 }): void {
   const gap = size * 0.34;
   const ry = size * 0.11;
   const rx = size * 0.075;
@@ -19,14 +20,15 @@ export function drawFace(g: CanvasRenderingContext2D, x: number, y: number, size
     if (state === 'open') {
       g.fillStyle = '#2a1830';
       g.beginPath();
-      g.ellipse(ex, y, rx, ry, 0, 0, Math.PI * 2);
+      const lx = ex + look.x * rx * 0.55, ly = y + look.y * ry * 0.45;
+      g.ellipse(lx, ly, rx, ry, 0, 0, Math.PI * 2);
       g.fill();
       g.fillStyle = '#fff';
       g.beginPath();
-      g.ellipse(ex - rx * 0.3, y - ry * 0.35, rx * 0.34, rx * 0.34, 0, 0, Math.PI * 2);
+      g.ellipse(lx - rx * 0.3, ly - ry * 0.35, rx * 0.34, rx * 0.34, 0, 0, Math.PI * 2);
       g.fill();
       g.beginPath();
-      g.ellipse(ex + rx * 0.35, y + ry * 0.4, rx * 0.17, rx * 0.17, 0, 0, Math.PI * 2);
+      g.ellipse(lx + rx * 0.35, ly + ry * 0.4, rx * 0.17, rx * 0.17, 0, 0, Math.PI * 2);
       g.fill();
     } else {
       // closed eyes: a happy arch (squeezed) or a flat line (a blink)

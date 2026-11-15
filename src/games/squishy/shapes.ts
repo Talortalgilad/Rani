@@ -18,6 +18,8 @@ export interface Loaded {
   map: Uint8ClampedArray;
   /** the bounding box of the shape and where a face goes (animals only), in pixels of the picture */
   box: { x0: number; y0: number; x1: number; y1: number };
+  /** the width of the base (the lowest quarter of the shape: what stands on the table; the tail that sticks out to the side is not in it) */
+  foot: { x0: number; x1: number };
   face: { x: number; y: number; size: number } | null;
 }
 
@@ -60,5 +62,8 @@ export async function loadShape(id: string): Promise<Loaded> {
     }
   }
   const box = { x0, y0, x1, y1 };
-  return { id, map, box, face: (ANIMALS as readonly string[]).includes(id) ? faceOf(map, box) : null };
+  let bx0 = SIZE, bx1 = 0;
+  for (let y = Math.round(y1 - (y1 - y0) * 0.26); y <= y1; y++) for (let x = 0; x < SIZE; x++) if (alpha[(y * SIZE + x) * 4 + 3] > 120) (bx0 = Math.min(bx0, x)), (bx1 = Math.max(bx1, x));
+  const foot = bx1 > bx0 ? { x0: bx0, x1: bx1 } : { x0, x1 };
+  return { id, map, box, foot, face: (ANIMALS as readonly string[]).includes(id) ? faceOf(map, box) : null };
 }

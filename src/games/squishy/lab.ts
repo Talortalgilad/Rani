@@ -9,6 +9,7 @@
 import './lab.css';
 import { getState } from '../../storage';
 import { sound } from '../../sound';
+import { buzz } from '../../haptics';
 import { sessionTier, getTier } from '../../lobby3d/quality';
 import { drawFace, type FaceState } from './face';
 import { compose, PALETTE, partAt, type RGB } from './paint';
@@ -23,7 +24,8 @@ const HALF = 1.18;
 /** the scene shows this much of the world across, and this much high, at least */
 const FIT_W = 2.9;
 const FIT_H = 3.5;
-const CENTRE_Y = 0.22;
+/** where the base of the squishy stands on the screen (the share of the height): on the table of the picture, above the controls */
+const BASE_FRAC = 0.755;
 
 export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => void {
   let dead = false;
@@ -46,6 +48,7 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
       <label>עומק <input type="range" data-k="depth" min="0.1" max="1.2" step="0.01"><output></output></label>
       <label>חזרה (שנ׳) <input type="range" data-k="returnSeconds" min="0.4" max="3.5" step="0.05"><output></output></label>
       <div class="sq-shapes"></div>
+      <button type="button" class="sq-copy">העתק ערכים</button>
       <div class="sq-fps">—</div>
     </div>
     <div class="sq-dock">
@@ -72,6 +75,27 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
       SQUEEZE[k] = Number(inp.value);
       out.textContent = SQUEEZE[k].toFixed(2);
     });
+  });
+  // "copy the values": the three numbers as a text, to send what was found on the phone
+  const copyBtn = tune.querySelector<HTMLButtonElement>('.sq-copy')!;
+  copyBtn.addEventListener('click', () => {
+    const text = `radius=${SQUEEZE.radius.toFixed(2)} depth=${SQUEEZE.depth.toFixed(2)} returnSeconds=${SQUEEZE.returnSeconds.toFixed(2)}`;
+    const done = (): void => {
+      copyBtn.textContent = 'הועתק ✓';
+      window.setTimeout(() => (copyBtn.textContent = 'העתק ערכים'), 1600);
+    };
+    const old = (): void => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch { /* ignore */ }
+      ta.remove();
+      done();
+    };
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done, old);
+    else old();
   });
   const shapesEl = tune.querySelector<HTMLElement>('.sq-shapes')!;
   shapesEl.innerHTML = SHAPES.map((s) => `<button type="button" data-s="${s}" class="${s === shapeId ? 'on' : ''}">${s}</button>`).join('');
@@ -108,6 +132,12 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
   const composed = new Uint8ClampedArray(SIZE * SIZE * 4);
   const imgData = new ImageData(composed, SIZE, SIZE);
   let face: FaceState = 'open';
+  /** where the eyes look (towards a finger that came down), and for how long they look before they close */
+  let look = { x: 0, y: 0 };
+  let lookT = 0;
+  let peak = 0;
+  let popped = true;
+  let deepDone = false;
   let dirty = true;
   let nextBlink = 2;
   let blinkT = 0;
@@ -116,7 +146,7 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
     if (!loaded) return;
     compose(loaded.map, colors, composed);
     g.putImageData(imgData, 0, 0);
-    if (loaded.face) drawFace(g, loaded.face.x, loaded.face.y, loaded.face.size, face);
+    if (loaded.face) drawFace(g, loaded.face.x, loaded.face.y, loaded.face.size, face, look);
     dirty = false;
     onPainted?.();
   }
@@ -151,11 +181,21 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
     if (mode === 'squeeze') {
       finger = { x: p.x, y: p.y, x0: p.x, y0: p.y, force: 0.55 };
       grid.press(finger);
-      face = 'squeezed';
+      // the eyes first look at the finger (a moment), then they close
+      face = 'open';
+      if (loaded.face) {
+        const fu = (loaded.face.x / SIZE) * 2 - 1, fv = 1 - (loaded.face.y / SIZE) * 2;
+        look = { x: Math.max(-1, Math.min(1, (p.x - fu) * 2.4)), y: Math.max(-1, Math.min(1, -(p.y - fv) * 2.4)) };
+      }
+      lookT = 0.2;
+      peak = 0;
+      popped = false;
+      deepDone = false;
+      buzz(10);
       dirty = true;
       squeezes++;
       meter.querySelectorAll('i').forEach((el, i) => el.classList.toggle('on', i < Math.min(5, squeezes)));
-      sound.play('pop', 240 + ((squeezes * 37) % 90));
+      sound.play('squish', 250);
     } else {
       finger = { x: p.x, y: p.y, x0: p.x, y0: p.y, force: 0 };
     }
@@ -175,6 +215,8 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
     if (mode === 'squeeze') {
       grid.release();
       face = 'open';
+      look = { x: 0, y: 0 };
+      lookT = 0;
       dirty = true;
     } else if (!moved && e.type === 'pointerup' && loaded) {
       // a tap in the painting: the part under the finger gets the colour
@@ -200,6 +242,22 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
   function tick(dt: number, t: number, ms: number): void {
     if (finger && mode === 'squeeze') finger.force = Math.min(1, 0.55 + ((performance.now() - downAt) / 1000) * 1.1);
     grid.step(dt);
+    if (finger && mode === 'squeeze') {
+      peak = Math.max(peak, grid.maxOffset());
+      if (lookT > 0) {
+        lookT -= dt;
+        if (lookT <= 0) (face = 'squeezed'), (dirty = true);
+      }
+      // a longer press goes deeper: a second, lower sound, once
+      if (!deepDone && finger.force > 0.97) {
+        deepDone = true;
+        sound.play('squish', 165);
+      }
+    } else if (!popped && !finger && peak > 0.04 && grid.maxOffset() < peak * 0.06) {
+      // back in shape: a small pop (the deeper it was pressed, the lower)
+      popped = true;
+      sound.play('unsquish', 470 - 260 * Math.min(1, peak / 0.4));
+    }
     hop = Math.max(0, hop - dt * 3);
     // a blink now and then
     if (loaded?.face && face !== 'squeezed') {
@@ -242,40 +300,46 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
         const geo = new T.PlaneGeometry(HALF * 2, HALF * 2, grid.n, grid.n);
         const mat = new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false });
         const mesh = new T.Mesh(geo, mat);
-        mesh.position.y = CENTRE_Y;
         scene.add(mesh);
         // the shadow on the table: a soft ellipse that widens a little when the squishy is pressed
         const sc = document.createElement('canvas');
         sc.width = sc.height = 128;
         const sg = sc.getContext('2d')!;
         const grad = sg.createRadialGradient(64, 64, 4, 64, 64, 62);
-        grad.addColorStop(0, 'rgba(60,30,50,.42)');
-        grad.addColorStop(1, 'rgba(60,30,50,0)');
+        grad.addColorStop(0, 'rgba(50,25,40,.95)');
+        grad.addColorStop(0.6, 'rgba(50,25,40,.55)');
+        grad.addColorStop(1, 'rgba(50,25,40,0)');
         sg.fillStyle = grad;
         sg.fillRect(0, 0, 128, 128);
         const shadowTex = new T.CanvasTexture(sc);
         const shadow = new T.Mesh(new T.PlaneGeometry(2, 2), new T.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, toneMapped: false }));
-        shadow.position.set(0, CENTRE_Y - HALF * 0.93, -0.01);
         scene.add(shadow);
         const pos = geo.attributes.position as InstanceType<typeof T.BufferAttribute>;
         let visW = 3, visH = 3;
+        /** the world height of the table where the base of the squishy stands, and the height of the picture's centre when it rests there */
+        let baseWorld = 0;
+        let restY = 0;
+        const place = (): void => {
+          baseWorld = (0.5 - BASE_FRAC) * visH;
+          // the lowest pixel of the shape is on the table (the box of the shape), not the bottom of the square of the picture
+          const baseLocal = loaded ? (1 - (2 * loaded.box.y1) / SIZE) * HALF : -0.94 * HALF;
+          restY = baseWorld - baseLocal;
+        };
         const fit = (w: number, h: number): void => {
           camera.aspect = w / h;
           const need = Math.max(FIT_W / camera.aspect, FIT_H);
-          camera.position.set(0, CENTRE_Y * 0.4, need / (2 * Math.tan((camera.fov * Math.PI) / 360)));
-          camera.lookAt(0, CENTRE_Y * 0.4, 0);
+          camera.position.set(0, 0, need / (2 * Math.tan((camera.fov * Math.PI) / 360)));
+          camera.lookAt(0, 0, 0);
           camera.updateProjectionMatrix();
           visH = 2 * camera.position.z * Math.tan((camera.fov * Math.PI) / 360);
           visW = visH * camera.aspect;
+          place();
         };
         fit(env.width, env.height);
         toPicture = (cx, cy) => {
-          const r = stage.getBoundingClientRect();
-          const w = window.innerWidth, h = window.innerHeight;
-          void r;
-          const wx = (cx / w - 0.5) * visW;
-          const wy = (0.5 - cy / h) * visH + CENTRE_Y * 0.4;
-          return { x: wx / HALF, y: (wy - CENTRE_Y) / HALF };
+          const wx = (cx / window.innerWidth - 0.5) * visW;
+          const wy = (0.5 - cy / window.innerHeight) * visH;
+          return { x: wx / HALF, y: (wy - restY) / HALF };
         };
         onPainted = () => (tex.needsUpdate = true);
         let time = 0;
@@ -290,8 +354,21 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
               pos.setXY(p, (grid.rest[p * 2] + grid.off[p * 2]) * HALF, (grid.rest[p * 2 + 1] + grid.off[p * 2 + 1]) * HALF);
             }
             pos.needsUpdate = true;
-            const k = 1 + grid.maxOffset() * 0.5;
-            shadow.scale.set(HALF * 0.85 * k, HALF * 0.16, 1);
+            // the squishy sits on the table: whatever is squeezed, its base stays where it is (it flattens upwards and sideways, it does not sink into the table)
+            place();
+            let bottom = 0;
+            for (let i = 0; i <= grid.n; i++) bottom += grid.off[(grid.n * (grid.n + 1) + i) * 2 + 1];
+            bottom /= grid.n + 1;
+            mesh.position.y = restY - bottom * HALF;
+            mesh.position.x = 0;
+            // the shadow under it: where the base is, as wide as the shape; it widens and darkens when the squishy is pressed down
+            const box = loaded?.foot ?? { x0: 80, x1: 432 };
+            const rx = ((box.x1 - box.x0) / SIZE) * HALF * 0.95;
+            const press = Math.min(1, grid.maxOffset() / 0.28);
+            const ry = rx * 0.14 * (1 + 0.25 * press);
+            shadow.position.set((((box.x0 + box.x1) / SIZE - 1)) * HALF, baseWorld - ry * 0.25, -0.01);
+            shadow.scale.set(rx * (1 + 0.38 * press), ry, 1);
+            (shadow.material as InstanceType<typeof T.MeshBasicMaterial>).opacity = 0.7 + 0.3 * press;
             mesh.scale.setScalar(1 + Math.sin(hop * Math.PI) * 0.05);
             frameMs += performance.now() - t0;
           },
@@ -324,7 +401,12 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
     const view = document.createElement('div');
     view.className = 'sq-flatview';
     cv.className = 'sq-flatcanvas';
-    view.appendChild(cv);
+    const wrap = document.createElement('div');
+    wrap.className = 'sq-flatwrap';
+    const shadowEl = document.createElement('i');
+    shadowEl.className = 'sq-flatshadow';
+    wrap.append(shadowEl, cv);
+    view.appendChild(wrap);
     stage.appendChild(view);
     onPainted = () => void 0;
     toPicture = (cx, cy) => {
@@ -345,6 +427,7 @@ export function renderSquishyLab(root: HTMLElement, onExit: () => void): () => v
       const tx = 1 + press * 0.1, ty = 1 - press * 0.16;
       vx += (w * w * (tx - sx) - 2 * w * vx) * dt; vy += (w * w * (ty - sy) - 2 * w * vy) * dt;
       sx += vx * dt; sy += vy * dt;
+      shadowEl.style.transform = `translateX(-50%) scale(${(1 + 0.38 * Math.min(1, (1 - sy) / 0.12)).toFixed(3)}, 1)`;
       cv.style.transform = `scale(${sx.toFixed(3)}, ${sy.toFixed(3)}) scale(${(1 + Math.sin(hop * Math.PI) * 0.05).toFixed(3)})`;
     };
     raf = requestAnimationFrame(loop);

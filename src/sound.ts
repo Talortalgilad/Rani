@@ -11,6 +11,8 @@ export type SoundName =
   // a vehicle that hops over another on the road
   | 'boing'
   // block puzzle: a block lands, a block bursts (pitch rises with every block), a combo arpeggio, a streak step (pitch), a new tray, a clean board, a soft happy tune for a full board
+  // squishy workshop: a soft low sound at a squeeze (pitch in Hz: the deeper the press, the lower), and a small pop when it is back in shape
+  | 'squish' | 'unsquish'
   | 'thock' | 'blast' | 'arpeggio' | 'streak' | 'trayin' | 'fanfare' | 'gentle';
 
 export interface SoundApi {
@@ -77,6 +79,20 @@ export const sound: SoundApi = {
           const f = pitch ?? 660;
           tone(f, 0, 0.14, 'sine', 0.35, f * 0.7);
           tone(f * 2, 0, 0.05, 'triangle', 0.08);
+          break;
+        }
+        case 'squish': {
+          // soft and low: a sine that sinks a little, with a dull second note under it
+          const f = pitch ?? 220;
+          tone(f, 0, 0.26, 'sine', 0.3, f * 0.72);
+          tone(f * 0.5, 0, 0.2, 'triangle', 0.12, f * 0.4);
+          break;
+        }
+        case 'unsquish': {
+          // the little pop of a squishy that is back in shape
+          const f = pitch ?? 420;
+          tone(f, 0, 0.09, 'sine', 0.22, f * 1.5);
+          tone(f * 2, 0.01, 0.04, 'triangle', 0.05);
           break;
         }
         case 'flip':

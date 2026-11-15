@@ -23,22 +23,67 @@ export const SHINE = 0.55;
  * Paints the picture: `map` is the RGBA of the map (R part, G shading x100, B highlight, A alpha), `out` is the RGBA to be filled (the same size), `colors[p-1]` the colour of part p.
  * The colour comes out as it is multiplied, so a pale colour has pale shadows and a deep colour has deep ones, with the shape of the light that was in the picture.
  */
-export function compose(map: Uint8ClampedArray, colors: RGB[], out: Uint8ClampedArray): void {
-  for (let i = 0; i < map.length; i += 4) {
-    const part = map[i];
-    const alpha = map[i + 3];
-    if (!part || !alpha) {
+export function compose(map: Uint8ClampedArray, colors: RGB[], out: Uint8ClampedArray, soft = 2): void {
+  const n = map.length / 4;
+  const size = Math.round(Math.sqrt(n));
+  const part = (p: number): number => (map[p * 4 + 3] ? map[p * 4] : 0);
+  // 1. the flat colour of every pixel (the colour of its part)
+  const base = new Float32Array(n * 3);
+  for (let p = 0; p < n; p++) {
+    const q = part(p);
+    if (!q) continue;
+    const c = colors[q - 1] ?? [200, 200, 200];
+    base[p * 3] = c[0]; base[p * 3 + 1] = c[1]; base[p * 3 + 2] = c[2];
+  }
+  // 2. a soft border between two parts: the pixels within `soft` pixels of another part take the average of the flat colours around them (a small blur, only there),
+  //    so the edge between two colours is not jagged (the ear and the head of the cat). The map itself is not touched: a tap still finds the part it found.
+  if (soft > 0) {
+    const soften: number[] = [];
+    for (let y = soft; y < size - soft; y++) {
+      for (let x = soft; x < size - soft; x++) {
+        const p = y * size + x;
+        const q = part(p);
+        if (!q) continue;
+        let edge = false;
+        for (let dy = -soft; dy <= soft && !edge; dy++) {
+          for (let dx = -soft; dx <= soft; dx++) {
+            const o = part(p + dy * size + dx);
+            if (o && o !== q) { edge = true; break; }
+          }
+        }
+        if (edge) soften.push(p);
+      }
+    }
+    const blurred = new Float32Array(soften.length * 3);
+    soften.forEach((p, i) => {
+      const x = p % size, y = (p / size) | 0;
+      let w = 0, r = 0, g = 0, b = 0;
+      for (let dy = -soft; dy <= soft; dy++) {
+        for (let dx = -soft; dx <= soft; dx++) {
+          const o = (y + dy) * size + x + dx;
+          if (!part(o)) continue;
+          const k = 1 / (1 + dx * dx + dy * dy);
+          w += k; r += base[o * 3] * k; g += base[o * 3 + 1] * k; b += base[o * 3 + 2] * k;
+        }
+      }
+      blurred[i * 3] = r / w; blurred[i * 3 + 1] = g / w; blurred[i * 3 + 2] = b / w;
+    });
+    soften.forEach((p, i) => { base[p * 3] = blurred[i * 3]; base[p * 3 + 1] = blurred[i * 3 + 1]; base[p * 3 + 2] = blurred[i * 3 + 2]; });
+  }
+  // 3. the shading and the highlight
+  for (let p = 0; p < n; p++) {
+    const i = p * 4;
+    if (!part(p)) {
       out[i] = out[i + 1] = out[i + 2] = out[i + 3] = 0;
       continue;
     }
-    const c = colors[part - 1] ?? [200, 200, 200];
     const shade = map[i + 1] / 100;
     const hi = (map[i + 2] / 255) * SHINE;
     for (let k = 0; k < 3; k++) {
-      const v = c[k] * shade;
+      const v = base[p * 3 + k] * shade;
       out[i + k] = v + (255 - v) * hi;
     }
-    out[i + 3] = alpha;
+    out[i + 3] = map[i + 3];
   }
 }
 
