@@ -5,6 +5,7 @@ import { activeLevel } from '../math/adaptive';
 import { TYPE_LABEL, computeStats } from '../math/stats';
 import { addExtraMinutes, allowedMinutes, playedMinutes } from '../usage';
 import { bindEnglishParent, englishParentHtml } from '../games/english/ui/parentSection';
+import { bindTutorParent, tutorParentHtml } from '../games/english/tutor/parent';
 import { bindPhotosCard, photosCardHtml } from '../games/memory/ui/photosAdmin';
 import { bindVoiceReview, voiceReviewCardHtml } from './voiceReview';
 import { getState, resetProgress, update, type AppState, type QuestionType } from '../storage';
@@ -156,6 +157,7 @@ export function renderParent(root: HTMLElement): () => void {
       ${statsHtml()}
 
       ${englishParentHtml()}
+      ${tutorParentHtml()}
 
       ${photosCardHtml()}
       ${voiceReviewCardHtml()}
@@ -246,6 +248,7 @@ export function renderParent(root: HTMLElement): () => void {
       settings();
     });
     bindEnglishParent(root, settings);
+    bindTutorParent(root, settings);
     void bindPhotosCard(root);
     bindVoiceReview(root);
     root.querySelector('#done')!.addEventListener('click', () => go({ name: 'home' }));

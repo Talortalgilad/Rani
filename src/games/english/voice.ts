@@ -196,7 +196,11 @@ export const resetRecorded = (): void => {
 };
 
 let clip: HTMLAudioElement | null = null;
+let stopCurrent: (() => void) | null = null;
 function stopClip(): void {
+  // whoever waits for this clip is let go (it was stopped on purpose: nothing is read in its place)
+  stopCurrent?.();
+  stopCurrent = null;
   try {
     clip?.pause();
   } catch {
@@ -204,6 +208,9 @@ function stopClip(): void {
   }
   clip = null;
 }
+/** A screen that wants to see the sound of every recording that starts (the mouth of the tutor moves with its volume). */
+let clipHook: ((a: HTMLAudioElement) => void) | null = null;
+export const onClipStart = (f: ((a: HTMLAudioElement) => void) | null): void => void (clipHook = f);
 /**
  * How long the game waits for a sound (nothing in the game may be held by a sound that does not end: an `ended` that never comes, a clip that does not load or is empty).
  * Until the length of the clip is known: at most 6 s. Then: its length plus one second (at most 15 s, so that a long song is not cut).
@@ -217,6 +224,7 @@ export function playClip(url: string): Promise<boolean> {
       if (typeof Audio === 'undefined' || !getState().settings.tts) return resolve(false);
       const a = new Audio(url);
       clip = a;
+      try { clipHook?.(a); } catch { /* the mouth is a nicety */ }
       let timer = 0;
       let over = false;
       const done = (ok: boolean): void => {
@@ -225,6 +233,7 @@ export function playClip(url: string): Promise<boolean> {
         window.clearTimeout(timer);
         resolve(ok);
       };
+      stopCurrent = () => done(true);
       // the guard: the length of the clip is not known yet (6 s), then its length plus a second
       timer = window.setTimeout(() => (a.pause?.(), done((a.currentTime ?? 0) > 0)), SOUND_GUARD.unknownMs);
       a.addEventListener?.('loadedmetadata', () => {

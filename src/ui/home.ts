@@ -33,6 +33,28 @@ export function renderHome(root: HTMLElement): () => void {
     sound.play('bonus');
   });
 
+  // Miss Lolly: her lessons, straight from the lobby. A ❗ when there is a new lesson today (found when the lesson list is loaded: not with the app).
+  const lollyBtn = document.createElement('button');
+  lollyBtn.className = 'lolly-btn';
+  lollyBtn.setAttribute('aria-label', 'המורה לולי');
+  lollyBtn.innerHTML = `<img src="${import.meta.env.BASE_URL}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="lolly-new" hidden>❗</i>`;
+  lollyBtn.addEventListener('click', () => {
+    sound.play('pop', 640);
+    try {
+      sessionStorage.setItem('rani-open-tutor', '1');
+    } catch {
+      /* ignore */
+    }
+    go({ name: 'gate', gameId: 'english' });
+  });
+  void Promise.all([import('../games/english/tutor/badge'), import('../games/english/engine/progress')]).then(([b, p]) => {
+    try {
+      if (lollyBtn.isConnected && b.hasNewLesson(p.dayNumber())) lollyBtn.querySelector<HTMLElement>('.lolly-new')!.hidden = false;
+    } catch {
+      /* the badge is a nicety */
+    }
+  });
+
   const stars = document.createElement('div');
   stars.className = 'stars';
   stars.textContent = `⭐ ${st.stars}`;
@@ -67,7 +89,7 @@ export function renderHome(root: HTMLElement): () => void {
     grid.appendChild(card);
   }
 
-  screen.append(muteBtn, header, stars, grid);
+  screen.append(muteBtn, lollyBtn, header, stars, grid);
   root.appendChild(screen);
 
   // Parent area: hold the title for 3 seconds. No visible button.

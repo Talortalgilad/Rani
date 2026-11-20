@@ -10,7 +10,7 @@ import type { SoundApi } from '../../../../sound';
 export { islandOpen };
 
 /** The map of the letters journey: six islands. */
-export function showLettersMap(root: HTMLElement, o: { name: string; openAll?: boolean; map: MapProgress; sound: SoundApi; onIsland(n: number): void; onJourney(j: Journey): void; onShelf(): void; onBook(): void; onHome(): void }): () => void {
+export function showLettersMap(root: HTMLElement, o: { name: string; openAll?: boolean; map: MapProgress; sound: SoundApi; onIsland(n: number): void; onJourney(j: Journey): void; onTutor(): void; onShelf(): void; onBook(): void; onHome(): void }): () => void {
   const open = ISLANDS.map((i) => i.ready && islandOpen(o.map, i.n, o.openAll));
   const current = ISLANDS.findIndex((i, k) => open[k] && !islandDone(o.map, i.n));
   root.innerHTML = `
@@ -38,7 +38,7 @@ export function showLettersMap(root: HTMLElement, o: { name: string; openAll?: b
   root.querySelector('#mh')!.addEventListener('click', o.onHome);
   root.querySelector('#msh')!.addEventListener('click', o.onShelf);
   root.querySelector('#mbk')!.addEventListener('click', o.onBook);
-  bindJourneyTabs(root, 'letters', o.onJourney);
+  bindJourneyTabs(root, 'letters', o.onJourney, o.onTutor);
   root.querySelectorAll<HTMLButtonElement>('.map-world').forEach((b) =>
     b.addEventListener('click', () => {
       if (!b.classList.contains('open')) {

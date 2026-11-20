@@ -16,6 +16,8 @@ import { learnedBefore, planLetterStation } from './letters/plan';
 import { addConfusion, type Confusions } from './letters/stats';
 import { songTaskStep } from './engine/steps';
 import { showShelf } from './ui/shelf';
+import { showTutor } from './tutor';
+import type { TutorState } from './tutor/state';
 import { preloadCheesy, setLook } from './art/cheesy';
 import { planStation } from './engine/planner';
 import { preloadVoice, sayLabel, sayLine } from './content/heLines';
@@ -131,8 +133,24 @@ function singSong(world: number): void {
 function showWorlds(): void {
   if (journey() === 'letters') return showLetters();
   const name = displayName();
-  swap(() => showMap(root!, { name, openAll: openAll(), map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onJourney: pickJourney, onHome: () => ctx!.onExit() }));
+  swap(() => showMap(root!, { name, openAll: openAll(), map: mapState(), sound: ctx!.sound, onWorld: showStations, onShelf: showShelfScreen, onBook: () => showBook(), onJourney: pickJourney, onTutor: showTutorScreen, onHome: () => ctx!.onExit() }));
   announce('island_title', name);
+}
+
+/** Miss Lolly's lessons (SPEC-tutor.md). No maths gate: it is a lesson, not a game. Back goes to the map that was open. */
+function showTutorScreen(fromLobby = false): void {
+  swap(() =>
+    showTutor(root!, {
+      sound: ctx!.sound,
+      load: () => ctx!.load<unknown>('tutor', null),
+      save: (s: TutorState) => ctx!.save('tutor', s),
+      words: words,
+      setWords: saveWords,
+      openAll: () => openAll() || ctx!.load<boolean>('tutorOpenAll', false),
+      // from the lobby (the button of Lolly) back goes to the lobby; from the map, to the map
+      onBack: fromLobby === true ? () => ctx!.onExit() : showWorlds,
+    }),
+  );
 }
 
 function pickJourney(j: Journey): void {
@@ -143,7 +161,7 @@ function pickJourney(j: Journey): void {
 /** The map of the letters journey. */
 function showLetters(): void {
   const name = displayName();
-  swap(() => showLettersMap(root!, { name, openAll: openAll(), map: lmap(), sound: ctx!.sound, onIsland: showIslandStations, onJourney: pickJourney, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
+  swap(() => showLettersMap(root!, { name, openAll: openAll(), map: lmap(), sound: ctx!.sound, onIsland: showIslandStations, onJourney: pickJourney, onTutor: showTutorScreen, onShelf: showShelfScreen, onBook: () => showBook(), onHome: () => ctx!.onExit() }));
   announce('letters_title');
 }
 
@@ -290,7 +308,16 @@ const mod: GameModule = {
       if (id) void sayLabel(id, ['island_title', 'i_am', 'proud', 'rescued'].includes(id) ? displayName() : '');
     });
     c.container.appendChild(root);
-    enter();
+    // the button of Lolly in the lobby: straight to her lessons (and back to the lobby)
+    let direct = false;
+    try {
+      direct = sessionStorage.getItem('rani-open-tutor') === '1';
+      sessionStorage.removeItem('rani-open-tutor');
+    } catch {
+      /* ignore */
+    }
+    if (direct) showTutorScreen(true);
+    else enter();
   },
   canInterrupt: () => true,
   pause() {

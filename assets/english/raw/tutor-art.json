@@ -1,0 +1,36 @@
+{
+ "note": "Tutor art for SPEC-tutor.md. Process exactly like park-art.json (connected components + rembg, 512 WebP transparent), but cut to public/english/tutor/<id>.webp.",
+ "sheets": [
+  {
+   "file": "sheet-31-lolly.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_170036_3d95319c-8b89-45c5-992a-9f4ac2380773.png",
+   "order": [
+    "lolly_idle",
+    "lolly_talk1",
+    "lolly_talk2",
+    "lolly_listen",
+    "lolly_happy",
+    "lolly_confused",
+    "lolly_clap",
+    "lolly_wave",
+    "lolly_think"
+   ]
+  },
+  {
+   "file": "sheet-32-faces.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261114_171253_7668a94b-0030-488d-a54f-1797f5d14189.png",
+   "order": [
+    "face_happy",
+    "face_sad",
+    "face_sleepy",
+    "face_hungry",
+    "face_great",
+    "face_love",
+    "face_yuck",
+    "face_yes",
+    "face_no"
+   ]
+  }
+ ],
+ "backgrounds": []
+}

@@ -1,0 +1,220 @@
+/* Miss Lolly (SPEC-tutor.md): the lesson screen and the list. Phone first (360 x 640). */
+.tutor-screen { --ink: #3a2f4b; --pink: #ff8fc0; gap: 8px; }
+.tutor-top { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 560px; flex: none; }
+.tutor-top .map-title { flex: 1; text-align: center; margin: 0; }
+.tutor-dots { flex: 1; display: flex; justify-content: center; gap: 12px; direction: ltr; }
+.tutor-dots i { width: 18px; height: 18px; border-radius: 50%; background: rgba(255, 255, 255, .8); border: 3px solid var(--ink); transition: background .25s, transform .25s; }
+.tutor-dots i.on { background: #ff6fa8; transform: scale(1.15); }
+/* the lesson: Lolly big and in the middle (about 30% of the height), her bubble under her; the step fills the lower half, where the thumb is */
+.tutor-lolly-col { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 560px; flex: none; }
+.tutor-lolly-col .tutor-lolly { width: 100%; height: clamp(150px, 30vh, 230px); }
+.tutor-lolly-col .tutor-bubble { width: 94%; flex: none; }
+.tutor-lolly-col .tutor-bubble::before { right: auto; left: 50%; top: -12px; margin-left: -9px; transform: rotate(-45deg); border-width: 3px 3px 0 0; }
+.tutor-lolly-row { display: flex; align-items: center; gap: 6px; width: 100%; max-width: 560px; flex: none; min-height: 112px; }
+.tutor-lolly { position: relative; flex: none; }
+.tutor-lolly.sm { width: 112px; height: 112px; }
+.lolly-breath { position: absolute; inset: 0; transform-origin: 50% 92%; animation: lolly-breathe 3.2s ease-in-out infinite; }
+.lf { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; opacity: 0; transition: opacity .08s linear; pointer-events: none; filter: drop-shadow(0 8px 6px rgba(58, 47, 75, .18)); }
+.lf.on { opacity: 1; }
+@keyframes lolly-breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, 1.03); } }
+.tutor-bubble { position: relative; flex: 1; min-height: 60px; max-height: 92px; overflow: hidden; border: 3px solid var(--ink); border-radius: 22px; background: #fff; padding: 8px 12px; font: 700 18px/1.25 'Fredoka', sans-serif; color: var(--ink); box-shadow: 0 5px 0 rgba(58, 47, 75, .16); display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; }
+.tutor-bubble::before { content: ''; position: absolute; right: -12px; top: 50%; width: 18px; height: 18px; background: #fff; border: 3px solid var(--ink); border-width: 3px 3px 0 0; transform: translateY(-50%) rotate(45deg); }
+.tutor-bubble.empty { visibility: hidden; }
+.tutor-bubble.pop { animation: tb-pop .25s ease-out; }
+@keyframes tb-pop { from { transform: scale(.92); } to { transform: scale(1); } }
+.tb-en { font-size: 22px; } .tb-he { display: block; }
+.tutor-stage { flex: 1; width: 100%; max-width: 560px; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 4px; position: relative; overflow: hidden; }
+.tutor-next { display: inline-flex; align-items: center; gap: 8px; margin-top: auto; border: 3px solid var(--ink); border-radius: 26px; background: #ffe58a; padding: 10px 26px; font: 800 22px inherit; font-family: inherit; color: var(--ink); box-shadow: 0 5px 0 rgba(58, 47, 75, .2); cursor: pointer; animation: tn-pulse 1.4s ease-in-out infinite; }
+@keyframes tn-pulse { 50% { transform: scale(1.04); } }
+.tutor-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 28px; background: rgba(255, 255, 255, .9); box-shadow: 0 6px 0 rgba(58, 47, 75, .14); width: 92%; text-align: center; }
+.tutor-big { font: 800 40px/1.1 'Fredoka', sans-serif; color: var(--ink); cursor: pointer; }
+.tutor-big.xl { font-size: 46px; }
+.tutor-sub { font: 700 20px/1.2 'Fredoka', sans-serif; color: #6b5a86; min-height: 24px; }
+.tutor-pic { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.tutor-pic.big { width: 104px; height: 104px; flex: none; border-radius: 26px; background: linear-gradient(160deg, #fff6d8, #ffe0f1 60%, #d9e9ff); box-shadow: 0 5px 0 rgba(58, 47, 75, .14); padding: 6px; }
+.tutor-card .tutor-pic { width: 120px; height: 120px; flex: none; }
+.pic-img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
+.pic-svg { width: 100%; height: 100%; pointer-events: none; }
+.pic-todo { font: 700 16px/1.2 'Fredoka', sans-serif; color: var(--ink); text-align: center; }
+.tutor-wave { display: none; font-size: 86px; animation: lolly-hop .7s ease-in-out infinite; margin-top: 16px; }
+.tutor-mic { font-size: 40px; }
+.tutor-speaker { border: 3px solid var(--ink); border-radius: 50%; width: 52px; height: 52px; background: #fff; font-size: 26px; box-shadow: 0 4px 0 rgba(58, 47, 75, .18); cursor: pointer; }
+.tutor-speaker.lone { flex: none; }
+/* choices */
+.tutor-choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; }
+.tutor-opt { position: relative; border: 4px solid var(--ink); border-radius: 26px; background: #fff; padding: 0; width: 28%; min-width: 92px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 rgba(58, 47, 75, .18); cursor: pointer; font-family: inherit; color: var(--ink); touch-action: manipulation; }
+.tutor-choices.four .tutor-opt { width: 40%; }
+.tutor-opt .tutor-pic { width: 100%; height: 100%; padding: 8px; }
+.tutor-choices.bubbles { flex-direction: column; align-items: center; }
+.tutor-choices.bubbles .tutor-opt { width: 92%; aspect-ratio: auto; min-height: 58px; border-radius: 28px; padding: 8px 16px; }
+.tutor-speech { font: 800 24px/1.15 'Fredoka', sans-serif; }
+.tutor-opt.sel { background: #ffe58a; transform: translateY(3px); box-shadow: none; }
+.tutor-opt.wrong { opacity: .55; }
+.tutor-opt.right { background: #c8f5d0; }
+.tutor-opt.glow { animation: opt-glow .7s ease-in-out infinite; }
+@keyframes opt-glow { 50% { box-shadow: 0 0 0 8px rgba(255, 200, 58, .9), 0 0 24px 10px rgba(255, 220, 120, .9); } }
+.tutor-opt.shake { animation: opt-shake .4s; }
+@keyframes opt-shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.tutor-choices.tf { gap: 28px; }
+.tutor-choices.tf .tutor-opt { width: 118px; }
+.tutor-tf { font-size: 64px; font-weight: 900; line-height: 1; }
+.tutor-tf.yes { color: #1fa855; } .tutor-tf.no { color: #e8283c; }
+.tutor-sbubble { padding: 8px 16px; border: 3px solid var(--ink); border-radius: 22px; background: #fff; font: 800 22px 'Fredoka', sans-serif; }
+/* feel */
+.tutor-faces { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; }
+.tutor-face { width: 28%; min-width: 88px; aspect-ratio: 1; border: 4px solid var(--ink); border-radius: 50%; background: #fff; padding: 4px; box-shadow: 0 5px 0 rgba(58, 47, 75, .18); cursor: pointer; }
+.tutor-face.sel { transform: scale(1.12); background: #ffe58a; }
+/* build */
+.tutor-slots { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; direction: ltr; width: 100%; }
+.tutor-slot { min-width: 74px; height: 58px; border: 3px dashed #8a7aa8; border-radius: 18px; background: rgba(255, 255, 255, .6); display: flex; align-items: center; justify-content: center; padding: 0 2px; }
+.tutor-slot.ok { border-color: #1fa855; background: #e4fbe9; }
+.tutor-bank { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; direction: ltr; width: 100%; margin-top: 10px; min-height: 64px; }
+.tutor-tile { border: 3px solid var(--ink); border-radius: 18px; background: #ffe58a; padding: 8px 14px; min-height: 52px; font: 800 24px 'Fredoka', sans-serif; color: var(--ink); box-shadow: 0 4px 0 rgba(58, 47, 75, .2); touch-action: none; cursor: grab; user-select: none; }
+.tutor-tile.placed { box-shadow: none; min-width: 66px; }
+.tutor-tile.drag { z-index: 20; position: relative; cursor: grabbing; }
+.tutor-tile.glow { animation: opt-glow .7s ease-in-out infinite; }
+/* chant */
+.tutor-chant { display: flex; flex-direction: column; gap: 5px; width: 96%; }
+.tutor-line { padding: 5px 8px; border-radius: 16px; background: rgba(255, 255, 255, .8); font: 800 17px/1.15 'Fredoka', sans-serif; color: #8a7aa8; text-align: center; transition: background .15s, color .15s, transform .15s; }
+.tutor-line.on { background: #ffe58a; color: var(--ink); transform: scale(1.04); }
+.tutor-clap { margin-top: auto; width: 64px; height: 64px; border-radius: 50%; border: 4px solid var(--ink); background: #fff; font-size: 32px; box-shadow: 0 6px 0 rgba(58, 47, 75, .2); cursor: pointer; touch-action: manipulation; }
+.tutor-clap.hit { animation: opt-shake .2s; background: #ffd3ea; }
+.tutor-yesno { display: flex; gap: 12px; margin-top: auto; }
+.tutor-yesno .tutor-next { margin-top: 0; animation: none; padding: 10px 20px; }
+/* sticker, unit */
+.tutor-sticker-stage { position: relative; width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; }
+.tutor-sticker { width: 170px; height: 170px; padding: 12px; background: #fff; border-radius: 30px; border: 3px solid #e6dcf3; box-shadow: 0 8px 18px rgba(58, 47, 75, .25); transform: rotate(-6deg) scale(1.15); transition: transform .8s cubic-bezier(.3, 1.4, .5, 1); }
+.tutor-sticker.stuck { transform: rotate(4deg) scale(1); }
+.tutor-album { position: absolute; bottom: 4px; inset-inline-end: 12px; font-size: 44px; }
+.tutor-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.tutor-confetti i { position: absolute; top: -14px; width: 10px; height: 16px; border-radius: 3px; animation: tc-fall 2.6s linear infinite; }
+@keyframes tc-fall { to { transform: translateY(520px) rotate(540deg); } }
+.tutor-crown { font-size: 96px; animation: lolly-hop .6s ease-in-out infinite; }
+/* the list */
+.tutor-units { flex: 1; width: 100%; max-width: 560px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 8px; }
+.tutor-unit h2 { margin: 0 0 6px; font: 800 20px 'Fredoka', sans-serif; color: var(--ink); }
+.tutor-lessons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tl-card { display: flex; align-items: center; gap: 8px; border: 3px solid var(--ink); border-radius: 22px; background: #fff; padding: 6px 10px; min-height: 64px; font-family: inherit; color: var(--ink); text-align: start; cursor: pointer; box-shadow: 0 4px 0 rgba(58, 47, 75, .16); }
+.tl-badge { flex: none; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 26px; border-radius: 50%; background: #f1ebfa; overflow: hidden; }
+.tl-badge img { width: 100%; height: 100%; object-fit: contain; }
+.tl-t { display: flex; flex-direction: column; min-width: 0; line-height: 1.1; }
+.tl-t b { font: 800 17px 'Fredoka', sans-serif; } .tl-t small { font: 700 13px 'Fredoka', sans-serif; color: #7a6a96; }
+.tl-card.new { background: #ffe58a; box-shadow: 0 0 0 4px #ff6fa8, 0 4px 0 rgba(58, 47, 75, .16); }
+.tl-card.mid { background: #d9f3ff; }
+.tl-card.done { background: #e4fbe9; }
+.tl-card.locked, .tl-card.wait { opacity: .6; }
+.tl-card.shake { animation: opt-shake .4s; }
+/* the entry on the English screen */
+.jt.tutor { background: #ffd3ea; }
+
+.tutor-lolly-col .tutor-lolly { transition: height .25s ease; }
+.roomy .tutor-lolly-col .tutor-lolly { height: clamp(220px, 52vh, 360px); }
+.tutor-pic.big.small { width: 84px; height: 84px; }
+
+/* dialogue: the squishy that talks is big in the middle, Lolly is small in the corner (listening) */
+.tutor-guest { width: 100%; height: clamp(150px, 30vh, 230px); display: flex; align-items: flex-end; justify-content: center; }
+.tutor-guest .pic-img { height: 100%; width: auto; max-width: 62%; filter: drop-shadow(0 8px 6px rgba(58, 47, 75, .2)); animation: lolly-breathe 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.dlg .tutor-lolly-col .tutor-lolly { position: absolute; top: 58px; left: 8px; width: 84px; height: 84px; z-index: 3; }
+/* the list: the bubble with the long sentence of the day */
+.tutor-list .tutor-bubble { max-height: none; padding: 12px 20px; font-size: 16px; line-height: 1.3; }
+
+/* dialogue: Lolly's own words (almost, let me show you) in a small bubble ABOVE the small Lolly (the arrow points down to her); the guest stands on the right and is not covered */
+.dlg .tutor-guest { direction: ltr; justify-content: flex-end; padding-right: 6px; box-sizing: border-box; }
+.dlg .tutor-lolly-col .tutor-lolly { top: 40px; }
+.en-screen.tutor-screen > .tutor-sidebubble.tutor-sidebubble { position: absolute; top: 62px; left: 6px; width: 120px; height: 60px; z-index: 4; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 4px 8px; border: 3px solid var(--ink); border-radius: 16px; background: #fff; font: 700 14px/1.15 'Fredoka', sans-serif; color: var(--ink); text-align: center; box-shadow: 0 4px 0 rgba(58, 47, 75, .16); animation: tb-pop .2s ease-out; }
+.tutor-sidebubble::before { content: ''; position: absolute; left: 50%; bottom: -10px; width: 14px; height: 14px; margin-left: -7px; background: #fff; border: 3px solid var(--ink); border-width: 0 3px 3px 0; transform: rotate(45deg); }
+
+/* meet: the squishies in a row, each with its name under it */
+.tutor-meet { display: flex; gap: 8px; justify-content: center; width: 100%; direction: ltr; margin-top: 8px; }
+.tutor-meetone { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 31%; }
+.tutor-meetcard { width: 100%; aspect-ratio: 1; border: 4px solid var(--ink); border-radius: 24px; background: #fff; padding: 6px; box-shadow: 0 5px 0 rgba(58, 47, 75, .18); cursor: pointer; touch-action: manipulation; }
+.tutor-meetcard.hop, .tutor-opt.hop { animation: tutor-hop .6s ease-out; }
+@keyframes tutor-hop { 0% { transform: translateY(0) scale(1); } 35% { transform: translateY(-16px) scale(1.12); } 70% { transform: translateY(0) scale(1.06); } 100% { transform: translateY(0) scale(1); } }
+.tutor-optwrap { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 28%; min-width: 92px; }
+.tutor-optwrap .tutor-opt { width: 100%; }
+.tutor-optlabel { font: 800 17px/1.1 'Fredoka', sans-serif; color: var(--ink); min-height: 20px; text-align: center; opacity: 0; font-style: normal; }
+.tutor-optwrap .tutor-optlabel, .tutor-optlabel.on { opacity: 1; }
+.tutor-guest { flex-direction: column; align-items: center; justify-content: flex-end; }
+.tutor-guest .pic-img { height: auto; max-height: calc(100% - 26px); }
+.tutor-guestlabel { font: 800 18px/1.1 'Fredoka', sans-serif; color: var(--ink); font-style: normal; margin-top: 2px; }
+/* challenge: four bubbles fit above the thumb */
+.tutor-choices.bubbles.four { gap: 8px; }
+.tutor-choices.bubbles.four .tutor-opt { min-height: 56px; padding: 4px 14px; }
+.tutor-choices.bubbles.four .tutor-speech { font-size: 21px; }
+/* the sparkling sticker */
+.sparkle-big { font-size: 56px; width: auto; height: auto; border: 0; background: none; box-shadow: none; transform: none; animation: lolly-hop .6s ease-in-out infinite; }
+.tutor-sticker.sparkle { box-shadow: 0 0 0 6px rgba(255, 220, 90, .9), 0 0 28px 10px rgba(255, 220, 90, .85), 0 8px 18px rgba(58, 47, 75, .25); animation: spark-glow 1.2s ease-in-out infinite; }
+@keyframes spark-glow { 50% { box-shadow: 0 0 0 10px rgba(255, 235, 140, .95), 0 0 40px 16px rgba(255, 235, 140, .95), 0 8px 18px rgba(58, 47, 75, .25); } }
+.tl-badge.sparkle { box-shadow: 0 0 0 3px #ffd84a, 0 0 12px 4px rgba(255, 216, 74, .9); }
+.tutor-choices.four.ch4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: min(92%, 300px); }
+.tutor-choices.four.ch4 .tutor-opt { width: 100%; min-width: 0; aspect-ratio: 1.4; }
+.tutor-speaker.lone { width: 40px; height: 40px; font-size: 20px; }
+
+.tutor-opt.blink { animation: opt-blink .45s ease-in-out infinite; background: #fff3b8; }
+@keyframes opt-blink { 50% { transform: scale(1.04); box-shadow: 0 0 0 5px rgba(255, 200, 58, .9); } }
+.tutor-mic.big { font-size: 96px; }
+.tutor-card .tutor-speaker { margin-top: 4px; }
+
+/* the coloured things (things.ts) */
+.thing { position: relative; display: block; width: 100%; height: 100%; }
+.thing .item-img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.thing.tile { border-radius: 22px; background: var(--tile, #fff); display: flex; align-items: center; justify-content: center; padding: 8%; box-sizing: border-box; transition: background .25s; }
+.thing.tile .item-img { width: 74%; height: 74%; }
+.pic-lolly { position: relative; display: flex; align-items: center; justify-content: center; gap: 2px; width: 100%; height: 100%; }
+.pic-lolly .lolly-img { height: 100%; max-width: 50%; object-fit: contain; }
+.pic-lolly .pic-img.small { max-width: 44%; }
+.pic-badge { position: absolute; top: 2%; inset-inline-end: 4%; width: 34%; height: 34%; object-fit: contain; pointer-events: none; }
+
+/* likes, likeOrNot, ask, recall, paint */
+.tutor-twofaces { display: flex; justify-content: center; gap: 22px; width: 100%; margin-top: 10px; }
+.tutor-bigface { border: 4px solid var(--ink); border-radius: 30px; background: #fff; width: 132px; padding: 8px; box-shadow: 0 6px 0 rgba(58, 47, 75, .18); cursor: pointer; touch-action: manipulation; font-family: inherit; color: var(--ink); }
+.tutor-bigface.sel { background: #ffe58a; transform: translateY(3px); box-shadow: none; }
+.tutor-facebtn { display: flex; flex-direction: column; align-items: center; }
+.tutor-facebtn img { width: 100%; max-height: 100px; object-fit: contain; pointer-events: none; }
+.tutor-facebtn b { font: 800 26px/1.1 'Fredoka', sans-serif; }
+.tutor-choices.tf .tutor-facebtn img { max-width: 92px; }
+.tutor-recall { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.tutor-recall .tutor-pic.big { width: 120px; height: 120px; }
+.tutor-pic.thingbox { width: 150px; height: 150px; background: #fff; }
+.tutor-choices.colors { gap: 14px; }
+.tutor-choices.colors .tutor-opt { width: 27%; min-width: 80px; aspect-ratio: 1; border-radius: 50%; }
+.tutor-swatch { display: block; width: 78%; height: 78%; border-radius: 50%; box-shadow: inset 0 -6px 0 rgba(0, 0, 0, .12); }
+
+/* the album of stickers */
+.tutor-album-page { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 560px; overflow-y: auto; padding: 4px 4px 70px; }
+.album-unit { background: rgba(255, 255, 255, .85); border: 3px solid var(--ink); border-radius: 24px; padding: 8px 10px 12px; box-shadow: 0 4px 0 rgba(58, 47, 75, .14); }
+.album-unit h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font: 800 22px/1 'Fredoka', sans-serif; color: var(--ink); }
+.album-crown { font-size: 30px; filter: grayscale(1) opacity(.3); }
+.album-crown.on { filter: drop-shadow(0 2px 3px rgba(150, 100, 0, .5)); animation: lolly-hop 1.6s ease-in-out infinite; }
+.album-row { display: flex; gap: 10px; justify-content: center; }
+.album-slot { position: relative; flex: 1; max-width: 118px; aspect-ratio: 1; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+.album-slot.empty { border: 3px dashed #c7bddb; color: #c7bddb; font: 800 30px/1 'Fredoka', sans-serif; }
+.album-slot.sticker { border: 0; padding: 7px; background: #fff; box-shadow: 0 3px 0 rgba(58, 47, 75, .2), 0 0 0 4px #fff, 0 0 0 6px rgba(58, 47, 75, .18); transform: rotate(-3deg); cursor: pointer; touch-action: manipulation; }
+.album-slot.sticker:nth-child(even) { transform: rotate(3deg); }
+.album-slot.sticker img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.album-slot.sticker.hop { animation: lolly-hop .5s ease-out; }
+.album-slot.sparkle { background: linear-gradient(135deg, #fff, #fff3b0 40%, #fff); box-shadow: 0 0 0 4px #ffd23f, 0 0 16px 6px rgba(255, 210, 63, .8); }
+.album-slot.sparkle::after { content: '✨'; position: absolute; top: -10px; inset-inline-end: -8px; font-size: 24px; animation: lolly-hop 1.2s ease-in-out infinite; }
+.album-say { position: fixed; inset-inline: 0; bottom: calc(14px + env(safe-area-inset-bottom)); text-align: center; font: 800 28px/1.2 'Fredoka', sans-serif; color: var(--ink); text-shadow: 0 2px 0 #fff, 0 0 10px #fff; min-height: 34px; pointer-events: none; }
+
+/* every button of the lessons is at least 56 px high and wide (a small hand) */
+.tutor-screen .q-home { width: 56px; height: 56px; min-width: 56px; }
+.tutor-screen .tutor-bubble { min-height: 60px; flex-shrink: 0; }
+.tutor-skip { display: inline-flex; align-items: center; justify-content: center; margin-top: auto; min-width: 76px; min-height: 56px; border: 3px solid var(--ink); border-radius: 26px; background: #ffe58a; color: var(--ink); font: 800 28px/1 'Fredoka', sans-serif; box-shadow: 0 5px 0 rgba(58, 47, 75, .2); cursor: pointer; touch-action: manipulation; }
+.tutor-next { min-height: 56px; min-width: 72px; }
+.tutor-yesno .tutor-next { min-height: 56px; min-width: 72px; justify-content: center; }
+.tutor-speaker, .tutor-speaker.lone { width: 56px; height: 56px; font-size: 26px; }
+.tutor-choices.bubbles .tutor-opt { min-height: 60px; }
+.tutor-bigface { min-height: 96px; }
+.tutor-tile { min-width: 56px; min-height: 56px; }
+.tutor-clap { min-width: 64px; min-height: 64px; }
+
+/* the bubble when the sentence is hidden (she listens and answers): a big speaker with waves, no words and no question mark */
+.tb-hidden { display: inline-flex; align-items: center; gap: 6px; font-size: 38px; line-height: 1; }
+.tb-hidden .waves { display: inline-flex; gap: 5px; align-items: center; height: 38px; }
+.tb-hidden .waves i { display: block; width: 8px; height: 14px; border-radius: 6px; background: #8e5cf0; animation: tb-wave 0.9s ease-in-out infinite; }
+.tb-hidden .waves i:nth-child(2) { animation-delay: .15s; background: #ff6fa8; }
+.tb-hidden .waves i:nth-child(3) { animation-delay: .3s; background: #4fd1c5; }
+@keyframes tb-wave { 0%, 100% { height: 12px; opacity: .55; } 50% { height: 34px; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tb-hidden .waves i { animation: none; height: 24px; } }
+.tutor-choices.bubbles .tutor-opt { flex-shrink: 0; }

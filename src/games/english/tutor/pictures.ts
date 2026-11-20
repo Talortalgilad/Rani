@@ -1,0 +1,52 @@
+/** The pictures of the lessons (SPEC-tutor.md section 4, "תמונות"): word:<id>, face:<feeling>, squishy:<name>. thing: and lolly: (stage 1). */
+import { WORDS } from '../content/words';
+import { imageUrl } from '../art/images';
+import { squishyUrl } from '../art/squishies';
+import { cheesyUrl } from '../art/cheesy';
+import { faceUrl, lollyImg } from './lolly';
+import { thingHtml } from './things';
+
+/** A face with a feeling: the 3D picture (face_<feeling>.webp). */
+export const faceHtml = (feeling: string): string => `<img class="pic-img" src="${faceUrl(feeling)}" alt="" draggable="false">`;
+
+/** The squishies that say "Hello! I'm ..." (the names of the companion: the pictures are the ones the carnival uses). */
+const SQUISHY: Record<string, string> = { mozzi: 'pizza', horiko: 'panda', popcheese: 'cookie' };
+export const squishyPic = (name: string): string => (name === 'cheesy' ? cheesyUrl('happy') : squishyUrl(SQUISHY[name] ?? name));
+
+/** The names of the squishies, in Hebrew, as written under their pictures (the same names as the recorded name.* lines). */
+const HE_NAME: Record<string, string> = { cheesy: 'צ׳יזי', mozzi: 'מוצי', horiko: 'חוריקו', popcheese: 'פופצ׳יז' };
+export const squishyLabel = (name: string): string => HE_NAME[name] ?? name;
+/** The label under a picture, if it is a squishy (empty for the others). */
+export const labelOfPicture = (s: string): string => (s.startsWith('squishy:') ? squishyLabel(s.slice(8)) : '');
+
+export type Pic = { kind: 'word'; id: string } | { kind: 'face'; feeling: string } | { kind: 'squishy'; name: string } | { kind: 'thing'; thing: string; color: string } | { kind: 'lolly'; like: boolean; food: string };
+export function parsePic(s: string): Pic | null {
+  const [k, a, b] = s.split(':');
+  if (k === 'word' && a) return { kind: 'word', id: a };
+  if (k === 'face' && a) return { kind: 'face', feeling: a };
+  if (k === 'squishy' && a) return { kind: 'squishy', name: a };
+  if (k === 'thing' && a && b) return { kind: 'thing', thing: a, color: b };
+  if (k === 'lolly' && a && b) return { kind: 'lolly', like: a === 'like', food: b };
+  return null;
+}
+export const wordExists = (id: string): boolean => WORDS.some((w) => w.id === id);
+
+/** The html of a picture (word:, face:, squishy:, thing:, lolly:). */
+export function pictureHtml(s: string | null | undefined): string {
+  if (!s) return '';
+  const p = parsePic(s);
+  if (!p) return '';
+  switch (p.kind) {
+    case 'word':
+      return `<img class="pic-img" src="${imageUrl(p.id)}" alt="" draggable="false">`;
+    case 'face':
+      return faceHtml(p.feeling);
+    case 'squishy':
+      return `<img class="pic-img" src="${squishyPic(p.name)}" alt="" draggable="false">`;
+    case 'lolly':
+      // Lolly with the picture of the food, and next to it the face of a heart (she likes it) or of "yuck" (she does not): the faces of the game
+      return `<span class="pic-lolly">${lollyImg(p.like ? 'happy' : 'confused')}<img class="pic-img small" src="${imageUrl(p.food)}" alt="" draggable="false"><img class="pic-badge" src="${faceUrl(p.like ? 'love' : 'yuck')}" alt="" draggable="false"></span>`;
+    case 'thing':
+      return thingHtml(p.thing, p.color);
+  }
+}
