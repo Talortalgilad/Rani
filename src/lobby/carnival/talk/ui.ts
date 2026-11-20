@@ -103,7 +103,7 @@ export class Talks {
     if (a) {
       this.host.wave(a.r);
       const p = this.host.pos(a.r);
-      if (p && nearCentre(p.x, p.y, w, h)) void say([{ he: 'cv_rani' }]);
+      if (p && nearCentre(p.x, p.y, w, h)) void say([{ he: 'cv_rani' }], { prio: 'resident', spont: true, onScreen: true });
       this.persist(true);
     }
     // never more than two (whatever happened before: a save, a switch of tier, a talk opened for a test)
@@ -159,7 +159,7 @@ export class Talks {
         this.placeChat(p0);
         this.chatEl.classList.add('on');
         // the sound only when he is near the middle of the screen
-        if (nearCentre(p0.x, p0.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ enc: { id: c.chat.enId ?? 'hello', text: c.chat.en! } }]);
+        if (nearCentre(p0.x, p0.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ enc: { id: c.chat.enId ?? 'hello', text: c.chat.en! } }], { prio: 'resident', spont: true, onScreen: true });
       }
     } else if (!busy) {
       this.chatT -= dt;

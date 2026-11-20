@@ -3,7 +3,8 @@
  * (an opening, a hello with a name) or an opening and then the recording of the word. Until the English clips are recorded, the voice of the phone says
  * them. A new thing said cuts the old one.
  */
-import { ALT_KEYS, linePartsFor } from '../../../games/english/content/heLines';
+import { ALT_KEYS, linePartsFor, sayLine } from '../../../games/english/content/heLines';
+import { voice, type SayOpts } from '../voice';
 import { playWord, speakEn, speakHeLine, stopSpeech } from '../../../games/english/voice';
 import { ITEMS, type Item, type Talk } from './gen';
 import { cv } from './lines';
@@ -16,14 +17,23 @@ export type Piece = { he: string } | { num: number; before?: boolean } | { item:
 export const numberLine = (n: number, before = false): string => (before && n === 2 ? 'cv_num_2c' : `cv_num_${n}`);
 
 let token = 0;
-/** One English clip: the recording (public/english/voice/en/<id>.mp3) if there is one, else the voice of the phone says the text. */
-export async function speakClip(id: string, text: string): Promise<void> {
+/** One English clip: the recording (public/english/voice/en/<id>.mp3) if there is one, else the voice of the phone says the text. Through the one voice of the carnival (voice.ts): by default it is something that she tapped. */
+export function speakClip(id: string, text: string, o: SayOpts = {}): Promise<void> {
+  return voice.request(() => speakClipNow(id, text), o).then(() => undefined);
+}
+async function speakClipNow(id: string, text: string): Promise<void> {
   stopSpeech();
   if (!(await playWord(id).catch(() => false))) await speakEn(text);
 }
 
-/** Says the pieces one after the other. Stops when something newer is said. */
-export async function say(pieces: Piece[]): Promise<void> {
+/** Says the pieces one after the other (through the one voice of the carnival). Stops when something newer is said. */
+export function say(pieces: Piece[], o: SayOpts = {}): Promise<void> {
+  return voice.request(() => sayNow(pieces), o).then(() => undefined);
+}
+/** One Hebrew line of the carnival (a banner, a window, a quest) and an English word through the same voice */
+export const sayLineQ = (id: string, o: SayOpts = {}, name = ''): Promise<boolean> => voice.request(() => sayLine(id, name), o);
+export const speakEnQ = (text: string, o: SayOpts = {}): Promise<boolean> => voice.request(() => speakEn(text), o);
+async function sayNow(pieces: Piece[]): Promise<void> {
   const mine = ++token;
   stopSpeech();
   for (const p of pieces) {
@@ -31,7 +41,7 @@ export async function say(pieces: Piece[]): Promise<void> {
     if ('he' in p) await speakHeLine(linePartsFor(p.he));
     else if ('num' in p) await speakHeLine(linePartsFor(numberLine(p.num, p.before)));
     else if ('item' in p) await speakHeLine(linePartsFor(`cv_item_${p.item.id}`));
-    else if ('enc' in p) await speakClip(p.enc.id, p.enc.text);
+    else if ('enc' in p) await speakClipNow(p.enc.id, p.enc.text);
     else if ('en' in p) await speakEn(p.en);
     else await speakEn(p.word);
   }

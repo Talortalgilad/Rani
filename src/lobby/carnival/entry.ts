@@ -4,7 +4,8 @@
  * still here, behind `#lobby:old` (it sticks until `#lobby:new`).
  */
 import { comingSoon, games } from '../../games/registry';
-import { sayLine } from '../../games/english/content/heLines';
+import { sayLineQ } from './talk/speak';
+import { voice } from './voice';
 import { go } from '../../router';
 import { sound } from '../../sound';
 import { getState, update } from '../../storage';
@@ -166,6 +167,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
   if (wantsOldLobby()) return renderOldLobby(root);
   const pref = getState().settings.lobby;
   const { world, save, visit } = makeWorld();
+  // the entry: the one voice of the carnival starts its quiet window (5 s: only the banner of the entry speaks, no squishy)
+  voice.begin();
   const tierGuess = sessionTier(pref);
   world.chooseHome(CarnivalWorld.visibleLimit(tierGuess === 'high' ? 'high' : tierGuess === 'medium' ? 'medium' : '2d'), visit);
   // the rounds that were played while she was away: the ones who waited for them give their hearts now
@@ -227,7 +230,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         void b.offsetWidth;
         b.classList.add('hop');
         if (!talks.tapResident(i)) {
-          void sayLine('carnival_name', world.residents[i].name);
+          void sayLineQ('carnival_name', { prio: 'tap' }, world.residents[i].name);
           ui.residentTapped(i);
         }
       }),
@@ -333,7 +336,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           hideTimer = window.setTimeout(() => label.classList.remove('on'), 3200);
           sound.play(again ? 'bonus' : 'pop', again ? 900 : 700);
           if (!again) {
-            void sayLine('carnival_name', r.name);
+            void sayLineQ('carnival_name', { prio: 'tap' }, r.name);
             ui3?.residentTapped(world.residents.indexOf(r));
           }
         },

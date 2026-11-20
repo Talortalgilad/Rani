@@ -87,8 +87,12 @@ export const speakHe = (text: string): Promise<boolean> => (stopSpeech(), say(te
 let keepUntil = 0;
 /** True while a pressed label is still being said (a title that opens next stays quiet instead of cutting it). */
 export const labelBusy = (): boolean => Date.now() < keepUntil;
+/** Every stopSpeech() starts a new epoch: a line that was asked before it and has not started yet (it is waiting for a list of recordings) does not start after it: it is over. */
+let epoch = 0;
+export const speechEpoch = (): number => epoch;
 export function stopSpeech(force = true): void {
   if (!force && Date.now() < keepUntil) return;
+  epoch++;
   stopClip();
   try {
     synth()?.cancel();
@@ -170,7 +174,9 @@ export function recordedWords(): Promise<Set<string>> {
 }
 /** Plays the recording of a word: the one made on this phone (key en:<id>) first, then the file of the game. False when there is none. */
 export async function playWord(id: string): Promise<boolean> {
+  const mine = epoch;
   if ((await phoneClipIds()).has(`en:${id}`)) {
+    if (mine !== epoch) return false;
     const blob = await getClip(`en:${id}`);
     if (blob) {
       const url = URL.createObjectURL(blob);
@@ -179,7 +185,9 @@ export async function playWord(id: string): Promise<boolean> {
       if (ok) return true;
     }
   }
-  return (await recordedWords()).has(id) ? playClip(wordClipUrl(id)) : false;
+  const have = (await recordedWords()).has(id);
+  if (mine !== epoch) return false;
+  return have ? playClip(wordClipUrl(id)) : false;
 }
 
 /** The recordings made in the studio on this phone (they come first). */
@@ -222,6 +230,8 @@ export function playClip(url: string): Promise<boolean> {
   return new Promise((resolve) => {
     try {
       if (typeof Audio === 'undefined' || !getState().settings.tts) return resolve(false);
+      // one recording at a time: a new one never plays over the one that is still playing
+      stopClip();
       const a = new Audio(url);
       clip = a;
       try { clipHook?.(a); } catch { /* the mouth is a nicety */ }
@@ -260,17 +270,21 @@ export interface LinePiece { clip?: string; text: string; lang: 'he' | 'en' }
  */
 export async function speakHeLine(pieces: LinePiece[], keep = false): Promise<boolean> {
   stopSpeech();
+  const my = epoch;
   if (keep) keepUntil = Date.now() + 2500;
   if (!pieces.length) return false;
   const have = await recordedClips();
   const mine = await phoneClipIds();
+  if (my !== epoch) return false;
   if (!pieces.some((p) => p.clip && (mine.has(p.clip) || have.has(p.clip)))) return say(pieces.map((p) => p.text).join(' '), 'he', 0.9);
   let heard = false;
   for (const p of pieces) {
+    if (my !== epoch) return heard;
     // the recording made on this phone first, then the file of the game, and the voice of the phone only at the end
     let played = false;
     if (p.clip && mine.has(p.clip)) {
       const blob = await getClip(p.clip);
+      if (my !== epoch) return heard;
       if (blob) {
         const url = URL.createObjectURL(blob);
         played = await playClip(url);

@@ -5,14 +5,14 @@
  */
 import { sound } from '../../../sound';
 import { getState } from '../../../storage';
-import { sayLine } from '../../../games/english/content/heLines';
-import { speakEn } from '../../../games/english/voice';
+
 import { ITEMS, KIND_ICON, KIND_LABEL, itemById, itemImg, type Item, type ItemKind, type WishKind } from '../catalog';
 import { MAX_LEVEL } from '../level';
 import { RESIDENT_INFO, arrivalOrder, type Resident } from '../residents';
 import { needed } from '../unlocks';
 import { nearCentre } from '../talk/alerts';
-import { speakClip } from '../talk/speak';
+import { say as sayPieces, sayLineQ, speakEnQ } from '../talk/speak';
+import type { Prio } from '../voice';
 import { PERSONALITY_HE, SUGGEST_LINE, WISH_ICON, WISH_LINE, fillers, type WishType } from '../wishes';
 import type { CarnivalWorld, WorldEvent } from '../world';
 import { CS_LINES } from '../csLines';
@@ -48,7 +48,7 @@ export interface WorldHost {
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const csText = (id: string): string => CS_LINES.find((l) => l.id === id)?.text ?? '';
-const say = (id: string): void => void sayLine(id);
+const say = (id: string, prio: Prio = 'tap'): void => void sayLineQ(id, { prio });
 const BUILD_QUESTS = ['pizza', 'drink', 'ride', 'three', 'five'];
 const WISH_KINDS: ItemKind[] = ['food', 'drink', 'fun', 'rest', 'shop', 'decor'];
 
@@ -73,7 +73,7 @@ export class WorldUI {
   /** build mode: the free places (and the locked ones, small) are shown. Off in the normal view, so the island stays clean. */
   private build = false;
   private sheet: HTMLElement | null = null;
-  private banners: { html: string; line?: string }[] = [];
+  private banners: { html: string; line?: string; prio?: Prio }[] = [];
   private bannerOn = false;
   private moving: string | null = null;
   private dead = false;
@@ -99,7 +99,7 @@ export class WorldUI {
     this.questEl.className = 'cvw-quest';
     this.questEl.addEventListener('click', () => {
       const q = this.h.world.quest;
-      if (q) say(`qs_${q.id}`);
+      if (q) say(`qs_${q.id}`, 'banner');
       // a quest that is about opening something turns the build mode on by itself
       if (q && BUILD_QUESTS.includes(q.id)) this.setBuild(true);
     });
@@ -543,8 +543,9 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- banners
-  queueBanner(html: string, line?: string): void {
-    this.banners.push({ html, line });
+  /** `prio`: 'entry' for the banner of the entry (it speaks first), 'banner' for the others */
+  queueBanner(html: string, line?: string, prio: Prio = 'banner'): void {
+    this.banners.push({ html, line, prio });
     if (!this.bannerOn) this.nextBanner();
   }
   private nextBanner(): void {
@@ -558,7 +559,7 @@ export class WorldUI {
     el.className = 'cvw-banner';
     el.innerHTML = b.html;
     this.h.layer.appendChild(el);
-    if (b.line) say(b.line);
+    if (b.line) say(b.line, b.prio ?? 'banner');
     window.setTimeout(() => {
       el.remove();
       this.nextBanner();
@@ -593,7 +594,8 @@ export class WorldUI {
           if (item) {
             const parts = orderPieces(item);
             this.sayBubble(e.r, parts.map((p) => p.text).join(' '), null, 'en');
-            if (this.near(e.r)) void (async () => { for (const p of parts) await speakClip(p.id, p.text); })();
+            // his English order is his own talk: one every 8 s at the most, only when he is on the screen, thrown away when there is no room
+            void sayPieces(parts.map((p) => ({ enc: p })), { prio: 'resident', spont: true, onScreen: this.near(e.r) });
           }
           break;
         }
@@ -706,7 +708,7 @@ export class WorldUI {
     // the word in English, for what he wants to eat (only a word that she already learned)
     const info = RESIDENT_INFO.find((x) => x.id === (w.residents[i]?.id === 'companion' ? 'cheesy' : w.residents[i]?.id));
     const words = (getState().games.english as { words?: Record<string, { seen?: boolean }> } | undefined)?.words ?? {};
-    if (wish.kind === 'food' && info && words[info.food]?.seen) window.setTimeout(() => void speakEn(info.food), 1500);
+    if (wish.kind === 'food' && info && words[info.food]?.seen) window.setTimeout(() => void speakEnQ(info.food, { prio: 'tap' }), 1500);
     const built = Object.values(w.save.built).map((id) => itemById(id)!).filter(Boolean);
     if (wish.kind !== 'play' && fillers(wish, built).length === 0) window.setTimeout(() => this.sayBubble(i, csText(SUGGEST_LINE[wish.kind]), SUGGEST_LINE[wish.kind]), 2400);
   }
@@ -774,7 +776,7 @@ export class WorldUI {
         s.shown = true;
         s.el.style.visibility = 'visible';
         s.el.style.transform = `translate(${r.x + r.w / 2}px, ${p.y - 30}px) translate(-50%, -100%)`;
-        if (s.line && this.near(s.r)) say(s.line);
+        if (s.line && this.near(s.r)) void sayLineQ(s.line, { prio: 'resident', spont: true, onScreen: true });
       }
       s.ttl -= dt;
       if (p) {
@@ -810,6 +812,6 @@ const residentImg = (id: string): string => `${import.meta.env.BASE_URL}park/squ
 /** the sign of a stall in English, said (the recording of the word or the voice of the phone) */
 function sayEn(item: Item, force = false): void {
   void force;
-  void speakEn(item.en.toLowerCase());
+  void speakEnQ(item.en.toLowerCase(), { prio: 'tap' });
 }
 export { arrivalOrder };

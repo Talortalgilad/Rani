@@ -8,18 +8,18 @@ import { getState } from '../../../storage';
 import { imageUrl } from '../../../games/english/art/images';
 import { COLORS } from '../../../games/english/content/colors';
 import { games } from '../../../games/registry';
-import { sayLine } from '../../../games/english/content/heLines';
+
 import { ACCESSORIES, ACCESSORY_MISSING, DETAILS, FOOD_OF_ITEM, accessoryById, friendLevel, friendOf, friendProgress, friendsOf, giftOf, shownDetails, trickOf, type Detail } from '../friends';
 import { RESIDENT_INFO, infoOf, type ResidentInfo } from '../residents';
 import { PERSONALITY_HE } from '../wishes';
 import { CS_LINES } from '../csLines';
 import { itemById, itemImg } from '../catalog';
-import { say as sayPieces, speakClip } from '../talk/speak';
+import { say as sayPieces, sayLineQ, speakClip } from '../talk/speak';
 import type { WorldUI } from './worldUi';
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const csText = (id: string): string => CS_LINES.find((l) => l.id === id)?.text ?? '';
-const say = (id: string): void => void sayLine(id);
+const say = (id: string): void => void sayLineQ(id, { prio: 'tap' });
 export const LEVEL_NAME = ['', 'מכירים', 'חברים', 'חברים טובים', 'חברים קרובים', 'חבר הכי טוב'];
 const DETAIL_ICON: Record<Detail, string> = { food: '🍽️', game: '🎮', color: '🎨', number: '🔢', hobby: '⭐', friend: '👫' };
 const DETAIL_LINE: Record<Detail, string> = { food: 'cs_fav_food', game: 'cs_fav_game', color: 'cs_fav_color', number: 'cs_fav_number', hobby: 'cs_hobby', friend: 'cs_my_friend' };
