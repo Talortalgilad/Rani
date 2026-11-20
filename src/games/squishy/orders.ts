@@ -63,12 +63,16 @@ export function available(c: OrderCtx): Order[] {
 /** the next three that wait in the line (a different mix each time: it moves with the number of orders that were done) */
 export function queue(c: OrderCtx, n = 3): Order[] {
   const a = available(c);
+  const open = tierOpen(c.done.length);
+  // the orders of the tier that is open now come first (by the "tier" field of the file), then the lower tiers; fresh orders before ones that were done
+  const rank = (o: Order): number => (open - o.tier) * 2 + (c.done.includes(o.id) ? 1 : 0);
+  const sorted = a.map((o, i) => ({ o, i })).sort((x, y) => rank(x.o) - rank(y.o) || x.i - y.i).map((x) => x.o);
+  const top = sorted.filter((o) => rank(o) === rank(sorted[0]));
   const out: Order[] = [];
-  const fresh = a.filter((o) => !c.done.includes(o.id));
-  const pool = fresh.length >= n ? fresh : a;
-  // the lower tiers first, and a rotation so that the line is not always the same orders
-  for (let i = 0; i < pool.length && out.length < n; i++) out.push(pool[(i + c.done.length) % pool.length]);
-  return [...new Set(out)];
+  // a rotation inside the best group so that the line is not always the same orders
+  for (let i = 0; i < top.length && out.length < n; i++) out.push(top[(i + c.done.length) % top.length]);
+  for (const o of sorted) if (out.length < n && !out.includes(o)) out.push(o);
+  return out;
 }
 
 const hueOf = ([r, g, b]: RGB): { h: number; s: number } => {

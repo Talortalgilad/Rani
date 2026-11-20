@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ALWAYS, available, checkOrder, learnedAll, moldsOpen, ORDERS, paletteId, queue, reward, tierOpen, unlockedMolds, type Learned } from './orders';
+import { ALWAYS, available, checkOrder, learnedAll, moldsOpen, ORDERS, orderById, paletteId, queue, reward, tierOpen, unlockedMolds, type Learned } from './orders';
 import { makeRecipe, recipeColor, recipeIsRight, recipeKind } from './recipe';
 import { PALETTE } from './paint';
 import { fillColors, newSquishy, type SquishyData } from './save';
@@ -133,5 +133,27 @@ describe('the recipes', () => {
       }
       if (rec.kind === 'cup') expect(rec.line >= 2 && rec.line <= 9).toBe(true);
     }
+  });
+});
+
+describe('the tier of an order is the "tier" field of squishy-orders.json', () => {
+  const all = { word: () => true, color: () => true };
+  it('tier 1 is a colour and a shape, tier 2 has a number of decorations, tier 3 has two colours', () => {
+    for (const o of ORDERS) {
+      if (o.tier === 1) expect(!o.decor && o.colors.length === 1, o.id).toBe(true);
+      if (o.tier === 2) expect(!!o.decor && o.colors.length === 1, o.id).toBe(true);
+      if (o.tier === 3) expect(!o.decor && o.colors.length === 2, o.id).toBe(true);
+    }
+  });
+  it('the line shows the orders of the tier that is open (by the field), and tiers open after 5 and 12 orders', () => {
+    const at = (n: number) => queue({ done: Array(n).fill('o01'), learned: all });
+    expect(at(0).every((o) => o.tier === 1)).toBe(true);
+    expect(at(5).map((o) => o.tier)).toEqual([2, 2, 2]);
+    expect(at(12).map((o) => o.tier)).toEqual([3, 3, 3]);
+    expect(at(4).every((o) => o.tier === 1)).toBe(true);
+  });
+  it('the reward follows the field too', () => {
+    expect(reward(orderById('o15')!, true)).toEqual({ hearts: 3, stars: 2 });
+    expect(reward(orderById('o01')!, true)).toEqual({ hearts: 2, stars: 1 });
   });
 });

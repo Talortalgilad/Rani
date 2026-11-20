@@ -1,5 +1,5 @@
 /* the squishy workshop as a game (stage 1) */
-.sq-game { position: relative; min-height: 100dvh; display: flex; flex-direction: column; font-family: inherit; color: #5a2e48; overflow: hidden; user-select: none; -webkit-user-select: none; }
+.sq-game { position: relative; min-height: 100dvh; max-height: 100dvh; display: flex; flex-direction: column; font-family: inherit; color: #5a2e48; overflow: hidden; user-select: none; -webkit-user-select: none; }
 .sq-bg { position: fixed; inset: 0; z-index: 0; background: var(--sq-bg) center / cover; }
 .sq-game.with-view .sq-bg { display: none; }
 body.lobby3d-on .sq-game { pointer-events: none; }
@@ -29,7 +29,7 @@ body.lobby3d-on .sq-game button, body.lobby3d-on .sq-game input, body.lobby3d-on
 .sqg-big img { width: 72px; height: 72px; object-fit: contain; pointer-events: none; }
 .sqg-count { position: absolute; top: -8px; inset-inline-start: -6px; min-width: 32px; height: 32px; border-radius: 16px; background: #ff5f95; color: #fff; font-weight: 800; font-size: 18px; line-height: 32px; font-family: inherit; text-align: center; padding: 0 6px; }
 /* 1. molds */
-.sqg-tray { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: min(96%, 430px); padding: 14px; background: #fff6e4; border-radius: 28px; box-shadow: 0 5px 0 rgba(150, 110, 70, .35); }
+.sqg-tray { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; align-content: start; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: min(96%, 430px); padding: 14px; background: #fff6e4; border-radius: 28px; box-shadow: 0 5px 0 rgba(150, 110, 70, .35); }
 .sqg-mold { font-size: 16px; position: relative; aspect-ratio: 1; min-height: 96px; border: 0; border-radius: 26px; background: #fffdf6; box-shadow: 0 4px 0 rgba(150, 110, 70, .3), inset 0 0 0 3px #ffe2a8; padding: 10%; cursor: pointer; touch-action: manipulation; }
 .sqg-mold img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .sqg-mold.locked { background: #d9d5d0; box-shadow: 0 4px 0 rgba(90, 80, 70, .3); cursor: default; }
@@ -126,9 +126,10 @@ body.lobby3d-on .sq-game button, body.lobby3d-on .sq-game input, body.lobby3d-on
 .sqg-wait { position: relative; width: 72px; height: 72px; border-radius: 50%; border: 4px solid #fff; background: #ffe3f0; padding: 6px; box-shadow: 0 4px 0 rgba(150,90,120,.3); cursor: pointer; }
 .sqg-wait img { width: 100%; height: 100%; object-fit: contain; }
 .sqg-wait span { position: absolute; bottom: -6px; inset-inline-end: -6px; font-size: 20px; }
-.sqg-want { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px; font-size: 24px; font-weight: 800; }
-.sqg-chip { display: inline-flex; align-items: center; gap: 6px; background: #fff; border-radius: 30px; padding: 6px 14px; box-shadow: 0 3px 0 rgba(150,90,120,.3); }
-.sqg-chip i { width: 28px; height: 28px; border-radius: 50%; display: block; }
+.sqg-want { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 4px 8px; font-size: 44px; font-weight: 900; color: #6a2d52; }
+.sqg-want em { font-size: 28px; font-style: normal; }
+.sqg-chip { display: inline-flex; align-items: center; gap: 10px; background: #fff; border-radius: 40px; padding: 8px 22px; border: 4px solid #ffb6d5; box-shadow: 0 3px 0 rgba(150,90,120,.3); }
+.sqg-chip i { width: 44px; height: 44px; border-radius: 50%; display: block; }
 .sqg-jars.two { grid-template-columns: repeat(2, 1fr); max-width: 260px; margin-inline: auto; }
 .sqg-jar .cnt { position: absolute; bottom: -4px; inset-inline-end: -4px; background: #fff; border-radius: 12px; padding: 2px 8px; font-size: 18px; }
 .sqg-jar { position: relative; }
