@@ -73,7 +73,7 @@ export class FriendUI {
     const el = this.ui.openSheet(
       'cvw-card',
       `<div class="cd-top"><img class="cd-img" src="${esc(r.img)}" alt="">${worn.map((a) => `<img class="cd-worn" src="${import.meta.env.BASE_URL}park/items/${a!.img}.webp" alt="${esc(a!.he)}" onerror="this.remove()">`).join('')}</div>
-       <h2>${esc(r.name)}</h2><p class="cd-p">${r.personality ? PERSONALITY_HE[r.personality] : ''} · <b>${LEVEL_NAME[lv]}</b></p>
+       <h2>${esc(r.name)}${r.mine ? ' <i class="mine-star" aria-hidden="true">★</i>' : ''}</h2>${r.mine ? '<p class="cd-mine">הכנתי בעצמי</p>' : ''}<p class="cd-p">${r.personality ? PERSONALITY_HE[r.personality] : ''} · <b>${LEVEL_NAME[lv]}</b></p>
        <div class="meter" aria-label="${LEVEL_NAME[lv]}">${[1, 2, 3, 4, 5].map((n) => `<i class="${n <= lv ? 'on' : n === lv + 1 ? 'next' : ''}"></i>`).join('')}<u><s style="width:${Math.round(friendProgress(hearts) * 100)}%"></s></u></div>
        <div class="details">${DETAILS.map((d) => detailHtml(d.key)).join('')}</div>
        <div class="cd-acts">

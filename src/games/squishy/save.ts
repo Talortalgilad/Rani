@@ -33,11 +33,16 @@ export interface SquishyData {
   fav: string;
   created: number;
 }
-export interface Draft { step: StepId; data: SquishyData; poured: boolean; squeezes: number; /** the order that is being made (order mode) */ orderId?: string; recipe?: Recipe }
+export interface Draft { step: StepId; data: SquishyData; poured: boolean; squeezes: number; /** the order that is being made (order mode), and the squishy that ordered it (a picture of the English game: it carries the toy in the carnival) */ orderId?: string; inviter?: string; recipe?: Recipe }
 /** what the orders remember: the orders that were done (in order, an id can be there again), and the hearts that were given for them (they go to the carnival in stage 3) */
-export interface OrdersSave { done: string[]; hearts: number; given: number }
-export const emptyOrders = (): OrdersSave => ({ done: [], hearts: 0, given: 0 });
-export interface Store { draft: Draft | null; shelf: SquishyData[]; orders: OrdersSave }
+/** a squishy that was made for an order: it goes to the one who ordered it (`to`: his picture id), and he carries it in the carnival; the last ones are kept (at most MAX_TOYS) */
+export interface Toy { to: string; data: SquishyData }
+export const MAX_TOYS = 8;
+export interface OrdersSave { done: string[]; hearts: number; given: number; toys: Toy[] }
+export const emptyOrders = (): OrdersSave => ({ done: [], hearts: 0, given: 0, toys: [] });
+/** how many of Rani's squishies live in the carnival at the same time */
+export const MAX_CARNIVAL = 8;
+export interface Store { draft: Draft | null; shelf: SquishyData[]; orders: OrdersSave; /** the ids of the squishies of the shelf that live in the carnival */ carnival: string[] }
 
 /** the molds that are open from the start (the others open with the orders, in stage 2) */
 export const OPEN_MOLDS = ['cat', 'dog', 'rabbit', 'cupcake', 'star', 'flower'];
@@ -92,12 +97,14 @@ const cleanRecipe = (x: unknown): Recipe | undefined => {
   }
   return undefined;
 };
-export function loadStore(raw: { draft: unknown; shelf: unknown; orders?: unknown }): Store {
+export function loadStore(raw: { draft: unknown; shelf: unknown; orders?: unknown; carnival?: unknown }): Store {
   const d = raw.draft as Partial<Draft> | null;
   const data = d ? cleanSquishy(d.data) : null;
-  const draft: Draft | null = data && d && STEP_ORDER.includes(d.step as StepId) ? { step: d.step as StepId, data, poured: d.poured === true, squeezes: Math.round(num(d.squeezes, 0, 99, 0)), ...(typeof d.orderId === 'string' ? { orderId: d.orderId } : {}), ...(cleanRecipe(d.recipe) ? { recipe: cleanRecipe(d.recipe) } : {}) } : null;
+  const draft: Draft | null = data && d && STEP_ORDER.includes(d.step as StepId) ? { step: d.step as StepId, data, poured: d.poured === true, squeezes: Math.round(num(d.squeezes, 0, 99, 0)), ...(typeof d.orderId === 'string' ? { orderId: d.orderId } : {}), ...(typeof d.inviter === 'string' ? { inviter: d.inviter } : {}), ...(cleanRecipe(d.recipe) ? { recipe: cleanRecipe(d.recipe) } : {}) } : null;
   const o = (raw.orders ?? {}) as Partial<OrdersSave>;
-  const orders: OrdersSave = { done: (Array.isArray(o.done) ? o.done : []).filter((x): x is string => typeof x === 'string').slice(-400), hearts: Math.round(num(o.hearts, 0, 1e6, 0)), given: Math.round(num(o.given, 0, 1e6, 0)) };
+  const orders: OrdersSave = { done: (Array.isArray(o.done) ? o.done : []).filter((x): x is string => typeof x === 'string').slice(-400), hearts: Math.round(num(o.hearts, 0, 1e6, 0)), given: Math.round(num(o.given, 0, 1e6, 0)), toys: (Array.isArray(o.toys) ? o.toys : []).map((t: { to?: unknown; data?: unknown }) => { const data = cleanSquishy(t?.data); return data && typeof t?.to === 'string' ? { to: t.to, data } : null; }).filter((t): t is Toy => !!t).slice(-MAX_TOYS) };
   const shelf = (Array.isArray(raw.shelf) ? raw.shelf : []).map(cleanSquishy).filter((s): s is SquishyData => !!s).slice(0, MAX_SHELF);
-  return { draft, shelf, orders };
+  // the ones that live in the carnival: ids of squishies that are on the shelf (at most MAX_CARNIVAL)
+  const carnival = (Array.isArray(raw.carnival) ? raw.carnival : []).filter((x): x is string => typeof x === 'string' && shelf.some((d) => d.id === x)).filter((x, i, a) => a.indexOf(x) === i).slice(0, MAX_CARNIVAL);
+  return { draft, shelf, orders, carnival };
 }

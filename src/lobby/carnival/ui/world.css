@@ -176,3 +176,14 @@ body.cv-sheet-open .cvw-btn, body.cv-sheet-open .cv-home, body.cv-sheet-open .lo
 .cvw-shop .mine-i.lifted { opacity: .35; }
 .cvw-shop.dragging { opacity: .12; pointer-events: none; }
 .shop-ghost { position: fixed; left: 0; top: 0; width: 80px; height: 80px; z-index: 30; pointer-events: none; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.35)); }
+
+/* the squishy workshop in the carnival: the tap over the building, and the number of the orders that wait */
+.cvw-workshop { position: fixed; left: 0; top: 0; z-index: 6; border: 0; background: transparent; padding: 0; width: 100px; height: 100px; }
+.cvw-workshop .wk-n { position: absolute; top: -6px; inset-inline-end: 4px; min-width: 28px; height: 28px; padding: 0 7px; border-radius: 14px; background: #ff5f95; color: #fff; font-size: 18px; font-weight: 900; line-height: 28px; text-align: center; box-shadow: 0 2px 0 rgba(0,0,0,.2); }
+.cvw-workshop .wk-n[hidden] { display: none; }
+body.cv-sheet-open .cvw-workshop { visibility: hidden !important; }
+
+/* "I made it myself": a small star by the name, in the book and on the card */
+.mine-star { font-style: normal; color: #f5b400; font-size: .8em; }
+.mine-tag { text-decoration: none; color: #b5578a; font-weight: 800; }
+.cvw-card .cd-mine { margin: -4px 0 2px; color: #b5578a; font-weight: 800; font-size: 16px; text-align: center; }

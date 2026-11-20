@@ -19,7 +19,7 @@ import type { LobbyIslandHandle } from '../../games/types';
 import { bake, staticMeshes } from './bake';
 import { drawFlagpole } from './flagpole';
 import { clampDist, clampTarget, eye, fitDist, FOV, groundPerPx, isTap, PITCH, type CamState } from './camera';
-import { ISLAND_R, PATH_W, PLAZA_R, PLOT_PAD, PLOT_R, RING_R, SCHOOL, ZS, plots } from './layout';
+import { ISLAND_R, PATH_W, PLAZA_R, PLOT_PAD, PLOT_R, RING_R, SCHOOL, WORKSHOP, ZS, plots } from './layout';
 import { NEW_RESIDENTS, type Resident } from './residents';
 import { rng } from './walk';
 import { Atlas } from './atlas';
@@ -55,6 +55,10 @@ export interface CarnivalOpts {
   onSlots?(slots: { id: string; x: number; y: number; behind: boolean; k: number }[]): void;
   plots: PlotSpec[];
   residents: Resident[];
+  /** the squishies that the ones who ordered them carry (the index of the resident, the picture drawn once from the saved data) */
+  toys?: { index: number; img: string }[];
+  /** the building "the squishy workshop": the orders that wait, and the squishies that stand in its line (ids of the pictures of the English game) */
+  workshop?: { waiting: number; line: string[] };
   autoDowngrade: boolean;
   /** a game was tapped (a tap, never a drag) and its hop is over */
   onEnter(index: number): void;
@@ -490,7 +494,11 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   for (const id of NEW_RESIDENTS) if (!imgs.has(id)) imgs.set(id, `${base}park/squishies/${id}.webp`);
   // the accessories are cells of the same atlas (a picture that is not in the repo yet stays an empty cell: nothing is drawn)
   for (const a of ACCESSORIES) imgs.set(`acc:${a.id}`, `${base}park/items/${a.img}.webp`);
-  const RES_CAP = 64;
+  // the toys that the ones who ordered carry, and the squishies in the line of the workshop (cells of the same atlas)
+  const toyOf = new Map<number, string>();
+  for (const t of o.toys ?? []) (imgs.set(`toy:${t.index}`, t.img), toyOf.set(t.index, `toy:${t.index}`));
+  for (const q of o.workshop?.line ?? []) imgs.set(`q:${q}`, `${base}english/squishies/${q}.webp`);
+  const RES_CAP = 96;
   const resAtlas = keep(new Atlas({ keys: [...imgs.keys()], urlOf: (k) => imgs.get(k)!, cell: 256, capacity: RES_CAP, tint: night ? '#a9aee0' : '#ffffff' }, facing));
   scene.add(resAtlas.mesh);
   const shadowMesh = new T.InstancedMesh(keep(new T.CircleGeometry(0.34, 12)), keep(new T.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.22, depthWrite: false })), RES_CAP);
@@ -498,18 +506,19 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   scene.add(shadowMesh);
   const shQ = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), -Math.PI / 2);
   /** a resident: his place on the stage (the page asks where he is), his hop, and who tapped him */
-  interface Person { r: Resident; key: string; sp: T.Object3D; hop: number; tapped: number; taps: number; phase: number; born: number; trick?: { kind: 'spin' | 'jump2' | 'dance'; t: number } }
+  interface Person { r: Resident; key: string; fill: number; sp: T.Object3D; hop: number; tapped: number; taps: number; phase: number; born: number; trick?: { kind: 'spin' | 'jump2' | 'dance'; t: number } }
   const people: Person[] = [];
   const addPerson = (r: Resident, hopIn = false): number => {
     const sp = new T.Object3D();
-    people.push({ r, key: imageKey(r.img), sp, hop: hopIn ? 1 : 0, tapped: 0, taps: 0, phase: people.length * 1.3, born: hopIn ? 0 : -1 });
+    const key = r.anchor ?? imageKey(r.img);
+    people.push({ r, key, fill: anchorOf(key).fill ?? 1, sp, hop: hopIn ? 1 : 0, tapped: 0, taps: 0, phase: people.length * 1.3, born: hopIn ? 0 : -1 });
     return people.length - 1;
   };
   o.residents.forEach((r) => addPerson(r));
 
   // ---- what is built: one more atlas (the stalls, the rides, the decorations, the board of wishes), and the board in the plaza
-  const itemKeys = [...ITEMS.map((i) => i.id), 'woodsign', 'lollyschool'];
-  const itemAtlas = keep(new Atlas({ keys: itemKeys, urlOf: (k) => itemUrl(k), cell: 192, capacity: 64, tint: night ? '#8a8fc8' : '#ffffff' }, facing));
+  const itemKeys = [...ITEMS.map((i) => i.id), 'woodsign', 'lollyschool', 'squishyworkshop'];
+  const itemAtlas = keep(new Atlas({ keys: itemKeys, urlOf: (k) => (k === 'squishyworkshop' ? `${base}squishy/props/kiosk.webp` : itemUrl(k)), cell: 192, capacity: 64, tint: night ? '#8a8fc8' : '#ffffff' }, facing));
   scene.add(itemAtlas.mesh);
   const BOARD = { x: 1.9, z: 2.6, size: 1.5 };
   const SCHOOL_SIZE = 1.9;
@@ -777,7 +786,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       const rz = ride ? a.z + 0.7 : a.z;
       const ry = ride ? 0.45 : 0;
       p.sp.position.set(a.x, 0.58 + bob + jump + drop + ry, rz);
-      const sz = (ride ? 0.85 : 1.15) * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0));
+      // (the squishies that Rani made are drawn as big as the others: `fill` of their mold)
+      const sz = (ride ? 0.85 : 1.15) * p.fill * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0));
       resAtlas.set(shown, p.r.id, a.x + tx, 0.62 + bob + jump + drop + ry, rz, sz, flip);
       // what he wears: cells of the same atlas, over his head (no draw call of its own)
       for (const w of o.world.wearingCached?.(i) ?? o.world.wearing?.(i) ?? []) {
@@ -789,9 +799,20 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
         const px = (pl.u - 0.5) * sz * flip, py = (0.5 - pl.v) * sz, pz = ac.behind ? -0.03 : 0.03;
         resAtlas.set(shown, `acc:${w}`, a.x + tx + camR.x * px + camU.x * py + camF.x * pz, 0.62 + bob + jump + drop + ry + camR.y * px + camU.y * py + camF.y * pz, rz + camR.z * px + camU.z * py + camF.z * pz, pl.s * sz, flip);
       }
+      // the toy that he carries: a small squishy at his side, at the height of his hand
+      const toy = toyOf.get(i);
+      if (toy && shown + 1 < RES_CAP - 1) {
+        shown++;
+        resAtlas.set(shown, toy, a.x + tx + flip * 0.4, 0.62 + bob + jump + drop + ry - 0.3, rz + 0.05, 0.42 * (ride ? 0.85 : 1.15), flip);
+      }
       m4.compose(new T.Vector3(a.x, 0.04, rz), shQ, new T.Vector3(1 - jump * 0.4, 1 - jump * 0.4, 1));
       shadowMesh.setMatrixAt(shadows++, m4);
       shown++;
+    });
+    // the line in front of the workshop: the squishies that wait to order (they hop a little, one after the other)
+    (o.workshop?.line ?? []).forEach((q, k) => {
+      if (shown >= RES_CAP - 1) return;
+      resAtlas.set(shown++, `q:${q}`, WORKSHOP.x - 1.35 - 0.52 * k, 0.33 + (reduced ? 0 : Math.abs(Math.sin(time * 2.4 + k * 1.1)) * 0.06), WORKSHOP.z + 0.5, 0.62, k % 2 ? 1 : -1);
     });
     resAtlas.commit(shown);
     shadowMesh.count = shadows;
@@ -816,11 +837,12 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     }
     // the school of Lolly stands on the island like a stall (the same size), and the page only puts Lolly beside it and the tap on it
     itemAtlas.set(bi++, 'lollyschool', SCHOOL.x, SCHOOL_SIZE * 0.48 + 0.08, SCHOOL.z, SCHOOL_SIZE);
+    itemAtlas.set(bi++, 'squishyworkshop', WORKSHOP.x, SCHOOL_SIZE * 0.48 + 0.08, WORKSHOP.z, SCHOOL_SIZE);
     itemAtlas.set(bi++, 'woodsign', BOARD.x, BOARD.size * 0.5 + 0.05, BOARD.z, BOARD.size);
     itemAtlas.commit(bi);
     o.onLabelMove?.(labelOf !== null ? screenOf(people[labelOf].sp.position.clone().add(new T.Vector3(0, 0.75, 0))) : null);
     if (o.onSlots) {
-      o.onSlots([...o.world.slots.map((s) => ({ id: s.id, x: s.x, z: s.z })), { id: 'lollyschool', ...SCHOOL }].map((s) => {
+      o.onSlots([...o.world.slots.map((s) => ({ id: s.id, x: s.x, z: s.z })), { id: 'lollyschool', ...SCHOOL }, { id: 'workshop', ...WORKSHOP }].map((s) => {
         const v = new T.Vector3(s.x, 1.0, s.z);
         const sc = screenOf(v);
         // k: how many pixels one unit of the island is at this place (the school and Lolly are drawn by it)

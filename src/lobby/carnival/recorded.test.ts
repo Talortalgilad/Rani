@@ -20,8 +20,8 @@ describe('the voice of the carnival: nothing is left to the phone', () => {
       expect(he.has(l.id), l.id).toBe(true);
       expect(CARNIVAL_LINES.some((x) => x.id === l.id), l.id).toBe(true);
     }
-    // stage 3 built eight of the 24 (friend, trick, job, hat, remember, party, lolly, workshop); the other 16 are for stages 4-5
-    expect(QUESTS).toHaveLength(18);
+    // stage 3 built nine of the 24 (friend, trick, job, hat, remember, party, lolly, workshop, order); the other 15 are for stages 4-5
+    expect(QUESTS).toHaveLength(19);
   });
   it('every English sentence of the carnival has a recording', () => {
     for (const l of CARNIVAL_EN) expect(en.has(l.id), l.id).toBe(true);

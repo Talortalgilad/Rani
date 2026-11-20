@@ -58,6 +58,39 @@ def analyse(path):
     prof = [round(float((lambda r: (r.max() - r.min() + 1) / 512 if len(r) else 0)(np.where(alpha[min(511, int(k / 50 * 512))])[0])), 3) for k in range(51)]
     return {'prof': prof, 'eyeW': round(eyeW, 3), 'eyeGap': round(gap, 3), 'top': round(top, 3), 'bottom': round(bottom, 3), 'left': round(left, 3), 'right': round(right, 3), 'cx': round(ex if eyes else cx, 3), 'eyeY': round(eyeY, 3), 'mouthY': round(mouthY, 3), 'neckY': round(mouthY + 0.06, 3), 'neckW': round(nw, 3), 'found': bool(eyes)}
 
+ANIMALS = ['cat', 'dog', 'rabbit', 'fish', 'bird', 'lion', 'monkey', 'elephant', 'giraffe']
+SHAPES = ANIMALS + ['cupcake', 'donut', 'icecream', 'cookie', 'lollipop', 'apple', 'star', 'flower', 'crown']
+
+def face_of(shape, alpha):
+    """where the workshop draws the face (the same as faceAnchor in src/games/squishy/shapes.ts): x, y, size in pixels of the 512 picture"""
+    ys, xs = np.where(alpha)
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    w, h = x1 - x0, y1 - y0
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    if shape in ANIMALS:
+        y = int(round(y0 + h * 0.3))
+        row = np.where(alpha[y])[0]
+        return ((row.min() + row.max()) / 2, y, (row.max() - row.min()) / 2) if len(row) > 1 else (cx, y, w * 0.3)
+    at = {'cupcake': (cx, y0 + h * 0.5, w * 0.34), 'donut': (cx, y0 + h * 0.86, w * 0.17), 'icecream': (cx, y0 + h * 0.3, w * 0.34), 'cookie': (cx, cy, w * 0.34),
+          'lollipop': (cx, y0 + h * 0.33, w * 0.3), 'apple': (cx, cy + h * 0.08, w * 0.3), 'star': (cx, cy + h * 0.05, w * 0.26), 'flower': (cx, cy, w * 0.13), 'crown': (cx, y0 + h * 0.7, w * 0.26)}
+    return at[shape]
+
+def analyse_shape(shape):
+    """the anchors of a squishy that Rani made: from the picture of its mold and from where the workshop puts the face (the face is drawn there whatever colours she chose)"""
+    a = np.array(Image.open(f'public/squishy/shapes/{shape}.webp').convert('RGBA'))[:, :, 3] > 40
+    ys, xs = np.where(a)
+    top, bottom, left, right = ys.min() / 512, ys.max() / 512, xs.min() / 512, xs.max() / 512
+    fx, fy, fs = face_of(shape, a)
+    eyeY, mouthY, gap = fy / 512, (fy + 0.13 * fs) / 512, 0.68 * fs / 512
+    def width(v):
+        r = np.where(a[min(511, int(v * 512))])[0]
+        return (r.max() - r.min() + 1) / 512 if len(r) else 0
+    prof = [round(float(width(k / 50)), 3) for k in range(51)]
+    return {'prof': prof, 'eyeW': round(width(eyeY), 3), 'eyeGap': round(gap, 3), 'top': round(top, 3), 'bottom': round(bottom, 3), 'left': round(left, 3), 'right': round(right, 3), 'cx': round(fx / 512, 3),
+            'eyeY': round(eyeY, 3), 'mouthY': round(mouthY, 3), 'neckY': round(mouthY + 0.06, 3), 'neckW': round(width(mouthY + 0.06), 3), 'found': True,
+            # the picture is drawn as big as the residents (a little bigger or smaller by how much of its frame the mold fills): everything that sits on it is scaled by this
+            'fill': round(max(0.8, min(1.5, 0.88 / max(right - left, bottom - top))), 3)}
+
 def main():
     files = glob.glob('public/park/squishies/*.webp') + glob.glob('public/english/squishies/*.webp') + ['public/english/cheesy/happy.webp']
     out = {}
@@ -86,8 +119,10 @@ def main():
         for i, t in enumerate(tiles):
             sheet.paste(t, ((i % cols) * 256, (i // cols) * 256))
         sheet.save(os.path.join(dbg, 'anchors.png'))
+    for sh in SHAPES:
+        out[f'shape:{sh}'] = analyse_shape(sh)
     json.dump(out, open('src/lobby/carnival/anchors.json', 'w'), indent=1, sort_keys=True)
-    print(len(out), 'pictures;', sum(1 for v in out.values() if not v['found']), 'without a face found')
+    print(len(out), 'pictures (incl. the 18 molds of the workshop);', sum(1 for v in out.values() if not v['found']), 'without a face found')
 
 if __name__ == '__main__':
     main()

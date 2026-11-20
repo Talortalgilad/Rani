@@ -38,6 +38,14 @@ export interface Learned {
 }
 /** every word and colour is learned (the parent opened everything, or a test) */
 export const learnedAll: Learned = { word: () => true, color: () => true };
+/** what Rani learned in the word journey, from what the English game saved (`words`, the `map` of finished worlds, `openAll` for a parent who opened everything) */
+export function learnedFrom(words: Record<string, { seen?: boolean }>, map: { done: Record<number, number> }, all: boolean, colors: string[]): Learned {
+  const d4 = map.done[4] ?? 0;
+  const later = Object.entries(map.done).some(([w, n]) => Number(w) > 4 && n > 0) || d4 >= 5;
+  const nColors = all || later ? 6 : d4 >= 2 ? 6 : d4 >= 1 ? 3 : 0;
+  const known = colors.slice(0, nColors);
+  return { word: (id) => all || words[id]?.seen === true, color: (id) => all || known.includes(id) };
+}
 
 export interface OrderCtx {
   /** the ids of the orders that were done, in order (the same id can be there twice) */

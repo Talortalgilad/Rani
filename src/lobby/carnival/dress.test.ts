@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ANCHORS from './anchors.json';
 import { ACC_BOX, anchorOf, fitProblems, heightAtWidth, imageKey, place, type Anchor } from './dress';
-import { ACCESSORIES } from './friends';
+import { ACCESSORIES, SHAPE_CANNOT_WEAR } from './friends';
 import { RESIDENT_INFO } from './residents';
 
 const keys = Object.keys(ANCHORS);
@@ -16,7 +16,7 @@ describe('where the accessories sit on every resident', () => {
   it('every accessory has a box and no accessory hides the eyes or the mouth, goes below the feet or beyond the body, on any resident', () => {
     const bad: string[] = [];
     // the cupcake has its face at the very bottom of the picture (under the frosting, on the cup): there is no neck and no room under the mouth for a scarf or a cape (they stay tiny, and the sheet marks him)
-    const KNOWN = new Set(['cupcake/scarf', 'cupcake/cape']);
+    const KNOWN = new Set(['cupcake/scarf', 'cupcake/cape', ...Object.entries(SHAPE_CANNOT_WEAR).flatMap(([sh, l]) => l.map((a) => `shape:${sh}/${a}`))]);
     for (const k of keys) for (const a of ACCESSORIES) { expect(ACC_BOX[a.id], a.id).toBeTruthy(); if (KNOWN.has(`${k}/${a.id}`)) continue; for (const p of fitProblems(a.id, anchorOf(k))) bad.push(`${k}/${a.id}: ${p}`); }
     expect(bad).toEqual([]);
   });

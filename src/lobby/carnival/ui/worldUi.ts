@@ -32,6 +32,9 @@ export interface WorldHost {
   trick?(i: number, kind: 'spin' | 'jump2' | 'dance'): void;
   /** the resident under a point of the screen (the shops of accessories: an accessory is dropped on him) */
   residentAt?(x: number, y: number): number | null;
+  /** the squishy workshop (the building): a tap comes in, straight to the orders; and how many orders wait (the number over it) */
+  goWorkshop?(): void;
+  workshopCount?(): number;
   /** the school of Lolly was tapped: her lessons (the page goes to the English game, straight to Lolly) */
   goTutor?(): void;
   /** is there a new lesson of Lolly today? (the ❗ at her school) */
@@ -172,6 +175,10 @@ export class WorldUI {
         this.placeSchool(p);
         continue;
       }
+      if (p.id === 'workshop') {
+        this.placeWorkshop(p);
+        continue;
+      }
       const s = w.slot(p.id);
       if (!s) continue;
       let el = this.slotEls.get(p.id);
@@ -198,6 +205,46 @@ export class WorldUI {
       const vis = shown && !p.behind && p.x > 14 && p.x < ww - 14 && p.y > 118 && p.y < hh - 96;
       el.style.visibility = vis ? 'visible' : 'hidden';
       if (vis) el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+    }
+  }
+
+  private workshopEl: HTMLElement | null = null;
+  private workshopT = 0;
+  /** the squishy workshop (SPEC-squishy.md 3): the building is drawn in the scene; this is its tap (it comes in, straight to the orders) and the small number over it: how many orders wait */
+  private placeWorkshop(p: { x: number; y: number; behind: boolean; k: number }): void {
+    if (!this.h.goWorkshop) return;
+    if (!this.workshopEl) {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'cvw-workshop';
+      el.setAttribute('aria-label', 'סדנת הסקווישים');
+      el.innerHTML = '<b class="wk-n"></b>';
+      el.addEventListener('click', () => {
+        sound.play('pop', 640);
+        this.h.goWorkshop?.();
+      });
+      this.root.appendChild(el);
+      this.workshopEl = el;
+      this.workshopT = 0;
+    }
+    const el = this.workshopEl;
+    if (this.workshopT-- <= 0) {
+      this.workshopT = 600;
+      const n = this.h.workshopCount?.() ?? 0;
+      const b = el.querySelector<HTMLElement>('.wk-n')!;
+      b.textContent = n ? String(n) : '';
+      b.hidden = !n;
+    }
+    const vis = !p.behind && p.x > 30 && p.x < window.innerWidth - 30 && p.y > 130 && p.y < window.innerHeight - 100;
+    el.style.visibility = vis ? 'visible' : 'hidden';
+    if (vis) {
+      const k = Math.max(20, p.k), w = Math.round(1.9 * k);
+      if (el.dataset.w !== String(w)) {
+        el.dataset.w = String(w);
+        el.style.width = `${w}px`;
+        el.style.height = `${w}px`;
+      }
+      el.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y + 0.5 * k)}px) translate(-50%, -100%)`;
     }
   }
 
@@ -505,7 +552,7 @@ export class WorldUI {
     const el = this.openSheet(
       'cvw-bookpage',
       `<h2>${esc(csText('cs_book'))}</h2><div class="list">${rows
-        .map(({ r, i, wish, call }) => `<button type="button" class="row" data-i="${i}"><img src="${esc(r.img)}" alt=""><span><b>${esc(r.name)}</b><small>${r.personality ? PERSONALITY_HE[r.personality] : ''} · ${LEVEL_NAME[friendLevel(friendsOf(w.save).hearts[r.id] ?? 0)]}</small></span><em>${call ? '❗' : wish ? WISH_ICON[wish.kind] : ''}</em></button>`)
+        .map(({ r, i, wish, call }) => `<button type="button" class="row" data-i="${i}"><img src="${esc(r.img)}" alt=""><span><b>${esc(r.name)}${r.mine ? ' <i class="mine-star" aria-hidden="true">★</i>' : ''}</b><small>${r.mine ? '<u class="mine-tag">הכנתי בעצמי</u> · ' : ''}${r.personality ? PERSONALITY_HE[r.personality] : ''} · ${LEVEL_NAME[friendLevel(friendsOf(w.save).hearts[r.id] ?? 0)]}</small></span><em>${call ? '❗' : wish ? WISH_ICON[wish.kind] : ''}</em></button>`)
         .join('')}${unknown.map((x) => `<div class="row ghost"><img src="${residentImg(x.id)}" alt=""><span><b>?</b></span></div>`).join('')}</div>`,
     );
     el.querySelectorAll<HTMLButtonElement>('.row[data-i]').forEach((b) =>
@@ -797,6 +844,7 @@ export class WorldUI {
     this.dead = true;
     this.friends.dispose();
     this.schoolEl?.remove();
+    this.workshopEl?.remove();
     this.closeSheet();
     this.root.remove();
     this.guideEl?.remove();
