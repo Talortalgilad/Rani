@@ -2144,89 +2144,89 @@
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_now_you_he",
   "text": "עכשיו את קודם! אמרי באנגלית, ואחר כך אני.",
-  "lang": "he",
   "take": 304,
   "dur": 3.17,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_self_check",
   "text": "אמרת כמו שאני אמרתי?",
-  "lang": "he",
   "take": 304,
   "dur": 1.58,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_challenge_intro",
   "text": "אתגר! שלוש שאלות קשות יותר. מוכנה?",
-  "lang": "he",
   "take": 304,
   "dur": 3.46,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_challenge_perfect",
   "text": "וואו! בלי אף טעות! קיבלת מדבקה מנצנצת!",
-  "lang": "he",
   "take": 304,
   "dur": 3.67,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "t_challenge_ok",
   "text": "כל הכבוד שניסית! בפעם הבאה ננסה שוב.",
-  "lang": "he",
   "take": 304,
   "dur": 3.34,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_now_you",
   "text": "Now you!",
-  "lang": "en",
   "take": 329,
   "dur": 0.94,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_challenge",
   "text": "Challenge time!",
-  "lang": "en",
   "take": 329,
   "dur": 1.61,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_perfect",
   "text": "Perfect!",
-  "lang": "en",
   "take": 329,
   "dur": 1.01,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_amazing",
   "text": "Amazing!",
-  "lang": "en",
   "take": 329,
   "dur": 1.39,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_listen_carefully",
   "text": "Listen carefully!",
-  "lang": "en",
   "take": 329,
   "dur": 1.87,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_what_do_you_see",
   "text": "What do you see?",
-  "lang": "en",
   "take": 329,
   "dur": 1.54,
   "flag": ""
@@ -2880,59 +2880,67 @@
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "sq_free_decorate",
   "text": "עכשיו קישוטים! הקישי על הסקווישי כדי להדביק.",
-  "lang": "he",
   "take": 502,
   "dur": 3.79,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "sq_free_spoons_full",
   "text": "הקערה מלאה! עכשיו מערבבים.",
-  "lang": "he",
   "take": 502,
   "dur": 2.98,
   "flag": "pause"
  },
  {
+  "lang": "he",
   "id": "sq_free_finish",
   "text": "איזה גימור תרצי? מבריק, נצנצים או מט.",
-  "lang": "he",
   "take": 502,
   "dur": 4.58,
   "flag": "pause,tight"
  },
  {
+  "lang": "he",
   "id": "sq_free_stir_done",
   "text": "התערבב! איזה צבע יפה.",
-  "lang": "he",
   "take": 502,
   "dur": 2.81,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "glitter",
   "text": "Glitter",
-  "lang": "en",
   "take": 523,
   "dur": 0.72,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "matte",
   "text": "Matte",
-  "lang": "en",
   "take": 523,
   "dur": 0.74,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "glossy",
   "text": "Glossy",
-  "lang": "en",
   "take": 523,
   "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "id": "sq_order_shape",
+  "text": "כמעט! הצורה לא מתאימה להזמנה. רוצה לתקן?",
+  "lang": "he",
+  "take": 503,
+  "dur": 3.96,
   "flag": ""
  }
 ]

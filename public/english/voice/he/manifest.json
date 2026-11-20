@@ -217,6 +217,7 @@
   "sq_order_count",
   "sq_order_match",
   "sq_order_mode",
+  "sq_order_shape",
   "sq_paint",
   "sq_pick_mold",
   "sq_pop",

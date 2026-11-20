@@ -72,6 +72,8 @@ function choose(sil: Sil[], lines: { id: string; text: string }[], total: number
   const onset = lead ? lead.end : 0;
   const offset = trail ? trail.start : total;
   if (cand.length < N - 1) return null;
+  // a take with one line: no cut, only the silence at the start and the end of the take
+  if (N === 1) return { spans: [{ from: onset, to: offset }], cuts: [], candidates: cand.length, lead: lead?.dur ?? 0, trail: trail?.dur ?? 0 };
   const len = lines.map((l) => letters(l.text));
   const totalLen = len.reduce((a, b) => a + b, 0);
   // the speaking rate: what is left of the take after the N-1 longest silences, over the letters
