@@ -1,6 +1,5 @@
 /** The tutor's card of the parents' area (SPEC-tutor.md section 9): what was learned (the lessons that are done and the sentence of the day of each, to practise at home), a button that opens all the lessons (for testing) and a reset of Lolly's progress. */
 import { gameStore } from '../../../storage';
-import { counter } from '../../../ui/counter';
 import { TUTOR_CLIPS } from '../content/tutorClips';
 import { sentenceOf } from './album';
 import { LESSONS } from './lessons';
@@ -27,7 +26,7 @@ export function tutorParentHtml(): string {
     <section class="p-card" id="tutor-parent">
       <h2>המורה לולי</h2>
       <div class="p-kpis">
-        <div><b style="font-size:20px">${counter(`${done.length} מתוך ${LESSONS.length}`)}</b><span>שיעורים שהושלמו</span></div>
+        <div><b class="p-count">${done.length} מתוך ${LESSONS.length}</b><span>שיעורים שהושלמו</span></div>
         <div><b>${st.sparkle ? Object.values(st.sparkle).filter(Boolean).length : 0}</b><span>אתגרים בלי טעות</span></div>
       </div>
       <div class="p-sub">מה נלמד: השיעורים שהושלמו ו"משפט היום" של כל אחד, כדי לתרגל בבית</div>

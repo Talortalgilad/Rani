@@ -3,7 +3,7 @@ import { COLORS } from '../../content/colors';
 import { clipText } from '../audio';
 import { DATA } from '../lessons';
 import { thingHtml, paintThing } from '../things';
-import { pickRound, type StepRun } from '../shell';
+import { pickRound, type StepRun, HIDDEN } from '../shell';
 
 /** the colour that a clip of the lessons names: t_its_pink -> pink, t_yellow_balloon -> yellow */
 export function colorOfClip(id: string): string | null {
@@ -25,7 +25,7 @@ export const paint: StepRun = async (sh, step) => {
     const box = c.querySelector<HTMLElement>('.thing')!;
     if (k === 0 && intro && sh.once(`intro:${intro}`)) await sh.say(intro, { look: 'listen' });
     // the sentence is hidden in the bubble until she is right (she paints by what she hears)
-    const hear = (): Promise<void> => sh.say(clip, { look: 'listen', text: '🔊 ?' });
+    const hear = (): Promise<void> => sh.say(clip, { look: 'listen', text: HIDDEN });
     await hear();
     const options = order.map((id) => ({ html: `<span class="tutor-swatch" style="background:${COLORS.find((x) => x.id === id)!.hex}"></span>` }));
     const done = pickRound(sh, { options, correct: order.indexOf(color), replay: hear, cls: 'colors', onRight: () => sh.bubble(clipText(clip), 'en'), restore: () => paintThing(box, null) });

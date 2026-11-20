@@ -6,7 +6,7 @@ import { clipText } from '../audio';
 import { faceUrl } from '../lolly';
 import { pictureHtml } from '../pictures';
 import { setLike } from '../state';
-import { pickRound, type Option, type StepRun } from '../shell';
+import { pickRound, type Option, type StepRun, HIDDEN } from '../shell';
 import { esc } from '../../ui/text';
 
 const arr = <T>(x: unknown): T[] => (Array.isArray(x) ? (x as T[]) : []);
@@ -76,7 +76,7 @@ export const likeOrNot: StepRun = async (sh, step) => {
     const c = sh.clear();
     c.innerHTML = picHtml(it.food);
     if (k === 0 && sh.once('likeOrNot-intro')) await sh.say('t_tap_picture', { look: 'listen' });
-    const hear = (): Promise<void> => sh.say(it.clip, { look: 'listen', text: '🔊 ?' });
+    const hear = (): Promise<void> => sh.say(it.clip, { look: 'listen', text: HIDDEN });
     await hear();
     const options: Option[] = [{ html: faceBtn('love', 'love') }, { html: faceBtn('yuck', 'yuck') }];
     const tries = await pickRound(sh, { options, correct: it.like ? 0 : 1, replay: hear, cls: 'tf', onRight: () => sh.bubble(clipText(it.clip), 'en') });

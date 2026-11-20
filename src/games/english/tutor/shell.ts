@@ -64,7 +64,10 @@ export const nextPraise = (before: string, r = Math.random()): string => {
 };
 const fast = (): boolean => typeof window !== 'undefined' && !!(window as unknown as { __tutorFast?: boolean }).__tutorFast;
 
+/** the text of a bubble that does not show its sentence (she listens and answers): a big speaker with waves */
+export const HIDDEN = '\u{1F50A}';
 export function bubbleHtml(text: string, lang: 'he' | 'en'): string {
+  if (text === HIDDEN) return '<span class="tb-hidden" aria-label="🔊"><span aria-hidden="true">🔊</span><span class="waves" aria-hidden="true"><i></i><i></i><i></i></span></span>';
   return lang === 'en' ? `<span dir="ltr" class="tb-en">${esc(text)}</span>` : `<span class="tb-he">${mixed(text)}</span>`;
 }
 

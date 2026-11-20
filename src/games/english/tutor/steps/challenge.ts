@@ -1,7 +1,7 @@
 import { clipText } from '../audio';
 import { pictureHtml } from '../pictures';
 import { setSparkle } from '../state';
-import type { StepRun } from '../shell';
+import { HIDDEN, type StepRun } from '../shell';
 
 interface Item { kind: 'pick' | 'answer'; clip: string; choices?: string[]; choiceClips?: string[]; correct: number }
 
@@ -18,8 +18,8 @@ export const challenge: StepRun = async (sh, step) => {
   let mistakes = 0;
   for (const [k, it] of items.entries()) {
     sh.clear();
-    // `pick`: the bubble does not give the sentence away ("🔊 ?" until she answers); `answer`: the question is in the bubble
-    const hear = (): Promise<void> => sh.say(it.clip, { look: 'listen', text: it.kind === 'pick' ? '🔊 ?' : undefined });
+    // `pick`: the bubble does not give the sentence away (a speaker until she answers); `answer`: the question is in the bubble
+    const hear = (): Promise<void> => sh.say(it.clip, { look: 'listen', text: it.kind === 'pick' ? HIDDEN : undefined });
     if (k === 0) await sh.say('t_listen_carefully', { look: 'listen' });
     await hear();
     const n = it.kind === 'pick' ? (it.choices ?? []).length : (it.choiceClips ?? []).length;
@@ -35,7 +35,7 @@ export const challenge: StepRun = async (sh, step) => {
       box.appendChild(b);
       btns.push(b);
     }
-    // the bubble ("🔊 ?") says the question again when it is tapped: no second speaker
+    // the bubble (the speaker) says the question again when it is tapped: no second speaker
     sh.lolly.set('listen');
     let touched = false;
     const right = await new Promise<boolean>((res, rej) => {
