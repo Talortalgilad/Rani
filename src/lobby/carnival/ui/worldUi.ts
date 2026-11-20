@@ -17,6 +17,7 @@ import { PERSONALITY_HE, SUGGEST_LINE, WISH_ICON, WISH_LINE, fillers, type WishT
 import type { CarnivalWorld, WorldEvent } from '../world';
 import { CS_LINES } from '../csLines';
 import { FriendUI, LEVEL_NAME } from './friendUi';
+import { DailyUI } from './dailyUi';
 import { ACCESSORIES, SHOP, canWear, friendLevel, friendsOf } from '../friends';
 
 export interface WorldHost {
@@ -59,7 +60,7 @@ export function orderPieces(item: Item): { id: string; text: string }[] {
 }
 
 export class WorldUI {
-  private root: HTMLElement;
+  root: HTMLElement;
   private slotEls = new Map<string, HTMLButtonElement>();
   private slotState = new Map<string, string>();
   private wishEls = new Map<number, HTMLElement>();
@@ -72,12 +73,13 @@ export class WorldUI {
   private buildBtn: HTMLButtonElement;
   /** build mode: the free places (and the locked ones, small) are shown. Off in the normal view, so the island stays clean. */
   private build = false;
-  private sheet: HTMLElement | null = null;
+  sheet: HTMLElement | null = null;
   private banners: { html: string; line?: string }[] = [];
   private bannerOn = false;
   private moving: string | null = null;
   private dead = false;
   readonly friends = new FriendUI(this);
+  readonly daily = new DailyUI(this);
   private schoolEl: HTMLElement | null = null;
   private schoolNew = false;
   private schoolT = 0;
@@ -131,7 +133,7 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- the hud
-  private paintHud(): void {
+  paintHud(): void {
     const w = this.h.world;
     const q = w.quest;
     const key = `${q?.id}|${w.level}|${Math.round(w.levelProgress * 20)}`;
@@ -170,6 +172,10 @@ export class WorldUI {
     for (const p of list) {
       if (p.id === 'lollyschool') {
         this.placeSchool(p);
+        continue;
+      }
+      if (p.id === 'nest' || p.id === 'giftbox' || p.id === 'mailbox') {
+        this.daily.place(p);
         continue;
       }
       const s = w.slot(p.id);
@@ -619,6 +625,16 @@ export class WorldUI {
           this.h.addResident?.(e.resident);
           this.queueBanner(`<b>${esc(csText('cs_new_resident'))}</b><img src="${esc(e.resident.img)}" alt=""><span>${esc(e.resident.name)}</span>`, 'cs_new_resident');
           break;
+        case 'welcomeBack':
+        case 'egg':
+        case 'hatch':
+        case 'guest':
+        case 'greet':
+        case 'mailWaiting':
+        case 'giftWaiting':
+        case 'paradeDay':
+          this.daily.event(e);
+          break;
         case 'quest':
           sound.play('bonus');
           this.queueBanner(`<b>${esc(csText('cs_quest_done'))}</b><span>❤️ ${e.quest.hearts}${e.quest.stars ? ' ⭐ ' + e.quest.stars : ''}</span>`, 'cs_quest_done');
@@ -644,6 +660,11 @@ export class WorldUI {
   private near(r: number): boolean {
     const p = this.h.pos(r);
     return !!p && nearCentre(p.x, p.y, this.screenW, this.screenH);
+  }
+  /** a bubble over a resident (stage 4: the baby says hello) */
+  say(r: number, text: string, line: string | null): void {
+    this.sayBubble(r, text, line);
+    if (line) say(line);
   }
   private sayBubble(r: number, text: string, line: string | null, lang: 'he' | 'en' = 'he'): void {
     const p = this.h.pos(r);
@@ -725,6 +746,7 @@ export class WorldUI {
     }
     this.paintHud();
     this.friends.tick(dt, !!this.sheet);
+    this.daily.tick(dt);
     this.schoolT -= dt;
     if (this.schoolEl && this.schoolT <= 0) {
       this.schoolT = 30;
@@ -797,6 +819,7 @@ export class WorldUI {
     this.dead = true;
     this.friends.dispose();
     this.schoolEl?.remove();
+    this.daily.dispose();
     this.closeSheet();
     this.root.remove();
     this.guideEl?.remove();

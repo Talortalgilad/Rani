@@ -19,6 +19,12 @@ export interface QuestCtx {
   parties?: number;
   lolly?: number;
   workshop?: number;
+  /** stage 4: eggs hatched, letters opened, gifts of the day opened, guests who stayed, parades joined */
+  hatched?: number;
+  letters?: number;
+  gifts?: number;
+  stayed?: number;
+  parades?: number;
 }
 export interface Quest { id: string; he: string; hearts: number; stars?: number; done(c: QuestCtx): boolean }
 
@@ -50,6 +56,11 @@ QUESTS.push(
   { id: 'party', he: LATER.qs_party, hearts: 6, stars: 1, done: (c) => (c.parties ?? 0) >= 1 },
   { id: 'lolly', he: LATER.qs_lolly, hearts: 5, stars: 1, done: (c) => (c.lolly ?? 0) >= 1 },
   { id: 'workshop', he: LATER.qs_workshop, hearts: 5, stars: 1, done: (c) => (c.workshop ?? 0) >= 1 },
+  { id: 'egg', he: LATER.qs_egg, hearts: 5, stars: 1, done: (c) => (c.hatched ?? 0) >= 1 },
+  { id: 'mail', he: LATER.qs_mail, hearts: 4, done: (c) => (c.letters ?? 0) >= 1 },
+  { id: 'gift', he: LATER.qs_gift, hearts: 4, done: (c) => (c.gifts ?? 0) >= 1 },
+  { id: 'visitor', he: LATER.qs_visitor, hearts: 5, stars: 1, done: (c) => (c.stayed ?? 0) >= 1 },
+  { id: 'parade', he: LATER.qs_parade, hearts: 5, stars: 1, done: (c) => (c.parades ?? 0) >= 1 },
 );
 export const questById = (id: string): Quest | undefined => QUESTS.find((q) => q.id === id);
 /** the quest that is active: the first that is not done (null when all ten are done) */

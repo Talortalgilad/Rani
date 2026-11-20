@@ -29,6 +29,8 @@ export interface TalkHost {
   wave(i: number): void;
   /** where the "!" bubble sits against the place of the head: up (the default, -34) or lower, on the card of a strip */
   alertDy?: number;
+  /** a talk with this resident was answered (stage 4: the guest of the day then asks to stay) */
+  onAnswered?(r: number): void;
 }
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -447,6 +449,7 @@ export class Talks {
     sv.retry = sv.retry.filter((k) => k !== t.kind);
     sv.count += 1;
     answered(sv.alerts, r);
+    this.host.onAnswered?.(r);
     if (sv.answers % 5 === 0) update((s) => void (s.stars += 1));
     if (SUBJECT[t.kind] === 'math') recordAnswer(MATH_TYPE[t.kind], first ? 1 : 2);
     this.persist(true);

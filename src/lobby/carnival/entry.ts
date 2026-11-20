@@ -24,6 +24,7 @@ import { dayNumber } from '../../games/english/engine/progress';
 import { lessonsByUnit, progressFromEnglish } from './unlocks';
 import { LESSONS } from '../../games/english/tutor/lessons';
 import { plots } from './layout';
+import { takeParadeRequest } from './testTools';
 
 const OLD_KEY = 'rani-lobby-old';
 const SHOWN_KEY = 'rani-jar-shown';
@@ -167,9 +168,14 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
   const pref = getState().settings.lobby;
   const { world, save, visit } = makeWorld();
   const tierGuess = sessionTier(pref);
-  world.chooseHome(CarnivalWorld.visibleLimit(tierGuess === 'high' ? 'high' : tierGuess === 'medium' ? 'medium' : '2d'), visit);
+  // the first minute of the visit (SPEC 4.8): welcomed back, the egg that slept hatches, the gift and the mail wait, the guest comes in; the baby and the guest are always out
+  const visitEv = world.beginVisit();
+  const keepOut = visitEv.flatMap((e) => (e.type === 'hatch' || e.type === 'guest' ? [e.index] : []));
+  world.chooseHome(CarnivalWorld.visibleLimit(tierGuess === 'high' ? 'high' : tierGuess === 'medium' ? 'medium' : '2d'), visit, keepOut);
   // the rounds that were played while she was away: the ones who waited for them give their hearts now
-  const settled = world.settleRounds();
+  const settled = [...visitEv.filter((e) => e.type === 'welcomeBack'), ...world.settleRounds(), ...visitEv.filter((e) => e.type !== 'welcomeBack')];
+  const hatchIndex = visitEv.find((e): e is Extract<typeof e, { type: 'hatch' }> => e.type === 'hatch')?.index;
+  const guestIndex = world.guestIndex();
   expose({ __world: world });
 
   const plain = (): (() => void) => {
@@ -314,6 +320,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           ...comingSoon.map((c) => ({ kind: 'locked' as const, title: c.title, color: c.color })),
         ],
         residents: [...world.residents],
+        hatch: hatchIndex,
+        onHatched: (i) => ui3?.daily.hatched(i),
         autoDowngrade: pref === 'auto' && !pinnedTier(),
         onEnter: (i) => {
           if (!games[i]) return;
@@ -332,6 +340,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           window.clearTimeout(hideTimer);
           hideTimer = window.setTimeout(() => label.classList.remove('on'), 3200);
           sound.play(again ? 'bonus' : 'pop', again ? 900 : 700);
+          // a baby chirps
+          if (world.isBaby(world.residents.indexOf(r))) (sound.play('pop', 1150), window.setTimeout(() => sound.play('pop', 1300), 140));
           if (!again) {
             void sayLine('carnival_name', r.name);
             ui3?.residentTapped(world.residents.indexOf(r));
@@ -419,11 +429,17 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         const layer = document.createElement('div');
         layer.className = 'cv-layer';
         screen.appendChild(layer);
-        const host: TalkHost = { layer, residents: world.residents, pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i) };
+        const host: TalkHost = { layer, residents: world.residents, pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i), onAnswered: (r) => ui3?.daily.guestTalked(r) };
         // the talks of the strip stop, the carnival's own begin
         plainStop?.();
         plainStop = null;
         talks = new Talks(host, undefined, save);
+        // the guest of the day: his "!" bubble (a talk with him; after one answer he asks if he can stay)
+        if (guestIndex >= 0) {
+          const al = talks.save.alerts.alerts;
+          if (!al.some((a) => a.r === guestIndex)) al.push({ r: guestIndex, seed: 777 + guestIndex });
+          while (al.length > 2) al.shift();
+        }
         expose({ __talks: talks });
         ui3 = new WorldUI({
           layer,
@@ -450,6 +466,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           alerts: () => talks?.save.alerts.alerts.map((a) => a.r) ?? [],
         });
         ui3.handle(settled);
+        // the parade, when the parents' area asked for it (for testing)
+        if (takeParadeRequest()) window.setTimeout(() => ui3?.daily.startParade(), 1200);
         document.body.classList.add('lobby3d-on', 'carnival-on');
         performance.mark?.('carnival-ready');
         expose({ __carnivalHandle: l, __ui: ui3 });
