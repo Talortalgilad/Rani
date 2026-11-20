@@ -86,3 +86,4 @@
 .cv-opt.choose { min-height: 56px; font-size: 28px; }
 @media (prefers-reduced-motion: reduce) { .cv-opt.word.blink { animation: none; filter: brightness(1.4); } }
 .cv-game img, .cv-sign img { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; }
+.carnival-on .lolly-btn { top: calc(192px + env(safe-area-inset-top)); inset-inline-end: 14px; inset-inline-start: auto; width: 60px; height: 60px; z-index: 6; }
