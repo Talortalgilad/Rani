@@ -294,7 +294,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
     const b = clear('pour');
     const mask = `-webkit-mask-image:url(${shapeUrl(d.shape)});mask-image:url(${shapeUrl(d.shape)})`;
     b.innerHTML = `
-      <div class="sqg-mold" id="pm"><img class="sqg-trayimg" src="${propUrl('moldtray')}" alt="" draggable="false"><div class="sqg-cavity" style="${mask}"></div><div class="sqg-lvl" id="plvl" style="${mask};background:${css(d.base)}"></div><div class="sqg-foam" id="pfoam"></div></div>
+      <div class="sqg-pourtray" id="pm"><div class="sqg-cavity" style="${mask}"></div><div class="sqg-lvl" id="plvl" style="${mask};background:${css(d.base)}"></div><div class="sqg-foam" id="pfoam"></div></div>
       <div class="sqg-pourbowl" id="pbowl"><div class="sqg-bowl"><img src="${propUrl('bowl')}" alt="" draggable="false"><i class="sqg-fill" style="background:${css(d.base)}"></i></div></div>`;
     say('sq_pour');
     const bowl = b.querySelector<HTMLElement>('#pbowl')!;
@@ -509,29 +509,29 @@ export function createWorkshop(ctx: GameContext): Workshop {
     b.innerHTML = `<div class="sqg-stage" id="stage"></div>
       <div class="sqg-panel"><div class="sqg-faces" id="fr"></div><div class="sqg-actions"><button type="button" class="sqg-go" id="fnext">הבא ➜</button></div></div>`;
     const stage = b.querySelector<HTMLElement>('#stage')!;
-    const rows: { key: 'eyes' | 'mouth' | 'cheeks'; n: number; draw: (g: CanvasRenderingContext2D, i: number) => void }[] = [
-      { key: 'eyes', n: EYES, draw: (g, i) => drawEyes(g, 40, 40, 70, i, 'open', { x: 0, y: 0 }) },
-      { key: 'mouth', n: MOUTHS, draw: (g, i) => drawMouth(g, 40, 28, 70, i, 'open') },
-      { key: 'cheeks', n: CHEEKS, draw: (g, i) => (i === 0 ? (g.fillStyle = '#d6c3d0', g.font = '28px sans-serif', g.fillText('✕', 28, 48)) : drawCheeks(g, 40, 30, 70, i)) },
+    const rows: { key: 'eyes' | 'mouth' | 'cheeks'; he: string; n: number; draw: (g: CanvasRenderingContext2D, i: number) => void }[] = [
+      { key: 'eyes', he: 'עיניים', n: EYES, draw: (g, i) => drawEyes(g, 80, 60, 150, i, 'open', { x: 0, y: 0 }) },
+      { key: 'mouth', he: 'פה', n: MOUTHS, draw: (g, i) => drawMouth(g, 80, 22, 260, i, 'open') },
+      { key: 'cheeks', he: 'לחיים', n: CHEEKS, draw: (g, i) => (i === 0 ? (g.strokeStyle = '#c9b5c2', g.lineWidth = 6, g.lineCap = 'round', g.beginPath(), g.moveTo(50, 30), g.lineTo(110, 90), g.moveTo(110, 30), g.lineTo(50, 90), g.stroke()) : (drawEyes(g, 80, 42, 100, 0, 'open', { x: 0, y: 0 }), drawCheeks(g, 80, 56, 100, i))) },
     ];
+    let ftab = 0;
     const fr = b.querySelector<HTMLElement>('#fr')!;
     const drawRows = (): void => {
-      fr.innerHTML = rows.map((r) => `<div class="sqg-frow" data-k="${r.key}">${Array.from({ length: r.n }, (_, i) => `<button type="button" data-i="${i}" class="${d.face[r.key] === i ? 'on' : ''}"><canvas width="80" height="80"></canvas></button>`).join('')}</div>`).join('');
-      fr.querySelectorAll<HTMLElement>('.sqg-frow').forEach((row, ri) =>
-        row.querySelectorAll<HTMLButtonElement>('button').forEach((btn, i) => {
-          const g = btn.querySelector('canvas')!.getContext('2d')!;
-          g.fillStyle = '#ffd86b'; g.beginPath(); g.arc(40, 40, 38, 0, Math.PI * 2); g.fill();
-          rows[ri].draw(g, i);
-          btn.addEventListener('click', () => {
-            d.face[rows[ri].key] = i;
-            sound.play('pop', 560 + i * 40);
-            persist();
-            view?.invalidate();
-            view?.bounce();
-            drawRows();
-          });
-        }),
-      );
+      const r = rows[ftab];
+      fr.innerHTML = `<div class="sqg-ftabs">${rows.map((x, i) => `<button type="button" data-t="${i}" class="${i === ftab ? 'on' : ''}">${x.he}</button>`).join('')}</div><div class="sqg-fopts">${Array.from({ length: r.n }, (_, i) => `<button type="button" data-i="${i}" class="${d.face[r.key] === i ? 'on' : ''}"><canvas width="160" height="120"></canvas></button>`).join('')}</div>`;
+      fr.querySelectorAll<HTMLButtonElement>('.sqg-ftabs button').forEach((t) => t.addEventListener('click', () => ((ftab = Number(t.dataset.t)), sound.play('pop', 640), drawRows())));
+      fr.querySelectorAll<HTMLButtonElement>('.sqg-fopts button').forEach((btn, i) => {
+        const g = btn.querySelector('canvas')!.getContext('2d')!;
+        r.draw(g, i);
+        btn.addEventListener('click', () => {
+          d.face[r.key] = i;
+          sound.play('pop', 560 + i * 40);
+          persist();
+          view?.invalidate();
+          view?.bounce();
+          drawRows();
+        });
+      });
     };
     drawRows();
     say('sq_face');

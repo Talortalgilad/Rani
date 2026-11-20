@@ -5,21 +5,20 @@ import type { LobbyIslandCtx, LobbyIslandHandle } from '../types';
  * The miniature of the workshop for the lobby: a round table with a pastel mat, and on it the cat (a picture of the workshop, one sprite) that is pressed every few seconds and comes slowly
  * back to its shape, like a real squishy; next to it a cupcake. A tap on it presses it too. A picture and a few discs: 5 draw calls.
  */
-export function createLobbyIsland(ctx: LobbyIslandCtx): LobbyIslandHandle {
+export async function createLobbyIsland(ctx: LobbyIslandCtx): Promise<LobbyIslandHandle> {
   const { reduced } = ctx;
   const group = new T.Group();
   const base = import.meta.env.BASE_URL;
   const loader = new T.TextureLoader();
-  const tex = (id: string): T.Texture => {
-    const t = loader.load(`${base}squishy/shapes/${id}.webp`);
-    t.colorSpace = T.SRGBColorSpace;
-    return t;
-  };
+  // both pictures are loaded before the island is shown (no empty island that fills in later)
+  const [catTex, cupTex] = await Promise.all(['cat', 'cupcake'].map((id) => loader.loadAsync(`${base}squishy/shapes/${id}.webp`)));
+  for (const t of [catTex, cupTex]) t.colorSpace = T.SRGBColorSpace;
+  const tex = (id: string): T.Texture => (id === 'cat' ? catTex : cupTex);
   // the table and the mat
   const table = new T.Mesh(new T.CylinderGeometry(1.25, 1.35, 0.16, 32), new T.MeshLambertMaterial({ color: '#d9a066' }));
   table.position.y = 0.08;
   group.add(table);
-  const mat = new T.Mesh(new T.CircleGeometry(1.0, 32), new T.MeshBasicMaterial({ color: '#ffd9ea' }));
+  const mat = new T.Mesh(new T.CircleGeometry(1.0, 32), new T.MeshBasicMaterial({ color: '#f6e9cf' }));
   mat.rotation.x = -Math.PI / 2;
   mat.position.y = 0.165;
   group.add(mat);
@@ -36,8 +35,9 @@ export function createLobbyIsland(ctx: LobbyIslandCtx): LobbyIslandHandle {
     group.add(s);
     return s;
   };
-  const cat = mk('cat', -0.2, 1.5);
-  const cup = mk('cupcake', 0.72, 0.8);
+  const cat = mk('cat', -0.25, 1.5);
+  const cup = mk('cupcake', -0.55, 0.75);
+cup.position.z = -0.55;
   const catY = cat.position.y, catS = 1.5, cupY = cup.position.y, cupS = 0.8;
   let press = 0;
   let next = 1.2;
@@ -61,8 +61,12 @@ export function createLobbyIsland(ctx: LobbyIslandCtx): LobbyIslandHandle {
       if (target === 1 && time >= press) target = 0;
       // the spring: stiff when pressed, slow (1.5 s) when released
       const w = target ? 24 : 3.9;
-      v += (w * w * (target - p) - 2 * w * v) * dt;
-      p += v * dt;
+      // small steps: a spring this stiff blows up with one big step (a slow frame)
+      const n = Math.max(1, Math.ceil(dt / 0.008));
+      for (let i = 0; i < n; i++) {
+        v += (w * w * (target - p) - 2 * w * v) * (dt / n);
+        p += v * (dt / n);
+      }
       apply(Math.max(0, p));
       cup.position.y = cupY + Math.sin(time * 1.6) * 0.012;
     },

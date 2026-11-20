@@ -12,7 +12,7 @@ body.lobby3d-on .sq-lab { pointer-events: none; }
 .sq-dock { position: fixed; z-index: 5; inset-inline: 0; bottom: 0; padding: 8px 12px calc(14px + env(safe-area-inset-bottom)); display: grid; gap: 10px; justify-items: center; pointer-events: none; }
 .sq-dock > * { pointer-events: auto; }
 .sq-modes { display: flex; gap: 8px; }
-.sq-modes button { border: 0; border-radius: 22px; padding: 9px 18px; font: 800 17px/1.1 inherit; font-family: inherit; background: rgba(255, 255, 255, .8); color: #6a3a5a; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
+.sq-modes button { border: 0; border-radius: 22px; padding: 9px 18px; font-weight: 800; font-size: 17px; line-height: 1.1; font-family: inherit; background: rgba(255, 255, 255, .8); color: #6a3a5a; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
 .sq-modes button.on { background: #ff7aa8; color: #fff; }
 .sq-palette { display: flex; gap: 10px; }
 .sq-palette button { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .25); }
@@ -30,4 +30,4 @@ body.lobby3d-on .sq-lab { pointer-events: none; }
 .sq-fps { font: 700 12px/1.2 monospace; direction: ltr; text-align: start; color: #7a5a70; }
 
 .sq-lab [hidden] { display: none !important; }
-.sq-copy { border: 0; border-radius: 10px; padding: 7px 12px; font: 800 14px/1 inherit; font-family: inherit; background: #ff7aa8; color: #fff; justify-self: start; }
+.sq-copy { border: 0; border-radius: 10px; padding: 7px 12px; font-weight: 800; font-size: 14px; line-height: 1; font-family: inherit; background: #ff7aa8; color: #fff; justify-self: start; }

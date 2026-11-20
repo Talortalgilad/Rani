@@ -4,7 +4,7 @@ import { createWorkshop, type Workshop } from './game';
 let ws: Workshop | null = null;
 
 /** The home-screen icon: the cat of the workshop, on the colour of the card. */
-const icon = `<img src="${import.meta.env.BASE_URL}squishy/shapes/cat.webp" alt="" width="64" height="64" draggable="false" style="object-fit:contain">`;
+const icon = `<img src="${import.meta.env.BASE_URL}squishy/shapes/cat.webp" alt="" draggable="false" style="width:64px;height:64px;max-width:100%;max-height:100%;object-fit:contain">`;
 
 const squishy: GameModule = {
   id: 'squishy',

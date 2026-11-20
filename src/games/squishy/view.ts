@@ -243,12 +243,12 @@ export class SquishView {
         const mat = new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false });
         const mesh = new T.Mesh(geo, mat);
         scene.add(mesh);
-        // the work mat: a round pastel mat on the table, over the tools of the picture; the shadow falls on it
+        // the work mat: a round cream mat on the table, over the tools of the picture; the shadow falls on it
         const mc = document.createElement('canvas');
         mc.width = 512; mc.height = 256;
         const mg = mc.getContext('2d')!;
         const rg = mg.createRadialGradient(256, 128, 20, 256, 128, 250);
-        rg.addColorStop(0, '#fff0f6'); rg.addColorStop(0.82, '#ffd9ea'); rg.addColorStop(0.9, '#ffc4de'); rg.addColorStop(0.92, '#ffffff'); rg.addColorStop(1, '#ffffff');
+        rg.addColorStop(0, '#fdf3e0'); rg.addColorStop(0.82, '#f6e6c8'); rg.addColorStop(0.9, '#ecd9b8'); rg.addColorStop(0.92, '#ffffff'); rg.addColorStop(1, '#ffffff');
         mg.save(); mg.scale(1, 0.5); mg.fillStyle = rg; mg.beginPath(); mg.arc(256, 256, 250, 0, Math.PI * 2); mg.fill(); mg.restore();
         mg.globalCompositeOperation = 'destination-in';
         mg.save(); mg.scale(1, 0.5); mg.beginPath(); mg.arc(256, 256, 250, 0, Math.PI * 2); mg.fill(); mg.restore();
