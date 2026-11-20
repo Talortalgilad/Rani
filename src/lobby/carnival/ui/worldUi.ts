@@ -643,6 +643,8 @@ export class WorldUI {
           sound.play('bonus');
           const r = w.residents[e.r];
           this.queueBanner(`<b>${esc(csText(e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up'))}</b><img src="${esc(r.img)}" alt=""><span>${esc(r.name)} · ${LEVEL_NAME[e.level]}</span>`, e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up');
+          // a baby that grew (80 % at level 2, 100 % at level 3): "look how big I got!"
+          if (w.isBaby(e.r) && (e.level === 2 || e.level === 3)) window.setTimeout(() => this.say(e.r, csText('cs_i_grew'), 'cs_i_grew'), 3000);
           break;
         }
         case 'unlocked':

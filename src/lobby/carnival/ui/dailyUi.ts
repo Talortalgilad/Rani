@@ -54,7 +54,7 @@ export class DailyUI {
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
     }
-    el.classList.toggle('wait', p.id === 'giftbox' ? w.giftReady() : p.id === 'mailbox' ? w.mailReady() : false);
+    el.classList.toggle('wait', p.id === 'giftbox' ? w.giftBlink() : p.id === 'mailbox' ? w.mailBlink() : false);
     el.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y + 0.35 * k)}px) translate(-50%, -100%)`;
   }
   private tap(id: string): void {

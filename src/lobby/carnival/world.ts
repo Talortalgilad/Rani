@@ -294,7 +294,7 @@ export class CarnivalWorld {
     const dd = dailyOf(this.d.save);
     const free = dd.freeDecor.indexOf(itemId);
     if (free < 0 && this.d.stars() < item.price) return { ok: false, reason: 'stars' };
-    if (free >= 0) dd.freeDecor.splice(free, 1);
+    if (free >= 0) (dd.freeDecor.splice(free, 1), dd.freeBuilt.push(slotId));
     else this.d.spend(item.price);
     this.d.save.built[slotId] = itemId;
     this.sim.setBuilt(this.d.save.built);
@@ -307,7 +307,10 @@ export class CarnivalWorld {
     const item = this.itemAt(slotId);
     if (!item) return false;
     delete this.d.save.built[slotId];
-    this.d.give(item.price);
+    const dd = dailyOf(this.d.save);
+    const fb = dd.freeBuilt.indexOf(slotId);
+    if (fb >= 0) dd.freeBuilt.splice(fb, 1);
+    else this.d.give(item.price);
     this.sim.setBuilt(this.d.save.built);
     this.d.persist();
     this.pending.push({ type: 'removed', slot: slotId, item: item.id });
@@ -368,7 +371,7 @@ export class CarnivalWorld {
   /** Runs the carnival for `dt` seconds. Returns what happened, for the page to show. */
   tick(dt: number): WorldEvent[] {
     if ((this.wearAge += dt) > 0.5) this.wearStale = true;
-    if ((this.growAge += dt) > 0.5) this.growStale = true;
+    if ((this.growAge += dt) > 0.5) (this.growStale = true), this.refreshBlink();
     const out: WorldEvent[] = [...this.pending.splice(0), ...this.applyHearts(this.sim.update(dt))];
     out.push(...this.checkProgress());
     return out;
@@ -422,6 +425,7 @@ export class CarnivalWorld {
     if (isFriday(now) && d.paradeDay !== day) out.push({ type: 'paradeDay' });
     d.lastDay = day;
     this.wearStale = true;
+    this.refreshBlink();
     this.d.persist();
     out.push(...this.checkProgress());
     return out;
@@ -463,6 +467,19 @@ export class CarnivalWorld {
     this.d.persist();
     return i;
   }
+  /** what the scene and the page ask in every frame (the gift and the mail blink while they wait): worked out again every half second, not in every frame */
+  private blinkG = true;
+  private blinkM = true;
+  giftBlink(): boolean {
+    return this.blinkG;
+  }
+  mailBlink(): boolean {
+    return this.blinkM;
+  }
+  private refreshBlink(): void {
+    this.blinkG = this.giftReady();
+    this.blinkM = this.mailReady();
+  }
   giftReady(): boolean {
     return dailyOf(this.d.save).giftDay !== dayKey(this.now());
   }
@@ -477,6 +494,7 @@ export class CarnivalWorld {
     const l = letterFor(day, from.length ? from : ['companion']);
     d.letters = [...d.letters, l].slice(-80);
     d.mailDay = day;
+    this.refreshBlink();
     this.d.persist();
     return l;
   }
@@ -494,6 +512,7 @@ export class CarnivalWorld {
     else friendsOf(s).owned[g.id] = (friendsOf(s).owned[g.id] ?? 0) + 1;
     d.giftDay = day;
     d.gifts++;
+    this.refreshBlink();
     this.d.persist();
     return g;
   }

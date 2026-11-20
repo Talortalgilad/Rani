@@ -41,10 +41,12 @@ export interface DailySave {
   parades: number;
   /** a decoration from the gift of the day that is built for free: the ids */
   freeDecor: string[];
+  /** the places where a free decoration stands (taking it back gives no stars: it was free) */
+  freeBuilt: string[];
   /** for the parents' area (testing): days skipped forward on the clock of the carnival */
   skip: number;
 }
-export const emptyDaily = (): DailySave => ({ lastDay: '', eggs: [], eggLevels: [], baby: [], guest: null, letters: [], mailDay: '', giftDay: '', collectedDay: '', paradeDay: '', hatched: 0, gifts: 0, stayed: 0, parades: 0, freeDecor: [], skip: 0 });
+export const emptyDaily = (): DailySave => ({ lastDay: '', eggs: [], eggLevels: [], baby: [], guest: null, letters: [], mailDay: '', giftDay: '', collectedDay: '', paradeDay: '', hatched: 0, gifts: 0, stayed: 0, parades: 0, freeDecor: [], freeBuilt: [], skip: 0 });
 
 const str = (x: unknown): string => (typeof x === 'string' ? x : '');
 const cnt = (x: unknown): number => (typeof x === 'number' && Number.isFinite(x) && x > 0 ? Math.floor(x) : 0);
@@ -63,7 +65,7 @@ export function dailyOf(save: CarnivalSave): DailySave {
     letters: (Array.isArray(x?.letters) ? x!.letters : []).filter((l) => l && typeof l.day === 'string' && typeof l.from === 'string' && typeof l.pic === 'string' && [0, 1, 2].includes(l.line)).map((l) => ({ day: l.day, from: l.from, pic: l.pic, line: l.line })).slice(-MAX_LETTERS),
     mailDay: str(x?.mailDay), giftDay: str(x?.giftDay), collectedDay: str(x?.collectedDay), paradeDay: str(x?.paradeDay),
     hatched: cnt(x?.hatched), gifts: cnt(x?.gifts), stayed: cnt(x?.stayed), parades: cnt(x?.parades),
-    freeDecor: strs(x?.freeDecor), skip: Math.min(3650, cnt(x?.skip)),
+    freeDecor: strs(x?.freeDecor), freeBuilt: strs(x?.freeBuilt), skip: Math.min(3650, cnt(x?.skip)),
   };
   Object.defineProperty(d, '_ok', { value: true, enumerable: false });
   (save.extra as Record<string, unknown>).daily = d;

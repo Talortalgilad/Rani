@@ -166,6 +166,9 @@ describe('the mailbox and the gift of the day', () => {
     expect(w.build(slot.id, 'bush').ok).toBe(true);
     expect(w.d.stars()).toBe(stars);
     expect(dailyOf(w.save).freeDecor).toEqual([]);
+    // taking it back gives no stars (it was free)
+    w.remove(slot.id);
+    expect(w.d.stars()).toBe(stars);
   });
 });
 

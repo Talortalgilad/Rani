@@ -47,8 +47,8 @@ export interface WorldView {
   setFollow?(p: { x: number; z: number } | null): void;
   /** stage 4: the eggs in the nest, the gift and the mail of the day (they blink while they wait), the size of a baby, the clock of the carnival, and where a baby is put when he hatches */
   eggs?(): number;
-  giftReady?(): boolean;
-  mailReady?(): boolean;
+  giftBlink?(): boolean;
+  mailBlink?(): boolean;
   growth?(i: number): number;
   now?(): Date;
   placeAt?(i: number, x: number, z: number): void;
@@ -857,8 +857,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       for (let e = 0; e < Math.min(2, nEggs); e++) itemAtlas.set(bi++, 'egg', NEST.x + e * 0.62, 0.34 + (reduced ? 0 : Math.sin(time * 1.6 + e) * 0.02), NEST.z + e * 0.1, 0.7);
     }
     itemAtlas.set(bi++, 'mailbox', MAILBOX.x, 0.55, MAILBOX.z, 1.1);
-    if (o.world.mailReady?.()) itemAtlas.set(bi++, 'envelope', MAILBOX.x + 0.05, 1.35 + (reduced ? 0 : Math.sin(time * 2.2) * 0.07), MAILBOX.z + 0.05, 0.5);
-    const giftWaits = o.world.giftReady?.() ?? false;
+    if (o.world.mailBlink?.()) itemAtlas.set(bi++, 'envelope', MAILBOX.x + 0.05, 1.35 + (reduced ? 0 : Math.sin(time * 2.2) * 0.07), MAILBOX.z + 0.05, 0.5);
+    const giftWaits = o.world.giftBlink?.() ?? false;
     itemAtlas.set(bi++, 'giftbox', GIFTBOX.x, 0.42 + (giftWaits && !reduced ? Math.abs(Math.sin(time * 2.4)) * 0.08 : 0), GIFTBOX.z, 0.85, 1, giftWaits ? FULL : DIM);
     itemAtlas.set(bi++, 'woodsign', BOARD.x, BOARD.size * 0.5 + 0.05, BOARD.z, BOARD.size);
     itemAtlas.commit(bi);
