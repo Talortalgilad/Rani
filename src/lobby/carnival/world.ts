@@ -11,7 +11,7 @@ import { activeQuest, finishedNow, type Quest, type QuestCtx } from './quests';
 import { isItemOpen, type Progress } from './unlocks';
 import type { CarnivalSave } from './talk/state';
 import type { Personality } from './wishes';
-import { addFriendship, friendLevel, friendOf, friendsOf, giftOf, isPartyDay, levelOfResident, maxFriendLevel, partyKey, priceOf, putOn, trickOf, wearing, type Trick } from './friends';
+import { addFriendship, canWear, friendLevel, friendOf, friendsOf, giftOf, isPartyDay, levelOfResident, maxFriendLevel, partyKey, priceOf, putOn, trickOf, wearing, type Trick } from './friends';
 
 export type WorldEvent =
   | SimEvent
@@ -195,7 +195,7 @@ export class CarnivalWorld {
     this.wearStale = true;
     const r = this.residents[i];
     const f = friendsOf(this.d.save);
-    if (!r || (f.owned[id] ?? 0) < 1) return false;
+    if (!r || (f.owned[id] ?? 0) < 1 || !canWear(r.id, id)) return false;
     f.owned[id]--;
     if (!f.owned[id]) delete f.owned[id];
     for (const off of putOn(f, r.id, id)) f.owned[off] = (f.owned[off] ?? 0) + 1;

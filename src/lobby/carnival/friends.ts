@@ -64,7 +64,13 @@ export const ACCESSORY_MISSING: string[] = [];
 export const accessoryById = (id: string): Accessory | undefined => ACCESSORIES.find((a) => a.id === id);
 /** the gift that a resident brings at level 4: one of the six accessories that only he gives (a different one for each resident, by his name) */
 export const GIFTS = ['glasses', 'scarf', 'bow', 'sunglasses', 'flowercrown', 'cape'];
-export const giftOf = (id: string): string => GIFTS[[...id].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % GIFTS.length];
+/** what a resident cannot wear: the cupcake has his face at the bottom of the picture, with no neck and no room for a scarf or a cape (the rest he wears) */
+export const CANNOT_WEAR: Record<string, string[]> = { cupcake: ['scarf', 'cape'] };
+export const canWear = (rid: string, acc: string): boolean => !CANNOT_WEAR[rid]?.includes(acc);
+export const giftOf = (id: string): string => {
+  const ok = GIFTS.filter((g) => canWear(id, g));
+  return ok[[...id].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % ok.length];
+};
 /** the shops of accessories (SPEC-carnival.md 5.4): what each one sells, and the price in stars (the hearts are the level of the carnival, they never go down, so they are not spent) */
 export const SHOP: Record<string, { id: string; price: number }[]> = {
   hatshop: [{ id: 'partyhat', price: 4 }, { id: 'flowercrown', price: 6 }, { id: 'bow', price: 4 }, { id: 'glasses', price: 5 }, { id: 'sunglasses', price: 6 }],
@@ -142,7 +148,7 @@ export const maxFriendLevel = (save: CarnivalSave): number => Math.max(1, ...Obj
 /** what a resident wears (the chef's hat while he works at a stall is not saved: it shows by the job) */
 export function wearing(save: CarnivalSave, id: string): string[] {
   const f = friendsOf(save);
-  const out = [...(f.worn[id] ?? [])];
+  const out = (f.worn[id] ?? []).filter((a) => canWear(id, a));
   if (f.job[id]) out.push('chefhat');
   if (levelOfResident(save, id) >= 5) out.push('crown');
   return [...new Set(out)];

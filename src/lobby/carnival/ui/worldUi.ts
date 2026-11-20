@@ -17,7 +17,7 @@ import { PERSONALITY_HE, SUGGEST_LINE, WISH_ICON, WISH_LINE, fillers, type WishT
 import type { CarnivalWorld, WorldEvent } from '../world';
 import { CS_LINES } from '../csLines';
 import { FriendUI, LEVEL_NAME } from './friendUi';
-import { ACCESSORIES, SHOP, friendLevel, friendsOf } from '../friends';
+import { ACCESSORIES, SHOP, canWear, friendLevel, friendsOf } from '../friends';
 
 export interface WorldHost {
   layer: HTMLElement;
@@ -449,7 +449,11 @@ export class WorldUI {
         ghost.remove();
         this.sheet?.classList.remove('dragging');
         const i = ev.type === 'pointerup' ? this.h.residentAt?.(ev.clientX, ev.clientY) ?? null : null;
-        if (i !== null && w.dress(i, id)) {
+        if (i !== null && !canWear(w.residents[i].id, id)) {
+          // he cannot wear it: it goes back to the stock with a little hop, no message
+          sound.play('pop', 520);
+          this.h.trick?.(i, 'jump2');
+        } else if (i !== null && w.dress(i, id)) {
           sound.play('pop', 760);
           this.h.trick?.(i, 'spin');
           this.toast(`${w.residents[i].name} לבש ${ACCESSORIES.find((a) => a.id === id)?.he ?? ''}!`);

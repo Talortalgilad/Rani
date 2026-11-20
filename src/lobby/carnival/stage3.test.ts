@@ -308,3 +308,21 @@ describe('the quest "dress a hat on a squishy" is connected to the shop', () => 
     expect(q.done(w.questCtx())).toBe(true);
   });
 });
+
+describe('the cupcake does not wear a scarf or a cape', () => {
+  it('he is never given them as a gift, they stay in the stock when dragged to him, and he wears the rest', () => {
+    const { w } = mk();
+    const i = w.residents.findIndex((r) => r.id === 'cupcake');
+    expect(['scarf', 'cape']).not.toContain(giftOf('cupcake'));
+    expect(GIFTS).toContain(giftOf('cupcake'));
+    friendsOf(w.save).owned.scarf = 1; friendsOf(w.save).owned.cape = 1; friendsOf(w.save).owned.crown = 0;
+    expect(w.dress(i, 'scarf')).toBe(false);
+    expect(w.dress(i, 'cape')).toBe(false);
+    expect(w.owned().scarf).toBe(1);
+    expect(w.owned().cape).toBe(1);
+    expect(w.buyAccessory('partyhat')).toBe('ok');
+    expect(w.dress(i, 'partyhat')).toBe(true);
+    friendsOf(w.save).worn.cupcake = ['scarf', 'glasses'];
+    expect(wearing(w.save, 'cupcake')).toEqual(['glasses']);
+  });
+});
