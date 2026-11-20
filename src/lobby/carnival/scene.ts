@@ -527,6 +527,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   const hidden = new Set<number>(o.hatch !== undefined ? [o.hatch] : []);
   let hatchT = -1;
   let pendingStart = 1.4;
+  // while the egg hatches everybody stands still (nobody walks in front of it)
+  if (o.hatch !== undefined) o.world.agents().forEach((_, k) => o.world.hold(k, true));
   const DIM = new T.Color(0.62, 0.62, 0.7);
   const FULL = new T.Color(1, 1, 1);
   const itemSize = (id: string): number => {
@@ -845,6 +847,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       const sh = hatchT > 0 && !crack ? Math.sin(hatchT * 38) * 0.05 * Math.min(1, hatchT / 1.2) : 0;
       itemAtlas.set(bi++, crack ? 'egg_cracked' : 'egg', NEST.x + sh, 0.4 + (crack ? Math.abs(Math.sin((hatchT - 1.6) * 9)) * 0.08 : 0), NEST.z, 0.8 * (1 + (crack ? (hatchT - 1.6) * 0.3 : 0)));
       if (hatchT > 2.4) {
+        o.world.agents().forEach((_, k) => o.world.hold(k, false));
         for (const i of [...hidden]) {
           hidden.delete(i);
           o.world.placeAt?.(i, NEST.x + 0.25, NEST.z + 0.7);

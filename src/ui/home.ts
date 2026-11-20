@@ -37,7 +37,7 @@ export function renderHome(root: HTMLElement): () => void {
   const lollyBtn = document.createElement('button');
   lollyBtn.className = 'lolly-btn';
   lollyBtn.setAttribute('aria-label', 'המורה לולי');
-  lollyBtn.innerHTML = `<img src="${import.meta.env.BASE_URL}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="lolly-new" hidden>❗</i>`;
+  lollyBtn.innerHTML = `<img src="${import.meta.env.BASE_URL}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="lolly-new" hidden>📚</i>`;
   lollyBtn.addEventListener('click', () => {
     sound.play('pop', 640);
     try {
