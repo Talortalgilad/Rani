@@ -36,7 +36,7 @@ export default defineConfig({
       workbox: {
         // woff2 only: every browser that can install the app supports it, so the .woff fallbacks stay out of the cache
         globPatterns: ['**/*.{js,css,html,png,woff2,webmanifest}'],
-        globIgnores: ['**/*.woff'],
+        globIgnores: ['**/*.woff', 'squishy/**'],
         navigateFallback: `${base}index.html`,
         cleanupOutdatedCaches: true,
         // the pictures of the English game are not in the main precache: a world's pictures are fetched when the world is entered and
@@ -49,7 +49,7 @@ export default defineConfig({
             options: { cacheName: 'english-voice-lists', cacheableResponse: { statuses: [0, 200] } },
           },
           {
-            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/') || url.pathname.startsWith('/memory/') || url.pathname.startsWith('/blocks/') || url.pathname.startsWith('/park/'),
+            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith('/english/') || url.pathname.startsWith('/memory/') || url.pathname.startsWith('/blocks/') || url.pathname.startsWith('/park/') || url.pathname.startsWith('/squishy/'),
             handler: 'CacheFirst',
             // pictures and the recorded voice, Hebrew and English (mp3: Safari asks for ranges)
             options: { cacheName: 'english-images', expiration: { maxEntries: 900 }, cacheableResponse: { statuses: [0, 200] }, rangeRequests: true },

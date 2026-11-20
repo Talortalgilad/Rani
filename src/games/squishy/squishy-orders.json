@@ -1,0 +1,510 @@
+{
+ "version": 1,
+ "shapes": {
+  "animals": [
+   "cat",
+   "dog",
+   "rabbit",
+   "fish",
+   "bird",
+   "lion",
+   "monkey",
+   "elephant",
+   "giraffe"
+  ],
+  "treats": [
+   "cupcake",
+   "donut",
+   "icecream",
+   "cookie",
+   "lollipop",
+   "apple",
+   "star",
+   "flower",
+   "crown"
+  ]
+ },
+ "colors": [
+  "pink",
+  "blue",
+  "yellow",
+  "purple",
+  "green",
+  "red"
+ ],
+ "decor": [
+  "star",
+  "flower",
+  "heart"
+ ],
+ "orders": [
+  {
+   "tier": 1,
+   "shape": "cat",
+   "colors": [
+    "pink"
+   ],
+   "text": "A pink cat, please!",
+   "id": "o01",
+   "clip": "sq_order_01"
+  },
+  {
+   "tier": 1,
+   "shape": "fish",
+   "colors": [
+    "blue"
+   ],
+   "text": "A blue fish, please!",
+   "id": "o02",
+   "clip": "sq_order_02"
+  },
+  {
+   "tier": 1,
+   "shape": "star",
+   "colors": [
+    "yellow"
+   ],
+   "text": "A yellow star, please!",
+   "id": "o03",
+   "clip": "sq_order_03"
+  },
+  {
+   "tier": 1,
+   "shape": "rabbit",
+   "colors": [
+    "purple"
+   ],
+   "text": "A purple rabbit, please!",
+   "id": "o04",
+   "clip": "sq_order_04"
+  },
+  {
+   "tier": 1,
+   "shape": "apple",
+   "colors": [
+    "green"
+   ],
+   "text": "A green apple, please!",
+   "id": "o05",
+   "clip": "sq_order_05"
+  },
+  {
+   "tier": 1,
+   "shape": "flower",
+   "colors": [
+    "red"
+   ],
+   "text": "A red flower, please!",
+   "id": "o06",
+   "clip": "sq_order_06"
+  },
+  {
+   "tier": 1,
+   "shape": "cupcake",
+   "colors": [
+    "pink"
+   ],
+   "text": "A pink cupcake, please!",
+   "id": "o07",
+   "clip": "sq_order_07"
+  },
+  {
+   "tier": 1,
+   "shape": "bird",
+   "colors": [
+    "blue"
+   ],
+   "text": "A blue bird, please!",
+   "id": "o08",
+   "clip": "sq_order_08"
+  },
+  {
+   "tier": 1,
+   "shape": "lion",
+   "colors": [
+    "yellow"
+   ],
+   "text": "A yellow lion, please!",
+   "id": "o09",
+   "clip": "sq_order_09"
+  },
+  {
+   "tier": 1,
+   "shape": "donut",
+   "colors": [
+    "purple"
+   ],
+   "text": "A purple donut, please!",
+   "id": "o10",
+   "clip": "sq_order_10"
+  },
+  {
+   "tier": 1,
+   "shape": "dog",
+   "colors": [
+    "green"
+   ],
+   "text": "A green dog, please!",
+   "id": "o11",
+   "clip": "sq_order_11"
+  },
+  {
+   "tier": 1,
+   "shape": "lollipop",
+   "colors": [
+    "red"
+   ],
+   "text": "A red lollipop, please!",
+   "id": "o12",
+   "clip": "sq_order_12"
+  },
+  {
+   "tier": 1,
+   "shape": "icecream",
+   "colors": [
+    "pink"
+   ],
+   "text": "A pink ice cream, please!",
+   "id": "o13",
+   "clip": "sq_order_13"
+  },
+  {
+   "tier": 1,
+   "shape": "crown",
+   "colors": [
+    "yellow"
+   ],
+   "text": "A yellow crown, please!",
+   "id": "o14",
+   "clip": "sq_order_14"
+  },
+  {
+   "tier": 2,
+   "shape": "fish",
+   "colors": [
+    "blue"
+   ],
+   "decor": {
+    "kind": "star",
+    "count": 3
+   },
+   "text": "A blue fish with three stars, please!",
+   "id": "o15",
+   "clip": "sq_order_15"
+  },
+  {
+   "tier": 2,
+   "shape": "cat",
+   "colors": [
+    "pink"
+   ],
+   "decor": {
+    "kind": "flower",
+    "count": 2
+   },
+   "text": "A pink cat with two flowers, please!",
+   "id": "o16",
+   "clip": "sq_order_16"
+  },
+  {
+   "tier": 2,
+   "shape": "giraffe",
+   "colors": [
+    "yellow"
+   ],
+   "decor": {
+    "kind": "star",
+    "count": 5
+   },
+   "text": "A yellow giraffe with five stars, please!",
+   "id": "o17",
+   "clip": "sq_order_17"
+  },
+  {
+   "tier": 2,
+   "shape": "dog",
+   "colors": [
+    "green"
+   ],
+   "decor": {
+    "kind": "flower",
+    "count": 4
+   },
+   "text": "A green dog with four flowers, please!",
+   "id": "o18",
+   "clip": "sq_order_18"
+  },
+  {
+   "tier": 2,
+   "shape": "cupcake",
+   "colors": [
+    "purple"
+   ],
+   "decor": {
+    "kind": "heart",
+    "count": 3
+   },
+   "text": "A purple cupcake with three hearts, please!",
+   "id": "o19",
+   "clip": "sq_order_19"
+  },
+  {
+   "tier": 2,
+   "shape": "apple",
+   "colors": [
+    "red"
+   ],
+   "decor": {
+    "kind": "star",
+    "count": 2
+   },
+   "text": "A red apple with two stars, please!",
+   "id": "o20",
+   "clip": "sq_order_20"
+  },
+  {
+   "tier": 2,
+   "shape": "rabbit",
+   "colors": [
+    "pink"
+   ],
+   "decor": {
+    "kind": "heart",
+    "count": 4
+   },
+   "text": "A pink rabbit with four hearts, please!",
+   "id": "o21",
+   "clip": "sq_order_21"
+  },
+  {
+   "tier": 2,
+   "shape": "elephant",
+   "colors": [
+    "blue"
+   ],
+   "decor": {
+    "kind": "flower",
+    "count": 5
+   },
+   "text": "A blue elephant with five flowers, please!",
+   "id": "o22",
+   "clip": "sq_order_22"
+  },
+  {
+   "tier": 2,
+   "shape": "cookie",
+   "colors": [
+    "yellow"
+   ],
+   "decor": {
+    "kind": "star",
+    "count": 6
+   },
+   "text": "A yellow cookie with six stars, please!",
+   "id": "o23",
+   "clip": "sq_order_23"
+  },
+  {
+   "tier": 2,
+   "shape": "monkey",
+   "colors": [
+    "green"
+   ],
+   "decor": {
+    "kind": "heart",
+    "count": 3
+   },
+   "text": "A green monkey with three hearts, please!",
+   "id": "o24",
+   "clip": "sq_order_24"
+  },
+  {
+   "tier": 2,
+   "shape": "bird",
+   "colors": [
+    "purple"
+   ],
+   "decor": {
+    "kind": "star",
+    "count": 2
+   },
+   "text": "A purple bird with two stars, please!",
+   "id": "o25",
+   "clip": "sq_order_25"
+  },
+  {
+   "tier": 2,
+   "shape": "crown",
+   "colors": [
+    "red"
+   ],
+   "decor": {
+    "kind": "heart",
+    "count": 6
+   },
+   "text": "A red crown with six hearts, please!",
+   "id": "o26",
+   "clip": "sq_order_26"
+  },
+  {
+   "tier": 2,
+   "shape": "donut",
+   "colors": [
+    "blue"
+   ],
+   "decor": {
+    "kind": "star",
+    "count": 4
+   },
+   "text": "A blue donut with four stars, please!",
+   "id": "o27",
+   "clip": "sq_order_27"
+  },
+  {
+   "tier": 2,
+   "shape": "star",
+   "colors": [
+    "pink"
+   ],
+   "decor": {
+    "kind": "heart",
+    "count": 5
+   },
+   "text": "A pink star with five hearts, please!",
+   "id": "o28",
+   "clip": "sq_order_28"
+  },
+  {
+   "tier": 3,
+   "shape": "cat",
+   "colors": [
+    "pink",
+    "blue"
+   ],
+   "text": "A pink and blue cat, please!",
+   "id": "o29",
+   "clip": "sq_order_29"
+  },
+  {
+   "tier": 3,
+   "shape": "lion",
+   "colors": [
+    "red",
+    "yellow"
+   ],
+   "text": "A red and yellow lion, please!",
+   "id": "o30",
+   "clip": "sq_order_30"
+  },
+  {
+   "tier": 3,
+   "shape": "dog",
+   "colors": [
+    "green",
+    "purple"
+   ],
+   "text": "A green and purple dog, please!",
+   "id": "o31",
+   "clip": "sq_order_31"
+  },
+  {
+   "tier": 3,
+   "shape": "fish",
+   "colors": [
+    "blue",
+    "yellow"
+   ],
+   "text": "A blue and yellow fish, please!",
+   "id": "o32",
+   "clip": "sq_order_32"
+  },
+  {
+   "tier": 3,
+   "shape": "cupcake",
+   "colors": [
+    "pink",
+    "purple"
+   ],
+   "text": "A pink and purple cupcake, please!",
+   "id": "o33",
+   "clip": "sq_order_33"
+  },
+  {
+   "tier": 3,
+   "shape": "apple",
+   "colors": [
+    "red",
+    "green"
+   ],
+   "text": "A red and green apple, please!",
+   "id": "o34",
+   "clip": "sq_order_34"
+  },
+  {
+   "tier": 3,
+   "shape": "icecream",
+   "colors": [
+    "yellow",
+    "pink"
+   ],
+   "text": "A yellow and pink ice cream, please!",
+   "id": "o35",
+   "clip": "sq_order_35"
+  },
+  {
+   "tier": 3,
+   "shape": "elephant",
+   "colors": [
+    "blue",
+    "green"
+   ],
+   "text": "A blue and green elephant, please!",
+   "id": "o36",
+   "clip": "sq_order_36"
+  },
+  {
+   "tier": 3,
+   "shape": "monkey",
+   "colors": [
+    "purple",
+    "yellow"
+   ],
+   "text": "A purple and yellow monkey, please!",
+   "id": "o37",
+   "clip": "sq_order_37"
+  },
+  {
+   "tier": 3,
+   "shape": "flower",
+   "colors": [
+    "red",
+    "pink"
+   ],
+   "text": "A red and pink flower, please!",
+   "id": "o38",
+   "clip": "sq_order_38"
+  },
+  {
+   "tier": 3,
+   "shape": "bird",
+   "colors": [
+    "green",
+    "blue"
+   ],
+   "text": "A green and blue bird, please!",
+   "id": "o39",
+   "clip": "sq_order_39"
+  },
+  {
+   "tier": 3,
+   "shape": "giraffe",
+   "colors": [
+    "yellow",
+    "purple"
+   ],
+   "text": "A yellow and purple giraffe, please!",
+   "id": "o40",
+   "clip": "sq_order_40"
+  }
+ ]
+}

@@ -24,6 +24,10 @@ const OUT = (lang: string): string => join(ROOT, 'public/english/voice', lang);
 const onlyArg = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
 const wanted = (n: number): boolean => !onlyArg || onlyArg.split(',').some((p) => { const [a, b] = p.split('-').map(Number); return n >= a && n <= (b ?? a); });
 const MARGIN = 0.1;
+// --loose=500,501: the takes whose pauses between the lines are short (a fast voice: a pause of 0.15-0.5 s), so the usual threshold (-35 dB, 0.4 s) misses the real cuts and finds
+// the pauses inside a line instead. For those the silences are looked for at -42 dB / 0.12 s, and the choice of the cuts (by the length of the text and of the pause) does the rest.
+const looseArg = process.argv.find((a) => a.startsWith('--loose='))?.slice(8);
+const isLoose = (n: number): boolean => !!looseArg && looseArg.split(',').some((p) => { const [a, b] = p.split('-').map(Number); return n >= a && n <= (b ?? a); });
 
 // What the voice really says where it is not the text of the file (the id stays): shown in the review page and used to find the clip by text
 const SAID: Record<string, string> = { cakeslice: 'cake slice', candycane: 'candy cane', candyjar: 'candy jar', cottoncandy: 'cotton candy', gummybear: 'gummy bear', nightsky: 'night sky', shootingstar: 'shooting star', pufferfish: 'puffer fish', ufo: 'U.F.O', snowmans: 'snowmen' };
@@ -151,7 +155,8 @@ async function main(): Promise<void> {
     let cut: Cut | null = null;
     let used = '';
     // the usual threshold first; then a more forgiving one when there are too few silences
-    for (const [noise, min] of [[-35, 0.4], [-30, 0.4], [-30, 0.3], [-25, 0.3]] as const) {
+    const ladder: (readonly [number, number])[] = isLoose(t.take) ? [[-42, 0.12], [-42, 0.1], [-38, 0.1]] : [[-35, 0.4], [-30, 0.4], [-30, 0.3], [-25, 0.3]];
+    for (const [noise, min] of ladder) {
       cut = choose(silences(src, noise, min, total), t.lines, total);
       used = `${noise}dB/${min}s`;
       if (cut) break;
@@ -160,7 +165,7 @@ async function main(): Promise<void> {
       problems.push(`take ${t.take}: fewer silences than ${t.lines.length - 1} even at -25dB/0.3s - not cut`);
       continue;
     }
-    if (used !== '-35dB/0.4s') problems.push(`take ${t.take}: needed a looser threshold (${used}) to find enough silences - check every cut by ear`);
+    if (used !== '-35dB/0.4s' && !isLoose(t.take)) problems.push(`take ${t.take}: needed a looser threshold (${used}) to find enough silences - check every cut by ear`);
     console.log(`take ${t.take} (${t.lang}, ${total.toFixed(1)}s): ${t.lines.length} lines, ${cut.candidates} silences >= ${used}, cuts at ${cut.cuts.map((c) => `${c.start.toFixed(1)}(${c.dur.toFixed(1)}s)`).join(' ')}`);
     const dir = OUT(t.lang);
     mkdirSync(dir, { recursive: true });
@@ -206,6 +211,8 @@ async function main(): Promise<void> {
   const byText: Record<string, string> = {};
   for (const t of takes.filter((x) => x.lang === 'en')) {
     for (const l of t.lines) {
+      // only a clip that is in the folder (a branch that does not have the clips of a take yet does not point at them)
+      if (!existsSync(join(OUT('en'), `${l.id}.mp3`))) continue;
       const num = /^number_(\d+)$/.exec(l.id);
       for (const k of [clipKey(SAID[l.id] ?? l.text), clipKey(l.text), clipKey(l.id), num ? num[1] : '']) if (k && !(k in byText)) byText[k] = l.id;
     }

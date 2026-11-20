@@ -1,0 +1,33 @@
+/* the prototype of the squishy workshop (stage 0) */
+.sq-lab { position: relative; background: transparent; min-height: 100dvh; overflow: hidden; padding: 0; user-select: none; -webkit-user-select: none; }
+.sq-lab.flat { background: transparent; }
+body.lobby3d-on .sq-lab { pointer-events: none; }
+.sq-bar { position: fixed; z-index: 5; top: 0; inset-inline: 0; display: flex; align-items: center; justify-content: space-between; padding: calc(10px + env(safe-area-inset-top)) 12px 8px; pointer-events: none; color: #fff; text-shadow: 0 2px 6px rgba(80, 30, 60, .5); font-size: 17px; }
+.sq-bar button { pointer-events: auto; width: 46px; height: 46px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .9); font-size: 20px; box-shadow: 0 3px 8px rgba(0, 0, 0, .22); }
+.sq-stage { position: fixed; z-index: 2; inset: 64px 0 150px; pointer-events: auto; touch-action: none; }
+.sq-flatview { position: absolute; inset: 0; display: grid; place-items: center; }
+.sq-flatwrap { position: relative; width: min(86vw, 52vh); }
+.sq-flatshadow { position: absolute; left: 50%; bottom: -1%; width: 78%; height: 9%; border-radius: 50%; background: radial-gradient(closest-side, rgba(60, 30, 50, .55), rgba(60, 30, 50, .25) 60%, rgba(60, 30, 50, 0)); transform: translateX(-50%); }
+.sq-flatcanvas { position: relative; width: 100%; aspect-ratio: 1; transform-origin: 50% 92%; will-change: transform;  }
+.sq-dock { position: fixed; z-index: 5; inset-inline: 0; bottom: 0; padding: 8px 12px calc(14px + env(safe-area-inset-bottom)); display: grid; gap: 10px; justify-items: center; pointer-events: none; }
+.sq-dock > * { pointer-events: auto; }
+.sq-modes { display: flex; gap: 8px; }
+.sq-modes button { border: 0; border-radius: 22px; padding: 9px 18px; font-weight: 800; font-size: 17px; line-height: 1.1; font-family: inherit; background: rgba(255, 255, 255, .8); color: #6a3a5a; box-shadow: 0 2px 6px rgba(0, 0, 0, .18); }
+.sq-modes button.on { background: #ff7aa8; color: #fff; }
+.sq-palette { display: flex; gap: 10px; }
+.sq-palette button { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .25); }
+.sq-palette button.on { transform: scale(1.18); box-shadow: 0 0 0 3px #7a3a6a, 0 3px 8px rgba(0, 0, 0, .25); }
+.sq-meter { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, .85); border-radius: 22px; padding: 8px 16px; color: #6a3a5a; font-weight: 800; }
+.sq-meter i { width: 22px; height: 22px; border-radius: 50%; background: #f1d6e4; transition: background .25s, transform .25s; }
+.sq-meter i.on { background: #ff5f95; transform: scale(1.15); }
+.sq-tune { position: fixed; z-index: 6; top: calc(64px + env(safe-area-inset-top)); inset-inline: 10px; background: rgba(255, 255, 255, .93); border-radius: 16px; padding: 10px 12px; display: grid; gap: 6px; font-size: 14px; color: #4a2a40; pointer-events: auto; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); }
+.sq-tune[hidden] { display: none; }
+.sq-tune label { display: grid; grid-template-columns: 78px 1fr 40px; align-items: center; gap: 8px; }
+.sq-tune input { width: 100%; }
+.sq-shapes { display: flex; flex-wrap: wrap; gap: 4px; }
+.sq-shapes button { border: 0; border-radius: 10px; padding: 3px 8px; font-size: 12px; background: #eadcf0; }
+.sq-shapes button.on { background: #ff7aa8; color: #fff; }
+.sq-fps { font: 700 12px/1.2 monospace; direction: ltr; text-align: start; color: #7a5a70; }
+
+.sq-lab [hidden] { display: none !important; }
+.sq-copy { border: 0; border-radius: 10px; padding: 7px 12px; font-weight: 800; font-size: 14px; line-height: 1; font-family: inherit; background: #ff7aa8; color: #fff; justify-self: start; }
