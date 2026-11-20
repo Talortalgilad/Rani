@@ -33,7 +33,7 @@ describe('what the workshop remembers', () => {
     expect(cleanName('  <hi>  ')).toBe('hi');
   });
   it('the draft and the shelf are loaded safely, and the shelf is the data of squishies, never pictures', () => {
-    expect(loadStore({ draft: 5, shelf: 'x' })).toEqual({ draft: null, shelf: [] });
+    expect(loadStore({ draft: 5, shelf: 'x' })).toEqual({ draft: null, shelf: [], orders: { done: [], hearts: 0, given: 0 } });
     const d = newSquishy('dog');
     const s = loadStore({ draft: { step: 'paint', data: d, poured: true, squeezes: 3 }, shelf: [d, { shape: 'zzz' }, null] });
     expect(s.draft?.step).toBe('paint');

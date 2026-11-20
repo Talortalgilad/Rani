@@ -11,9 +11,15 @@ import { COLORS } from '../english/content/colors';
 import { CHEEKS, drawCheeks, drawEyes, drawMouth, EYES, MOUTHS } from './faces';
 import { JARS, MAX_SPOONS, mixSpoons, nearestColorId } from './mix';
 import { partAt, PALETTE, type RGB } from './paint';
-import { cleanName, DECORS, DOT_OF, FINISHES, FOODS, isOpen, loadStore, MAX_DECOR, newSquishy, OPEN_MOLDS, STEP_ORDER, type Decor, type DecorKind, type Draft, type Finish, type SquishyData, type StepId, type Store } from './save';
+import { cleanName, DECORS, DOT_OF, FINISHES, FOODS, loadStore, MAX_DECOR, newSquishy, OPEN_MOLDS, STEP_ORDER, type Decor, type DecorKind, type Draft, type Finish, type SquishyData, type StepId, type Store } from './save';
 import { fillColors } from './save';
 import { sayEn, sayHe, sayNumber } from './sqvoice';
+import { gameStore, getState } from '../../storage';
+import { activeLevel } from '../../math/adaptive';
+import { SQUISHIES, squishyUrl } from '../english/art/squishies';
+import type { Words } from '../english/engine/progress';
+import { available, checkOrder, moldsOpen, orderById, queue as orderQueue, reward, unlockedMolds, type Learned, type Order } from './orders';
+import { makeRecipe, recipeColor, recipeKind, type Recipe } from './recipe';
 import { decorAt, drawDecor, drawSquishy, inside } from './squishy';
 import { loadShape, shapeInfo, SHAPES, SIZE, type Loaded } from './shapes';
 import { setWorkshopBg, SquishView } from './view';
@@ -34,13 +40,15 @@ export interface Workshop { unmount(): void; pause(): void }
 export function createWorkshop(ctx: GameContext): Workshop {
   const root = document.createElement('div');
   root.className = 'sq-game';
-  root.innerHTML = '<div class="sq-bg"></div><header class="sqg-top"><button type="button" class="sqg-x" id="sqx" aria-label="סגירה">✕</button><div class="sqg-dots" id="sqd"></div><span class="sqg-spacer"></span></header><main class="sqg-body" id="sqb"></main>';
+  root.innerHTML = '<div class="sq-bg"></div><header class="sqg-top"><button type="button" class="sqg-x" id="sqx" aria-label="סגירה">✕</button><div class="sqg-dots" id="sqd"></div><span class="sqg-spacer"></span></header><button type="button" class="sqg-ocard" id="oc" hidden></button><main class="sqg-body" id="sqb"></main>';
   root.style.setProperty('--sq-bg', `url(${base()}squishy/bg/workshop.webp)`);
   ctx.container.appendChild(root);
   const body = root.querySelector<HTMLElement>('#sqb')!;
   const dots = root.querySelector<HTMLElement>('#sqd')!;
   let dead = false;
-  let store: Store = loadStore({ draft: ctx.load<unknown>('draft', null), shelf: ctx.load<unknown>('shelf', []) });
+  let store: Store = loadStore({ draft: ctx.load<unknown>('draft', null), shelf: ctx.load<unknown>('shelf', []), orders: ctx.load<unknown>('orders', null) });
+  /** the order that was chosen and has no squishy yet (it is in the draft from the moment that a mold is chosen) */
+  let pending: Order | null = null;
   let view: SquishView | null = null;
   let loaded: Loaded | null = null;
   let onX: () => void = () => ctx.onExit();
@@ -49,6 +57,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
   const persist = (): void => {
     ctx.save('draft', store.draft);
     ctx.save('shelf', store.shelf);
+    ctx.save('orders', store.orders);
   };
   const say = (id: string): void => void sayHe(id);
 
@@ -57,8 +66,32 @@ export function createWorkshop(ctx: GameContext): Workshop {
     dots.hidden = n === 0;
     dots.innerHTML = Array.from({ length: 7 }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
   };
+  const curOrder = (): Order | null => (store.draft?.orderId ? orderById(store.draft.orderId) ?? null : pending);
+  const ocard = root.querySelector<HTMLButtonElement>('#oc')!;
+  /** the card of the order: the sentence (never a picture of the result); a tap says it again, at every step */
+  const sayOrder = (o: Order): Promise<boolean> => sayEn(o.clip);
+  ocard.addEventListener('click', () => {
+    const o = curOrder();
+    if (o) void sayOrder(o);
+  });
+  /** the words and colours that Rani learned in the word journey (a parent who opened everything: all) */
+  function learned(): Learned {
+    const en = gameStore('english');
+    const words = en.load<Words>('words', {});
+    const map = en.load<{ done: Record<number, number> }>('map', { done: {} });
+    const all = en.load<boolean>('openAll', false);
+    const d4 = map.done[4] ?? 0;
+    const later = Object.entries(map.done).some(([w, n]) => Number(w) > 4 && n > 0) || d4 >= 5;
+    const nColors = all || later ? 6 : d4 >= 2 ? 6 : d4 >= 1 ? 3 : 0;
+    const known = COLORS.slice(0, nColors).map((c) => c.id);
+    return { word: (id) => all || !words || words[id]?.seen === true || !(id in { cat: 1 }) && !shapeWordExists(id) || words[id]?.seen === true, color: (id) => known.includes(id) };
+  }
+  const doneCtx = (): { done: string[]; learned: Learned } => ({ done: store.orders.done, learned: learned() });
   function clear(cls = ''): HTMLElement {
-    body.className = `sqg-body ${cls}`;
+    const o = curOrder();
+    ocard.hidden = !o;
+    if (o) ocard.innerHTML = `<span class="oc-snd" aria-hidden="true">🔊</span><b dir="ltr">${esc(o.text)}</b>`;
+    body.className = `sqg-body ${cls} ${o ? 'has-order' : ''}`;
     body.innerHTML = '';
     body.onclick = null;
     return body;

@@ -3,6 +3,7 @@ import { DEFAULT_FACE, CHEEKS, EYES, MOUTHS, type FaceParts } from './faces';
 import { MAX_SPOONS, WHITE, type Spoons } from './mix';
 import type { RGB } from './paint';
 import { SHAPES, shapeInfo } from './shapes';
+import type { Recipe } from './recipe';
 
 export type Finish = 'gloss' | 'glitter' | 'matte';
 export const FINISHES: Finish[] = ['gloss', 'glitter', 'matte'];
@@ -32,8 +33,11 @@ export interface SquishyData {
   fav: string;
   created: number;
 }
-export interface Draft { step: StepId; data: SquishyData; poured: boolean; squeezes: number }
-export interface Store { draft: Draft | null; shelf: SquishyData[] }
+export interface Draft { step: StepId; data: SquishyData; poured: boolean; squeezes: number; /** the order that is being made (order mode) */ orderId?: string; recipe?: Recipe }
+/** what the orders remember: the orders that were done (in order, an id can be there again), and the hearts that were given for them (they go to the carnival in stage 3) */
+export interface OrdersSave { done: string[]; hearts: number; given: number }
+export const emptyOrders = (): OrdersSave => ({ done: [], hearts: 0, given: 0 });
+export interface Store { draft: Draft | null; shelf: SquishyData[]; orders: OrdersSave }
 
 /** the molds that are open from the start (the others open with the orders, in stage 2) */
 export const OPEN_MOLDS = ['cat', 'dog', 'rabbit', 'cupcake', 'star', 'flower'];
@@ -77,10 +81,23 @@ export function cleanSquishy(x: unknown): SquishyData | null {
 /** the part colours of a squishy that has none yet: all parts the colour of the bowl */
 export const fillColors = (d: SquishyData): RGB[] => Array.from({ length: shapeInfo(d.shape).parts }, (_, i) => d.colors[i] ?? d.base);
 
-export function loadStore(raw: { draft: unknown; shelf: unknown }): Store {
+const cleanRecipe = (x: unknown): Recipe | undefined => {
+  const r = x as Partial<Recipe> | null;
+  if (!r || typeof r !== 'object' || typeof r.color !== 'string') return undefined;
+  if (r.kind === 'half') return { kind: 'half', color: r.color };
+  if (r.kind === 'cup' && typeof r.line === 'number') return { kind: 'cup', color: r.color, line: Math.round(num(r.line, 1, 10, 5)) };
+  if (r.kind === 'spoons' && typeof r.n === 'number' && typeof r.white === 'number' && Array.isArray(r.choices)) {
+    const n = Math.round(num(r.n, 1, 10, 1)), white = Math.round(num(r.white, 0, 10, 0));
+    return { kind: 'spoons', color: r.color, n, white, total: n + white, choices: r.choices.filter((c): c is number => typeof c === 'number').slice(0, 3) };
+  }
+  return undefined;
+};
+export function loadStore(raw: { draft: unknown; shelf: unknown; orders?: unknown }): Store {
   const d = raw.draft as Partial<Draft> | null;
   const data = d ? cleanSquishy(d.data) : null;
-  const draft: Draft | null = data && d && STEP_ORDER.includes(d.step as StepId) ? { step: d.step as StepId, data, poured: d.poured === true, squeezes: Math.round(num(d.squeezes, 0, 99, 0)) } : null;
+  const draft: Draft | null = data && d && STEP_ORDER.includes(d.step as StepId) ? { step: d.step as StepId, data, poured: d.poured === true, squeezes: Math.round(num(d.squeezes, 0, 99, 0)), ...(typeof d.orderId === 'string' ? { orderId: d.orderId } : {}), ...(cleanRecipe(d.recipe) ? { recipe: cleanRecipe(d.recipe) } : {}) } : null;
+  const o = (raw.orders ?? {}) as Partial<OrdersSave>;
+  const orders: OrdersSave = { done: (Array.isArray(o.done) ? o.done : []).filter((x): x is string => typeof x === 'string').slice(-400), hearts: Math.round(num(o.hearts, 0, 1e6, 0)), given: Math.round(num(o.given, 0, 1e6, 0)) };
   const shelf = (Array.isArray(raw.shelf) ? raw.shelf : []).map(cleanSquishy).filter((s): s is SquishyData => !!s).slice(0, MAX_SHELF);
-  return { draft, shelf };
+  return { draft, shelf, orders };
 }
