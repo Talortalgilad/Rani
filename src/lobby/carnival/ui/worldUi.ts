@@ -729,10 +729,19 @@ export class WorldUI {
         this.h.layer.appendChild(el);
         this.wishEls.set(i, el);
       }
-      el.textContent = WISH_ICON[a.wish.kind];
+      // only what changed is written (a style write that says the same costs a style recalculation in the frame)
+      const icon = WISH_ICON[a.wish.kind];
+      if (el.textContent !== icon) el.textContent = icon;
       seen.add(i);
-      el.style.visibility = p && a.mode !== 'riding' ? 'visible' : 'hidden';
-      if (p) el.style.transform = `translate(${p.x}px, ${p.y - 6}px) translate(-50%, -100%)`;
+      const vis = p && a.mode !== 'riding' ? 'visible' : 'hidden';
+      if (el.style.visibility !== vis) el.style.visibility = vis;
+      if (p) {
+        const t = `translate(${Math.round(p.x)}px, ${Math.round(p.y - 6)}px) translate(-50%, -100%)`;
+        if (el.dataset.t !== t) {
+          el.dataset.t = t;
+          el.style.transform = t;
+        }
+      }
     });
     for (const [i, el] of [...this.wishEls]) if (!seen.has(i)) (el.remove(), this.wishEls.delete(i));
     for (const s of this.says) {

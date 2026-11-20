@@ -3,6 +3,10 @@
  * the residents who walk, the sky of the hour (with lights at night). Built on the shared stage of the lobby (one renderer).
  */
 import { ACCESSORIES } from './friends';
+import { anchorOf, imageKey, place } from './dress';
+const followPt = { x: 0, z: 0 };
+const camR = new T.Vector3(), camU = new T.Vector3(), camF = new T.Vector3();
+const ACC_BY_ID = new Map(ACCESSORIES.map((a) => [a.id, a]));
 import * as T from '../../lobby3d/lib';
 import { buildJar } from '../../lobby3d/jar';
 import { clamp } from '../../lobby3d/motion';
@@ -39,6 +43,7 @@ export interface WorldView {
   hold(i: number, on: boolean): void;
   /** what a resident wears (ids of ACCESSORIES) and where the camera looks (the best friends follow it) */
   wearing?(i: number): string[];
+  wearingCached?(i: number): string[];
   setFollow?(p: { x: number; z: number } | null): void;
 }
 
@@ -493,11 +498,11 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   scene.add(shadowMesh);
   const shQ = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), -Math.PI / 2);
   /** a resident: his place on the stage (the page asks where he is), his hop, and who tapped him */
-  interface Person { r: Resident; sp: T.Object3D; hop: number; tapped: number; taps: number; phase: number; born: number; trick?: { kind: 'spin' | 'jump2' | 'dance'; t: number } }
+  interface Person { r: Resident; key: string; sp: T.Object3D; hop: number; tapped: number; taps: number; phase: number; born: number; trick?: { kind: 'spin' | 'jump2' | 'dance'; t: number } }
   const people: Person[] = [];
   const addPerson = (r: Resident, hopIn = false): number => {
     const sp = new T.Object3D();
-    people.push({ r, sp, hop: hopIn ? 1 : 0, tapped: 0, taps: 0, phase: people.length * 1.3, born: hopIn ? 0 : -1 });
+    people.push({ r, key: imageKey(r.img), sp, hop: hopIn ? 1 : 0, tapped: 0, taps: 0, phase: people.length * 1.3, born: hopIn ? 0 : -1 });
     return people.length - 1;
   };
   o.residents.forEach((r) => addPerson(r));
@@ -734,7 +739,12 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     const ag = o.world.agents();
     let shown = 0;
     let shadows = 0;
-    o.world.setFollow?.({ x: cam.x, z: cam.z });
+    followPt.x = cam.x;
+    followPt.z = cam.z;
+    o.world.setFollow?.(followPt);
+    camR.set(1, 0, 0).applyQuaternion(camera.quaternion);
+    camU.set(0, 1, 0).applyQuaternion(camera.quaternion);
+    camF.set(0, 0, 1).applyQuaternion(camera.quaternion);
     people.forEach((p, i) => {
       const a = ag[i];
       if (!a || !a.active) return;
@@ -769,11 +779,14 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       const sz = (ride ? 0.85 : 1.15) * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0));
       resAtlas.set(shown, p.r.id, a.x + tx, 0.62 + bob + jump + drop + ry, rz, sz, flip);
       // what he wears: cells of the same atlas, over his head (no draw call of its own)
-      for (const w of o.world.wearing?.(i) ?? []) {
-        const ac = ACCESSORIES.find((x) => x.id === w);
+      for (const w of o.world.wearingCached?.(i) ?? o.world.wearing?.(i) ?? []) {
+        const ac = ACC_BY_ID.get(w);
         if (!ac || shown + 1 >= RES_CAP - 1) continue;
         shown++;
-        resAtlas.set(shown, `acc:${w}`, a.x + tx + (w === 'balloons' ? 0.35 : 0), 0.62 + bob + jump + drop + ry + ac.dy * sz, rz + (ac.behind ? -0.02 : 0.02), ac.size * sz, flip);
+        const pl = place(w, anchorOf(p.key));
+        // along the plane of the picture (the camera's own right and up), so that a scarf or a cape that sits lower than the middle is not behind the body because the camera looks down
+        const px = (pl.u - 0.5) * sz * flip, py = (0.5 - pl.v) * sz, pz = ac.behind ? -0.03 : 0.03;
+        resAtlas.set(shown, `acc:${w}`, a.x + tx + camR.x * px + camU.x * py + camF.x * pz, 0.62 + bob + jump + drop + ry + camR.y * px + camU.y * py + camF.y * pz, rz + camR.z * px + camU.z * py + camF.z * pz, pl.s * sz, flip);
       }
       m4.compose(new T.Vector3(a.x, 0.04, rz), shQ, new T.Vector3(1 - jump * 0.4, 1 - jump * 0.4, 1));
       shadowMesh.setMatrixAt(shadows++, m4);

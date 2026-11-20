@@ -81,6 +81,26 @@ export class CarnivalWorld {
     if (this.partyNow().includes(i)) out.push('partyhat', 'balloons');
     return [...new Set(out)];
   }
+  /** what the scene draws: the same as wearing(), worked out again only when something changed (a dress, a gift, a job, a party, a level) or every half second, not in every frame for every resident */
+  private wearCache: string[][] = [];
+  private wearStale = true;
+  private wearAge = 0;
+  invalidateWear(): void {
+    this.wearStale = true;
+  }
+  wearingCached(i: number): string[] {
+    if (this.wearStale || this.wearCache.length !== this.residents.length) {
+      const parties = new Set(this.partyNow());
+      this.wearCache = this.residents.map((r, k) => {
+        const out = wearing(this.d.save, r.id);
+        if (parties.has(k)) out.push('partyhat', 'balloons');
+        return [...new Set(out)];
+      });
+      this.wearStale = false;
+      this.wearAge = 0;
+    }
+    return this.wearCache[i] ?? [];
+  }
   now(): Date {
     return this.d.now?.() ?? new Date();
   }
@@ -98,6 +118,7 @@ export class CarnivalWorld {
   }
   /** a resident of level 3 works at a stall (null: he stops); only one seller for a stall */
   setJob(i: number, slotId: string | null): boolean {
+    this.wearStale = true;
     const r = this.residents[i];
     if (!r) return false;
     const f = friendsOf(this.d.save);
@@ -122,6 +143,7 @@ export class CarnivalWorld {
   }
   /** she chose a present for the party: one that fits his favourite food or colour gives double (4 hearts), another 2. Nobody loses the party by not coming: it is back next month. */
   partyGift(i: number, fits: boolean): number {
+    this.wearStale = true;
     const r = this.residents[i];
     const f = friendsOf(this.d.save);
     f.party[r.id] = partyKey(this.now());
@@ -144,6 +166,7 @@ export class CarnivalWorld {
   }
   /** the gift of level 4: once for each resident; it is put on him (the accessory only he gives) */
   takeGift(i: number): string | null {
+    this.wearStale = true;
     const r = this.residents[i];
     const f = friendsOf(this.d.save);
     if (!r || this.levelOf(i) < 4 || f.gifted.includes(r.id)) return null;
@@ -169,6 +192,7 @@ export class CarnivalWorld {
   }
   /** drags a bought accessory onto a resident: it stays with him (what he wore on the same place goes back to the stock) */
   dress(i: number, id: string): boolean {
+    this.wearStale = true;
     const r = this.residents[i];
     const f = friendsOf(this.d.save);
     if (!r || (f.owned[id] ?? 0) < 1) return false;
@@ -327,6 +351,7 @@ export class CarnivalWorld {
 
   /** Runs the carnival for `dt` seconds. Returns what happened, for the page to show. */
   tick(dt: number): WorldEvent[] {
+    if ((this.wearAge += dt) > 0.5) this.wearStale = true;
     const out: WorldEvent[] = [...this.pending.splice(0), ...this.applyHearts(this.sim.update(dt))];
     out.push(...this.checkProgress());
     return out;
