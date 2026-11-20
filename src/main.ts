@@ -67,6 +67,7 @@ function mountGame(gameId: string): void {
   });
 }
 
+if (import.meta.env.DEV) (window as unknown as { __grantPass?: (id: string) => void }).__grantPass = grantPass; // for the browser tests: a pass without the gate
 let current: Route = { name: 'home' };
 // a new version of the app switches in only in the lobby
 const updateCheck = initUpdate(() => current.name);

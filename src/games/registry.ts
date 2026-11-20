@@ -4,8 +4,9 @@ import memory from './memory';
 import traffic from './traffic';
 import english from './english';
 import blocks from './blocks';
+import squishy from './squishy';
 
-export const games: GameModule[] = [brickBreaker, memory, traffic, english, blocks];
+export const games: GameModule[] = [brickBreaker, memory, traffic, english, blocks, squishy];
 
 // Miniatures for the 3D lobby. Loaded only when the lobby needs them, because they bring Three.js with them;
 // a game without one gets a basic island automatically.
@@ -14,8 +15,8 @@ memory.lobbyIsland = (ctx) => import('./memory/lobby-island').then((m) => m.crea
 traffic.lobbyIsland = (ctx) => import('./traffic/lobby-island').then((m) => m.createLobbyIsland(ctx));
 english.lobbyIsland = (ctx) => import('./english/lobby-island').then((m) => m.createLobbyIsland(ctx));
 blocks.lobbyIsland = (ctx) => import('./blocks/lobby-island').then((m) => m.createLobbyIsland(ctx));
+squishy.lobbyIsland = (ctx) => import('./squishy/lobby-island').then((m) => m.createLobbyIsland(ctx));
 
 export const comingSoon = [
-  { title: 'בקרוב', color: '#c9c4cf' },
   { title: 'בקרוב', color: '#c9c4cf' },
 ];

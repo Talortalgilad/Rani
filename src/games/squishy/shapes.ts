@@ -48,6 +48,19 @@ export function faceOf(map: Uint8ClampedArray, box: Loaded['box']): Loaded['face
   return r > l ? { x: (l + r) / 2, y, size: (r - l) / 2 } : null;
 }
 
+/** where the face goes: on the head of an animal (the middle of the top third), and on a sweet or a thing where it can sit (by the shape: the frosting, the scoop, the head of the lollipop, the ring of the donut) */
+export function faceAnchor(id: string, map: Uint8ClampedArray, box: Loaded['box']): Loaded['face'] {
+  if ((ANIMALS as readonly string[]).includes(id)) return faceOf(map, box);
+  const w = box.x1 - box.x0, h = box.y1 - box.y0;
+  const cx = (box.x0 + box.x1) / 2, cy = (box.y0 + box.y1) / 2;
+  const at: Record<string, [number, number, number]> = {
+    cupcake: [cx, box.y0 + h * 0.5, w * 0.34], donut: [cx, box.y0 + h * 0.86, w * 0.17], icecream: [cx, box.y0 + h * 0.3, w * 0.34], cookie: [cx, cy, w * 0.34],
+    lollipop: [cx, box.y0 + h * 0.33, w * 0.3], apple: [cx, cy + h * 0.08, w * 0.3], star: [cx, cy + h * 0.05, w * 0.26], flower: [cx, cy, w * 0.13], crown: [cx, box.y0 + h * 0.7, w * 0.26],
+  };
+  const a = at[id];
+  return a ? { x: a[0], y: a[1], size: a[2] } : null;
+}
+
 export async function loadShape(id: string): Promise<Loaded> {
   const [shape, maps] = await Promise.all([loadImage(`${base()}squishy/shapes/${id}.webp`), loadImage(`${base()}squishy/maps/${id}.png`)]);
   const alpha = pixels(shape);
@@ -65,5 +78,5 @@ export async function loadShape(id: string): Promise<Loaded> {
   let bx0 = SIZE, bx1 = 0;
   for (let y = Math.round(y1 - (y1 - y0) * 0.26); y <= y1; y++) for (let x = 0; x < SIZE; x++) if (alpha[(y * SIZE + x) * 4 + 3] > 120) (bx0 = Math.min(bx0, x)), (bx1 = Math.max(bx1, x));
   const foot = bx1 > bx0 ? { x0: bx0, x1: bx1 } : { x0, x1 };
-  return { id, map, box, foot, face: (ANIMALS as readonly string[]).includes(id) ? faceOf(map, box) : null };
+  return { id, map, box, foot, face: faceAnchor(id, map, box) };
 }

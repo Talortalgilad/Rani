@@ -23,7 +23,10 @@ export const SHINE = 0.55;
  * Paints the picture: `map` is the RGBA of the map (R part, G shading x100, B highlight, A alpha), `out` is the RGBA to be filled (the same size), `colors[p-1]` the colour of part p.
  * The colour comes out as it is multiplied, so a pale colour has pale shadows and a deep colour has deep ones, with the shape of the light that was in the picture.
  */
-export function compose(map: Uint8ClampedArray, colors: RGB[], out: Uint8ClampedArray, soft = 2): void {
+export interface ComposeOpts { /** how much white the highlight adds (default SHINE) */ shine?: number; /** 1 = the shading as it is, less: flatter (matte) */ flat?: number }
+export function compose(map: Uint8ClampedArray, colors: RGB[], out: Uint8ClampedArray, soft = 2, o: ComposeOpts = {}): void {
+  const shineK = o.shine ?? SHINE;
+  const flat = o.flat ?? 1;
   const n = map.length / 4;
   const size = Math.round(Math.sqrt(n));
   const part = (p: number): number => (map[p * 4 + 3] ? map[p * 4] : 0);
@@ -77,8 +80,8 @@ export function compose(map: Uint8ClampedArray, colors: RGB[], out: Uint8Clamped
       out[i] = out[i + 1] = out[i + 2] = out[i + 3] = 0;
       continue;
     }
-    const shade = map[i + 1] / 100;
-    const hi = (map[i + 2] / 255) * SHINE;
+    const shade = 1 + (map[i + 1] / 100 - 1) * flat;
+    const hi = (map[i + 2] / 255) * shineK;
     for (let k = 0; k < 3; k++) {
       const v = base[p * 3 + k] * shade;
       out[i + k] = v + (255 - v) * hi;
