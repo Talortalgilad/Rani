@@ -14,6 +14,12 @@ import { partAt, PALETTE, type RGB } from './paint';
 import { cleanName, DECORS, DOT_OF, FINISHES, FOODS, isOpen, loadStore, MAX_DECOR, newSquishy, OPEN_MOLDS, STEP_ORDER, type Decor, type DecorKind, type Draft, type Finish, type SquishyData, type StepId, type Store } from './save';
 import { fillColors } from './save';
 import { sayEn, sayHe, sayNumber } from './sqvoice';
+import { gameStore, update } from '../../storage';
+import { activeLevel } from '../../math/adaptive';
+import { SQUISHIES, squishyUrl } from '../english/art/squishies';
+import type { Words } from '../english/engine/progress';
+import { checkOrder, orderById, queue as orderQueue, reward, unlockedMolds, type Learned, type Order } from './orders';
+import { makeRecipe, recipeColor, type Recipe } from './recipe';
 import { decorAt, drawDecor, drawSquishy, inside } from './squishy';
 import { loadShape, shapeInfo, SHAPES, SIZE, type Loaded } from './shapes';
 import { setWorkshopBg, SquishView } from './view';
@@ -34,13 +40,15 @@ export interface Workshop { unmount(): void; pause(): void }
 export function createWorkshop(ctx: GameContext): Workshop {
   const root = document.createElement('div');
   root.className = 'sq-game';
-  root.innerHTML = '<div class="sq-bg"></div><header class="sqg-top"><button type="button" class="sqg-x" id="sqx" aria-label="סגירה">✕</button><div class="sqg-dots" id="sqd"></div><span class="sqg-spacer"></span></header><main class="sqg-body" id="sqb"></main>';
+  root.innerHTML = '<div class="sq-bg"></div><header class="sqg-top"><button type="button" class="sqg-x" id="sqx" aria-label="סגירה">✕</button><div class="sqg-dots" id="sqd"></div><span class="sqg-spacer"></span></header><button type="button" class="sqg-ocard" id="oc" hidden></button><main class="sqg-body" id="sqb"></main>';
   root.style.setProperty('--sq-bg', `url(${base()}squishy/bg/workshop.webp)`);
   ctx.container.appendChild(root);
   const body = root.querySelector<HTMLElement>('#sqb')!;
   const dots = root.querySelector<HTMLElement>('#sqd')!;
   let dead = false;
-  let store: Store = loadStore({ draft: ctx.load<unknown>('draft', null), shelf: ctx.load<unknown>('shelf', []) });
+  let store: Store = loadStore({ draft: ctx.load<unknown>('draft', null), shelf: ctx.load<unknown>('shelf', []), orders: ctx.load<unknown>('orders', null) });
+  /** the order that was chosen and has no squishy yet (it is in the draft from the moment that a mold is chosen) */
+  let pending: Order | null = null;
   let view: SquishView | null = null;
   let loaded: Loaded | null = null;
   let onX: () => void = () => ctx.onExit();
@@ -49,6 +57,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
   const persist = (): void => {
     ctx.save('draft', store.draft);
     ctx.save('shelf', store.shelf);
+    ctx.save('orders', store.orders);
   };
   const say = (id: string): void => void sayHe(id);
 
@@ -57,8 +66,32 @@ export function createWorkshop(ctx: GameContext): Workshop {
     dots.hidden = n === 0;
     dots.innerHTML = Array.from({ length: 7 }, (_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('');
   };
+  const curOrder = (): Order | null => (store.draft?.orderId ? orderById(store.draft.orderId) ?? null : pending);
+  const ocard = root.querySelector<HTMLButtonElement>('#oc')!;
+  /** the card of the order: the sentence (never a picture of the result); a tap says it again, at every step */
+  const sayOrder = (o: Order): Promise<boolean> => sayEn(o.clip);
+  ocard.addEventListener('click', () => {
+    const o = curOrder();
+    if (o) void sayOrder(o);
+  });
+  /** the words and colours that Rani learned in the word journey (a parent who opened everything: all) */
+  function learned(): Learned {
+    const en = gameStore('english');
+    const words = en.load<Words>('words', {});
+    const map = en.load<{ done: Record<number, number> }>('map', { done: {} });
+    const all = en.load<boolean>('openAll', false);
+    const d4 = map.done[4] ?? 0;
+    const later = Object.entries(map.done).some(([w, n]) => Number(w) > 4 && n > 0) || d4 >= 5;
+    const nColors = all || later ? 6 : d4 >= 2 ? 6 : d4 >= 1 ? 3 : 0;
+    const known = COLORS.slice(0, nColors).map((c) => c.id);
+    return { word: (id) => all || words[id]?.seen === true, color: (id) => all || known.includes(id) };
+  }
+  const doneCtx = (): { done: string[]; learned: Learned } => ({ done: store.orders.done, learned: learned() });
   function clear(cls = ''): HTMLElement {
-    body.className = `sqg-body ${cls}`;
+    const o = curOrder();
+    ocard.hidden = !o;
+    if (o) ocard.innerHTML = `<span class="oc-snd" aria-hidden="true">🔊</span><b dir="ltr">${esc(o.text)}</b>`;
+    body.className = `sqg-body ${cls} ${o ? 'has-order' : ''}`;
     body.innerHTML = '';
     body.onclick = null;
     return body;
@@ -97,14 +130,18 @@ export function createWorkshop(ctx: GameContext): Workshop {
     setDots(0);
     onX = () => ctx.onExit();
     const d = store.draft;
+    pending = null;
+    const waiting = orderQueue(doneCtx());
     const b = clear('menu');
     b.innerHTML = `
       <h1 class="sqg-title" data-say="sq_title">סדנת הסקווישים</h1>
       <div class="sqg-menu">
-        ${d ? `<button type="button" class="sqg-big go on" id="mcont" data-say=""><img src="${shapeUrl(d.data.shape)}" alt="" draggable="false"><span>להמשיך את הסקווישי</span></button>` : ''}
+        ${d ? `<button type="button" class="sqg-big go on" id="mcont" data-say=""><img src="${shapeUrl(d.data.shape)}" alt="" draggable="false"><span>להמשיך את ${d.orderId ? 'ההזמנה' : 'הסקווישי'}</span></button>` : ''}
+        <button type="button" class="sqg-big" id="mord" data-say="sq_order_mode"><img src="${propUrl('kiosk')}" alt="" draggable="false"><span>הזמנות</span></button>
         <button type="button" class="sqg-big" id="mnew" data-say="sq_free_mode"><img src="${propUrl('bowl')}" alt="" draggable="false"><span>יצירה חופשית</span></button>
         <button type="button" class="sqg-big" id="mshelf" data-say="sq_shelf"><img src="${propUrl('shelf')}" alt="" draggable="false"><span>המדף שלי</span>${store.shelf.length ? `<b class="sqg-count">${store.shelf.length}</b>` : ''}</button>
-      </div>`;
+      </div>
+      <div class="sqg-line" aria-label="הזמנות שמחכות">${waiting.map((o, k) => `<button type="button" class="sqg-wait" data-o="${o.id}" aria-label="הזמנה ${k + 1}"><img src="${squishyUrl(SQUISHIES[(k * 5 + store.orders.done.length) % SQUISHIES.length].id)}" alt="" draggable="false"><span aria-hidden="true">🔊</span></button>`).join('')}</div>`;
     say('sq_title');
     // a tap on a button says its name (the recording); nothing reads itself
     b.querySelectorAll<HTMLElement>('[data-say]').forEach((el) => el.addEventListener('pointerdown', () => el.dataset.say && say(el.dataset.say)));
@@ -113,8 +150,18 @@ export function createWorkshop(ctx: GameContext): Workshop {
       if (store.draft) store.draft = null;
       stepMold();
     });
+    b.querySelector('#mord')!.addEventListener('click', () => (sound.play('pop', 640), startOrder(waiting[0])));
+    b.querySelectorAll<HTMLButtonElement>('.sqg-wait').forEach((w) => w.addEventListener('click', () => (sound.play('pop', 640), startOrder(waiting.find((o) => o.id === w.dataset.o)!))));
     b.querySelector('#mshelf')!.addEventListener('click', () => (sound.play('pop', 640), shelf()));
     b.querySelector('#mcont')?.addEventListener('click', () => (sound.play('pop', 640), resume()));
+  }
+
+  /** an order was chosen from the line: the orderer says it (the card shows the sentence), and the mold is chosen by what she heard */
+  function startOrder(o: Order): void {
+    pending = o;
+    store.draft = null;
+    void sayHe('sq_new_order').then(() => sayOrder(o));
+    stepMold();
   }
 
   function resume(): void {
@@ -140,14 +187,14 @@ export function createWorkshop(ctx: GameContext): Workshop {
     onX = leaveToMenu;
     const b = clear('mold');
     b.innerHTML = `<div class="sqg-tray">${SHAPES.map((s) => {
-      const open = isOpen(s);
+      const open = isOpen(s, unlockedMolds(store.orders.done.length));
       return `<button type="button" class="sqg-mold ${open ? '' : 'locked'}" data-s="${s}" ${open ? '' : 'aria-disabled="true"'} aria-label="${esc(HE_SHAPE[s] ?? s)}"><img src="${shapeUrl(s)}" alt="" draggable="false">${open ? '' : '<i>🔒</i>'}</button>`;
     }).join('')}</div>`;
     say('sq_pick_mold');
     b.querySelectorAll<HTMLButtonElement>('.sqg-mold').forEach((m) =>
       m.addEventListener('click', () => {
         const s = m.dataset.s!;
-        if (!isOpen(s)) {
+        if (!isOpen(s, unlockedMolds(store.orders.done.length))) {
           sound.play('pop', 300);
           m.classList.remove('shake');
           void m.offsetWidth;
@@ -155,7 +202,9 @@ export function createWorkshop(ctx: GameContext): Workshop {
           return;
         }
         sound.play('bonus');
-        store.draft = { step: 'spoons', data: newSquishy(s), poured: false, squeezes: 0 };
+        const o = curOrder();
+        store.draft = { step: 'spoons', data: newSquishy(s), poured: false, squeezes: 0, ...(o ? { orderId: o.id, recipe: makeRecipe(activeLevel(), o.colors[0]) } : {}) };
+        pending = null;
         persist();
         stepSpoons();
       }),
@@ -182,6 +231,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
     dotsFor('spoons');
     onX = leaveToMenu;
     const d = setStep('spoons').data;
+    if (store.draft?.recipe) return stepRecipe(store.draft.recipe, d);
     const b = clear('spoons');
     b.innerHTML = `
       <div class="sqg-bowlbox" id="bb">${bowlHtml(d, 0)}<b class="sqg-n" id="sn"></b></div>
@@ -441,7 +491,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
           }),
         );
       } else if (tab === 'decor') {
-        sub.innerHTML = `<div class="sqg-kinds">${DECORS.map((k) => `<button type="button" data-k="${k}" class="${k === kind ? 'on' : ''}"><canvas width="56" height="56" data-d="${k}"></canvas></button>`).join('')}<small>${d.decor.length}/${MAX_DECOR}</small></div>`;
+        sub.innerHTML = `<div class="sqg-kinds">${DECORS.map((k) => `<button type="button" data-k="${k}" class="${k === kind ? 'on' : ''}"><canvas width="56" height="56" data-d="${k}"></canvas></button>`).join('')}<small>${curOrder()?.decor ? `${d.decor.filter((x) => x.k === curOrder()!.decor!.kind).length}/${curOrder()!.decor!.count}` : `${d.decor.length}/${MAX_DECOR}`}</small></div>`;
         sub.querySelectorAll<HTMLCanvasElement>('canvas').forEach((c) => drawDecor(c.getContext('2d')!, c.dataset.d as DecorKind, 28, 28, 18));
         sub.querySelectorAll<HTMLButtonElement>('button').forEach((c) =>
           c.addEventListener('click', () => {
@@ -566,6 +616,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
 
   // ---------------------------------------------------------------- 7. the end: a name, what he likes to eat, the shelf
   function stepFinish(): void {
+    if (store.draft?.orderId) return stepCheck(store.draft.data, orderById(store.draft.orderId)!);
     dotsFor('finish');
     onX = leaveToMenu;
     const dr = setStep('finish');
@@ -626,6 +677,162 @@ export function createWorkshop(ctx: GameContext): Workshop {
       fp.querySelector('#dnew')!.addEventListener('click', () => (sound.play('pop', 640), stepMold()));
     };
     name();
+  }
+
+  // ---------------------------------------------------------------- order mode: the recipe (SPEC-squishy.md 2.3)
+  const jarOf = (id: string): RGB => JARS.find((j) => j.id === id)!.rgb;
+  const heName = (id: string): string => JARS.find((j) => j.id === id)?.he ?? id;
+  function stepRecipe(rec: Recipe, d: SquishyData): void {
+    killView();
+    dotsFor('spoons');
+    onX = leaveToMenu;
+    const b = clear('recipe');
+    const finish = (spoons: { id: string; n: number }[]): void => {
+      d.spoons = spoons;
+      d.base = recipeColor(rec);
+      persist();
+      sound.play('bonus');
+      stepMix();
+    };
+    say('sq_recipe');
+    if (rec.kind === 'spoons') {
+      const want = [{ id: rec.color, n: rec.n }, ...(rec.white ? [{ id: 'white', n: rec.white }] : [])];
+      const have: Record<string, number> = {};
+      b.innerHTML = `<div class="sqg-want">${want.map((w) => `<span class="sqg-chip"><i style="background:${css(jarOf(w.id))}"></i><b>${w.n}</b></span>`).join('<em>+</em>')}</div>
+        <div class="sqg-bowlbox" id="bb">${bowlHtml({ ...d, spoons: [] }, 0)}</div>
+        <div class="sqg-jars two">${want.map((w) => `<button type="button" class="sqg-jar" data-id="${w.id}" aria-label="${esc(heName(w.id))}"><i style="background:${css(jarOf(w.id))}"></i><b class="cnt">0/${w.n}</b></button>`).join('')}</div>
+        <div class="sqg-ask" id="ask" hidden><p>כמה כפות יש בקערה ביחד?</p><div class="sqg-choices">${rec.choices.map((c) => `<button type="button" data-c="${c}">${c}</button>`).join('')}</div></div>`;
+      const fill = b.querySelector<HTMLElement>('.sqg-fill')!;
+      const paint = (): void => fill.setAttribute('style', bowlStyle({ ...d, spoons: Object.entries(have).map(([id, n]) => ({ id, n })) }, 0));
+      b.querySelectorAll<HTMLButtonElement>('.sqg-jar').forEach((j) =>
+        j.addEventListener('click', () => {
+          const id = j.dataset.id!;
+          const w = want.find((x) => x.id === id)!;
+          if ((have[id] ?? 0) >= w.n) return void sound.play('pop', 300);
+          have[id] = (have[id] ?? 0) + 1;
+          j.querySelector('.cnt')!.textContent = `${have[id]}/${w.n}`;
+          sound.play('pop', 480 + have[id] * 60);
+          void sayNumber(have[id]);
+          paint();
+          if (want.every((x) => (have[x.id] ?? 0) >= x.n)) {
+            later(() => {
+              b.querySelector<HTMLElement>('#ask')!.hidden = false;
+              say('sq_spoons_total');
+            }, 900);
+          }
+        }),
+      );
+      b.querySelectorAll<HTMLButtonElement>('.sqg-choices button').forEach((c) =>
+        c.addEventListener('click', () => {
+          if (Number(c.dataset.c) === rec.total) {
+            c.classList.add('right');
+            void sayHe('sq_exact');
+            later(() => finish(want.map((x) => ({ id: x.id, n: x.n }))), 900);
+          } else {
+            // no penalty: the spoons are counted aloud one by one, and she tries again
+            c.classList.add('shake');
+            window.setTimeout(() => c.classList.remove('shake'), 400);
+            void sayHe('cv_almost');
+          }
+        }),
+      );
+      return;
+    }
+    // the measuring cup (and half and half): hold the tap, let go at the line
+    const stages = rec.kind === 'cup' ? [{ id: rec.color, line: rec.line }] : [{ id: rec.color, line: 5 }, { id: 'white', line: 5 }];
+    let k = 0;
+    const stage = (): void => {
+      const st = stages[k];
+      b.innerHTML = `<div class="sqg-want"><span class="sqg-chip"><i style="background:${css(jarOf(st.id))}"></i><b>${rec.kind === 'cup' ? st.line : '½'}</b></span>${stages.length > 1 ? `<em>${k + 1}/${stages.length}</em>` : ''}</div>
+        <div class="sqg-cup" id="cup"><div class="liq" id="liq" style="background:${css(jarOf(st.id))}"></div>${Array.from({ length: 10 }, (_, i) => `<u class="tick ${i + 1 === st.line ? 'goal' : ''}" style="bottom:${(i + 1) * 9.4}%"><span>${i + 1}</span></u>`).join('')}</div>
+        <button type="button" class="sqg-tap" id="tap" aria-label="ברז">🚰</button><p class="sqg-hint" id="hint"></p>`;
+      const liq = b.querySelector<HTMLElement>('#liq')!;
+      const hint = b.querySelector<HTMLElement>('#hint')!;
+      let lvl = 0, hold = false, raf = 0, last = 0, held = 0, done = false;
+      const draw = (): void => void (liq.style.height = `${lvl * 9.4}%`);
+      const loop = (t: number): void => {
+        raf = requestAnimationFrame(loop);
+        const dt = Math.min(0.05, (t - last) / 1000);
+        last = t;
+        if (hold) { lvl = Math.min(10, lvl + dt * 2.2); held += dt; draw(); }
+      };
+      timers.push(0);
+      const tap = b.querySelector<HTMLElement>('#tap')!;
+      tap.addEventListener('pointerdown', (e) => { if (done) return; hold = true; held = 0; last = performance.now(); try { tap.setPointerCapture(e.pointerId); } catch { /* ignore */ } cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); });
+      const up = (): void => {
+        if (!hold || done) return;
+        hold = false;
+        cancelAnimationFrame(raf);
+        if (Math.abs(lvl - st.line) <= 0.35) {
+          done = true;
+          lvl = st.line;
+          draw();
+          sound.play('bonus');
+          void sayHe('sq_exact');
+          later(() => (++k < stages.length ? stage() : finish(rec.kind === 'cup' ? [{ id: rec.color, n: 3 }] : [{ id: rec.color, n: 1 }, { id: 'white', n: 1 }])), 1000);
+        } else if (lvl > st.line) {
+          // too much: a little is poured out and she tries again (no penalty)
+          void sayHe('sq_too_much');
+          hint.textContent = 'קצת יותר מדי';
+          const to = Math.max(0, st.line - 2);
+          const t0 = performance.now(), from = lvl;
+          const drain = (t: number): void => { const u = Math.min(1, (t - t0) / 700); lvl = from + (to - from) * u; draw(); if (u < 1) requestAnimationFrame(drain); };
+          requestAnimationFrame(drain);
+        } else if (held > 0.25) {
+          void sayHe('sq_not_enough');
+          hint.textContent = 'עוד קצת!';
+        }
+      };
+      tap.addEventListener('pointerup', up);
+      tap.addEventListener('pointercancel', up);
+    };
+    stage();
+  }
+
+  // ---------------------------------------------------------------- order mode: the check (SPEC-squishy.md 2.8)
+  function stepCheck(d: SquishyData, o: Order): void {
+    dotsFor('finish');
+    onX = leaveToMenu;
+    const b = clear('check');
+    const r = checkOrder(o, d);
+    const rows: { label: string; ok: boolean }[] = [{ label: 'הצורה', ok: r.shape }, { label: 'הצבע', ok: r.color }, ...(r.count !== null ? [{ label: 'המספר', ok: r.count }] : [])];
+    b.innerHTML = `<div class="sqg-stage small" id="stage"></div><div class="sqg-panel" id="fp"><div class="sqg-checks">${rows.map((x) => `<div class="chk"><span>${x.label}</span><i class="mark"></i></div>`).join('')}</div><div class="sqg-msg" id="msg"></div><div class="sqg-actions" id="acts"></div></div>`;
+    void showView(d, b.querySelector<HTMLElement>('#stage')!).then((v) => (v.onTap = () => v.bounce()));
+    void sayHe('sq_check_order').then(() => sayOrder(o));
+    const marks = [...b.querySelectorAll<HTMLElement>('.chk .mark')];
+    const msg = b.querySelector<HTMLElement>('#msg')!;
+    const acts = b.querySelector<HTMLElement>('#acts')!;
+    const conclude = (matched: boolean): void => {
+      const gain = reward(o, matched);
+      store.orders.done.push(o.id);
+      store.orders.hearts += gain.hearts;
+      if (gain.stars) update((s) => void (s.stars += gain.stars));
+      const prev = unlockedMolds(store.orders.done.length - 1).length, now = unlockedMolds(store.orders.done.length);
+      store.draft = null;
+      persist();
+      sound.play('fanfare');
+      view?.bounce();
+      msg.innerHTML = `${matched ? 'בדיוק מה שהוזמן!' : 'תודה!'} <b>❤️ ${gain.hearts}${gain.stars ? ` ⭐ ${gain.stars}` : ''}</b>${now.length > prev ? `<br>נפתחה תבנית חדשה! <img class="newmold" src="${shapeUrl(now[now.length - 1])}" alt="">` : ''}`;
+      void (async () => { if (matched) await sayHe('sq_order_match'); await sayEn('sq_thank_you'); if (now.length > prev) await sayHe('sq_new_mold'); })();
+      acts.innerHTML = '<button type="button" class="sqg-go" id="next">הזמנה הבאה</button><button type="button" class="sqg-go alt" id="home">לתפריט</button>';
+      onX = menu;
+      acts.querySelector('#next')!.addEventListener('click', () => (sound.play('pop', 640), menu()));
+      acts.querySelector('#home')!.addEventListener('click', () => (sound.play('pop', 640), menu()));
+    };
+    rows.forEach((x, i) => later(() => { marks[i].textContent = x.ok ? '✔' : '✖'; marks[i].classList.add(x.ok ? 'ok' : 'no'); sound.play(x.ok ? 'pop' : 'pop', x.ok ? 700 : 300); }, 1800 + i * 800));
+    later(() => {
+      if (r.all) return conclude(true);
+      // not the same: "almost", one button that goes straight back to the step, or give it as it is (one heart, no failure)
+      const first = !r.shape ? 'shape' : !r.color ? 'color' : 'count';
+      msg.textContent = first === 'shape' ? 'כמעט! הצורה לא מתאימה. רוצה לתקן?' : first === 'color' ? 'כמעט! הצבע לא מתאים. רוצה לתקן?' : 'כמעט! מספר הקישוטים לא מתאים. רוצה לתקן?';
+      void sayHe(first === 'shape' ? 'sq_order_shape' : first === 'color' ? 'sq_order_almost' : 'sq_order_count');
+      acts.innerHTML = '<button type="button" class="sqg-go" id="fix">🔧 לתקן</button><button type="button" class="sqg-go alt" id="asis">לתת כמו שהוא</button>';
+      acts.querySelector('#fix')!.addEventListener('click', () => {
+        sound.play('pop', 640);
+        if (first === 'shape') { pending = o; store.draft = null; stepMold(); } else stepPaint();
+      });
+      acts.querySelector('#asis')!.addEventListener('click', () => (sound.play('pop', 500), conclude(false)));
+    }, 1800 + rows.length * 800 + 400);
   }
 
   // ---------------------------------------------------------------- the shelf
