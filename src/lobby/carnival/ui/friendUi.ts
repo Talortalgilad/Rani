@@ -37,7 +37,6 @@ export function englishOf(d: Detail, info: ResidentInfo): { id: string; text: st
 }
 
 export class FriendUI {
-  private bubbles = new Map<number, { kind: 'party' | 'gift' | 'quiz'; el: HTMLButtonElement }>();
   private quizT = 70;
   private lastQuiz = -1;
 
@@ -230,52 +229,58 @@ export class FriendUI {
     );
   }
 
-  // ---------------------------------------------------------------- the bubbles that call (a party, a gift, a question), every frame
+  // ---------------------------------------------------------------- the call button: one fixed button (a party, a gift, a question), always in the same place
+  private quizI: number | null = null;
+  private scanT = 0;
+  private party: number | undefined;
+  private gift = -1;
+  private callEl: HTMLButtonElement | null = null;
+  private call: { kind: 'party' | 'gift' | 'quiz'; i: number } | null = null;
   private clearBubble(i: number): void {
-    this.bubbles.get(i)?.el.remove();
-    this.bubbles.delete(i);
+    if (this.quizI === i) this.quizI = null;
   }
   tick(dt: number, busy: boolean): void {
     const w = this.w;
-    // which bubbles should be there: the party first, then a gift, then (now and then) a question
-    const want = new Map<number, 'party' | 'gift' | 'quiz'>();
-    for (const i of w.partyNow()) want.set(i, 'party');
-    w.residents.forEach((_, i) => {
-      if (!want.has(i) && w.giftWaiting(i)) want.set(i, 'gift');
-    });
     if (!busy) this.quizT -= dt;
-    if (this.quizT <= 0 && want.size < 2) {
-      const cand = w.residents.map((_, i) => i).filter((i) => w.levelOf(i) >= 2 && w.sim.agents[i]?.active && !want.has(i) && !this.bubbles.has(i));
-      if (cand.length) want.set(cand[Math.floor(Math.random() * cand.length)], 'quiz');
+    // what is waiting changes rarely: it is looked at twice a second, not every frame
+    this.scanT -= dt;
+    if (this.scanT <= 0) {
+      this.scanT = 0.5;
+      this.party = w.partyNow()[0];
+      this.gift = w.residents.findIndex((_, i) => w.giftWaiting(i));
+    }
+    const party = this.party, gift = this.gift;
+    if (this.quizT <= 0 && this.quizI === null) {
+      const cand = w.residents.map((_, i) => i).filter((i) => w.levelOf(i) >= 2 && w.sim.agents[i]?.active);
+      if (cand.length) this.quizI = cand[Math.floor(Math.random() * cand.length)];
       this.quizT = 100;
     }
-    for (const [i, b] of [...this.bubbles]) if (want.get(i) !== b.kind && b.kind !== 'quiz') this.clearBubble(i);
-    for (const [i, kind] of want) {
-      if (this.bubbles.has(i) || !w.sim.agents[i]?.active) continue;
-      const el = document.createElement('button');
-      el.type = 'button';
-      el.className = `cvw-callb ${kind}`;
-      el.setAttribute('aria-label', kind === 'party' ? 'יום חגיגה' : kind === 'gift' ? 'מתנה' : 'שאלה');
-      el.textContent = kind === 'party' ? '🎉' : kind === 'gift' ? '🎁' : '❓';
-      el.addEventListener('click', () => {
-        sound.play('pop', 700);
-        if (kind === 'party') this.openParty(i);
-        else if (kind === 'gift') this.openGift(i);
-        else this.openQuiz(i);
-      });
-      this.ui.h.layer.appendChild(el);
-      this.bubbles.set(i, { kind, el });
-    }
-    for (const [i, b] of this.bubbles) {
-      const p = this.ui.h.pos(i);
-      const inside = !!p && p.x > 30 && p.x < window.innerWidth - 30 && p.y > 150 && p.y < window.innerHeight - 100;
-      b.el.style.visibility = inside && w.sim.agents[i]?.active ? 'visible' : 'hidden';
-      if (p) b.el.style.transform = `translate(${p.x}px, ${p.y - 30}px) translate(-50%, -100%)`;
+    const next = party !== undefined ? { kind: 'party' as const, i: party } : gift >= 0 ? { kind: 'gift' as const, i: gift } : this.quizI !== null ? { kind: 'quiz' as const, i: this.quizI } : null;
+    if (next?.kind !== this.call?.kind || next?.i !== this.call?.i) {
+      this.call = next;
+      this.callEl?.remove();
+      this.callEl = null;
+      if (next) {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.className = `cvw-callb ${next.kind}`;
+        el.setAttribute('aria-label', next.kind === 'party' ? 'יום חגיגה' : next.kind === 'gift' ? 'מתנה' : 'שאלה');
+        el.innerHTML = `<span>${next.kind === 'party' ? '🎉' : next.kind === 'gift' ? '🎁' : '❓'}</span><img src="${esc(w.residents[next.i].img)}" alt="">`;
+        el.addEventListener('click', () => {
+          sound.play('pop', 700);
+          const c = this.call;
+          if (!c) return;
+          if (c.kind === 'party') this.openParty(c.i);
+          else if (c.kind === 'gift') this.openGift(c.i);
+          else this.openQuiz(c.i);
+        });
+        this.ui.h.layer.appendChild(el);
+        this.callEl = el;
+      }
     }
   }
   dispose(): void {
-    this.bubbles.forEach((b) => b.el.remove());
-    this.bubbles.clear();
+    this.callEl?.remove();
   }
 }
 void RESIDENT_INFO; void ACCESSORIES; void ACCESSORY_MISSING; void FOOD_OF_ITEM; void trickOf; void getState; void itemById;

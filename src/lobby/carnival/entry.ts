@@ -348,6 +348,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           }
         },
         onResidentTap: (i) => talks?.tapResident(i) ?? false,
+        onResidentLong: (i) => ui3?.friends.openCard(i),
         onBoardTap: () => ui3?.openBoard(),
         onSlots: (list) => ui3?.onSlots(list),
         safeTop: 150,

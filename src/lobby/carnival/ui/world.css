@@ -150,3 +150,11 @@
 @media (prefers-reduced-motion: reduce) { .cvw-callb, .cd-b.cdgift, .gb .gimg, .cvw-school .sc-new { animation: none; } }
 .cd-acts { flex: none; align-items: flex-start; }
 .cd-acts .cd-b, .cvw-card .meter, .cvw-card .details, .cvw-card .cd-top { flex: none; }
+
+/* a window is open: every floating button of the lobby is hidden */
+body.cv-sheet-open .cvw-btn, body.cv-sheet-open .cv-home, body.cv-sheet-open .lolly-btn, body.cv-sheet-open .cvw-callb, body.cv-sheet-open .cvw-school, body.cv-sheet-open .cvw-quest, body.cv-sheet-open .cvw-level { visibility: hidden; }
+/* the call button: ONE place, under the level bar on the right (a party, a gift or a question; the face of the resident is on it) */
+.cvw-callb { left: auto !important; top: calc(224px + env(safe-area-inset-top)) !important; inset-inline-start: 12px; transform: none !important; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; z-index: 8; }
+.cvw-callb img { width: 38px; height: 38px; object-fit: contain; pointer-events: none; }
+.cvw-callb span { position: absolute; top: -8px; inset-inline-end: -8px; font-size: 24px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+.cvw-card .cd-acts { padding-bottom: 8px; }

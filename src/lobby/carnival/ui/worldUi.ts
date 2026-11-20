@@ -249,6 +249,7 @@ export class WorldUI {
   closeSheet(): void {
     this.sheet?.remove();
     this.sheet = null;
+    document.body.classList.remove('cv-sheet-open');
   }
   openSheet(cls: string, html: string): HTMLElement {
     this.closeSheet();
@@ -261,6 +262,8 @@ export class WorldUI {
     });
     this.h.layer.appendChild(el);
     this.sheet = el;
+    // the floating buttons of the lobby are hidden while a window is open (they would be over it)
+    document.body.classList.add('cv-sheet-open');
     return el;
   }
   toast(text: string): void {
@@ -637,18 +640,19 @@ export class WorldUI {
     this.screenW = window.innerWidth;
     this.screenH = window.innerHeight;
     const w = this.h.world;
-    this.paintHud();
-    this.friends.tick(dt, !!this.sheet);
-    this.schoolT -= dt;
-    if (this.schoolT <= 0 && this.schoolEl) {
-      this.schoolT = 5;
-      this.schoolNew = !!this.h.newLesson?.();
-      this.schoolEl.classList.toggle('new', this.schoolNew);
-    }
+    // reads first (the layout is clean at the start of the frame), then the writes: no forced layout in the middle of a frame
     this.fitT -= dt;
     if (this.fitT <= 0) {
       this.fitT = 0.5;
       this.fitQuest();
+    }
+    this.paintHud();
+    this.friends.tick(dt, !!this.sheet);
+    this.schoolT -= dt;
+    if (this.schoolEl && this.schoolT <= 0) {
+      this.schoolT = 30;
+      this.schoolNew = !!this.h.newLesson?.();
+      this.schoolEl.classList.toggle('new', this.schoolNew);
     }
     // the bubbles with the icon of what each resident wants, over his head
     const seen = new Set<number>();

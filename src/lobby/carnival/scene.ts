@@ -70,6 +70,8 @@ export interface CarnivalOpts {
   onTick?(dt: number): void;
   /** a resident was tapped: true when the page took it (a talk opened), then nothing else happens */
   onResidentTap?(index: number): boolean;
+  /** a long press on a resident (his card) */
+  onResidentLong?(index: number): void;
   safeTop?: number;
   safeBottom?: number;
 }
@@ -554,6 +556,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   const pts = new Map<number, { x: number; y: number }>();
   let downAt: { x: number; y: number; t: number; id: number } | null = null;
   let dragged = 0;
+  let longTimer = 0;
+  let longFired = false;
   let pinch: { d0: number; dist0: number } | null = null;
   let entering: number | null = null;
   let enterTimer = 0;
@@ -569,6 +573,18 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     if (pts.size === 1) {
       downAt = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId };
       dragged = 0;
+      // a long press on a resident opens his card (a finger that stays put for 0.6 s)
+      longFired = false;
+      window.clearTimeout(longTimer);
+      const lx = e.clientX, ly = e.clientY;
+      longTimer = window.setTimeout(() => {
+        if (!downAt || dragged > 10) return;
+        const ri = residentAt(lx, ly);
+        if (ri !== null && o.onResidentLong) {
+          longFired = true;
+          o.onResidentLong(ri);
+        }
+      }, 600);
     } else if (pts.size === 2) {
       const [a, b] = [...pts.values()];
       pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y), dist0: goal.dist };
@@ -598,6 +614,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     const d = downAt;
     if (!d || d.id !== e.pointerId) return;
     downAt = null;
+    window.clearTimeout(longTimer);
+    if (longFired) return void (longFired = false);
     const moved = Math.max(dragged, Math.hypot(e.clientX - d.x, e.clientY - d.y));
     if (!isTap(moved, performance.now() - d.t)) return;
     tapAt(e.clientX, e.clientY);
