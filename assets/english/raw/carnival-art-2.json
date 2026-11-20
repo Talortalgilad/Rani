@@ -1,0 +1,51 @@
+{
+ "note": "Carnival stage 2-4 art for SPEC-carnival.md. Process exactly like park-art.json (connected components + rembg, 512 WebP transparent). Squishies go to public/park/squishies/<id>.webp (ids match residents.json), props to public/park/items/<id>.webp.",
+ "sheets": [
+  {
+   "file": "sheet-33-squishies-food.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_151008_cff7bf32-60f6-4049-8f1e-ac2b2576d66a.png",
+   "order": [
+    "donut",
+    "icecream",
+    "watermelon",
+    "strawberry",
+    "cupcake",
+    "popcorn",
+    "banana",
+    "avocado",
+    "pretzel"
+   ]
+  },
+  {
+   "file": "sheet-34-squishies-animals.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_152204_3de95f99-7f77-47e3-9783-40a22ea2fa1f.png",
+   "order": [
+    "kitten",
+    "puppy",
+    "frog",
+    "penguin",
+    "unicorn",
+    "dino",
+    "bee",
+    "whale",
+    "star"
+   ]
+  },
+  {
+   "file": "sheet-35-carnival-props.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_153049_f42f994b-117b-4731-b8c7-8068d242b6ea.png",
+   "order": [
+    "egg",
+    "egg_cracked",
+    "mailbox",
+    "giftbox",
+    "envelope",
+    "queuepost",
+    "woodsign",
+    "medal",
+    "chefhat"
+   ]
+  }
+ ],
+ "backgrounds": []
+}

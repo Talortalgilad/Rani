@@ -6,7 +6,7 @@
 export {
   ACESFilmicToneMapping, NeutralToneMapping, ShapeGeometry, RingGeometry, RepeatWrapping, AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, CapsuleGeometry, CatmullRomCurve3,
   CubicBezierCurve3, DoubleSide, Float32BufferAttribute, Matrix4, NoToneMapping, PMREMGenerator, Quaternion, Sprite,
-  SpriteMaterial, TubeGeometry, BufferGeometry, CanvasTexture, CircleGeometry, Color, ConeGeometry, CylinderGeometry,
+  SpriteMaterial, TubeGeometry, BufferGeometry, CanvasTexture, InstancedBufferAttribute, LinearFilter, CircleGeometry, Color, ConeGeometry, CylinderGeometry,
   DirectionalLight, ExtrudeGeometry, Fog, Group, HemisphereLight, InstancedMesh, MathUtils, Mesh,
   MeshBasicMaterial, MeshLambertMaterial, MeshStandardMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PlaneGeometry,
   Raycaster, LineBasicMaterial, LineSegments, SRGBColorSpace, Scene, Shape, SphereGeometry, TextureLoader, TorusGeometry, Vector2, Vector3, WebGLRenderer,

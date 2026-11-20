@@ -1,3 +1,4 @@
+import { loadSave as loadCarnivalSave, writeSave as writeCarnivalSave } from './lobby/carnival/save';
 import '@fontsource/rubik/latin-400.css';
 import '@fontsource/rubik/latin-600.css';
 import '@fontsource/rubik/latin-800.css';
@@ -55,6 +56,14 @@ function mountGame(gameId: string): void {
     onExit: () => go({ name: 'home' }),
     onRoundEnd: (r) => {
       if (r.stars > 0) update((s) => (s.stars += r.stars));
+      // the carnival gives the hearts of the ones who waited for this game when she gets back
+      try {
+        const cs = loadCarnivalSave();
+        cs.pendingRounds.push(game.id);
+        writeCarnivalSave(cs);
+      } catch {
+        /* the carnival is optional */
+      }
     },
     requestRound: (start) => {
       if (startRound(game.id)) start();

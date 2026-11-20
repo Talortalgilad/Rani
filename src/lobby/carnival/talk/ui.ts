@@ -58,8 +58,9 @@ export class Talks {
   attempts = 0;
   private waveT = new Map<number, number>();
 
-  constructor(readonly host: TalkHost, private now: () => number = () => Date.now()) {
-    this.save = loadSave();
+  constructor(readonly host: TalkHost, private now: () => number = () => Date.now(), shared?: CarnivalSave) {
+    // the carnival's save is one object (the world shares it with the talks)
+    this.save = shared ?? loadSave();
     if (this.save.alerts.alerts.length > MAX_ALERTS) this.save.alerts.alerts.length = MAX_ALERTS;
     this.chatter = new Chatter(Math.random);
     this.chatEl = document.createElement('div');
@@ -83,6 +84,10 @@ export class Talks {
 
   get open(): boolean {
     return this.screen !== null;
+  }
+  /** the hearts counter shows the hearts of the save now (the world gave some) */
+  refreshHearts(): void {
+    this.paintHearts();
   }
   private paintHearts(): void {
     this.heartsEl.innerHTML = `❤️ ${counter(String(this.save.hearts))}`;
@@ -133,7 +138,18 @@ export class Talks {
       const c = this.chatter.tick(dt, this.host.residents.length, skip);
       const p0 = c ? this.host.pos(c.r) : null;
       // only a resident who can be seen says something
-      if (c && p0) {
+      // one that would fall on a bubble of the world waits for another moment
+      const hit = (): boolean => {
+        const half = 60;
+        return [...this.host.layer.querySelectorAll<HTMLElement>('.cvw-say')].some((e) => {
+          if (e.style.visibility === 'hidden') return false;
+          const b = e.getBoundingClientRect();
+          return p0 !== null && Math.abs((b.left + b.right) / 2 - p0.x) < half + b.width / 2 && Math.abs(b.bottom - (p0.y - 18)) < 34;
+        });
+      };
+      if (c && p0 && hit()) {
+        this.chatT = 0.8;
+      } else if (c && p0) {
         this.chatR = c.r;
         this.chatT = 3.4;
         this.chatEl.textContent = c.chat.text;

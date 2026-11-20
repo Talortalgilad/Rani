@@ -15,8 +15,11 @@ import { bake, staticMeshes } from './bake';
 import { drawFlagpole } from './flagpole';
 import { clampDist, clampTarget, eye, fitDist, FOV, groundPerPx, isTap, PITCH, type CamState } from './camera';
 import { ISLAND_R, PATH_W, PLAZA_R, PLOT_PAD, PLOT_R, RING_R, ZS, plots } from './layout';
-import type { Resident } from './residents';
-import { makeGraph, rng, Walker } from './walk';
+import { NEW_RESIDENTS, type Resident } from './residents';
+import { rng } from './walk';
+import { Atlas } from './atlas';
+import { ITEMS } from './catalog';
+import type { Slot } from './slots';
 
 export interface PlotSpec {
   kind: 'game' | 'locked';
@@ -26,7 +29,21 @@ export interface PlotSpec {
   lobbyIsland?: (ctx: { shadows: boolean; reduced: boolean }) => LobbyIslandHandle | Promise<LobbyIslandHandle>;
 }
 
+/** What the scene needs from the world of the carnival (world.ts): the places, what stands on them, and where each resident is. The scene only draws it. */
+export interface WorldView {
+  slots: Slot[];
+  built(): Record<string, string>;
+  agents(): { x: number; z: number; face: number; walking: boolean; active: boolean; mode?: string }[];
+  rideProgress(slotId: string): number | null;
+  hold(i: number, on: boolean): void;
+}
+
 export interface CarnivalOpts {
+  world: WorldView;
+  /** the board of wishes in the plaza was tapped */
+  onBoardTap?(): void;
+  /** every frame: where each place is on the screen (the page puts its markers there) */
+  onSlots?(slots: { id: string; x: number; y: number; behind: boolean }[]): void;
   plots: PlotSpec[];
   residents: Resident[];
   autoDowngrade: boolean;
@@ -63,6 +80,14 @@ export interface CarnivalHandle {
   wave(i: number): void;
   readonly info: { calls: number; residents: number; plots: number; cam: CamState };
   tapPlot(i: number): void;
+  /** a resident arrived (a new level): he appears with a hop */
+  addResident(r: Resident): number;
+  /** where a place is on the screen */
+  slotScreen(id: string): { x: number; y: number } | null;
+  /** the camera comes to a place (or a point) */
+  lookAt(x: number, z: number, dist?: number): void;
+  /** the picture of the draw calls (the budget) */
+  calls(): number;
 }
 
 const ZOOM_MS = 420;
@@ -72,7 +97,7 @@ export async function startCarnival(o: CarnivalOpts): Promise<CarnivalHandle> {
   const handle: SceneHandle = await showScene(
     async (env) => {
       const minis = await Promise.all(
-        o.plots.map((p) => (p.lobbyIsland ? Promise.resolve().then(() => p.lobbyIsland!({ shadows: env.tier === 'high', reduced: env.reduced })).catch(() => null) : null)),
+        o.plots.map((p) => (p.lobbyIsland ? Promise.resolve().then(() => p.lobbyIsland!({ shadows: false, reduced: env.reduced })).catch(() => null) : null)),
       );
       const built = await createScene(env, o, minis);
       api = built.api;
@@ -80,10 +105,8 @@ export async function startCarnival(o: CarnivalOpts): Promise<CarnivalHandle> {
     },
     { autoDowngrade: o.autoDowngrade, onFallback: o.onFallback },
   );
-  return { fadeIn: (ms) => handle.fadeIn(ms), dispose: () => handle.dispose(), home: () => api.home(), residentScreen: (i) => api.residentScreen(i), focus: (i) => api.focus(i), hold: (i, on) => api.hold(i, on), wave: (i) => api.wave(i), get info() { return api.info; }, tapPlot: (i) => api.tapPlot(i) };
+  return { fadeIn: (ms) => handle.fadeIn(ms), dispose: () => handle.dispose(), home: () => api.home(), residentScreen: (i) => api.residentScreen(i), focus: (i) => api.focus(i), hold: (i, on) => api.hold(i, on), wave: (i) => api.wave(i), get info() { return api.info; }, tapPlot: (i) => api.tapPlot(i), addResident: (r) => api.addResident(r), slotScreen: (id) => api.slotScreen(id), lookAt: (x, z, d) => api.lookAt(x, z, d), calls: () => api.calls() };
 }
-
-const loader = new T.TextureLoader();
 
 async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHandle | null)[]): Promise<{ scene: StageScene; api: CarnivalHandle }> {
   const mats = new Materials();
@@ -105,7 +128,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   const hemi = new T.HemisphereLight(night ? '#7f8fff' : '#ffffff', night ? '#2a2f5a' : '#c9b79f', night ? 0.9 : 2.5);
   const sun = new T.DirectionalLight(night ? '#9fb0ff' : sky.light, night ? 0.45 : sky.intensity * 1.9);
   sun.position.set(8, 16, 9);
-  sun.castShadow = tier === 'high';
+  // no shadow pass: it drew every miniature a second time (about 9 draw calls) and the budget is 60
+  sun.castShadow = false;
   sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 4, far: 40 });
   sun.shadow.bias = -0.0008;
@@ -445,29 +469,38 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     scene.add(stars);
   }
 
-  // ---- the residents: sprites that walk the paths, with a round shadow
-  const graph = makeGraph();
-  const shadowMesh = new T.InstancedMesh(keep(new T.CircleGeometry(0.34, 12)), keep(new T.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.22, depthWrite: false })), o.residents.length);
+  // ---- the residents: billboards of one atlas (one draw call for all of them), that walk where the world (world.ts) puts them, with a round shadow
+  const base = import.meta.env.BASE_URL;
+  const imgs = new Map<string, string>(o.residents.map((r) => [r.id, r.img]));
+  for (const id of NEW_RESIDENTS) if (!imgs.has(id)) imgs.set(id, `${base}park/squishies/${id}.webp`);
+  const RES_CAP = 24;
+  const resAtlas = keep(new Atlas({ keys: [...imgs.keys()], urlOf: (k) => imgs.get(k)!, cell: 256, capacity: RES_CAP, tint: night ? '#a9aee0' : '#ffffff' }, facing));
+  scene.add(resAtlas.mesh);
+  const shadowMesh = new T.InstancedMesh(keep(new T.CircleGeometry(0.34, 12)), keep(new T.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.22, depthWrite: false })), RES_CAP);
   shadowMesh.frustumCulled = false;
   scene.add(shadowMesh);
   const shQ = new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), -Math.PI / 2);
-  const people = o.residents.map((r, i) => {
-    const w = new Walker(graph, (i * 7 + 1) % graph.nodes.length, rng(100 + i), 1.15 + (i % 3) * 0.12);
-    const mat = new T.SpriteMaterial({ transparent: true, depthWrite: false });
-    keep(mat);
-    loader.load(r.img, (tex: T.Texture) => {
-      if (disposed) return tex.dispose();
-      tex.colorSpace = T.SRGBColorSpace;
-      owned.push(tex);
-      mat.map = tex;
-      mat.needsUpdate = true;
-    });
-    const sp = new T.Sprite(mat);
-    sp.scale.set(1.15, 1.15, 1);
-    sp.userData.index = 1000 + i;
-    scene.add(sp);
-    return { r, w, sp, hop: 0, tapped: 0, taps: 0, phase: i * 1.3 };
-  });
+  /** a resident: his place on the stage (the page asks where he is), his hop, and who tapped him */
+  interface Person { r: Resident; sp: T.Object3D; hop: number; tapped: number; taps: number; phase: number; born: number }
+  const people: Person[] = [];
+  const addPerson = (r: Resident, hopIn = false): number => {
+    const sp = new T.Object3D();
+    people.push({ r, sp, hop: hopIn ? 1 : 0, tapped: 0, taps: 0, phase: people.length * 1.3, born: hopIn ? 0 : -1 });
+    return people.length - 1;
+  };
+  o.residents.forEach((r) => addPerson(r));
+
+  // ---- what is built: one more atlas (the stalls, the rides, the decorations, the board of wishes), and the board in the plaza
+  const itemKeys = [...ITEMS.map((i) => i.id), 'woodsign'];
+  const itemAtlas = keep(new Atlas({ keys: itemKeys, urlOf: (k) => itemUrl(k), cell: 192, capacity: 64, tint: night ? '#8a8fc8' : '#ffffff' }, facing));
+  scene.add(itemAtlas.mesh);
+  const BOARD = { x: 1.9, z: 2.6, size: 1.5 };
+  const itemSize = (id: string): number => {
+    const it = ITEMS.find((x) => x.id === id);
+    return !it ? 1.5 : it.slot === 'ride' ? 2.7 : it.slot === 'stall' ? 1.9 : id === 'hotairballoon' ? 2.8 : id === 'entrancearch' ? 2.6 : 1.5;
+  };
+  const bornAt = new Map<string, number>();
+  let builtKey = '';
 
   // ---- the camera: a fixed slant; the finger moves it (and nothing else does)
   let cam: CamState = { x: 0, z: 0.8, dist: 30 };
@@ -573,8 +606,45 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   }
   let labelOf: number | null = null;
   let lastPole = -1;
+  /** the resident (or null) that is under a finger: by his place on the screen, the one in front first */
+  function residentAt(x: number, y: number): number | null {
+    const ag = o.world.agents();
+    const r = canvas.getBoundingClientRect();
+    let best: number | null = null;
+    let bz = -Infinity;
+    people.forEach((p, i) => {
+      if (!ag[i]?.active) return;
+      const c = screenOf(p.sp.position);
+      const top = screenOf(p.sp.position.clone().add(new T.Vector3(0, 0.6, 0)));
+      const half = Math.max(22, Math.abs(c.y - top.y));
+      if (Math.abs(x - c.x) <= half * 0.85 && Math.abs(y - c.y) <= half * 1.05 && p.sp.position.z > bz && x >= r.left && x <= r.right) {
+        best = i;
+        bz = p.sp.position.z;
+      }
+    });
+    return best;
+  }
   function tapAt(x: number, y: number): void {
-    const targets: T.Object3D[] = [...pads.map((p) => p.g), jar.group, ...people.map((p) => p.sp)];
+    const ri = residentAt(x, y);
+    if (ri !== null) {
+      if (o.onResidentTap?.(ri)) return;
+      const p = people[ri];
+      p.taps = p.tapped > 0 ? p.taps + 1 : 1;
+      const again = p.tapped > 0;
+      p.tapped = 3.2;
+      p.hop = 1;
+      o.world.hold(ri, true);
+      labelOf = ri;
+      o.onResident(p.r, again, screenOf(p.sp.position));
+      return;
+    }
+    // the board of wishes in the plaza
+    const bc = screenOf(new T.Vector3(BOARD.x, 0.9, BOARD.z));
+    if (Math.hypot(x - bc.x, y - bc.y) < Math.max(26, groundPxPerUnit() * 0.9)) {
+      o.onBoardTap?.();
+      return;
+    }
+    const targets: T.Object3D[] = [...pads.map((p) => p.g), jar.group];
     const i = pickIndex(camera, canvas, x, y, targets);
     if (i === null) return;
     if (i === -1) {
@@ -582,19 +652,12 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       o.onJarTap();
       return;
     }
-    if (i >= 1000) {
-      if (o.onResidentTap?.(i - 1000)) return;
-      const p = people[i - 1000];
-      p.taps = p.tapped > 0 ? p.taps + 1 : 1;
-      const again = p.tapped > 0;
-      p.tapped = 3.2;
-      p.hop = 1;
-      p.w.held = true;
-      labelOf = i - 1000;
-      o.onResident(p.r, again, screenOf(p.sp.position));
-      return;
-    }
     tapPlot(i);
+  }
+  /** about how many pixels a unit of the ground is, here (the size of the board and the places on the screen) */
+  function groundPxPerUnit(): number {
+    const a = screenOf(new T.Vector3(0, 0, 0)), b = screenOf(new T.Vector3(1, 0, 0));
+    return Math.abs(b.x - a.x);
   }
   function tapPlot(i: number): void {
     if (entering !== null || i < 0 || i >= pads.length) return;
@@ -627,8 +690,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
 
     o.onTick?.(dt);
     if (focusIdx !== null) {
-      const fp = people[focusIdx];
-      goal = { x: fp.w.x, z: fp.w.z + 1.5, dist: 11 };
+      const fa = o.world.agents()[focusIdx];
+      if (fa) goal = { x: fa.x, z: fa.z + 1.5, dist: 11 };
     }
     updaters.forEach((f) => f(dt, time));
     pads.forEach((p) => {
@@ -639,25 +702,66 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
         p.inner.position.y = 0.1 + Math.sin(p.jump * Math.PI) * 0.35 * (1 - p.jump);
       }
     });
-    people.forEach((p) => {
+    // the residents: where the world puts them (the ones at home are not shown), with a hop, a bob when walking, and a shadow
+    const ag = o.world.agents();
+    let shown = 0;
+    people.forEach((p, i) => {
+      const a = ag[i];
+      if (!a || !a.active) return;
       if (p.tapped > 0) {
         p.tapped -= dt;
         if (p.tapped <= 0) {
-          p.w.held = false;
-          if (labelOf === people.indexOf(p)) labelOf = null;
+          o.world.hold(i, false);
+          if (labelOf === i) labelOf = null;
         }
       }
-      p.w.update(dt);
       p.hop = Math.max(0, p.hop - dt * 2.2);
-      const bob = reduced ? 0 : p.w.walking ? Math.abs(Math.sin(time * 9 + p.phase)) * 0.14 : Math.sin(time * 2 + p.phase) * 0.02;
+      const bob = reduced ? 0 : a.walking ? Math.abs(Math.sin(time * 9 + p.phase)) * 0.14 : Math.sin(time * 2 + p.phase) * 0.02;
       const jump = Math.sin(p.hop * Math.PI) * 0.5;
-      p.sp.position.set(p.w.x, 0.58 + bob + jump, p.w.z);
-      p.sp.scale.set(1.15 * p.w.face, 1.15 * (1 + (p.w.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0)), 1);
-      m4.compose(new T.Vector3(p.w.x, 0.04, p.w.z), shQ, new T.Vector3(1 - jump * 0.4, 1 - jump * 0.4, 1));
-      shadowMesh.setMatrixAt(people.indexOf(p), m4);
+      // a resident who just arrived drops in from above
+      if (p.born >= 0 && p.born < 1) p.born = Math.min(1, p.born + dt / 0.7);
+      const drop = p.born >= 0 && p.born < 1 ? (1 - p.born) * 3 : 0;
+      // a rider sits on the ride, in front of it (the picture of the ride is a standing sign: the rider has to be in front, or it is hidden behind it)
+      const ride = a.mode === 'riding';
+      const rz = ride ? a.z + 0.7 : a.z;
+      const ry = ride ? 0.45 : 0;
+      p.sp.position.set(a.x, 0.58 + bob + jump + drop + ry, rz);
+      resAtlas.set(shown, p.r.id, a.x, 0.62 + bob + jump + drop + ry, rz, (ride ? 0.85 : 1.15) * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0)), a.face);
+      m4.compose(new T.Vector3(a.x, 0.04, rz), shQ, new T.Vector3(1 - jump * 0.4, 1 - jump * 0.4, 1));
+      shadowMesh.setMatrixAt(shown, m4);
+      shown++;
     });
+    resAtlas.commit(shown);
+    shadowMesh.count = shown;
     shadowMesh.instanceMatrix.needsUpdate = true;
+    // the built things: instances of the atlas (a new one drops from above with a bounce), the rides sway while they turn, and the board of wishes in the plaza
+    const built = o.world.built();
+    const key = JSON.stringify(built);
+    if (key !== builtKey) {
+      for (const id of Object.keys(built)) if (!bornAt.has(id + built[id])) bornAt.set(id + built[id], time);
+      builtKey = key;
+    }
+    let bi = 0;
+    for (const s of o.world.slots) {
+      const item = built[s.id];
+      if (!item) continue;
+      const age = time - (bornAt.get(s.id + item) ?? -9);
+      const fall = age < 0.6 && !reduced ? Math.max(0, (1 - age / 0.35)) * 5 + Math.abs(Math.sin(age * 9)) * 0.25 * (1 - age / 0.6) : 0;
+      const size = itemSize(item);
+      const turn = o.world.rideProgress(s.id);
+      const sway = turn !== null && !reduced ? Math.sin(time * 7 + bi) * 0.06 : 0;
+      itemAtlas.set(bi++, item, s.x + sway, size * 0.48 + 0.08 + fall, s.z, size * (turn !== null && !reduced ? 1 + Math.sin(time * 5) * 0.03 : 1));
+    }
+    itemAtlas.set(bi++, 'woodsign', BOARD.x, BOARD.size * 0.5 + 0.05, BOARD.z, BOARD.size);
+    itemAtlas.commit(bi);
     o.onLabelMove?.(labelOf !== null ? screenOf(people[labelOf].sp.position.clone().add(new T.Vector3(0, 0.75, 0))) : null);
+    if (o.onSlots) {
+      o.onSlots(o.world.slots.map((s) => {
+        const v = new T.Vector3(s.x, 1.0, s.z);
+        const sc = screenOf(v);
+        return { id: s.id, x: sc.x, y: sc.y, behind: v.clone().project(camera).z > 1 };
+      }));
+    }
     flagAt(time);
     sprites.forEach((q) => {
       if (q.bob) q.sp.position.set(q.base.x + (q.bob > 0.5 ? Math.sin(time * 0.15 + q.ph) * 6 : 0), q.base.y + (reduced ? 0 : Math.sin(time * 1.2 + q.ph) * q.bob), q.base.z);
@@ -692,7 +796,6 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     },
     setTier(t) {
       tier = t;
-      sun.castShadow = t === 'high';
       puffs.visible = !night;
     },
     dispose() {
@@ -738,12 +841,24 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     hold(i, on) {
       const q = people[i];
       if (!q) return;
-      q.w.held = on;
+      o.world.hold(i, on);
       if (on) q.tapped = 0;
     },
     wave(i) {
       if (people[i]) people[i].hop = 1;
     },
+    addResident(r) {
+      if (!imgs.has(r.id)) imgs.set(r.id, r.img);
+      return addPerson(r, true);
+    },
+    slotScreen(id) {
+      const s = o.world.slots.find((x) => x.id === id);
+      return s ? screenOf(new T.Vector3(s.x, 1.0, s.z)) : null;
+    },
+    lookAt(x, z, dist) {
+      goal = clampTarget({ x, z, dist: dist ?? goal.dist });
+    },
+    calls: () => env.renderer.info.render.calls,
   };
   if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__carnival = { api, cam: () => cam, setCam: (c: CamState) => (goal = c), tapAt, people, scene, project: (x: number, y: number, z: number) => screenOf(new T.Vector3(x, y, z)), plotAt: (i: number) => ps[i], count: () => { const out: Record<string, number> = {}; scene.traverse((ob) => { const m = ob as T.Mesh; if (m.isMesh || (ob as T.Sprite).isSprite) { let top: T.Object3D = ob; while (top.parent && top.parent !== scene) top = top.parent; const k = `${top.type}:${top.userData.index ?? top.name ?? ''}`; out[k] = (out[k] ?? 0) + 1; } }); return out; } };
   void clamp;

@@ -16,7 +16,8 @@ const en = manifest('en');
 
 describe('the carnival lines have their recordings', () => {
   it('every Hebrew line (talks, items, numbers 1-20, "two" before a noun) has a recording; the one that has none is the name line', () => {
-    const missing = CARNIVAL_LINES.filter((l) => l.parts.every((p) => p !== null)).filter((l) => !he.has(l.id)).map((l) => l.id);
+    // the quests (qs_*) are read by the phone until they are recorded
+    const missing = CARNIVAL_LINES.filter((l) => l.parts.every((p) => p !== null) && !l.id.startsWith('qs_')).filter((l) => !he.has(l.id)).map((l) => l.id);
     expect(missing).toEqual([]);
   });
   it('every item of a talk has its line, and so have all the numbers it can say', () => {
@@ -54,5 +55,26 @@ describe('the ids of the five other names are ready for the recordings', () => {
   it('name.<key> in Hebrew and carn_hello_im_<key> in English', () => {
     expect(ALT_NAMES.map((n) => ALT_KEYS[n])).toEqual(['pitzi', 'bobi', 'noni', 'koki', 'tofi']);
     expect(linePartsFor('carnival_name', 'קוקי')[0].clip).toBe('name.koki');
+  });
+});
+
+import { CS_LINES } from '../csLines';
+import { ITEMS as CATALOG } from '../catalog';
+import { NEW_RESIDENTS } from '../residents';
+import { NAME_KEYS } from '../../../games/english/content/heLines';
+import { RESIDENT_INFO } from '../residents';
+describe('the recordings of stage 2', () => {
+  it('every cs_ line, the names of the 18 new residents, their English hellos and the orders are recorded', () => {
+    for (const l of CS_LINES) expect(he.has(l.id), l.id).toBe(true);
+    for (const id of NEW_RESIDENTS) {
+      expect(he.has(`name.${id}`), `name.${id}`).toBe(true);
+      expect(en.has(`carn_hello_im_${id}`), `carn_hello_im_${id}`).toBe(true);
+    }
+    for (const r of RESIDENT_INFO.slice(4)) expect(NAME_KEYS[r.he], r.he).toBe(r.id);
+    for (const i of CATALOG) if (i.order) expect(en.has(i.order), i.order).toBe(true);
+    expect(en.has('carn_please_plain') && en.has('carn_here_you_go')).toBe(true);
+  });
+  it('a stall that has no recording of its order is said with the word and then "please"', () => {
+    expect(CATALOG.filter((i) => i.fills === 'food' || i.fills === 'drink').every((i) => i.order)).toBe(true);
   });
 });

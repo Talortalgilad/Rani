@@ -11,9 +11,9 @@
   "lang": "he",
   "id": "cv_got",
   "text": "וקיבלתי עוד",
-  "take": 400,
-  "dur": 2.26,
-  "flag": "tight"
+  "take": 403,
+  "dur": 2.54,
+  "flag": "pause,tight"
  },
  {
   "lang": "he",
@@ -99,9 +99,9 @@
   "lang": "he",
   "id": "cv_almost",
   "text": "כמעט! בואי נספור יחד.",
-  "take": 400,
-  "dur": 3.5,
-  "flag": "pause"
+  "take": 403,
+  "dur": 2.42,
+  "flag": "tight"
  },
  {
   "lang": "he",
@@ -123,9 +123,9 @@
   "lang": "he",
   "id": "cv_tapthis",
   "text": "הקישי על מה שהוא מבקש.",
-  "take": 400,
-  "dur": 4.1,
-  "flag": "pause,tight"
+  "take": 403,
+  "dur": 2.14,
+  "flag": ""
  },
  {
   "lang": "he",
@@ -2933,6 +2933,1390 @@
   "lang": "en",
   "take": 523,
   "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_wish_food",
+  "text": "בא לי משהו טעים!",
+  "take": 420,
+  "dur": 1.56,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_wish_drink",
+  "text": "בא לי לשתות!",
+  "take": 420,
+  "dur": 1.44,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_wish_ride",
+  "text": "בא לי לעלות על מתקן!",
+  "take": 420,
+  "dur": 1.9,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_wish_rest",
+  "text": "בא לי לנוח קצת.",
+  "take": 420,
+  "dur": 1.73,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_wish_play",
+  "text": "בא לי לשחק!",
+  "take": 420,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_suggest_food",
+  "text": "אולי תפתחי דוכן אוכל?",
+  "take": 420,
+  "dur": 2.35,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_suggest_drink",
+  "text": "אולי תפתחי דוכן שתייה?",
+  "take": 420,
+  "dur": 1.99,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_suggest_ride",
+  "text": "אולי תפתחי מתקן חדש?",
+  "take": 420,
+  "dur": 2.18,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_suggest_rest",
+  "text": "אולי תשימי ספסל?",
+  "take": 420,
+  "dur": 1.66,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_yum",
+  "text": "ממם, טעים!",
+  "take": 420,
+  "dur": 4.39,
+  "flag": "long"
+ },
+ {
+  "lang": "he",
+  "id": "cs_thanks_stall",
+  "text": "תודה! זה היה מעולה!",
+  "take": 420,
+  "dur": 2.28,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_fun",
+  "text": "יש! איזה כיף!",
+  "take": 420,
+  "dur": 2.11,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_again",
+  "text": "עוד פעם! עוד פעם!",
+  "take": 420,
+  "dur": 0.53,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_queue",
+  "text": "אני בתור!",
+  "take": 420,
+  "dur": 1.08,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_my_turn",
+  "text": "הגיע התור שלי!",
+  "take": 420,
+  "dur": 1.46,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_rested",
+  "text": "נחתי. עכשיו יש לי כוח!",
+  "take": 420,
+  "dur": 2.78,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_new_stall",
+  "text": "דוכן חדש נפתח!",
+  "take": 420,
+  "dur": 1.85,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_new_ride",
+  "text": "מתקן חדש בקרנבל!",
+  "take": 421,
+  "dur": 2.09,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_need_stars",
+  "text": "חסרים לך כוכבים. בואי נשחק ונרוויח!",
+  "take": 421,
+  "dur": 3.55,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_pick_place",
+  "text": "בחרי מקום.",
+  "take": 421,
+  "dur": 1.25,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_pick_item",
+  "text": "מה נבנה כאן?",
+  "take": 421,
+  "dur": 1.18,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_first_free",
+  "text": "הדוכן הראשון מתנה!",
+  "take": 421,
+  "dur": 2.06,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_level_up",
+  "text": "הקרנבל עלה רמה!",
+  "take": 421,
+  "dur": 1.85,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_new_place",
+  "text": "נפתח מקום חדש!",
+  "take": 421,
+  "dur": 1.73,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_new_resident",
+  "text": "סקווישי חדש הגיע לקרנבל!",
+  "take": 421,
+  "dur": 2.33,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_friend_up",
+  "text": "אנחנו חברים יותר טובים עכשיו!",
+  "take": 421,
+  "dur": 2.62,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_best_friend",
+  "text": "את החברה הכי טובה שלי!",
+  "take": 421,
+  "dur": 2.14,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_new_trick",
+  "text": "תראי מה למדתי!",
+  "take": 421,
+  "dur": 1.32,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_gift_for_you",
+  "text": "הבאתי לך מתנה!",
+  "take": 421,
+  "dur": 1.3,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_i_grew",
+  "text": "תראי כמה גדלתי!",
+  "take": 421,
+  "dur": 3.43,
+  "flag": "long"
+ },
+ {
+  "lang": "he",
+  "id": "cs_at_stall",
+  "text": "היום אני בדוכן!",
+  "take": 421,
+  "dur": 1.51,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_fav_food",
+  "text": "האוכל האהוב עליי:",
+  "take": 421,
+  "dur": 1.78,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_fav_game",
+  "text": "המשחק האהוב עליי:",
+  "take": 421,
+  "dur": 1.3,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_egg_found",
+  "text": "מצאנו ביצה! מי יבקע ממנה?",
+  "take": 421,
+  "dur": 1.39,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_egg_wait",
+  "text": "הביצה צריכה לישון לילה אחד. בואי מחר לראות!",
+  "take": 422,
+  "dur": 2.42,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_egg_hatch",
+  "text": "הביצה בוקעת!",
+  "take": 422,
+  "dur": 1.58,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_baby_hello",
+  "text": "שלום עולם!",
+  "take": 422,
+  "dur": 1.61,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_welcome_back",
+  "text": "רני חזרה! התגעגענו!",
+  "take": 422,
+  "dur": 2.64,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_collected",
+  "text": "אספנו בשבילך לבבות!",
+  "take": 422,
+  "dur": 3.62,
+  "flag": "pause,tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_daily_gift",
+  "text": "מתנת היום מחכה לך!",
+  "take": 422,
+  "dur": 2.11,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_mail",
+  "text": "יש לך מכתב!",
+  "take": 422,
+  "dur": 1.27,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_letter.0",
+  "text": "ציירתי לך ציור!",
+  "take": 422,
+  "dur": 1.58,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_letter.1",
+  "text": "היום היה כיף בקרנבל!",
+  "take": 422,
+  "dur": 2.16,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_letter.2",
+  "text": "בואי נשחק יחד מחר!",
+  "take": 422,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_visitor",
+  "text": "יש לנו אורח היום!",
+  "take": 422,
+  "dur": 1.63,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_visitor_stay",
+  "text": "אפשר להישאר לגור כאן?",
+  "take": 422,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_parade",
+  "text": "היום יש מצעד! כולם לכיכר!",
+  "take": 422,
+  "dur": 2.88,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_good_night",
+  "text": "לילה טוב, רני!",
+  "take": 422,
+  "dur": 1.39,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_good_morning",
+  "text": "בוקר טוב, רני!",
+  "take": 422,
+  "dur": 1.46,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_quest_new",
+  "text": "משימה חדשה!",
+  "take": 422,
+  "dur": 1.3,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_quest_done",
+  "text": "המשימה הושלמה!",
+  "take": 422,
+  "dur": 1.54,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.donut",
+  "text": "דונדון",
+  "take": 423,
+  "dur": 1.06,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.icecream",
+  "text": "גלידי",
+  "take": 423,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.watermelon",
+  "text": "אבטי",
+  "take": 423,
+  "dur": 1.2,
+  "flag": "long"
+ },
+ {
+  "lang": "he",
+  "id": "name.strawberry",
+  "text": "תותי",
+  "take": 423,
+  "dur": 0.77,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.cupcake",
+  "text": "קאפי",
+  "take": 423,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.popcorn",
+  "text": "פופי",
+  "take": 423,
+  "dur": 0.74,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.banana",
+  "text": "בננו",
+  "take": 423,
+  "dur": 0.96,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.avocado",
+  "text": "אבוקי",
+  "take": 423,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.pretzel",
+  "text": "בייגי",
+  "take": 423,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.kitten",
+  "text": "מיצי",
+  "take": 423,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.puppy",
+  "text": "צ'ופי",
+  "take": 423,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.frog",
+  "text": "קוואקי",
+  "take": 423,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.penguin",
+  "text": "פינגי",
+  "take": 423,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.unicorn",
+  "text": "קרני",
+  "take": 423,
+  "dur": 0.82,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.dino",
+  "text": "דינו",
+  "take": 423,
+  "dur": 0.91,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.bee",
+  "text": "זומזי",
+  "take": 423,
+  "dur": 0.98,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.whale",
+  "text": "ווילי",
+  "take": 423,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.star",
+  "text": "נוצי",
+  "take": 423,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_donut",
+  "text": "Hello! I'm Dondon.",
+  "take": 440,
+  "dur": 1.97,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_icecream",
+  "text": "Hello! I'm Glidi.",
+  "take": 440,
+  "dur": 1.7,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_watermelon",
+  "text": "Hello! I'm Avati.",
+  "take": 440,
+  "dur": 1.75,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_strawberry",
+  "text": "Hello! I'm Tutti.",
+  "take": 440,
+  "dur": 1.73,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_cupcake",
+  "text": "Hello! I'm Cuppy.",
+  "take": 440,
+  "dur": 1.7,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_popcorn",
+  "text": "Hello! I'm Poppy.",
+  "take": 440,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_banana",
+  "text": "Hello! I'm Banano.",
+  "take": 440,
+  "dur": 1.85,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_avocado",
+  "text": "Hello! I'm Avoki.",
+  "take": 440,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_pretzel",
+  "text": "Hello! I'm Beigi.",
+  "take": 440,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_kitten",
+  "text": "Hello! I'm Mitzi.",
+  "take": 440,
+  "dur": 1.8,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_puppy",
+  "text": "Hello! I'm Choopy.",
+  "take": 440,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_frog",
+  "text": "Hello! I'm Kwaki.",
+  "take": 440,
+  "dur": 1.9,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_penguin",
+  "text": "Hello! I'm Pingi.",
+  "take": 440,
+  "dur": 1.75,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_unicorn",
+  "text": "Hello! I'm Karni.",
+  "take": 440,
+  "dur": 1.82,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_dino",
+  "text": "Hello! I'm Dino.",
+  "take": 441,
+  "dur": 1.34,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_bee",
+  "text": "Hello! I'm Zoomzi.",
+  "take": 441,
+  "dur": 1.39,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_whale",
+  "text": "Hello! I'm Willy.",
+  "take": 441,
+  "dur": 1.32,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_star",
+  "text": "Hello! I'm Notzi.",
+  "take": 441,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_im_thirsty",
+  "text": "I'm thirsty!",
+  "take": 441,
+  "dur": 1.2,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_yummy",
+  "text": "Yummy!",
+  "take": 441,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_so_fun",
+  "text": "So fun!",
+  "take": 441,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_thank_you",
+  "text": "Thank you!",
+  "take": 441,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_good_morning",
+  "text": "Good morning!",
+  "take": 441,
+  "dur": 1.03,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_good_night",
+  "text": "Good night!",
+  "take": 441,
+  "dur": 1.03,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_my_turn",
+  "text": "My turn!",
+  "take": 441,
+  "dur": 0.86,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_wheee",
+  "text": "Wheee!",
+  "take": 441,
+  "dur": 1.63,
+  "flag": "long,tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_lets_go",
+  "text": "Let's go!",
+  "take": 441,
+  "dur": 0.82,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_pizza",
+  "text": "Pizza, please!",
+  "take": 442,
+  "dur": 1.13,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_icecream",
+  "text": "Ice cream, please!",
+  "take": 442,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_juice",
+  "text": "Juice, please!",
+  "take": 442,
+  "dur": 1.56,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_cheese",
+  "text": "Cheese, please!",
+  "take": 442,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_pasta",
+  "text": "Pasta, please!",
+  "take": 442,
+  "dur": 1.54,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_popcorn",
+  "text": "Popcorn, please!",
+  "take": 442,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_lemonade",
+  "text": "Lemonade, please!",
+  "take": 442,
+  "dur": 1.7,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_cottoncandy",
+  "text": "Cotton candy, please!",
+  "take": 442,
+  "dur": 1.85,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_balloon",
+  "text": "A balloon, please!",
+  "take": 442,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_water",
+  "text": "Water, please!",
+  "take": 442,
+  "dur": 1.61,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_order_meat",
+  "text": "Meat, please!",
+  "take": 442,
+  "dur": 1.61,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_please_plain",
+  "text": "Please!",
+  "take": 442,
+  "dur": 1.1,
+  "flag": "tight"
+ },
+ {
+  "lang": "en",
+  "id": "carn_here_you_go",
+  "text": "Here you go!",
+  "take": 442,
+  "dur": 0.96,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_board_top",
+  "text": "זה מה שהכי רוצים עכשיו!",
+  "take": 424,
+  "dur": 2.04,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_unlock_words",
+  "text": "למדת מילים חדשות, ונפתחו דוכנים חדשים!",
+  "take": 424,
+  "dur": 3.72,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_locked_world",
+  "text": "הדוכן הזה ייפתח כשתסיימי את העולם הזה במסע המילים.",
+  "take": 424,
+  "dur": 4.1,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_word_again",
+  "text": "בואי ניזכר במילה הזאת!",
+  "take": 424,
+  "dur": 1.9,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_board",
+  "text": "לוח המשאלות",
+  "take": 424,
+  "dur": 1.63,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_book",
+  "text": "ספר התושבים",
+  "take": 424,
+  "dur": 1.63,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_wants_now",
+  "text": "מה אני רוצה עכשיו:",
+  "take": 424,
+  "dur": 1.46,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_fav_color",
+  "text": "הצבע האהוב עליי:",
+  "take": 424,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_fav_number",
+  "text": "המספר האהוב עליי:",
+  "take": 424,
+  "dur": 1.82,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_hobby",
+  "text": "התחביב שלי:",
+  "take": 424,
+  "dur": 1.22,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_my_friend",
+  "text": "החבר הכי טוב שלי:",
+  "take": 424,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_take_me",
+  "text": "קחי אותי אליו",
+  "take": 424,
+  "dur": 1.27,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_quiz_food",
+  "text": "את זוכרת מה האוכל האהוב עליי?",
+  "take": 424,
+  "dur": 2.35,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_quiz_color",
+  "text": "את זוכרת מה הצבע האהוב עליי?",
+  "take": 424,
+  "dur": 2.28,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_quiz_number",
+  "text": "את זוכרת מה המספר האהוב עליי?",
+  "take": 424,
+  "dur": 2.42,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_quiz_right",
+  "text": "נכון! את מכירה אותי!",
+  "take": 424,
+  "dur": 2.02,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_quiz_remind",
+  "text": "כמעט! הנה, תראי.",
+  "take": 424,
+  "dur": 1.75,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_party_today",
+  "text": "היום יום החגיגה שלי!",
+  "take": 424,
+  "dur": 2.45,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "cs_party_gift",
+  "text": "איזו מתנה תבחרי לי?",
+  "take": 424,
+  "dur": 1.68,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "cs_party_thanks",
+  "text": "איזו מתנה מושלמת! תודה!",
+  "take": 424,
+  "dur": 2.4,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.pitzi",
+  "text": "פיצי",
+  "take": 403,
+  "dur": 0.82,
+  "flag": "tight"
+ },
+ {
+  "lang": "he",
+  "id": "name.bobi",
+  "text": "בובי",
+  "take": 403,
+  "dur": 0.89,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.noni",
+  "text": "נוני",
+  "take": 403,
+  "dur": 0.94,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.koki",
+  "text": "קוקי",
+  "take": 403,
+  "dur": 0.84,
+  "flag": ""
+ },
+ {
+  "lang": "he",
+  "id": "name.tofi",
+  "text": "טופי",
+  "take": 403,
+  "dur": 0.7,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_pitzi",
+  "text": "Hello! I'm Pitzi.",
+  "take": 411,
+  "dur": 1.51,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_bobi",
+  "text": "Hello! I'm Bobby.",
+  "take": 411,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_noni",
+  "text": "Hello! I'm Noni.",
+  "take": 411,
+  "dur": 1.42,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_koki",
+  "text": "Hello! I'm Cookie.",
+  "take": 411,
+  "dur": 1.39,
+  "flag": ""
+ },
+ {
+  "lang": "en",
+  "id": "carn_hello_im_tofi",
+  "text": "Hello! I'm Toffee.",
+  "take": 411,
+  "dur": 1.44,
+  "flag": ""
+ },
+ {
+  "id": "qs_pizza",
+  "text": "פתחי דוכן פיצה",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.56,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_name",
+  "text": "הקישי על סקווישי ושמעי איך קוראים לו",
+  "lang": "he",
+  "take": 425,
+  "dur": 3.02,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_drink",
+  "text": "פתחי דוכן שתייה",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.42,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_play",
+  "text": "שחקי באחד המשחקים",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl2",
+  "text": "הגיעי לרמה 2",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.87,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_talk",
+  "text": "עני על שיחה של סקווישי",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.04,
+  "flag": ""
+ },
+ {
+  "id": "qs_ride",
+  "text": "פתחי מתקן",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.22,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_three",
+  "text": "פתחי שלושה דוכנים",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.56,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl3",
+  "text": "הגיעי לרמה 3",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.85,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_five",
+  "text": "פתחי חמישה דברים בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.18,
+  "flag": ""
+ },
+ {
+  "id": "qs_book",
+  "text": "פתחי את ספר התושבים",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.97,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_board",
+  "text": "הציצי בלוח המשאלות",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.14,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_rest",
+  "text": "שימי ספסל בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.9,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_decor",
+  "text": "שימי קישוט בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.02,
+  "flag": ""
+ },
+ {
+  "id": "qs_three_games",
+  "text": "שחקי בשלושה משחקים שונים היום",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.74,
+  "flag": ""
+ },
+ {
+  "id": "qs_ten",
+  "text": "פתחי עשרה דברים בקרנבל",
+  "lang": "he",
+  "take": 425,
+  "dur": 2.33,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl5",
+  "text": "הגיעי לרמה 5",
+  "lang": "he",
+  "take": 425,
+  "dur": 1.75,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_lvl10",
+  "text": "הגיעי לרמה 10",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.21,
+  "flag": ""
+ },
+ {
+  "id": "qs_friend",
+  "text": "הגיעי לרמת חברות 2 עם סקווישי",
+  "lang": "he",
+  "take": 426,
+  "dur": 3.43,
+  "flag": ""
+ },
+ {
+  "id": "qs_trick",
+  "text": "הקישי על סקווישי וראי את הטריק שלו",
+  "lang": "he",
+  "take": 426,
+  "dur": 3.12,
+  "flag": ""
+ },
+ {
+  "id": "qs_job",
+  "text": "שימי סקווישי לעבוד בדוכן",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.21,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_hat",
+  "text": "הלבישי כובע לסקווישי",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.99,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_remember",
+  "text": "עני לסקווישי ששואל אם את זוכרת אותו",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.95,
+  "flag": ""
+ },
+ {
+  "id": "qs_party",
+  "text": "בחרי מתנה ליום החגיגה",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.38,
+  "flag": ""
+ },
+ {
+  "id": "qs_egg",
+  "text": "בואי מחר לראות את הביצה בוקעת",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.64,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_mail",
+  "text": "פתחי את תיבת הדואר",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.54,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_gift",
+  "text": "פתחי את מתנת היום",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.68,
+  "flag": "tight"
+ },
+ {
+  "id": "qs_visitor",
+  "text": "דברי עם אורח היום",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.8,
+  "flag": ""
+ },
+ {
+  "id": "qs_bell",
+  "text": "עני על פעמון בדוכן",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "qs_lolly",
+  "text": "עשי שיעור עם המורה לולי",
+  "lang": "he",
+  "take": 426,
+  "dur": 2.16,
+  "flag": ""
+ },
+ {
+  "id": "qs_workshop",
+  "text": "הכיני סקווישי בסדנה",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.87,
+  "flag": ""
+ },
+ {
+  "id": "qs_order",
+  "text": "הכיני הזמנה בסדנה",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.94,
+  "flag": ""
+ },
+ {
+  "id": "qs_coaster",
+  "text": "בני רכבת הרים",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.73,
+  "flag": ""
+ },
+ {
+  "id": "qs_parade",
+  "text": "בואי למצעד ביום שישי",
+  "lang": "he",
+  "take": 426,
+  "dur": 1.8,
   "flag": ""
  }
 ]

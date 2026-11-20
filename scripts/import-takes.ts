@@ -56,7 +56,16 @@ function silences(f: string, noise: number, min: number, total: number): Sil[] {
     }
   }
   if (start >= 0) res.push({ start, end: total, dur: total - start });
-  return res;
+  // two silences with less than 50 ms of sound between them are one (a click in the middle of a pause)
+  const merged: Sil[] = [];
+  for (const x of res) {
+    const last = merged[merged.length - 1];
+    if (last && x.start - last.end < 0.05) {
+      last.end = x.end;
+      last.dur = last.end - last.start;
+    } else merged.push({ ...x });
+  }
+  return merged;
 }
 
 const letters = (s: string): number => Math.max(1, s.replace(/[^\p{L}\p{N}]/gu, '').length);

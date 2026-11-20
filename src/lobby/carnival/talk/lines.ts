@@ -1,6 +1,8 @@
 /** The Hebrew of the talks, each with an id (recorded like the other lines: src/games/english/content/heLines.ts takes this list). The numbers 1-20 are separate lines. */
 import { numberToHebrew } from '../../../math/hebrew';
 import { ITEMS } from './gen';
+import { CS_LINES } from '../csLines';
+import { QUESTS } from '../quests';
 
 export const cv = {
   have: 'יש לי',
@@ -29,11 +31,17 @@ export const cv = {
   /** "two" before a noun (שתי גלידות); the number alone is cv_num_2 */
   num_2c: 'שתי',
 };
+import QUESTS_LATER from '../quests-later.json';
 export const CARNIVAL_LINES: { id: string; parts: (string | null)[] }[] = [
   { id: 'carnival_name', parts: [null] },
   ...(Object.keys(cv) as (keyof typeof cv)[]).map((k) => ({ id: `cv_${k}`, parts: [cv[k]] })),
   ...ITEMS.map((i) => ({ id: `cv_item_${i.id}`, parts: [i.he] })),
   ...Array.from({ length: 20 }, (_, i) => ({ id: `cv_num_${i + 1}`, parts: [numberToHebrew(i + 1)] })),
+  // stage 2: the lines that are recorded (voice-takes-carnival-3.json), and the quests (read by the phone until they are recorded)
+  ...CS_LINES.map((l) => ({ id: l.id, parts: [l.text] })),
+  ...QUESTS.map((q) => ({ id: `qs_${q.id}`, parts: [q.he] })),
+  // the quests of stages 3-5, recorded in advance (quests-later.json): ready in the list and in the manifest; the quests themselves are not built yet
+  ...QUESTS_LATER.filter((l) => !QUESTS.some((q) => `qs_${q.id}` === l.id)).map((l) => ({ id: l.id, parts: [l.text] })),
 ];
 
 /** The English sentences of the talks, for the list that goes to the recording (the opening of a sentence is fixed; the word after it is the recording of the word). */
@@ -45,6 +53,11 @@ export const CARNIVAL_EN: { id: string; text: string; note: string }[] = [
   { id: 'carn_hello_im_mozzi', text: "Hello! I'm Mozzi", note: 'whole clip, then carn_whats_your_name' },
   { id: 'carn_hello_im_horiko', text: "Hello! I'm Horiko", note: 'whole clip, then carn_whats_your_name' },
   { id: 'carn_hello_im_popcheese', text: "Hello! I'm Pop Cheese", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_pitzi', text: "Hello! I'm Pitzi", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_bobi', text: "Hello! I'm Bobby", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_noni', text: "Hello! I'm Noni", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_koki', text: "Hello! I'm Cookie", note: 'whole clip, then carn_whats_your_name' },
+  { id: 'carn_hello_im_tofi', text: "Hello! I'm Toffee", note: 'whole clip, then carn_whats_your_name' },
   // "Hello!" (the friend that Rani named, and a small bubble) is the clip that already exists: `hello`, no new recording
   { id: 'carn_whats_your_name', text: "What's your name?", note: 'after the hello' },
   { id: 'carn_i_love_pizza', text: 'I love pizza!', note: 'small bubble' },

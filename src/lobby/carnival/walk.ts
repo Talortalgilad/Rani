@@ -4,6 +4,9 @@
  */
 import { PLAZA_R, RING_NODES, RING_R, ZS } from './layout';
 
+/** the places along the vertical paths where a node stands (the same as the stall places: slots.ts) */
+export const SPOKE_Z = [-7.2, -5.6, -4.0, 4.0, 5.6, 7.2];
+
 export interface Node { x: number; z: number; next: number[] }
 export interface Graph { nodes: Node[] }
 
@@ -24,10 +27,16 @@ export function makeGraph(): Graph {
   for (let k = 0; k < 4; k++) {
     const a = (k / 4) * Math.PI * 2;
     const vertical = k % 2 === 0;
-    const mid = at(vertical ? (RING_R * ZS + PLAZA_R) / 2 : (RING_R + PLAZA_R) / 2, a);
     const p = at(PLAZA_R, a);
-    link(ring[k * (RING_NODES / 4)], mid);
-    link(mid, p);
+    // the vertical spokes have a node at every stall place (the queues of the stalls form there), the others one in the middle
+    const rs = vertical ? SPOKE_Z.map((z) => (z < 0 ? -z : z)).sort((x, y) => y - x) : [(RING_R + PLAZA_R) / 2];
+    let prev = ring[k * (RING_NODES / 4)];
+    for (const r of rs) {
+      const n = at(r, a);
+      link(prev, n);
+      prev = n;
+    }
+    link(prev, p);
     plaza.push(p);
   }
   plaza.forEach((p, i) => link(p, plaza[(i + 1) % 4]));
@@ -63,6 +72,15 @@ export class Walker {
     this.z = g.nodes[start].z;
     this.rest = this.rand() * 1.5;
   }
+  /** put the walker at a place (the end of a route): it goes on from the nearest node */
+  setAt(x: number, z: number, node: number): void {
+    this.x = x;
+    this.z = z;
+    this.from = this.to = node;
+    this.t = 0;
+    this.prev = -1;
+    this.rest = 0.3;
+  }
   get node(): number {
     return this.t >= 1 || this.from === this.to ? this.to : this.from;
   }
@@ -94,4 +112,31 @@ export class Walker {
     this.z = a.z + (b.z - a.z) * this.t;
     if (Math.abs(b.x - a.x) > 0.01) this.face = b.x > a.x ? 1 : -1;
   }
+}
+
+/** The node nearest to a place. */
+export function nearestNode(g: Graph, x: number, z: number): number {
+  let best = 0;
+  let d = Infinity;
+  g.nodes.forEach((n, i) => {
+    const e = Math.hypot(n.x - x, n.z - z);
+    if (e < d) {
+      d = e;
+      best = i;
+    }
+  });
+  return best;
+}
+/** The shortest way over the paths from a node to another (the nodes, both ends included). */
+export function route(g: Graph, from: number, to: number): number[] {
+  const prev = new Map<number, number>([[from, -1]]);
+  const q = [from];
+  for (let i = 0; i < q.length; i++) {
+    const n = q[i];
+    if (n === to) break;
+    for (const m of g.nodes[n].next) if (!prev.has(m)) (prev.set(m, n), q.push(m));
+  }
+  const out: number[] = [];
+  for (let n = to; n !== -1 && prev.has(n); n = prev.get(n)!) out.unshift(n);
+  return out;
 }

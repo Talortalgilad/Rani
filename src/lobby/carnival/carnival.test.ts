@@ -87,8 +87,8 @@ describe('walking', () => {
 describe('the residents', () => {
   it('five, with different names, and the fixed names are the ones that have a recording', () => {
     const rs = residents('לילה', 'bunny');
-    expect(rs).toHaveLength(5);
-    expect(new Set(rs.map((r) => r.name)).size).toBe(5);
+    expect(rs).toHaveLength(4);
+    expect(new Set(rs.map((r) => r.name)).size).toBe(4);
     expect(rs[0].name).toBe('לילה');
     expect(rs[0].img).toContain('bunny');
     for (const r of rs.slice(1)) {
@@ -97,17 +97,17 @@ describe('the residents', () => {
     }
   });
   it('when the friend that Rani named has a fixed name, the resident with that name gets another one, from a fixed list', () => {
-    for (const mine of ['מוצי', 'צ׳יזי', 'חוריקו', 'פופצ׳יז']) {
+    for (const mine of ['מוצי', 'חוריקו', 'פופצ׳יז']) {
       const rs = residents(mine, 'bunny');
-      expect(new Set(rs.map((r) => r.name)).size, mine).toBe(5);
+      expect(new Set(rs.map((r) => r.name)).size, mine).toBe(4);
       expect(rs.filter((r) => r.name === mine)).toHaveLength(1);
-      const renamed = rs.slice(1).filter((r) => !r.fixed);
+      const renamed = rs.slice(1).filter((r) => ALT_NAMES.includes(r.name));
       expect(renamed).toHaveLength(1);
       expect(ALT_NAMES).toContain(renamed[0].name);
     }
-    // no name at all: the friend is Cheesy, and the other Cheesy is renamed
+    // no name at all: the friend is Cheesy (the same character): nobody is renamed
     const none = residents(null, null);
-    expect(new Set(none.map((r) => r.name)).size).toBe(5);
+    expect(new Set(none.map((r) => r.name)).size).toBe(4);
   });
 });
 

@@ -3,7 +3,7 @@
  * (an opening, a hello with a name) or an opening and then the recording of the word. Until the English clips are recorded, the voice of the phone says
  * them. A new thing said cuts the old one.
  */
-import { linePartsFor } from '../../../games/english/content/heLines';
+import { ALT_KEYS, linePartsFor } from '../../../games/english/content/heLines';
 import { playWord, speakEn, speakHeLine, stopSpeech } from '../../../games/english/voice';
 import { ITEMS, type Item, type Talk } from './gen';
 import { cv } from './lines';
@@ -63,7 +63,7 @@ export function opening(t: Talk, who?: Pick<Resident, 'id' | 'fixed' | 'name'>, 
     case 'hello':
       // a friend with a fixed name has his own whole clip; the friend that Rani named says a plain hello
       return who?.fixed
-        ? [{ enc: { id: `carn_hello_im_${who.id}`, text: `Hello! I'm ${enName || t.self}` } }, { enc: WHATS_YOUR_NAME }]
+        ? [{ enc: { id: `carn_hello_im_${ALT_KEYS[who.name] ?? who.id}`, text: `Hello! I'm ${enName || t.self}` } }, { enc: WHATS_YOUR_NAME }]
         : [{ enc: { id: HELLO_CLIP, text: 'Hello!' } }, { enc: WHATS_YOUR_NAME }];
   }
 }
