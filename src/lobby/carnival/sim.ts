@@ -6,6 +6,7 @@
  * Nothing here is ever negative: a wish that nothing fills just waits (and is tried again now and then), a queue is never left, nothing is lost when nobody plays.
  */
 import { itemById, type Item } from './catalog';
+import { FOOD_OF_ITEM } from './friends';
 import { makeGraph, nearestNode, route, rng, Walker, type Graph } from './walk';
 import type { Slot } from './slots';
 import { fillers, nextGap, pickKind, TRAITS, type Personality, type Wish, type WishType } from './wishes';
@@ -18,8 +19,8 @@ export const REST_SECONDS = 4;
 export const RETRY_SECONDS = 3;
 export const WALK_SPEED = 1.5;
 
-export interface SimResident { id: string; personality: Personality; /** the game that he likes (an id of the registry) */ game?: string }
-export type Mode = 'wander' | 'going' | 'queue' | 'served' | 'riding' | 'resting' | 'waitplay';
+export interface SimResident { id: string; personality: Personality; /** the game that he likes (an id of the registry) */ game?: string; /** his favourite food (a word id) and his friend (a resident id): they change where he goes */ food?: string; friend?: string }
+export type Mode = 'wander' | 'going' | 'queue' | 'served' | 'riding' | 'resting' | 'waitplay' | 'working';
 export interface Agent {
   id: string;
   personality: Personality;
@@ -41,7 +42,7 @@ export interface Agent {
 export type SimEvent =
   | { type: 'wish'; r: number; wish: Wish }
   | { type: 'order'; r: number; item: string }
-  | { type: 'heart'; r: number; amount: number; why: 'stall' | 'ride' | 'rest' | 'play'; item?: string }
+  | { type: 'heart'; r: number; amount: number; why: 'stall' | 'ride' | 'rest' | 'play' | 'work'; item?: string }
   | { type: 'board'; riders: number[]; item: string; slot: string }
   | { type: 'chat'; r: number; line: string };
 
@@ -52,7 +53,13 @@ interface Inner extends Agent {
   retry: number;
   timer: number;
   game?: string;
+  food?: string;
+  friend?: string;
   slot: Slot | null;
+  /** the stall where he works (a slot id): he stands behind the counter and does not wish */
+  job: string | null;
+  /** he follows the camera (level 5 of the friendship) */
+  follower: boolean;
 }
 
 export interface SimWorld {
@@ -84,10 +91,39 @@ export class CarnivalSim {
     const walker = new Walker(this.graph, start, rng(100 + i), speed);
     this.agents.push({
       id: r.id, personality: r.personality, x: walker.x, z: walker.z, face: 1, walking: false, wish: null, mode: 'wander', at: null, place: 0, active: true, held: false,
-      walker, route: [], wishIn: (8 + this.rand() * 25) * this.tmult, retry: 0, timer: 0, game: r.game, slot: null,
+      walker, route: [], wishIn: (8 + this.rand() * 25) * this.tmult, retry: 0, timer: 0, game: r.game, food: r.food, friend: r.friend, slot: null, job: null, follower: false,
     });
     return i;
   }
+
+  /** a resident works at a stall (null: he stops); only a stall that is built */
+  setJob(i: number, slotId: string | null): boolean {
+    const a = this.agents[i];
+    if (!a) return false;
+    if (a.job) a.mode = 'wander';
+    a.job = null;
+    if (slotId) {
+      const s = this.world.slots.find((x) => x.id === slotId);
+      if (!s || !this.built.has(slotId) || this.item(slotId)?.slot !== 'stall') return false;
+      if (a.mode !== 'wander') this.release(i);
+      a.wish = null;
+      a.job = slotId;
+      a.mode = 'working';
+      a.x = s.x + 0.85;
+      a.z = s.z + 0.2;
+      a.face = -1;
+    } else a.walker.setAt(a.x, a.z, nearestNode(this.graph, a.x, a.z));
+    return true;
+  }
+  jobOf(slotId: string): number {
+    return this.agents.findIndex((a) => a.job === slotId);
+  }
+  setFollower(i: number, on: boolean): void {
+    if (this.agents[i]) this.agents[i].follower = on;
+  }
+  /** where the camera looks (the followers walk towards it) */
+  follow: { x: number; z: number } | null = null;
+  private served = new Map<string, number>();
 
   hold(i: number, on: boolean): void {
     if (this.agents[i]) this.agents[i].held = on;
@@ -99,6 +135,7 @@ export class CarnivalSim {
 
   setBuilt(built: Record<string, string>): void {
     this.built = new Map(Object.entries(built));
+    this.agents.forEach((a, i) => { if (a.job && !this.built.has(a.job)) this.setJob(i, null); });
     for (const [id, l] of this.lines) if (!this.built.has(id)) {
       // a stall that was taken away: whoever waited there is let go (he wanders and wishes again; nothing is lost)
       [...l.waiting, ...l.busy].forEach((r) => this.release(r));
@@ -171,7 +208,7 @@ export class CarnivalSim {
   }
 
   /** Looks for something that fills his wish. Returns true when he set off. */
-  private seek(r: number): boolean {
+  private seek(r: number, prefer?: string): boolean {
     const a = this.agents[r];
     const w = a.wish;
     if (!w) return false;
@@ -187,7 +224,9 @@ export class CarnivalSim {
       .filter((s) => this.built.has(s.id) && fillers(w, [this.item(s.id)!]).length > 0)
       .map((s) => ({ s, load: this.queueOf(s.id).length }))
       .filter(({ s, load }) => load < (s.kind === 'ride' ? RIDE_QUEUE : STALL_QUEUE))
-      .sort((p, q) => Math.hypot(p.s.front.x - a.x, p.s.front.z - a.z) + p.load * 2 - (Math.hypot(q.s.front.x - a.x, q.s.front.z - a.z) + q.load * 2));
+      // his favourite food first (the stall of it counts as much nearer), and the stall where his friend goes
+      .map(({ s, load }) => ({ s, load, cost: Math.hypot(s.front.x - a.x, s.front.z - a.z) + load * 2 - (a.food && FOOD_OF_ITEM[this.built.get(s.id) ?? ''] === a.food ? 6 : 0) - (s.id === prefer ? 8 : 0) }))
+      .sort((p, q) => p.cost - q.cost);
     if (!open.length) return false;
     const { s } = open[0];
     const l = this.lines.get(s.id) ?? { waiting: [], busy: [], t: 0 };
@@ -196,6 +235,16 @@ export class CarnivalSim {
     this.lines.set(s.id, l);
     a.slot = s;
     this.goTo(r, 'going', s.id, this.spot(s, place), place);
+    // a friend who has nothing to do comes along and stands next to him in the line (sometimes)
+    if (prefer === undefined && a.friend && this.rand() < 0.45) {
+      const fi = this.agents.findIndex((x) => x.id === a.friend);
+      const f = this.agents[fi];
+      if (f && f.active && f.mode === 'wander' && !f.held && !f.job && !f.wish) {
+        f.wish = { ...w };
+        f.retry = 0.2;
+        this.seek(fi, s.id);
+      }
+    }
     return true;
   }
 
@@ -203,6 +252,10 @@ export class CarnivalSim {
     const ev: SimEvent[] = [];
     this.agents.forEach((a, r) => {
       if (!a.active) return;
+      if (a.mode === 'working') {
+        a.walking = false;
+        return;
+      }
       // wishes: a new one now and then (never two), and an old one that nothing filled is tried again
       if (!a.wish) {
         a.wishIn -= dt;
@@ -224,6 +277,15 @@ export class CarnivalSim {
       // moving
       if (a.held && a.mode === 'wander') {
         a.walking = false;
+      } else if (a.mode === 'wander' && a.follower && this.follow && !a.wish && Math.hypot(this.follow.x - a.x, this.follow.z - a.z) > 1.6) {
+        // a best friend goes after the camera, to a place a little beside its centre
+        const dx = this.follow.x + 0.9 * (1 + (r % 3) * 0.5) - a.x, dz = this.follow.z + 0.6 - a.z, d = Math.hypot(dx, dz) || 1;
+        const st = Math.min(d, WALK_SPEED * 1.1 * dt);
+        a.x += (dx / d) * st;
+        a.z += (dz / d) * st;
+        a.face = dx > 0 ? 1 : -1;
+        a.walking = true;
+        a.walker.setAt(a.x, a.z, nearestNode(this.graph, a.x, a.z));
       } else if (a.mode === 'wander') {
         a.walker.update(dt);
         a.x = a.walker.x;
@@ -277,6 +339,14 @@ export class CarnivalSim {
       if (l.t <= 0) {
         const r = l.busy.shift()!;
         ev.push({ type: 'heart', r, amount: 1, why: 'stall', item: item.id });
+        // a stall with a seller gives one more heart for every three customers (the heart is the seller's)
+        const slotId = this.agents[r].at ?? '';
+        const w = this.agents.findIndex((x) => x.job === slotId && slotId);
+        if (w >= 0) {
+          const n = (this.served.get(slotId) ?? 0) + 1;
+          this.served.set(slotId, n);
+          if (n % 3 === 0) ev.push({ type: 'heart', r: w, amount: 1, why: 'work', item: item.id });
+        }
         this.finish(r);
       }
       return;

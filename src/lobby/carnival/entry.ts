@@ -19,6 +19,8 @@ import { Talks, type TalkHost } from './talk/ui';
 import { CarnivalWorld } from './world';
 import { WorldUI } from './ui/worldUi';
 import { loadSave, writeSave } from './save';
+import { hasNewLesson } from '../../games/english/tutor/badge';
+import { dayNumber } from '../../games/english/engine/progress';
 import { lessonsByUnit, progressFromEnglish } from './unlocks';
 import { LESSONS } from '../../games/english/tutor/lessons';
 import { plots } from './layout';
@@ -56,6 +58,24 @@ const writeShown = (n: number): void => {
 };
 
 /** The world of the carnival (stage 2) for this visit: the save (one object, shared with the talks), the stars, what she finished in the learning games, and where the games' plots are. */
+/** the school of Lolly and her round button: straight to her lessons (the English game opens on them) */
+function goTutor(): void {
+  try {
+    sessionStorage.setItem('rani-open-tutor', '1');
+  } catch {
+    /* ignore */
+  }
+  go({ name: 'gate', gameId: 'english' });
+}
+/** is there a new lesson of Lolly today? (light: read from the saved state) */
+function newLesson(): boolean {
+  try {
+    return hasNewLesson(dayNumber());
+  } catch {
+    return false;
+  }
+}
+
 function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>; visit: number } {
   const save = loadSave();
   let t = 0;
@@ -80,6 +100,11 @@ function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>;
     // the front of a plot: on the ring path in front of it
     plotFronts: Object.fromEntries(games.map((g, i) => [g.id, { x: ps[i].x * 0.72, z: ps[i].z * 0.72 }])),
     companion: { name: en?.companion?.name ?? null, buddy: en?.buddy ?? null },
+    // what she did in Lolly's lessons and in the workshop (for the quests)
+    external: () => {
+      const g = getState().games as Record<string, { tutor?: { done?: unknown[] }; shelf?: unknown[] } | undefined>;
+      return { lolly: g.english?.tutor?.done?.length ?? 0, workshop: g.squishy?.shelf?.length ?? 0 };
+    },
   });
   // a visit: the ones who were waiting for the rounds that she played, and who is "at home" this time
   let visit = 0;
@@ -181,6 +206,9 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       mode: '2d',
       pos: (i) => host.pos(i),
       takeMe: (i) => host.wave(i),
+      trick: (i) => host.wave(i),
+      goTutor,
+      newLesson,
       addResident: (r) => {
         const b = stripButton(r);
         st.appendChild(b);
@@ -320,6 +348,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           }
         },
         onResidentTap: (i) => talks?.tapResident(i) ?? false,
+        onResidentLong: (i) => ui3?.friends.openCard(i),
         onBoardTap: () => ui3?.openBoard(),
         onSlots: (list) => ui3?.onSlots(list),
         safeTop: 150,
@@ -405,6 +434,10 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
             const p = world.slot(id);
             if (p) l.lookAt(p.x, p.z, 17);
           },
+          trick: (i, k) => l.trick(i, k),
+          residentAt: (x, y) => l.residentAt(x, y),
+          goTutor,
+          newLesson,
           takeMe: (i) => {
             l.focus(i);
             l.wave(i);

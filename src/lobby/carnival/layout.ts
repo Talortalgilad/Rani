@@ -30,3 +30,5 @@ export function minGap(ps: Plot[]): number {
   for (let i = 0; i < ps.length; i++) for (let j = i + 1; j < ps.length; j++) m = Math.min(m, Math.hypot(ps[i].x - ps[j].x, ps[i].z - ps[j].z) - 2 * PLOT_PAD);
   return m;
 }
+/** the school of Lolly (SPEC-tutor.md 2): a small building outside the ring, on the grass; Lolly stands in front of it */
+export const SCHOOL = { x: -2.9, z: 3.05 };

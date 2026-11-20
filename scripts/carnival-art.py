@@ -1,8 +1,8 @@
 """Cuts the art of carnival stages 2-4 (assets/english/raw/carnival-art-2.json lists it; the raw sheets are saved next to it):
   sheet-33 / sheet-34 (18 squishies) -> public/park/squishies/<id>.webp (ids as in src/lobby/carnival/residents.json), sheet-35 (9 props) -> public/park/items/<id>.webp,
   512 x 512 transparent WebP (rembg), in the order of the json. Same method as scripts/park-art.py.
-Run: python3 scripts/carnival-art.py"""
-import importlib.util, json, os
+Run: python3 scripts/carnival-art.py [carnival-art-4.json]   (carnival-art-4.json: sheet-39, 9 accessories -> public/park/items; only the sheets of that file are cut)"""
+import importlib.util, json, os, sys
 import numpy as np
 from PIL import Image
 from rembg import new_session
@@ -12,8 +12,9 @@ art = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(art)
 
 RAW = 'assets/english/raw/'
-DATA = json.load(open(RAW + 'carnival-art-2.json'))
-OUT = {'sheet-33-squishies-food.png': 'public/park/squishies', 'sheet-34-squishies-animals.png': 'public/park/squishies', 'sheet-35-carnival-props.png': 'public/park/items'}
+FILE = sys.argv[1] if len(sys.argv) > 1 else 'carnival-art-2.json'
+DATA = json.load(open(RAW + FILE))
+OUT = {'sheet-33-squishies-food.png': 'public/park/squishies', 'sheet-34-squishies-animals.png': 'public/park/squishies', 'sheet-35-carnival-props.png': 'public/park/items', 'sheet-39-carnival-accessories.png': 'public/park/items'}
 
 if __name__ == '__main__':
     session = new_session('u2net')
@@ -26,6 +27,8 @@ if __name__ == '__main__':
         for box, name in zip(objs, sh['order']):
             art.cut(img, box, session, None, True).save(f'{out}/{name}.webp', 'WEBP', quality=82, method=6)
         print(sh['file'], len(objs), 'items', flush=True)
+    if FILE != 'carnival-art-2.json':
+        sys.exit(0)
     # carnival-art-3.json: single objects (a replacement for one prop): rembg on the whole picture, crop to the object, square, 512
     from rembg import remove
     single = json.load(open(RAW + 'carnival-art-3.json'))
