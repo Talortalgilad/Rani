@@ -142,10 +142,9 @@
 .cvw-callb { position: fixed; left: 0; top: 0; z-index: 7; width: 56px; height: 56px; min-width: 56px; border: 3px solid #fff; border-radius: 50%; background: #fff3a8; font-size: 28px; box-shadow: 0 3px 8px rgba(0, 0, 0, .3); animation: cvw-pulse 1.1s ease-in-out infinite; padding: 0; }
 .cvw-callb.party { background: #ffc4de; }
 .cvw-callb.gift { background: #c4f0ff; }
-.cvw-school { position: fixed; left: 0; top: 0; z-index: 6; border: 0; background: transparent; padding: 0; width: 110px; height: 100px; }
-.cvw-school .sc-b { position: absolute; left: 50%; bottom: 0; width: 100px; transform: translateX(-50%); }
-.cvw-school .sc-l { position: absolute; bottom: 0; inset-inline-start: 0; width: 56px; height: 56px; object-fit: contain; }
-.cvw-school .sc-new { position: absolute; top: 4px; inset-inline-start: 18px; font-style: normal; font-size: 26px; display: none; animation: cvw-pulse 1s ease-in-out infinite; }
+.cvw-school { position: fixed; left: 0; top: 0; z-index: 6; border: 0; background: transparent; padding: 0; width: 160px; height: 100px; }
+.cvw-school .sc-l { position: absolute; bottom: 0; right: 0; width: calc(var(--sw, 100px) * 0.45); height: calc(var(--sw, 100px) * 0.45); object-fit: contain; }
+.cvw-school .sc-new { position: absolute; bottom: calc(var(--sw, 100px) * 0.5); right: calc(var(--sw, 100px) * 0.2); font-style: normal; font-size: 26px; display: none; animation: cvw-pulse 1s ease-in-out infinite; }
 .cvw-school.new .sc-new { display: block; }
 @media (prefers-reduced-motion: reduce) { .cvw-callb, .cd-b.cdgift, .gb .gimg, .cvw-school .sc-new { animation: none; } }
 .cd-acts { flex: none; align-items: flex-start; }

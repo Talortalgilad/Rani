@@ -13,6 +13,8 @@ export interface QuestCtx {
   friend?: number;
   tricks?: number;
   jobs?: number;
+  /** hats that were dressed on a squishy from the shop */
+  hats?: number;
   remembered?: number;
   parties?: number;
   lolly?: number;
@@ -43,6 +45,7 @@ QUESTS.push(
   { id: 'friend', he: LATER.qs_friend, hearts: 5, done: (c) => (c.friend ?? 1) >= 2 },
   { id: 'trick', he: LATER.qs_trick, hearts: 4, done: (c) => (c.tricks ?? 0) >= 1 },
   { id: 'job', he: LATER.qs_job, hearts: 5, stars: 1, done: (c) => (c.jobs ?? 0) >= 1 },
+  { id: 'hat', he: LATER.qs_hat, hearts: 4, done: (c) => (c.hats ?? 0) >= 1 },
   { id: 'remember', he: LATER.qs_remember, hearts: 5, stars: 1, done: (c) => (c.remembered ?? 0) >= 1 },
   { id: 'party', he: LATER.qs_party, hearts: 6, stars: 1, done: (c) => (c.parties ?? 0) >= 1 },
   { id: 'lolly', he: LATER.qs_lolly, hearts: 5, stars: 1, done: (c) => (c.lolly ?? 0) >= 1 },

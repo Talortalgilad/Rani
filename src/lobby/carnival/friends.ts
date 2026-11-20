@@ -98,11 +98,13 @@ export interface FriendsSave {
   tricks: number;
   remembered: number;
   jobs: number;
+  /** hats dressed on a squishy from the shop (the quest "dress a hat on a squishy") */
+  hats: number;
   parties: number;
   /** the level that was last celebrated for each (so that "friends!" is said once) */
   seen: Record<string, number>;
 }
-export const emptyFriends = (): FriendsSave => ({ hearts: {}, worn: {}, owned: {}, job: {}, gifted: [], party: {}, tricks: 0, remembered: 0, jobs: 0, parties: 0, seen: {} });
+export const emptyFriends = (): FriendsSave => ({ hearts: {}, worn: {}, owned: {}, job: {}, gifted: [], party: {}, tricks: 0, remembered: 0, jobs: 0, hats: 0, parties: 0, seen: {} });
 const num = (x: unknown): number => (typeof x === 'number' && Number.isFinite(x) && x > 0 ? Math.floor(x) : 0);
 const rec = <T>(x: unknown, f: (v: unknown) => T | null): Record<string, T> => {
   const out: Record<string, T> = {};
@@ -120,7 +122,7 @@ export function friendsOf(save: CarnivalSave): FriendsSave {
     job: rec(x?.job, (v) => (typeof v === 'string' ? v : null)),
     gifted: Array.isArray(x?.gifted) ? x!.gifted.filter((a): a is string => typeof a === 'string') : [],
     party: rec(x?.party, (v) => (typeof v === 'string' ? v : null)),
-    tricks: num(x?.tricks), remembered: num(x?.remembered), jobs: num(x?.jobs), parties: num(x?.parties),
+    tricks: num(x?.tricks), remembered: num(x?.remembered), jobs: num(x?.jobs), hats: num(x?.hats), parties: num(x?.parties),
     seen: rec(x?.seen, (v) => num(v)),
   };
   Object.defineProperty(f, '_ok', { value: true, enumerable: false });

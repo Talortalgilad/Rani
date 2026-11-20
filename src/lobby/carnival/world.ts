@@ -199,6 +199,7 @@ export class CarnivalWorld {
     f.owned[id]--;
     if (!f.owned[id]) delete f.owned[id];
     for (const off of putOn(f, r.id, id)) f.owned[off] = (f.owned[off] ?? 0) + 1;
+    if (id === 'partyhat' || id === 'flowercrown' || id === 'chefhat' || id === 'crown') f.hats++;
     this.d.persist();
     return true;
   }
@@ -314,7 +315,7 @@ export class CarnivalWorld {
     const c = this.d.save.quests.counts;
     const f = friendsOf(this.d.save);
     const ex = this.d.external?.() ?? { lolly: 0, workshop: 0 };
-    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers, friend: maxFriendLevel(this.d.save), tricks: f.tricks, jobs: f.jobs, remembered: f.remembered, parties: f.parties, lolly: ex.lolly, workshop: ex.workshop };
+    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers, friend: maxFriendLevel(this.d.save), tricks: f.tricks, jobs: f.jobs, hats: f.hats, remembered: f.remembered, parties: f.parties, lolly: ex.lolly, workshop: ex.workshop };
   }
   count(key: 'taps' | 'rounds'): void {
     this.d.save.quests.counts[key] = (this.d.save.quests.counts[key] ?? 0) + 1;

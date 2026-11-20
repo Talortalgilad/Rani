@@ -162,7 +162,7 @@ export class WorldUI {
   }
 
   /** the markers of the places follow the scene each frame */
-  onSlots(list: { id: string; x: number; y: number; behind: boolean }[]): void {
+  onSlots(list: { id: string; x: number; y: number; behind: boolean; k: number }[]): void {
     if (this.dead || this.h.mode !== '3d') return;
     const w = this.h.world;
     const hh = window.innerHeight;
@@ -202,14 +202,14 @@ export class WorldUI {
   }
 
   /** the school of Lolly (SPEC-tutor.md 2): the building (its picture, when there is one) with Lolly outside; a ❗ over her when there is a new lesson. Nothing is drawn if the building has no picture yet. */
-  private placeSchool(p: { x: number; y: number; behind: boolean }): void {
+  private placeSchool(p: { x: number; y: number; behind: boolean; k: number }): void {
     if (!this.schoolEl) {
       const el = document.createElement('button');
       el.type = 'button';
       el.className = 'cvw-school';
       el.setAttribute('aria-label', 'בית הספר של לולי');
       const b = import.meta.env.BASE_URL;
-      el.innerHTML = `<img class="sc-b" src="${b}park/items/lollyschool.webp" alt="" onerror="this.remove()"><img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">❗</i>`;
+      el.innerHTML = `<img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">❗</i>`;
       el.addEventListener('click', () => {
         sound.play('pop', 640);
         this.h.goTutor?.();
@@ -221,7 +221,18 @@ export class WorldUI {
     }
     const vis = !p.behind && p.x > 30 && p.x < window.innerWidth - 30 && p.y > 130 && p.y < window.innerHeight - 100;
     this.schoolEl.style.visibility = vis ? 'visible' : 'hidden';
-    if (vis) this.schoolEl.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -90%)`;
+    if (vis) {
+      // the building is drawn in the scene, the size of a stall (1.9 units); this is its tap area, with Lolly standing beside it (to the right of the door, not in front of it)
+      const k = Math.max(20, p.k), w = Math.round(1.9 * k);
+      const el = this.schoolEl;
+      if (el.dataset.w !== String(w)) {
+        el.dataset.w = String(w);
+        el.style.width = `${Math.round(w * 1.8)}px`;
+        el.style.height = `${w}px`;
+        el.style.setProperty('--sw', `${w}px`);
+      }
+      el.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y + 0.5 * k)}px) translate(-50%, -100%)`;
+    }
   }
 
   private tapSlot(id: string): void {

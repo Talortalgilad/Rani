@@ -227,13 +227,13 @@ describe('what he does: the favourite food first, a friend beside him', () => {
 });
 
 describe('the quests of stage 3 and the pictures', () => {
-  it('seven quests follow the first ten, each with the sentence of quests-later.json, and they are done by what the world counts', () => {
-    expect(QUESTS.slice(10).map((q) => q.id)).toEqual(['friend', 'trick', 'job', 'remember', 'party', 'lolly', 'workshop']);
+  it('eight quests follow the first ten, each with the sentence of quests-later.json, and they are done by what the world counts', () => {
+    expect(QUESTS.slice(10).map((q) => q.id)).toEqual(['friend', 'trick', 'job', 'hat', 'remember', 'party', 'lolly', 'workshop']);
     const base = { built: {}, level: 1, taps: 0, rounds: 0, answers: 0 };
     const done10 = QUESTS.slice(0, 10).map((q) => q.id);
     expect(finishedNow(done10, { ...base, friend: 2, tricks: 1 }).map((q) => q.id)).toEqual(['friend', 'trick']);
     expect(finishedNow(done10, { ...base, lolly: 1 }).map((q) => q.id)).toEqual([]);
-    expect(finishedNow([...done10, 'friend', 'trick', 'job', 'remember', 'party'], { ...base, lolly: 1, workshop: 1 }).map((q) => q.id)).toEqual(['lolly', 'workshop']);
+    expect(finishedNow([...done10, 'friend', 'trick', 'job', 'hat', 'remember', 'party'], { ...base, lolly: 1, workshop: 1 }).map((q) => q.id)).toEqual(['lolly', 'workshop']);
     for (const q of QUESTS.slice(10)) expect(he.has(`qs_${q.id}`), q.id).toBe(true);
   });
   it('the accessories use only pictures that are in the repo; the ones whose picture is not are on the list of what is missing, and nothing else is', () => {
@@ -292,5 +292,19 @@ describe('the nine accessories of sheet 39 and the shops (SPEC-carnival.md 5.4)'
     expect(w.hearts).toBe(hearts);
     expect(friendsOf(JSON.parse(JSON.stringify(w.save))).owned.partyhat).toBe(1);
     for (const shop of Object.values(SHOP)) for (const g of shop) { expect(files).toContain(g.id); expect(g.price).toBeGreaterThan(0); }
+  });
+});
+
+describe('the quest "dress a hat on a squishy" is connected to the shop', () => {
+  it('buying a hat and dressing it on a squishy finishes qs_hat (and a bow or a scarf does not)', () => {
+    const { w } = mk();
+    const q = QUESTS.find((x) => x.id === 'hat')!;
+    expect(q.he).toBe('הלבישי כובע לסקווישי');
+    expect(q.done(w.questCtx())).toBe(false);
+    w.buyAccessory('scarf'); w.dress(0, 'scarf');
+    expect(q.done(w.questCtx())).toBe(false);
+    expect(w.buyAccessory('partyhat')).toBe('ok');
+    expect(w.dress(0, 'partyhat')).toBe(true);
+    expect(q.done(w.questCtx())).toBe(true);
   });
 });

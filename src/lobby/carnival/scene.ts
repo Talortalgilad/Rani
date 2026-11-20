@@ -52,7 +52,7 @@ export interface CarnivalOpts {
   /** the board of wishes in the plaza was tapped */
   onBoardTap?(): void;
   /** every frame: where each place is on the screen (the page puts its markers there) */
-  onSlots?(slots: { id: string; x: number; y: number; behind: boolean }[]): void;
+  onSlots?(slots: { id: string; x: number; y: number; behind: boolean; k: number }[]): void;
   plots: PlotSpec[];
   residents: Resident[];
   autoDowngrade: boolean;
@@ -508,10 +508,11 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   o.residents.forEach((r) => addPerson(r));
 
   // ---- what is built: one more atlas (the stalls, the rides, the decorations, the board of wishes), and the board in the plaza
-  const itemKeys = [...ITEMS.map((i) => i.id), 'woodsign'];
+  const itemKeys = [...ITEMS.map((i) => i.id), 'woodsign', 'lollyschool'];
   const itemAtlas = keep(new Atlas({ keys: itemKeys, urlOf: (k) => itemUrl(k), cell: 192, capacity: 64, tint: night ? '#8a8fc8' : '#ffffff' }, facing));
   scene.add(itemAtlas.mesh);
   const BOARD = { x: 1.9, z: 2.6, size: 1.5 };
+  const SCHOOL_SIZE = 1.9;
   const itemSize = (id: string): number => {
     const it = ITEMS.find((x) => x.id === id);
     return !it ? 1.5 : it.slot === 'ride' ? 2.7 : it.slot === 'stall' ? 1.9 : id === 'hotairballoon' ? 2.8 : id === 'entrancearch' ? 2.6 : 1.5;
@@ -813,6 +814,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       const sway = turn !== null && !reduced ? Math.sin(time * 7 + bi) * 0.06 : 0;
       itemAtlas.set(bi++, item, s.x + sway, size * 0.48 + 0.08 + fall, s.z, size * (turn !== null && !reduced ? 1 + Math.sin(time * 5) * 0.03 : 1));
     }
+    // the school of Lolly stands on the island like a stall (the same size), and the page only puts Lolly beside it and the tap on it
+    itemAtlas.set(bi++, 'lollyschool', SCHOOL.x, SCHOOL_SIZE * 0.48 + 0.08, SCHOOL.z, SCHOOL_SIZE);
     itemAtlas.set(bi++, 'woodsign', BOARD.x, BOARD.size * 0.5 + 0.05, BOARD.z, BOARD.size);
     itemAtlas.commit(bi);
     o.onLabelMove?.(labelOf !== null ? screenOf(people[labelOf].sp.position.clone().add(new T.Vector3(0, 0.75, 0))) : null);
@@ -820,7 +823,9 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       o.onSlots([...o.world.slots.map((s) => ({ id: s.id, x: s.x, z: s.z })), { id: 'lollyschool', ...SCHOOL }].map((s) => {
         const v = new T.Vector3(s.x, 1.0, s.z);
         const sc = screenOf(v);
-        return { id: s.id, x: sc.x, y: sc.y, behind: v.clone().project(camera).z > 1 };
+        // k: how many pixels one unit of the island is at this place (the school and Lolly are drawn by it)
+        const k = Math.abs(screenOf(new T.Vector3(s.x + 1, 1.0, s.z)).x - sc.x);
+        return { id: s.id, x: sc.x, y: sc.y, behind: v.clone().project(camera).z > 1, k };
       }));
     }
     flagAt(time);
