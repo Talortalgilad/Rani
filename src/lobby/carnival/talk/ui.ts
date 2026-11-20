@@ -3,6 +3,7 @@
  * an X that always closes it, no timer, no punishment: after a mistake the answer is shown and she tries again), and the hearts. DOM only; the
  * place of each resident comes from the host (the 3D scene, or the strip of the plain home).
  */
+import { addFriendship } from '../friends';
 import { sound } from '../../../sound';
 import { getState, update } from '../../../storage';
 import { activeLevel, recordAnswer } from '../../../math/adaptive';
@@ -439,6 +440,8 @@ export class Talks {
     this.msg(cv.thanks, 'ok');
     const sv = this.save;
     sv.hearts += 1;
+    // the heart that he gave fills his friendship meter
+    { const rid = this.host.residents[r]?.id; if (rid) addFriendship(sv, rid, 1); }
     sv.answers += 1;
     sv.last = SUBJECT[t.kind];
     sv.retry = sv.retry.filter((k) => k !== t.kind);

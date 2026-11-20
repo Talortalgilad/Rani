@@ -11,6 +11,7 @@ import { activeQuest, finishedNow, type Quest, type QuestCtx } from './quests';
 import { isItemOpen, type Progress } from './unlocks';
 import type { CarnivalSave } from './talk/state';
 import type { Personality } from './wishes';
+import { addFriendship, friendLevel, friendOf, friendsOf, giftOf, isPartyDay, levelOfResident, maxFriendLevel, partyKey, trickOf, wearing, type Trick } from './friends';
 
 export type WorldEvent =
   | SimEvent
@@ -20,7 +21,8 @@ export type WorldEvent =
   | { type: 'quest'; quest: Quest }
   | { type: 'built'; slot: string; item: string }
   | { type: 'removed'; slot: string; item: string }
-  | { type: 'unlocked'; items: string[] };
+  | { type: 'unlocked'; items: string[] }
+  | { type: 'friendUp'; r: number; level: number };
 
 export type Buy = { ok: true } | { ok: false; reason: 'stars' | 'locked' | 'level' | 'taken' | 'unknown' };
 
@@ -40,6 +42,9 @@ export interface WorldDeps {
   plotFronts: Record<string, { x: number; z: number }>;
   /** the companion's name and squishy */
   companion: { name: string | null; buddy: string | null };
+  /** the date (the party days) and what she did in Lolly's lessons and in the workshop (for the quests); both optional */
+  now?(): Date;
+  external?(): { lolly: number; workshop: number };
 }
 
 export class CarnivalWorld {
@@ -57,6 +62,100 @@ export class CarnivalWorld {
     this.sim.setBuilt(d.save.built);
     this.lastHearts = d.save.hearts;
     this.knownOpen = new Set(ITEMS.filter((i) => isItemOpen(i, d.progress())).map((i) => i.id));
+    this.syncFriends();
+  }
+  /** the jobs that were saved stand at their stalls again, and the best friends follow the camera */
+  private syncFriends(): void {
+    const f = friendsOf(this.d.save);
+    this.residents.forEach((r, i) => {
+      const slot = f.job[r.id];
+      if (slot && !this.sim.setJob(i, slot)) delete f.job[r.id];
+      this.sim.setFollower(i, levelOfResident(this.d.save, r.id) >= 5);
+    });
+  }
+  /** what a resident wears: his gifts, the chef's hat at work, the crown at level 5, and the party hat and balloons on his party day */
+  wearing(i: number): string[] {
+    const r = this.residents[i];
+    if (!r) return [];
+    const out = wearing(this.d.save, r.id);
+    if (this.partyNow().includes(i)) out.push('partyhat', 'balloons');
+    return [...new Set(out)];
+  }
+  now(): Date {
+    return this.d.now?.() ?? new Date();
+  }
+  levelOf(i: number): number {
+    const r = this.residents[i];
+    return r ? levelOfResident(this.d.save, r.id) : 1;
+  }
+  /** a resident does his trick (level 2 and more): which one; counts for the quest */
+  trick(i: number): Trick | null {
+    const r = this.residents[i];
+    if (!r || this.levelOf(i) < 2) return null;
+    friendsOf(this.d.save).tricks++;
+    this.d.persist();
+    return trickOf(r.id);
+  }
+  /** a resident of level 3 works at a stall (null: he stops); only one seller for a stall */
+  setJob(i: number, slotId: string | null): boolean {
+    const r = this.residents[i];
+    if (!r) return false;
+    const f = friendsOf(this.d.save);
+    if (slotId) {
+      if (this.levelOf(i) < 3 || this.itemAt(slotId)?.slot !== 'stall') return false;
+      const other = this.sim.jobOf(slotId);
+      if (other >= 0 && other !== i) { delete f.job[this.residents[other].id]; this.sim.setJob(other, null); }
+    }
+    if (!this.sim.setJob(i, slotId)) return slotId === null ? (delete f.job[r.id], this.d.persist(), true) : false;
+    if (slotId) { f.job[r.id] = slotId; f.jobs++; } else delete f.job[r.id];
+    this.d.persist();
+    return true;
+  }
+  /** the camera looks here (the best friends follow) */
+  setFollow(p: { x: number; z: number } | null): void {
+    this.sim.follow = p;
+  }
+  /** the residents whose party day it is today and whose party was not celebrated this month */
+  partyNow(): number[] {
+    const f = friendsOf(this.d.save), now = this.now();
+    return this.residents.map((r, i) => (isPartyDay(r.id, now) && f.party[r.id] !== partyKey(now) ? i : -1)).filter((i) => i >= 0);
+  }
+  /** she chose a present for the party: one that fits his favourite food or colour gives double (4 hearts), another 2. Nobody loses the party by not coming: it is back next month. */
+  partyGift(i: number, fits: boolean): number {
+    const r = this.residents[i];
+    const f = friendsOf(this.d.save);
+    f.party[r.id] = partyKey(this.now());
+    f.parties++;
+    const n = fits ? 4 : 2;
+    this.d.save.hearts += n;
+    addFriendship(this.d.save, r.id, n);
+    this.d.persist();
+    return n;
+  }
+  /** "do you remember me?": right gives a double heart, wrong gives nothing and takes nothing */
+  remembered(i: number, right: boolean): number {
+    const r = this.residents[i];
+    if (!right || !r) return 0;
+    friendsOf(this.d.save).remembered++;
+    this.d.save.hearts += 2;
+    addFriendship(this.d.save, r.id, 2);
+    this.d.persist();
+    return 2;
+  }
+  /** the gift of level 4: once for each resident; it is put on him (the accessory only he gives) */
+  takeGift(i: number): string | null {
+    const r = this.residents[i];
+    const f = friendsOf(this.d.save);
+    if (!r || this.levelOf(i) < 4 || f.gifted.includes(r.id)) return null;
+    const g = giftOf(r.id);
+    f.gifted.push(r.id);
+    (f.worn[r.id] ??= []).push(g);
+    this.d.persist();
+    return g;
+  }
+  giftWaiting(i: number): boolean {
+    const r = this.residents[i];
+    return !!r && this.levelOf(i) >= 4 && !friendsOf(this.d.save).gifted.includes(r.id);
   }
   /** the view for the scene */
   agents(): { x: number; z: number; face: number; walking: boolean; active: boolean }[] {
@@ -84,7 +183,8 @@ export class CarnivalWorld {
     this.sim.agents.forEach((_, i) => this.sim.setActive(i, !away.has(i)));
   }
   private simOf(r: Resident): SimResident {
-    return { id: r.id, personality: (r.personality ?? 'curious') as Personality, game: r.game };
+    const f = friendOf(r.id);
+    return { id: r.id, personality: (r.personality ?? 'curious') as Personality, game: r.game, food: r.food, friend: f ?? undefined };
   }
 
   get save(): CarnivalSave {
@@ -163,7 +263,9 @@ export class CarnivalWorld {
 
   questCtx(): QuestCtx {
     const c = this.d.save.quests.counts;
-    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers };
+    const f = friendsOf(this.d.save);
+    const ex = this.d.external?.() ?? { lolly: 0, workshop: 0 };
+    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers, friend: maxFriendLevel(this.d.save), tricks: f.tricks, jobs: f.jobs, remembered: f.remembered, parties: f.parties, lolly: ex.lolly, workshop: ex.workshop };
   }
   count(key: 'taps' | 'rounds'): void {
     this.d.save.quests.counts[key] = (this.d.save.quests.counts[key] ?? 0) + 1;
@@ -189,7 +291,12 @@ export class CarnivalWorld {
   }
 
   private applyHearts(events: SimEvent[]): WorldEvent[] {
-    for (const e of events) if (e.type === 'heart') this.d.save.hearts += e.amount;
+    for (const e of events) if (e.type === 'heart') {
+      this.d.save.hearts += e.amount;
+      const r = this.residents[e.r];
+      // the hearts that he gave fill HIS meter (it only goes up)
+      if (r) addFriendship(this.d.save, r.id, e.amount);
+    }
     return events;
   }
 
@@ -223,6 +330,15 @@ export class CarnivalWorld {
       }
     }
     s.levelDone = Math.max(s.levelDone, this.level);
+    // a friendship level that was reached (by the hearts of the sim or of the talks): "we are better friends!"
+    const fr = friendsOf(s);
+    this.residents.forEach((r, i) => {
+      const lv = friendLevel(fr.hearts[r.id] ?? 0);
+      const seen = fr.seen[r.id] ?? 1;
+      if (lv > seen) out.push({ type: 'friendUp', r: i, level: lv });
+      if (lv !== (fr.seen[r.id] ?? 0)) fr.seen[r.id] = lv;
+      if (lv >= 5) this.sim.setFollower(i, true);
+    });
     // quests
     for (const q of finishedNow(s.quests.done, this.questCtx())) {
       s.quests.done.push(q.id);

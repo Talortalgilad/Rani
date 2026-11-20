@@ -13,14 +13,15 @@ describe('the voice of the carnival: nothing is left to the phone', () => {
     const missing = CARNIVAL_LINES.filter((l) => l.parts.some((p) => p !== null) && !he.has(l.id)).map((l) => l.id);
     expect(missing).toEqual([]);
   });
-  it('the quests of stage 2 are recorded, and the 24 of the later stages are in the list and the manifest, with no quest built for them', () => {
+  it('the quests of stage 2 are recorded, and the 24 of the later stages are in the list and the manifest (seven of them are quests of stage 3 now)', () => {
     for (const q of QUESTS) expect(he.has(`qs_${q.id}`), q.id).toBe(true);
     expect(LATER).toHaveLength(24);
     for (const l of LATER) {
       expect(he.has(l.id), l.id).toBe(true);
       expect(CARNIVAL_LINES.some((x) => x.id === l.id), l.id).toBe(true);
     }
-    expect(QUESTS).toHaveLength(10);
+    // stage 3 built seven of the 24 (friend, trick, job, remember, party, lolly, workshop); the other 17 are for stages 4-5
+    expect(QUESTS).toHaveLength(17);
   });
   it('every English sentence of the carnival has a recording', () => {
     for (const l of CARNIVAL_EN) expect(en.has(l.id), l.id).toBe(true);

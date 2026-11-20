@@ -17,6 +17,8 @@ export interface Resident {
   /** the character (SPEC-carnival.md 4.1) and the game that he likes (a game of the registry): stage 2 uses them */
   personality?: Personality;
   game?: string;
+  /** his favourite food (a word id) */
+  food?: string;
 }
 
 /** The fixed details of the residents (residents.json). The companion that Rani named uses the row of Cheesy. */
@@ -61,12 +63,12 @@ export function residents(companionName: string | null, buddy: string | null, ar
   });
   // the alternative names are recorded too (name.<key>, carn_hello_im_<key>), so the resident is "fixed" again
   for (const o of others) if (!o.name) (o.name = ALT_NAMES.find((a) => !used.has(a) && !NAMES.some((n) => n.name === a)) ?? 'חבר'), (o.fixed = true), used.add(o.name);
-  const four = [first, ...others].map((r) => ({ ...r, personality: infoOf(r.id)?.personality, game: GAME_ID[infoOf(r.id)?.game ?? ''] }));
+  const four = [first, ...others].map((r) => ({ ...r, personality: infoOf(r.id)?.personality, game: GAME_ID[infoOf(r.id)?.game ?? ''], food: infoOf(r.id)?.food }));
   const added = arrived
     .filter((id) => NEW_RESIDENTS.includes(id))
     .map((id): Resident => {
       const i = infoOf(id)!;
-      return { id, name: i.he, img: newUrl(id), fixed: false, personality: i.personality, game: GAME_ID[i.game] };
+      return { id, name: i.he, img: newUrl(id), fixed: false, personality: i.personality, game: GAME_ID[i.game], food: i.food };
     });
   return [...four, ...added];
 }

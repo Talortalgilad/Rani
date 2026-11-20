@@ -1,5 +1,6 @@
 /** The quests (SPEC-carnival.md 7): one is active at a time, from the resident of Rani, shown in a small strip at the top; each gives hearts, now and then a star. Pure. */
 import { itemById } from './catalog';
+import QUESTS_LATER from './quests-later.json';
 
 export interface QuestCtx {
   built: Record<string, string>;
@@ -8,6 +9,14 @@ export interface QuestCtx {
   taps: number;
   rounds: number;
   answers: number;
+  /** stage 3: the best level of friendship, the tricks seen, the jobs given, the questions remembered, the parties, and Lolly's lessons and the squishies of the workshop (a count each) */
+  friend?: number;
+  tricks?: number;
+  jobs?: number;
+  remembered?: number;
+  parties?: number;
+  lolly?: number;
+  workshop?: number;
 }
 export interface Quest { id: string; he: string; hearts: number; stars?: number; done(c: QuestCtx): boolean }
 
@@ -15,7 +24,7 @@ const items = (c: QuestCtx): string[] => Object.values(c.built);
 const kinds = (c: QuestCtx, kind: string): number => items(c).filter((i) => itemById(i)?.kind === kind).length;
 const slotOf = (c: QuestCtx, slot: string): number => items(c).filter((i) => itemById(i)?.slot === slot).length;
 
-/** the first ten, in this order (the guide leads her through them) */
+/** the first ten, in this order (the guide leads her through them); stage 3 adds seven after them */
 export const QUESTS: Quest[] = [
   { id: 'pizza', he: 'פתחי דוכן פיצה', hearts: 3, done: (c) => items(c).includes('pizzastand') },
   { id: 'name', he: 'הקישי על סקווישי ושמעי איך קוראים לו', hearts: 2, done: (c) => c.taps >= 1 },
@@ -28,6 +37,17 @@ export const QUESTS: Quest[] = [
   { id: 'lvl3', he: 'הגיעי לרמה 3', hearts: 4, done: (c) => c.level >= 3 },
   { id: 'five', he: 'פתחי חמישה דברים בקרנבל', hearts: 5, stars: 2, done: (c) => items(c).length >= 5 },
 ];
+/** the quests of stage 3 (their sentences are in quests-later.json, recorded in advance) */
+const LATER = Object.fromEntries((QUESTS_LATER as { id: string; text: string }[]).map((q) => [q.id, q.text]));
+QUESTS.push(
+  { id: 'friend', he: LATER.qs_friend, hearts: 5, done: (c) => (c.friend ?? 1) >= 2 },
+  { id: 'trick', he: LATER.qs_trick, hearts: 4, done: (c) => (c.tricks ?? 0) >= 1 },
+  { id: 'job', he: LATER.qs_job, hearts: 5, stars: 1, done: (c) => (c.jobs ?? 0) >= 1 },
+  { id: 'remember', he: LATER.qs_remember, hearts: 5, stars: 1, done: (c) => (c.remembered ?? 0) >= 1 },
+  { id: 'party', he: LATER.qs_party, hearts: 6, stars: 1, done: (c) => (c.parties ?? 0) >= 1 },
+  { id: 'lolly', he: LATER.qs_lolly, hearts: 5, stars: 1, done: (c) => (c.lolly ?? 0) >= 1 },
+  { id: 'workshop', he: LATER.qs_workshop, hearts: 5, stars: 1, done: (c) => (c.workshop ?? 0) >= 1 },
+);
 export const questById = (id: string): Quest | undefined => QUESTS.find((q) => q.id === id);
 /** the quest that is active: the first that is not done (null when all ten are done) */
 export const activeQuest = (done: string[]): Quest | null => QUESTS.find((q) => !done.includes(q.id)) ?? null;

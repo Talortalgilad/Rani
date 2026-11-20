@@ -16,6 +16,8 @@ import { speakClip } from '../talk/speak';
 import { PERSONALITY_HE, SUGGEST_LINE, WISH_ICON, WISH_LINE, fillers, type WishType } from '../wishes';
 import type { CarnivalWorld, WorldEvent } from '../world';
 import { CS_LINES } from '../csLines';
+import { FriendUI, LEVEL_NAME } from './friendUi';
+import { friendLevel, friendsOf } from '../friends';
 
 export interface WorldHost {
   layer: HTMLElement;
@@ -26,6 +28,12 @@ export interface WorldHost {
   /** the camera goes to a place or to a resident (3D only), and a resident waves */
   focusSlot?(id: string): void;
   takeMe?(i: number): void;
+  /** a resident does his trick (spin, a double jump, a dance) */
+  trick?(i: number, kind: 'spin' | 'jump2' | 'dance'): void;
+  /** the school of Lolly was tapped: her lessons (the page goes to the English game, straight to Lolly) */
+  goTutor?(): void;
+  /** is there a new lesson of Lolly today? (the ❗ at her school) */
+  newLesson?(): boolean;
   /** a new resident arrived: the scene shows him */
   addResident?(r: Resident): void;
   /** the way to the word journey or to the lessons of Lolly (the locked card's button) */
@@ -67,6 +75,10 @@ export class WorldUI {
   private bannerOn = false;
   private moving: string | null = null;
   private dead = false;
+  readonly friends = new FriendUI(this);
+  private schoolEl: HTMLElement | null = null;
+  private schoolNew = false;
+  private schoolT = 0;
   private lastQuest = '';
   private badgeT = 0;
   private fitT = 0;
@@ -75,7 +87,7 @@ export class WorldUI {
   private screenW = window.innerWidth;
   private screenH = window.innerHeight;
 
-  constructor(private h: WorldHost) {
+  constructor(readonly h: WorldHost) {
     this.root = document.createElement('div');
     this.root.className = `cvw ${h.mode === '2d' ? 'm2d' : ''}`;
     h.layer.appendChild(this.root);
@@ -154,6 +166,10 @@ export class WorldUI {
     const hh = window.innerHeight;
     const ww = window.innerWidth;
     for (const p of list) {
+      if (p.id === 'lollyschool') {
+        this.placeSchool(p);
+        continue;
+      }
       const s = w.slot(p.id);
       if (!s) continue;
       let el = this.slotEls.get(p.id);
@@ -183,6 +199,29 @@ export class WorldUI {
     }
   }
 
+  /** the school of Lolly (SPEC-tutor.md 2): the building (its picture, when there is one) with Lolly outside; a ❗ over her when there is a new lesson. Nothing is drawn if the building has no picture yet. */
+  private placeSchool(p: { x: number; y: number; behind: boolean }): void {
+    if (!this.schoolEl) {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'cvw-school';
+      el.setAttribute('aria-label', 'בית הספר של לולי');
+      const b = import.meta.env.BASE_URL;
+      el.innerHTML = `<img class="sc-b" src="${b}park/items/lollyschool.webp" alt="" onerror="this.remove()"><img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">❗</i>`;
+      el.addEventListener('click', () => {
+        sound.play('pop', 640);
+        this.h.goTutor?.();
+      });
+      this.root.appendChild(el);
+      this.schoolEl = el;
+      this.schoolNew = !!this.h.newLesson?.();
+      el.classList.toggle('new', this.schoolNew);
+    }
+    const vis = !p.behind && p.x > 30 && p.x < window.innerWidth - 30 && p.y > 130 && p.y < window.innerHeight - 100;
+    this.schoolEl.style.visibility = vis ? 'visible' : 'hidden';
+    if (vis) this.schoolEl.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -90%)`;
+  }
+
   private tapSlot(id: string): void {
     const w = this.h.world;
     const s = w.slot(id);
@@ -207,11 +246,11 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- sheets
-  private closeSheet(): void {
+  closeSheet(): void {
     this.sheet?.remove();
     this.sheet = null;
   }
-  private openSheet(cls: string, html: string): HTMLElement {
+  openSheet(cls: string, html: string): HTMLElement {
     this.closeSheet();
     const el = document.createElement('div');
     el.className = `cvw-sheet ${cls}`;
@@ -224,7 +263,7 @@ export class WorldUI {
     this.sheet = el;
     return el;
   }
-  private toast(text: string): void {
+  toast(text: string): void {
     const t = document.createElement('div');
     t.className = 'cvw-toast';
     t.textContent = text;
@@ -386,7 +425,7 @@ export class WorldUI {
     const el = this.openSheet(
       'cvw-bookpage',
       `<h2>${esc(csText('cs_book'))}</h2><div class="list">${rows
-        .map(({ r, i, wish, call }) => `<button type="button" class="row" data-i="${i}"><img src="${esc(r.img)}" alt=""><span><b>${esc(r.name)}</b><small>${r.personality ? PERSONALITY_HE[r.personality] : ''}</small></span><em>${call ? '❗' : wish ? WISH_ICON[wish.kind] : ''}</em></button>`)
+        .map(({ r, i, wish, call }) => `<button type="button" class="row" data-i="${i}"><img src="${esc(r.img)}" alt=""><span><b>${esc(r.name)}</b><small>${r.personality ? PERSONALITY_HE[r.personality] : ''} · ${LEVEL_NAME[friendLevel(friendsOf(w.save).hearts[r.id] ?? 0)]}</small></span><em>${call ? '❗' : wish ? WISH_ICON[wish.kind] : ''}</em></button>`)
         .join('')}${unknown.map((x) => `<div class="row ghost"><img src="${residentImg(x.id)}" alt=""><span><b>?</b></span></div>`).join('')}</div>`,
     );
     el.querySelectorAll<HTMLButtonElement>('.row[data-i]').forEach((b) =>
@@ -397,10 +436,11 @@ export class WorldUI {
         el.querySelectorAll('.open').forEach((x) => x.remove());
         const open = document.createElement('div');
         open.className = 'open';
-        open.innerHTML = `<img src="${esc(r.img)}" alt=""><h3>${esc(r.name)}</h3><p>${csText('cs_wants_now')} ${wish ? WISH_ICON[wish.kind] : '—'}</p><button type="button" class="takeme">${esc(csText('cs_take_me'))}</button>`;
+        open.innerHTML = `<img src="${esc(r.img)}" alt=""><h3>${esc(r.name)}</h3><p>${csText('cs_wants_now')} ${wish ? WISH_ICON[wish.kind] : '—'}</p><button type="button" class="takeme">${esc(csText('cs_take_me'))}</button> <button type="button" class="takeme card">הכרטיס שלו</button>`;
         b.after(open);
         say('cs_wants_now');
-        open.querySelector('.takeme')!.addEventListener('click', () => {
+        open.querySelector('.takeme.card')!.addEventListener('click', () => this.friends.openCard(i));
+        open.querySelector('.takeme:not(.card)')!.addEventListener('click', () => {
           this.closeSheet();
           this.h.takeMe?.(i);
         });
@@ -423,7 +463,7 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- banners
-  private queueBanner(html: string, line?: string): void {
+  queueBanner(html: string, line?: string): void {
     this.banners.push({ html, line });
     if (!this.bannerOn) this.nextBanner();
   }
@@ -444,7 +484,7 @@ export class WorldUI {
       this.nextBanner();
     }, 2700);
   }
-  private confetti(n = 22): void {
+  confetti(n = 22): void {
     for (let k = 0; k < n; k++) {
       const e = document.createElement('i');
       e.className = 'cvw-conf';
@@ -503,6 +543,12 @@ export class WorldUI {
           sound.play('bonus');
           this.queueBanner(`<b>${esc(csText('cs_quest_done'))}</b><span>❤️ ${e.quest.hearts}${e.quest.stars ? ' ⭐ ' + e.quest.stars : ''}</span>`, 'cs_quest_done');
           break;
+        case 'friendUp': {
+          sound.play('bonus');
+          const r = w.residents[e.r];
+          this.queueBanner(`<b>${esc(csText(e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up'))}</b><img src="${esc(r.img)}" alt=""><span>${esc(r.name)} · ${LEVEL_NAME[e.level]}</span>`, e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up');
+          break;
+        }
         case 'unlocked':
           this.queueBanner(`<b>${esc(csText('cs_unlock_words'))}</b>${e.items.slice(0, 3).map((id) => `<img src="${itemImg(id)}" alt="">`).join('')}`, 'cs_unlock_words');
           break;
@@ -548,7 +594,7 @@ export class WorldUI {
     return out;
   }
 
-  private flyHeart(r: number, amount: number): void {
+  flyHeart(r: number, amount: number): void {
     const from = this.h.pos(r);
     const to = this.h.heartsEl()?.getBoundingClientRect();
     if (!from || !to) return;
@@ -570,6 +616,9 @@ export class WorldUI {
   residentTapped(i: number): void {
     const w = this.h.world;
     w.count('taps');
+    // a friend of level 2 does his trick when he is tapped
+    const tk = w.trick(i);
+    if (tk) this.h.trick?.(i, tk);
     const wish = w.sim.agents[i]?.wish;
     if (!wish) return;
     const text = csText(WISH_LINE[wish.kind]);
@@ -589,6 +638,13 @@ export class WorldUI {
     this.screenH = window.innerHeight;
     const w = this.h.world;
     this.paintHud();
+    this.friends.tick(dt, !!this.sheet);
+    this.schoolT -= dt;
+    if (this.schoolT <= 0 && this.schoolEl) {
+      this.schoolT = 5;
+      this.schoolNew = !!this.h.newLesson?.();
+      this.schoolEl.classList.toggle('new', this.schoolNew);
+    }
     this.fitT -= dt;
     if (this.fitT <= 0) {
       this.fitT = 0.5;
@@ -649,6 +705,8 @@ export class WorldUI {
 
   dispose(): void {
     this.dead = true;
+    this.friends.dispose();
+    this.schoolEl?.remove();
     this.closeSheet();
     this.root.remove();
     this.guideEl?.remove();
