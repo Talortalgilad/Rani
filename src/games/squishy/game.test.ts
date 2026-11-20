@@ -33,7 +33,7 @@ describe('what the workshop remembers', () => {
     expect(cleanName('  <hi>  ')).toBe('hi');
   });
   it('the draft and the shelf are loaded safely, and the shelf is the data of squishies, never pictures', () => {
-    expect(loadStore({ draft: 5, shelf: 'x' })).toEqual({ draft: null, shelf: [] });
+    expect(loadStore({ draft: 5, shelf: 'x' })).toEqual({ draft: null, shelf: [], orders: { done: [], hearts: 0, given: 0 } });
     const d = newSquishy('dog');
     const s = loadStore({ draft: { step: 'paint', data: d, poured: true, squeezes: 3 }, shelf: [d, { shape: 'zzz' }, null] });
     expect(s.draft?.step).toBe('paint');
@@ -76,5 +76,13 @@ describe('the voice of the workshop: recordings only', () => {
     for (const [f, t] of Object.entries({ 'game.ts': gameSrc, 'sqvoice.ts': sqvoiceSrc, 'view.ts': viewSrc, 'squishy.ts': squishySrc })) {
       expect(/speakEn|speakHe\b|speakHeLine|sayLine\(|sayLabel\(|speechSynthesis/.test(t), f).toBe(false);
     }
+  });
+});
+
+describe('the lines of the order check are recorded', () => {
+  it('sq_order_shape (take 503) is connected: recorded, and said by the check when the shape is not the one that was ordered', () => {
+    expect(he.has('sq_order_shape')).toBe(true);
+    expect(gameSrc.includes("'sq_order_shape'")).toBe(true);
+    expect(WANTED.length).toBe(0);
   });
 });
