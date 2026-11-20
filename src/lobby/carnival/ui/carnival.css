@@ -86,7 +86,7 @@
 .cv-opt.choose { min-height: 56px; font-size: 28px; }
 @media (prefers-reduced-motion: reduce) { .cv-opt.word.blink { animation: none; filter: brightness(1.4); } }
 .cv-game img, .cv-sign img { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; }
-.carnival-on .lolly-btn { top: calc(192px + env(safe-area-inset-top)); inset-inline-end: 14px; inset-inline-start: auto; width: 60px; height: 60px; z-index: 6; }
+.carnival-on .lolly-btn { top: calc(346px + env(safe-area-inset-top)); inset-inline-end: 12px; inset-inline-start: auto; width: 56px; height: 56px; z-index: 8; }
 
 /* tier 2d: the hearts sit below the stars (the stars are in the flow of the page, taller) */
 .cv-layer.cv-2d .cv-hearts { top: calc(168px + env(safe-area-inset-top)); }
