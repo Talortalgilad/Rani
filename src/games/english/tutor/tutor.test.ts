@@ -6,6 +6,9 @@ import { parsePic } from './pictures';
 import { STAGE_OF, STEPS } from './steps';
 import { access, emptyTutor, finish, loadTutor, markSeenSentence, nextNew, saveProgress, setSparkle, unitOpen } from './state';
 import { canRun } from './engine';
+import { colorOfClip } from './steps/paint';
+import { isPaintable, PAINTABLE, THINGS_MISSING } from './things';
+import { COLORS } from '../content/colors';
 import { nextPraise, PRAISE } from './shell';
 
 const manifest = (lang: 'he' | 'en'): Set<string> => {
@@ -97,14 +100,47 @@ describe('tutor-lessons.json: every clip exists, every answer is in range, every
     for (const t of DATA.things) expect(words.has(t), t).toBe(true);
   });
   it('the clips that the engine itself says exist (the hellos, the goodbyes, the reactions to a feeling, the praise, the mistakes)', () => {
-    const ids = ['t_welcome', 't_hi.0', 't_hi.1', 't_hi.2', 't_bye.0', 't_bye.1', 't_hello_rani', 't_how_are_you_today', 't_feel_ask', 't_review', 't_say_it_with_me', 't_say_aloud', 't_sentence_of_day', 't_sticker', 't_unit_done', 't_see_you_tomorrow', 't_who_said', 't_right_or_wrong', 't_am_i_right', 't_silly_me', 't_oops', 't_i_was_right', 't_fix_me', 't_almost', 't_show', 't_chant_intro', 't_chant_again', 't_done_today', 't_now_you', 't_now_you_he', 't_self_check', 't_challenge_intro', 't_challenge_perfect', 't_challenge_ok', 't_challenge', 't_listen_carefully', 't_what_do_you_see', 't_perfect', 't_amazing', 't_very_good', 't_excellent', 't_you_got_it', 't_super', 't_well_done', ...DATA.feelings.map((f) => `t_re_${f}`), ...DATA.foods.map((f) => `t_you_like_${f}`)];
+    const ids = ['t_welcome', 't_hi.0', 't_hi.1', 't_hi.2', 't_bye.0', 't_bye.1', 't_hello_rani', 't_how_are_you_today', 't_feel_ask', 't_review', 't_say_it_with_me', 't_say_aloud', 't_sentence_of_day', 't_sticker', 't_unit_done', 't_see_you_tomorrow', 't_who_said', 't_right_or_wrong', 't_am_i_right', 't_silly_me', 't_oops', 't_i_was_right', 't_fix_me', 't_almost', 't_show', 't_chant_intro', 't_chant_again', 't_done_today', 't_now_you', 't_now_you_he', 't_self_check', 't_challenge_intro', 't_challenge_perfect', 't_challenge_ok', 't_challenge', 't_listen_carefully', 't_like_ask', 't_tap_picture', 't_me_too', 't_yummy', 't_yucky', 't_i_remember', 't_color_pick', 't_what_do_you_see', 't_perfect', 't_amazing', 't_very_good', 't_excellent', 't_you_got_it', 't_super', 't_well_done', ...DATA.feelings.map((f) => `t_re_${f}`), ...DATA.foods.map((f) => `t_you_like_${f}`)];
     for (const id of ids) expect(recorded(id), id).toBe(true);
   });
-  it('a lesson of unit 1 can be run by this stage; the types of stage 1 are named, not missing by mistake', () => {
-    for (const l of LESSONS.filter((x) => x.unit === 1)) expect(canRun(l), l.id).toBe(true);
-    const later = new Set(['likes', 'likeOrNot', 'ask', 'recall', 'paint']); // the types of stage 1
-    for (const l of LESSONS) for (const s of l.steps) expect(s.type in STEPS || later.has(s.type), `${l.id}: ${s.type}`).toBe(true);
+  it('the engine runs every step type of the file: a lesson with a step of an unknown type fails here, and so does a clip that is not there', () => {
+    const known = new Set(Object.keys(STEPS));
+    for (const l of LESSONS) {
+      expect(canRun(l), `${l.id} can be run`).toBe(true);
+      for (const [i, s] of l.steps.entries()) {
+        expect(known.has(s.type), `${l.id}#${i}: the type "${s.type}" is not one that the engine knows`).toBe(true);
+        for (const id of clipsOf(s)) expect(recorded(id), `${l.id}#${i} ${s.type}: the clip ${id} does not exist`).toBe(true);
+      }
+    }
     for (const t of Object.keys(STEPS)) expect(t in STAGE_OF, t).toBe(true);
+    // a step of an unknown type is not runnable (the test above would catch it in a lesson)
+    expect(canRun({ id: 'x', unit: 9, kind: 'regular', titleHe: '', steps: [{ type: 'zzz' }] })).toBe(false);
+  });
+  it('every lesson goes from the beginning to the sticker: it starts with a greeting, has the sticker once and ends with the goodbye', () => {
+    for (const l of LESSONS) {
+      expect(l.steps[0].type, l.id).toBe('greet');
+      expect(l.steps.filter((s) => s.type === 'sticker').length, l.id).toBe(1);
+      expect(l.steps[l.steps.length - 1].type, l.id).toBe('bye');
+    }
+  });
+  it('the steps of stage 1 are well made: foods, items, things, colours and the colour of every clip of a paint step', () => {
+    const words = new Set(WORDS.map((w) => w.id));
+    for (const l of LESSONS) for (const [i, s] of l.steps.entries()) {
+      const at = `${l.id}#${i} ${s.type}`;
+      if (s.type === 'likes') for (const f of s.foods as string[]) { expect(DATA.foods, at).toContain(f); expect(words.has(f), at).toBe(true); }
+      if (s.type === 'likeOrNot') for (const it of s.items as { clip: string; food: string; like: boolean }[]) { expect(DATA.foods, at).toContain(it.food); expect(typeof it.like, at).toBe('boolean'); expect(it.clip.includes(it.like ? 't_like_' : 't_dont_like_'), `${at}: the clip says ${it.clip}`).toBe(true); }
+      if (s.type === 'ask') for (const it of s.items as { clip: string; food: string }[]) { expect(DATA.foods, at).toContain(it.food); expect(it.clip, at).toBe(`t_do_you_like_${it.food}`); }
+      if (s.type === 'paint') {
+        expect(DATA.things, at).toContain(s.thing);
+        for (const c of s.clips as string[]) expect(colorOfClip(c), `${at}: ${c} names no colour`).not.toBeNull();
+      }
+    }
+    // the things: the ones that have a white picture are painted, the others are on the list of what is missing (no substitute is drawn)
+    for (const t of DATA.things) expect(isPaintable(t) || THINGS_MISSING.includes(t), t).toBe(true);
+    expect(PAINTABLE.length + THINGS_MISSING.length).toBe(DATA.things.length);
+  });
+  it('the words of the colours and the six colours of the palette are the same', () => {
+    expect(COLORS.map((c) => c.id).sort()).toEqual([...DATA.colors].sort());
   });
   it('the three songs: each chant clip exists and has as many lines as the file says', () => {
     for (const l of LESSONS) for (const s of l.steps) if (s.type === 'chant') {

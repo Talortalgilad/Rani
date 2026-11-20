@@ -9,6 +9,7 @@ import { LESSONS, units, type Lesson } from './lessons';
 import { mountLolly, preloadTutor } from './lolly';
 import { access, isDone, loadTutor, type TutorState } from './state';
 import { playTutor, stopTutor, clipText } from './audio';
+import { showAlbum } from './album';
 import type { Deps } from './shell';
 import './tutor.css';
 
@@ -29,6 +30,7 @@ export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
   let state = loadTutor(d.load(), stepCounts);
   let run: Run | null = null;
   let alive = true;
+  let stopAlbum: (() => void) | null = null;
   const today = (): number => dayNumber();
   const deps = (): Deps => ({
     sound: d.sound,
@@ -50,7 +52,7 @@ export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
     root.innerHTML = `
       <div class="en-screen tutor-screen tutor-list">
         <div class="en-sky"></div>
-        <header class="tutor-top"><button class="q-home" id="tback" type="button" aria-label="חזרה">←</button><h1 class="map-title">המורה לולי</h1><span style="width:44px"></span></header>
+        <header class="tutor-top"><button class="q-home" id="tback" type="button" aria-label="חזרה">←</button><h1 class="map-title">המורה לולי</h1><button class="q-home" id="talbum" type="button" aria-label="אלבום המדבקות">📒</button></header>
         <div class="tutor-lolly-row"><div class="tutor-lolly sm" id="tl"></div><button class="tutor-bubble ${note ? "" : "empty"}" id="tb" type="button"><span id="tbt">${esc(note)}</span></button></div>
         <div class="tutor-units">${units()
           .map(
@@ -64,6 +66,10 @@ export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
     root.querySelector('#tback')!.addEventListener('click', () => {
       stopTutor();
       d.onBack();
+    });
+    root.querySelector('#talbum')!.addEventListener('click', () => {
+      d.sound.play('pop', 640);
+      stopAlbum = showAlbum(root, { state, sound: d.sound, onBack: () => (stopAlbum?.(), (stopAlbum = null), list()) });
     });
     root.querySelectorAll<HTMLButtonElement>('.tl-card').forEach((b) =>
       b.addEventListener('click', () => {
@@ -107,6 +113,7 @@ export function showTutor(root: HTMLElement, d: TutorDeps): () => void {
   list();
   return () => {
     alive = false;
+    stopAlbum?.();
     run?.stop();
     stopTutor();
   };

@@ -1,9 +1,10 @@
-/** The pictures of the lessons (SPEC-tutor.md section 4, "תמונות"): word:<id>, face:<feeling>, squishy:<name>. thing: and lolly: come in stage 1. */
+/** The pictures of the lessons (SPEC-tutor.md section 4, "תמונות"): word:<id>, face:<feeling>, squishy:<name>. thing: and lolly: (stage 1). */
 import { WORDS } from '../content/words';
 import { imageUrl } from '../art/images';
 import { squishyUrl } from '../art/squishies';
 import { cheesyUrl } from '../art/cheesy';
 import { faceUrl, lollyImg } from './lolly';
+import { thingHtml } from './things';
 
 /** A face with a feeling: the 3D picture (face_<feeling>.webp). */
 export const faceHtml = (feeling: string): string => `<img class="pic-img" src="${faceUrl(feeling)}" alt="" draggable="false">`;
@@ -30,7 +31,7 @@ export function parsePic(s: string): Pic | null {
 }
 export const wordExists = (id: string): boolean => WORDS.some((w) => w.id === id);
 
-/** The html of a picture. A picture that stage 0 cannot draw (thing:, lolly:) is a plain tile with its name, so a lesson of a later stage never breaks. */
+/** The html of a picture (word:, face:, squishy:, thing:, lolly:). */
 export function pictureHtml(s: string | null | undefined): string {
   if (!s) return '';
   const p = parsePic(s);
@@ -43,8 +44,9 @@ export function pictureHtml(s: string | null | undefined): string {
     case 'squishy':
       return `<img class="pic-img" src="${squishyPic(p.name)}" alt="" draggable="false">`;
     case 'lolly':
-      return `<span class="pic-lolly">${lollyImg(p.like ? 'happy' : 'confused')}<img class="pic-img small" src="${imageUrl(p.food)}" alt="" draggable="false"></span>`;
+      // Lolly with the picture of the food, and next to it the face of a heart (she likes it) or of "yuck" (she does not): the faces of the game
+      return `<span class="pic-lolly">${lollyImg(p.like ? 'happy' : 'confused')}<img class="pic-img small" src="${imageUrl(p.food)}" alt="" draggable="false"><img class="pic-badge" src="${faceUrl(p.like ? 'love' : 'yuck')}" alt="" draggable="false"></span>`;
     case 'thing':
-      return `<span class="pic-todo">${p.thing}<br>${p.color}</span>`;
+      return thingHtml(p.thing, p.color);
   }
 }

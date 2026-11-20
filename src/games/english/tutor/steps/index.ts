@@ -7,9 +7,11 @@ import { trueFalse } from './trueFalse';
 import { meet } from './meet';
 import { sayFirst } from './sayFirst';
 import { challenge } from './challenge';
+import { ask, likeOrNot, likes, recall } from './likes';
+import { paint } from './paint';
 
-/** The step types that this stage can run (SPEC-tutor.md section 11, stage 0). The types of stage 1 (likes, likeOrNot, ask, recall, paint) are not here yet. */
-export const STEPS: Record<string, StepRun> = { greet, feel, review, say, teach, repeat, whoSaid, answerPick, dialogue, listenPick, build, trueFalse, chant, sentenceOfDay, sticker, unitDone, bye, note, meet, sayFirst, challenge };
+/** The step types that the engine can run: all of them (SPEC-tutor.md section 4). */
+export const STEPS: Record<string, StepRun> = { greet, feel, review, say, teach, repeat, whoSaid, answerPick, dialogue, listenPick, build, trueFalse, chant, sentenceOfDay, sticker, unitDone, bye, note, meet, sayFirst, challenge, likes, likeOrNot, ask, recall, paint };
 
 /**
  * Where a type of step sits in the six points of the progress bar (SPEC-tutor.md section 3): 1 hello, 2 review, 3 the new thing, 4 practice, 5 the sentence of the day, 6 the sticker.

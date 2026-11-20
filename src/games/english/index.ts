@@ -138,7 +138,7 @@ function showWorlds(): void {
 }
 
 /** Miss Lolly's lessons (SPEC-tutor.md). No maths gate: it is a lesson, not a game. Back goes to the map that was open. */
-function showTutorScreen(): void {
+function showTutorScreen(fromLobby = false): void {
   swap(() =>
     showTutor(root!, {
       sound: ctx!.sound,
@@ -146,8 +146,9 @@ function showTutorScreen(): void {
       save: (s: TutorState) => ctx!.save('tutor', s),
       words: words,
       setWords: saveWords,
-      openAll,
-      onBack: showWorlds,
+      openAll: () => openAll() || ctx!.load<boolean>('tutorOpenAll', false),
+      // from the lobby (the button of Lolly) back goes to the lobby; from the map, to the map
+      onBack: fromLobby === true ? () => ctx!.onExit() : showWorlds,
     }),
   );
 }
@@ -307,7 +308,16 @@ const mod: GameModule = {
       if (id) void sayLabel(id, ['island_title', 'i_am', 'proud', 'rescued'].includes(id) ? displayName() : '');
     });
     c.container.appendChild(root);
-    enter();
+    // the button of Lolly in the lobby: straight to her lessons (and back to the lobby)
+    let direct = false;
+    try {
+      direct = sessionStorage.getItem('rani-open-tutor') === '1';
+      sessionStorage.removeItem('rani-open-tutor');
+    } catch {
+      /* ignore */
+    }
+    if (direct) showTutorScreen(true);
+    else enter();
   },
   canInterrupt: () => true,
   pause() {

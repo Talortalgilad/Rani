@@ -5,7 +5,7 @@
 /* once the lobby is showing, touches pass through the page to the canvas wherever a control is not */
 body.lobby3d-on #app { position: relative; z-index: 1; pointer-events: none; }
 body.lobby3d-on #app > .screen.lobby-screen { background: transparent; pointer-events: none; }
-.lobby-screen .title, .lobby-screen .icon-btn, .lobby-screen .stars, .lobby-screen .sr-only button { pointer-events: auto; }
+.lobby-screen .title, .lobby-screen .icon-btn, .lobby-screen .lolly-btn, .lobby-screen .stars, .lobby-screen .sr-only button { pointer-events: auto; }
 .lobby-screen .title { color: #fff; text-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
 .lobby-screen .avatar { position: relative; pointer-events: auto; transform-origin: 70% 85%; }
 /* the little cloud the avatar sits on */
