@@ -5,7 +5,7 @@
  */
 import ANCHORS from './anchors.json';
 
-export interface Anchor { top: number; bottom: number; left: number; right: number; cx: number; eyeY: number; mouthY: number; neckY: number; neckW: number; eyeW: number; eyeGap: number }
+export interface Anchor { top: number; bottom: number; left: number; right: number; cx: number; eyeY: number; mouthY: number; neckY: number; neckW: number; eyeW: number; eyeGap: number; /** the width of the body at 51 heights (0, 0.02 ... 1) */ prof?: number[]; /** the top of the head when the body is higher than the head (the wings of the bee) */ headTop?: number }
 /** the part of the picture of an accessory that is not transparent (fractions of its square) */
 export interface Box { t: number; b: number; l: number; r: number }
 export const ACC_BOX: Record<string, Box> = {
@@ -24,6 +24,19 @@ export interface Place { u: number; v: number; s: number }
 /** how wide each accessory is, as a part of the width of the head (the neck for the scarf, the body for the cape) */
 const WIDTH: Record<string, number> = { partyhat: 0.62, crown: 0.82, chefhat: 0.8, flowercrown: 0.98, bow: 0.5, glasses: 0.9, sunglasses: 0.9, scarf: 0.98, cape: 1.4, balloons: 0.5, medal: 0.34 };
 
+/** the height (fraction of the picture) where the body first is `w` wide, counting from the top: a hat sits there, where the head is as wide as the hat */
+export function heightAtWidth(a: Anchor, w: number): number {
+  const p = a.prof;
+  if (!p) return a.top + 0.07;
+  for (let k = 1; k < p.length; k++) {
+    if (p[k] >= w) {
+      const prev = p[k - 1], f = p[k] > prev ? (w - prev) / (p[k] - prev) : 1;
+      return (k - 1 + Math.max(0, Math.min(1, f))) / 50;
+    }
+  }
+  return a.top + 0.07;
+}
+
 export function place(id: string, a: Anchor): Place {
   const box = ACC_BOX[id] ?? { t: 0, b: 1, l: 0, r: 1 };
   const w = box.r - box.l;
@@ -34,14 +47,17 @@ export function place(id: string, a: Anchor): Place {
     case 'crown':
     case 'chefhat':
     case 'flowercrown': {
-      const s = size(WIDTH[id] * head);
-      // the lower edge sits on the top of the head, and always above the eyes (a round head is wide and low: the hat must not slide down on the face)
-      const edge = Math.min(a.top + 0.07, a.eyeY - 0.085 - (id === 'flowercrown' ? 0.02 : 0));
+      const s = size((id === 'flowercrown' ? 0.9 : WIDTH[id]) * head);
+      // the base of the hat sits on the head, where the head is as wide as the base (a little lower: it overlaps the head), never lower than just above the eyes;
+      // the flower crown sits on the forehead, right over the eyes
+      const wide = (box.r - box.l) * s * (id === 'flowercrown' ? 0.8 : 0.85);
+      const edge = Math.min((a.headTop ?? heightAtWidth(a, wide)) + 0.035, a.eyeY - (id === 'flowercrown' ? 0.055 : 0.075));
       return { u: a.cx, v: edge - (box.b - 0.5) * s, s };
     }
     case 'bow': {
       const s = size(WIDTH.bow * head);
-      return { u: a.cx - 0.26 * head, v: Math.min(a.top + 0.13, a.eyeY - 0.1) - (box.b - 0.5) * s, s };
+      const edge = Math.min((a.headTop ?? heightAtWidth(a, 0.6 * head)) + 0.04, a.eyeY - 0.09);
+      return { u: a.cx - 0.26 * head, v: edge - (box.b - 0.5) * s, s };
     }
     case 'glasses':
     case 'sunglasses': {
@@ -49,18 +65,48 @@ export function place(id: string, a: Anchor): Place {
       return { u: a.cx, v: a.eyeY - ((box.t + box.b) / 2 - 0.5) * s, s };
     }
     case 'scarf': {
-      const s = size(Math.min(WIDTH.scarf * Math.max(a.neckW, 0.4), 1.15 * head + 0.1));
-      // the top edge of the ring is under the mouth: it never covers the eyes or the mouth
-      return { u: a.cx, v: a.mouthY + 0.045 - (box.t - 0.5) * s, s };
+      // as wide as the neck (the body just under the mouth), and short enough that the tails stop above the feet: it hugs the body, it does not lie on the floor
+      const top = a.mouthY + 0.045;
+      const byWidth = size(Math.min(0.98 * Math.max(a.neckW, 0.4), 1.1 * head + 0.05));
+      const byFeet = (a.bottom - 0.05 - top) / (box.b - box.t);
+      const s = Math.max(0.1, Math.min(byWidth, byFeet));
+      return { u: a.cx, v: top - (box.t - 0.5) * s, s };
     }
     case 'cape': {
-      const s = size(WIDTH.cape * Math.max(a.neckW, head));
-      return { u: a.cx, v: a.mouthY + 0.01 - (box.t - 0.5) * s, s };
+      // it hangs from the shoulders, behind the body: the collar is hidden by the head, the sides and the bottom show
+      const top = a.top + 0.28 * (a.bottom - a.top);
+      const byWidth = size(Math.min(1.3 * Math.max(a.neckW, head), 1.1 * (a.right - a.left)));
+      const byFeet = (a.bottom - 0.03 - top) / (box.b - box.t);
+      const s = Math.max(0.15, Math.min(byWidth, byFeet));
+      // centred on the body, not on the face (the unicorn and the bee look to the side)
+      return { u: (a.left + a.right) / 2, v: top - (box.t - 0.5) * s, s };
     }
     case 'balloons':
-      return { u: Math.min(0.95, a.right + 0.02), v: a.top - 0.06, s: 0.7 };
+      return { u: Math.min(0.9, a.right + 0.02), v: a.top - 0.15, s: 0.55 };
     case 'medal':
       return { u: a.cx, v: a.neckY + 0.1, s: 0.3 };
   }
   return { u: a.cx, v: a.eyeY, s: 0.5 };
+}
+
+/** what is wrong with an accessory on a resident (empty: nothing): it hides the eyes or the mouth, or goes beyond the body (the cape may stick out a little on the sides, it is behind) or below the feet */
+export function fitProblems(id: string, a: Anchor): string[] {
+  const box = ACC_BOX[id] ?? { t: 0, b: 1, l: 0, r: 1 };
+  const p = place(id, a);
+  const L = p.u + (box.l - 0.5) * p.s, R = p.u + (box.r - 0.5) * p.s, T = p.v + (box.t - 0.5) * p.s, B = p.v + (box.b - 0.5) * p.s;
+  const out: string[] = [];
+  const hit = (x0: number, x1: number, y0: number, y1: number): boolean => L < x1 && R > x0 && T < y1 && B > y0;
+  const behind = id === 'cape';
+  if (!behind) {
+    const half = a.eyeGap / 2 + 0.04;
+    if (hit(a.cx - half, a.cx + half, a.eyeY - 0.035, a.eyeY + 0.035) && id !== 'glasses' && id !== 'sunglasses') out.push('eyes');
+    if (hit(a.cx - 0.05, a.cx + 0.05, a.mouthY - 0.025, a.mouthY + 0.025) && id !== 'glasses' && id !== 'sunglasses') out.push('mouth');
+  }
+  if (id === 'scarf' || id === 'cape') {
+    if (B > a.bottom + 0.005) out.push('below the feet');
+    const slack = behind ? 0.12 : 0.08;
+    if (L < a.left - slack || R > a.right + slack) out.push('wider than the body');
+  }
+  if (['crown', 'flowercrown', 'partyhat', 'chefhat', 'bow'].includes(id) && B > a.eyeY - 0.03) out.push('low on the face');
+  return out;
 }

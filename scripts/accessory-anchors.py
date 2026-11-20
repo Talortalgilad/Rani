@@ -1,5 +1,5 @@
 """Finds, for every picture of a resident (public/park/squishies, public/english/squishies, the companion), where the accessories go: the top of the head, the eyes, the mouth,
-the neck (just under the mouth), the width of the body, in fractions of the 512 x 512 picture (0,0 = top left).  Writes src/lobby/carnival/anchors.json.
+the neck (just under the mouth), the width of the body, `prof` (the width of the body at 51 heights, to find where the head is as wide as a hat), in fractions of the 512 x 512 picture (0,0 = top left).  Writes src/lobby/carnival/anchors.json.
 The face is found from the dark dots (the eyes are the two dark blobs that sit side by side in the upper part of the body, the mouth is the dark blob under them);
 OVERRIDE has the values that were set by hand where the face is not like the others (a mask, a closed mouth that is too small to see).
 Run: python3 scripts/accessory-anchors.py [--debug dir]"""
@@ -14,6 +14,7 @@ OVERRIDE = {
     'pretzel': {'eyeY': 0.5, 'mouthY': 0.6, 'cx': 0.5},
     'dino': {'mouthY': 0.5},
     'rainbow': {'eyeY': 0.33, 'mouthY': 0.38},
+    'bee': {'headTop': 0.46},  # the wings and the antennae are higher than the head: hats sit on the head
 }  # id -> values that were set by hand where the face is not like the others
 
 def analyse(path):
@@ -54,7 +55,8 @@ def analyse(path):
     ey = int(eyeY * 512)
     erow = np.where(alpha[min(511, ey)])[0]
     eyeW = (erow.max() - erow.min()) / 512 if len(erow) else right - left
-    return {'eyeW': round(eyeW, 3), 'eyeGap': round(gap, 3), 'top': round(top, 3), 'bottom': round(bottom, 3), 'left': round(left, 3), 'right': round(right, 3), 'cx': round(ex if eyes else cx, 3), 'eyeY': round(eyeY, 3), 'mouthY': round(mouthY, 3), 'neckY': round(mouthY + 0.06, 3), 'neckW': round(nw, 3), 'found': bool(eyes)}
+    prof = [round(float((lambda r: (r.max() - r.min() + 1) / 512 if len(r) else 0)(np.where(alpha[min(511, int(k / 50 * 512))])[0])), 3) for k in range(51)]
+    return {'prof': prof, 'eyeW': round(eyeW, 3), 'eyeGap': round(gap, 3), 'top': round(top, 3), 'bottom': round(bottom, 3), 'left': round(left, 3), 'right': round(right, 3), 'cx': round(ex if eyes else cx, 3), 'eyeY': round(eyeY, 3), 'mouthY': round(mouthY, 3), 'neckY': round(mouthY + 0.06, 3), 'neckW': round(nw, 3), 'found': bool(eyes)}
 
 def main():
     files = glob.glob('public/park/squishies/*.webp') + glob.glob('public/english/squishies/*.webp') + ['public/english/cheesy/happy.webp']
