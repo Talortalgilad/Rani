@@ -158,3 +158,22 @@ body.cv-sheet-open .cvw-btn, body.cv-sheet-open .cv-home, body.cv-sheet-open .lo
 .cvw-callb img { width: 38px; height: 38px; object-fit: contain; pointer-events: none; }
 .cvw-callb span { position: absolute; top: -8px; inset-inline-end: -8px; font-size: 24px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
 .cvw-card .cd-acts { padding-bottom: 8px; }
+
+/* the shops of accessories (5.4) */
+.cvw-shop { max-height: 46vh; overflow-y: auto; text-align: center; }
+.cvw-shop h2 { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 4px; }
+.cvw-shop .shop-img { width: 44px; height: 44px; object-fit: contain; }
+.cvw-shop h3 { margin: 6px 0; font-size: 18px; }
+.cvw-shop .shop-goods { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; }
+.cvw-shop .good { flex: none; width: 84px; background: #fff; border-radius: 16px; padding: 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; box-shadow: 0 2px 0 rgba(0,0,0,.12); }
+.cvw-shop .good img { width: 56px; height: 56px; object-fit: contain; }
+.cvw-shop .good b { font-size: 16px; }
+.cvw-shop .buy { min-height: 44px; min-width: 72px; border: 0; border-radius: 22px; background: #ff7aa8; color: #fff; font-weight: 800; font-size: 18px; }
+.cvw-shop .buy[data-low] { background: #d9c3cf; }
+.cvw-shop .shop-mine { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 64px; }
+.cvw-shop .mine-i { position: relative; width: 64px; height: 64px; background: #fff3c4; border-radius: 16px; touch-action: none; cursor: grab; }
+.cvw-shop .mine-i img { width: 100%; height: 100%; object-fit: contain; }
+.cvw-shop .mine-i i { position: absolute; top: -4px; inset-inline-end: -4px; background: #ff7aa8; color: #fff; border-radius: 10px; font-style: normal; font-size: 14px; padding: 1px 6px; }
+.cvw-shop .mine-i.lifted { opacity: .35; }
+.cvw-shop.dragging { opacity: .12; pointer-events: none; }
+.shop-ghost { position: fixed; left: 0; top: 0; width: 80px; height: 80px; z-index: 30; pointer-events: none; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(0,0,0,.35)); }

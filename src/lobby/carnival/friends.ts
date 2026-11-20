@@ -43,30 +43,51 @@ export const partyKey = (now: Date): string => `${now.getFullYear()}-${now.getMo
 /** the stalls and what is eaten there: a resident goes first to the stall of his favourite food */
 export const FOOD_OF_ITEM: Record<string, string> = { pizzastand: 'pizza', cheesestand: 'cheese', pastastand: 'pasta', grillstand: 'meat', icecreamstand: 'icecream', popcorncart: 'popcorn', cottoncandycart: 'candy' };
 
-/** the accessories: the picture of each (in public/park/items) and where it sits on a resident. The ones whose picture is not in the repo are on the list of what is missing (ACCESSORY_MISSING). */
-export interface Accessory { id: string; img: string; dy: number; size: number; he: string }
+/** the accessories: the picture of each (in public/park/items), the place on the body (one thing for each place) and where it sits on a resident. An accessory whose picture is not in the repo is on the list of what is missing (ACCESSORY_MISSING). */
+export type BodySlot = 'head' | 'face' | 'neck' | 'back' | 'hand' | 'chest';
+export interface Accessory { id: string; img: string; slot: BodySlot; dy: number; size: number; he: string; /** drawn behind the body (the cape) */ behind?: boolean }
 export const ACCESSORIES: Accessory[] = [
-  { id: 'chefhat', img: 'chefhat', dy: 0.62, size: 0.62, he: 'כובע טבח' },
-  { id: 'balloons', img: 'balloons', dy: 0.9, size: 0.8, he: 'בלון' },
-  { id: 'medal', img: 'medal', dy: 0.1, size: 0.45, he: 'מדליה' },
-  // no picture yet (see docs/carnival-missing.md): drawn as soon as public/park/items/<img>.webp exists
-  { id: 'partyhat', img: 'partyhat', dy: 0.66, size: 0.6, he: 'כובע מסיבה' },
-  { id: 'crown', img: 'crown', dy: 0.68, size: 0.6, he: 'כתר' },
-  { id: 'glasses', img: 'glasses', dy: 0.28, size: 0.6, he: 'משקפיים' },
-  { id: 'scarf', img: 'scarf', dy: 0.05, size: 0.7, he: 'צעיף' },
-  { id: 'bow', img: 'bow', dy: 0.55, size: 0.5, he: 'פפיון' },
+  { id: 'chefhat', img: 'chefhat', slot: 'head', dy: 0.62, size: 0.62, he: 'כובע טבח' },
+  { id: 'balloons', img: 'balloons', slot: 'hand', dy: 0.9, size: 0.8, he: 'בלון' },
+  { id: 'medal', img: 'medal', slot: 'chest', dy: 0.1, size: 0.45, he: 'מדליה' },
+  { id: 'partyhat', img: 'partyhat', slot: 'head', dy: 0.66, size: 0.6, he: 'כובע מסיבה' },
+  { id: 'crown', img: 'crown', slot: 'head', dy: 0.68, size: 0.6, he: 'כתר' },
+  { id: 'glasses', img: 'glasses', slot: 'face', dy: 0.28, size: 0.6, he: 'משקפיים' },
+  { id: 'scarf', img: 'scarf', slot: 'neck', dy: 0.05, size: 0.7, he: 'צעיף' },
+  { id: 'bow', img: 'bow', slot: 'head', dy: 0.55, size: 0.5, he: 'פפיון' },
+  { id: 'sunglasses', img: 'sunglasses', slot: 'face', dy: 0.28, size: 0.6, he: 'משקפי שמש' },
+  { id: 'flowercrown', img: 'flowercrown', slot: 'head', dy: 0.62, size: 0.66, he: 'זר פרחים' },
+  { id: 'cape', img: 'cape', slot: 'back', dy: -0.08, size: 1.15, he: 'גלימה', behind: true },
 ];
-export const ACCESSORY_MISSING = ['partyhat', 'crown', 'glasses', 'scarf', 'bow'];
+/** every picture of the accessories is in the repo (the nine of sheet 39 came in stage 3) */
+export const ACCESSORY_MISSING: string[] = [];
 export const accessoryById = (id: string): Accessory | undefined => ACCESSORIES.find((a) => a.id === id);
-/** the gift that a resident brings at level 4: one of the accessories that only he gives (a different one for each resident, by his name) */
-export const GIFTS = ['balloons', 'medal', 'glasses', 'scarf', 'bow'];
+/** the gift that a resident brings at level 4: one of the six accessories that only he gives (a different one for each resident, by his name) */
+export const GIFTS = ['glasses', 'scarf', 'bow', 'sunglasses', 'flowercrown', 'cape'];
 export const giftOf = (id: string): string => GIFTS[[...id].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % GIFTS.length];
+/** the shops of accessories (SPEC-carnival.md 5.4): what each one sells, and the price in stars (the hearts are the level of the carnival, they never go down, so they are not spent) */
+export const SHOP: Record<string, { id: string; price: number }[]> = {
+  hatshop: [{ id: 'partyhat', price: 4 }, { id: 'flowercrown', price: 6 }, { id: 'bow', price: 4 }, { id: 'glasses', price: 5 }, { id: 'sunglasses', price: 6 }],
+  toyshop: [{ id: 'scarf', price: 5 }, { id: 'cape', price: 8 }, { id: 'balloons', price: 3 }, { id: 'medal', price: 8 }],
+};
+export const priceOf = (id: string): number => Object.values(SHOP).flat().find((x) => x.id === id)?.price ?? 0;
+/** puts an accessory on a resident: it takes the place of what was on the same part of the body (that one goes back to the stock). Returns what came off. */
+export function putOn(f: FriendsSave, rid: string, id: string): string[] {
+  const acc = accessoryById(id);
+  if (!acc) return [];
+  const worn = f.worn[rid] ?? [];
+  const off = worn.filter((w) => accessoryById(w)?.slot === acc.slot);
+  f.worn[rid] = [...worn.filter((w) => !off.includes(w)), id];
+  return off;
+}
 
 export interface FriendsSave {
   /** the hearts that each resident gave (the meter) */
   hearts: Record<string, number>;
   /** what each one wears */
   worn: Record<string, string[]>;
+  /** what was bought in the shops and is not on anybody: the count of each accessory */
+  owned: Record<string, number>;
   /** the stall where each one works (a slot id) */
   job: Record<string, string>;
   /** the gifts that were already brought (resident id) */
@@ -81,7 +102,7 @@ export interface FriendsSave {
   /** the level that was last celebrated for each (so that "friends!" is said once) */
   seen: Record<string, number>;
 }
-export const emptyFriends = (): FriendsSave => ({ hearts: {}, worn: {}, job: {}, gifted: [], party: {}, tricks: 0, remembered: 0, jobs: 0, parties: 0, seen: {} });
+export const emptyFriends = (): FriendsSave => ({ hearts: {}, worn: {}, owned: {}, job: {}, gifted: [], party: {}, tricks: 0, remembered: 0, jobs: 0, parties: 0, seen: {} });
 const num = (x: unknown): number => (typeof x === 'number' && Number.isFinite(x) && x > 0 ? Math.floor(x) : 0);
 const rec = <T>(x: unknown, f: (v: unknown) => T | null): Record<string, T> => {
   const out: Record<string, T> = {};
@@ -95,6 +116,7 @@ export function friendsOf(save: CarnivalSave): FriendsSave {
   const f: FriendsSave = {
     hearts: rec(x?.hearts, (v) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : null)),
     worn: rec(x?.worn, (v) => (Array.isArray(v) ? v.filter((a): a is string => typeof a === 'string').slice(0, 4) : null)),
+    owned: rec(x?.owned, (v) => (num(v) > 0 ? Math.min(99, num(v)) : null)),
     job: rec(x?.job, (v) => (typeof v === 'string' ? v : null)),
     gifted: Array.isArray(x?.gifted) ? x!.gifted.filter((a): a is string => typeof a === 'string') : [],
     party: rec(x?.party, (v) => (typeof v === 'string' ? v : null)),

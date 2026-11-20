@@ -11,7 +11,7 @@ import { activeQuest, finishedNow, type Quest, type QuestCtx } from './quests';
 import { isItemOpen, type Progress } from './unlocks';
 import type { CarnivalSave } from './talk/state';
 import type { Personality } from './wishes';
-import { addFriendship, friendLevel, friendOf, friendsOf, giftOf, isPartyDay, levelOfResident, maxFriendLevel, partyKey, trickOf, wearing, type Trick } from './friends';
+import { addFriendship, friendLevel, friendOf, friendsOf, giftOf, isPartyDay, levelOfResident, maxFriendLevel, partyKey, priceOf, putOn, trickOf, wearing, type Trick } from './friends';
 
 export type WorldEvent =
   | SimEvent
@@ -149,9 +149,34 @@ export class CarnivalWorld {
     if (!r || this.levelOf(i) < 4 || f.gifted.includes(r.id)) return null;
     const g = giftOf(r.id);
     f.gifted.push(r.id);
-    (f.worn[r.id] ??= []).push(g);
+    for (const off of putOn(f, r.id, g)) f.owned[off] = (f.owned[off] ?? 0) + 1;
     this.d.persist();
     return g;
+  }
+  /** the shop: buys one accessory with stars (it waits in the stock until it is put on a resident) */
+  buyAccessory(id: string): 'ok' | 'stars' | 'unknown' {
+    const price = priceOf(id);
+    if (!price) return 'unknown';
+    if (this.d.stars() < price) return 'stars';
+    this.d.spend(price);
+    const f = friendsOf(this.d.save);
+    f.owned[id] = (f.owned[id] ?? 0) + 1;
+    this.d.persist();
+    return 'ok';
+  }
+  owned(): Record<string, number> {
+    return friendsOf(this.d.save).owned;
+  }
+  /** drags a bought accessory onto a resident: it stays with him (what he wore on the same place goes back to the stock) */
+  dress(i: number, id: string): boolean {
+    const r = this.residents[i];
+    const f = friendsOf(this.d.save);
+    if (!r || (f.owned[id] ?? 0) < 1) return false;
+    f.owned[id]--;
+    if (!f.owned[id]) delete f.owned[id];
+    for (const off of putOn(f, r.id, id)) f.owned[off] = (f.owned[off] ?? 0) + 1;
+    this.d.persist();
+    return true;
   }
   giftWaiting(i: number): boolean {
     const r = this.residents[i];

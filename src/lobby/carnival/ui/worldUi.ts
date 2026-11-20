@@ -17,7 +17,7 @@ import { PERSONALITY_HE, SUGGEST_LINE, WISH_ICON, WISH_LINE, fillers, type WishT
 import type { CarnivalWorld, WorldEvent } from '../world';
 import { CS_LINES } from '../csLines';
 import { FriendUI, LEVEL_NAME } from './friendUi';
-import { friendLevel, friendsOf } from '../friends';
+import { ACCESSORIES, SHOP, friendLevel, friendsOf } from '../friends';
 
 export interface WorldHost {
   layer: HTMLElement;
@@ -30,6 +30,8 @@ export interface WorldHost {
   takeMe?(i: number): void;
   /** a resident does his trick (spin, a double jump, a dance) */
   trick?(i: number, kind: 'spin' | 'jump2' | 'dance'): void;
+  /** the resident under a point of the screen (the shops of accessories: an accessory is dropped on him) */
+  residentAt?(x: number, y: number): number | null;
   /** the school of Lolly was tapped: her lessons (the page goes to the English game, straight to Lolly) */
   goTutor?(): void;
   /** is there a new lesson of Lolly today? (the ❗ at her school) */
@@ -366,6 +368,7 @@ export class WorldUI {
   private openItemSheet(slotId: string): void {
     const w = this.h.world;
     const item = w.itemAt(slotId)!;
+    if (SHOP[item.id]) return this.openShop(slotId, item.id);
     const q = w.sim.queueOf(slotId).length;
     const el = this.openSheet('cvw-item', `<img src="${itemImg(item.id)}" alt=""><h2>${esc(item.he)}</h2><button type="button" class="en" dir="ltr">${esc(item.en)} 🔊</button><p>${q ? `בתור עכשיו: ${q}` : 'אין תור עכשיו'}</p><div class="acts"><button type="button" class="act" data-a="go">⭐ הפעלה</button><button type="button" class="act" data-a="move">↔ הזזה</button><button type="button" class="act" data-a="back">↩ החזרה לקטלוג</button></div>`);
     el.querySelector('.en')!.addEventListener('click', () => sayEn(item, true));
@@ -389,6 +392,65 @@ export class WorldUI {
         }
       }),
     );
+  }
+
+  // ---------------------------------------------------------------- the shops of accessories (SPEC-carnival.md 5.4)
+  /** buy with stars, then drag the accessory onto a squishy: it stays with him */
+  private openShop(slotId: string, shopId: string): void {
+    const w = this.h.world;
+    const item = w.itemAt(slotId)!;
+    const draw = (): void => {
+      const stars = getState().stars;
+      const own = w.owned();
+      const name = (id: string): string => ACCESSORIES.find((a) => a.id === id)?.he ?? id;
+      const mine = Object.entries(own);
+      const el = this.sheet!;
+      el.querySelector('.shop-body')!.innerHTML = `<h3>${mine.length ? 'גררי אל סקווישי:' : 'קני אביזר, ואז גררי אותו אל סקווישי.'}</h3><div class="shop-mine">${mine
+        .map(([id, n]) => `<div class="mine-i" data-id="${id}" role="button" aria-label="${esc(name(id))}"><img src="${itemImg(id)}" alt="" draggable="false">${n > 1 ? `<i>${n}</i>` : ''}</div>`)
+        .join('')}</div><div class="shop-goods">${SHOP[shopId]
+        .map((g) => `<div class="good"><img src="${itemImg(g.id)}" alt=""><b>${esc(name(g.id))}</b><button type="button" class="buy" data-id="${g.id}" ${stars < g.price ? 'data-low="1"' : ''}>⭐ ${g.price}</button></div>`)
+        .join('')}</div>`;
+      el.querySelectorAll<HTMLButtonElement>('.buy').forEach((b) =>
+        b.addEventListener('click', () => {
+          const r = w.buyAccessory(b.dataset.id!);
+          if (r === 'ok') sound.play('bell');
+          else this.toast(`חסרים לך ${SHOP[shopId].find((g) => g.id === b.dataset.id)!.price - stars} כוכבים. בואי נשחק!`);
+          draw();
+        }),
+      );
+      el.querySelectorAll<HTMLElement>('.mine-i').forEach((c) => c.addEventListener('pointerdown', (e) => drag(e, c.dataset.id!, c)));
+    };
+    const drag = (e: PointerEvent, id: string, from: HTMLElement): void => {
+      e.preventDefault();
+      const ghost = document.createElement('img');
+      ghost.className = 'shop-ghost';
+      ghost.src = itemImg(id);
+      this.h.layer.appendChild(ghost);
+      this.sheet?.classList.add('dragging');
+      from.classList.add('lifted');
+      const at = (ev: PointerEvent): void => void (ghost.style.transform = `translate(${ev.clientX - 40}px, ${ev.clientY - 40}px)`);
+      at(e);
+      const move = (ev: PointerEvent): void => at(ev);
+      const up = (ev: PointerEvent): void => {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        window.removeEventListener('pointercancel', up);
+        ghost.remove();
+        this.sheet?.classList.remove('dragging');
+        const i = ev.type === 'pointerup' ? this.h.residentAt?.(ev.clientX, ev.clientY) ?? null : null;
+        if (i !== null && w.dress(i, id)) {
+          sound.play('pop', 760);
+          this.h.trick?.(i, 'spin');
+          this.toast(`${w.residents[i].name} לבש ${ACCESSORIES.find((a) => a.id === id)?.he ?? ''}!`);
+        }
+        if (this.sheet) draw();
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+      window.addEventListener('pointercancel', up);
+    };
+    this.openSheet('cvw-shop', `<h2><img class="shop-img" src="${itemImg(item.id)}" alt="">${esc(item.he)}</h2><div class="shop-body"></div>`);
+    draw();
   }
 
   // ---------------------------------------------------------------- the board of wishes

@@ -1,0 +1,21 @@
+{
+ "note": "Carnival stage 3 accessories. Process exactly like carnival-art-2.json (connected components + rembg, 512 WebP transparent) into public/park/items/<id>.webp. Check each cut-out against the sheet: thin parts (glasses frames, scarf end) must survive the background removal.",
+ "sheets": [
+  {
+   "file": "sheet-39-carnival-accessories.png",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261120_142033_b2408bf7-5844-4df4-a038-3528e3522cfe.png",
+   "order": [
+    "lollyschool",
+    "partyhat",
+    "crown",
+    "glasses",
+    "scarf",
+    "bow",
+    "sunglasses",
+    "flowercrown",
+    "cape"
+   ]
+  }
+ ],
+ "backgrounds": []
+}

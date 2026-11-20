@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { emptySave } from './talk/state';
 import { CarnivalWorld, type WorldDeps } from './world';
-import { ACCESSORIES, ACCESSORY_MISSING, DETAILS, FOOD_OF_ITEM, LEVEL_AT, addFriendship, friendLevel, friendOf, friendProgress, friendsOf, giftOf, isPartyDay, levelOfResident, partyDayOf, shownDetails, trickOf, wearing } from './friends';
+import { ACCESSORIES, ACCESSORY_MISSING, GIFTS, SHOP, accessoryById, DETAILS, FOOD_OF_ITEM, LEVEL_AT, addFriendship, friendLevel, friendOf, friendProgress, friendsOf, giftOf, isPartyDay, levelOfResident, partyDayOf, shownDetails, trickOf, wearing } from './friends';
 import { RESIDENT_INFO } from './residents';
 import { QUESTS, finishedNow } from './quests';
 import { englishOf } from './ui/friendUi';
@@ -255,5 +255,42 @@ describe('the quests of stage 3 and the pictures', () => {
       hearts = w.hearts;
       w.residents.forEach((_, i) => { expect(w.levelOf(i)).toBeGreaterThanOrEqual(levels[i]); levels[i] = w.levelOf(i); });
     }
+  });
+});
+
+describe('the nine accessories of sheet 39 and the shops (SPEC-carnival.md 5.4)', () => {
+  it('all nine pictures are in the repo and nothing is missing any more', () => {
+    for (const id of ['lollyschool', 'partyhat', 'crown', 'glasses', 'scarf', 'bow', 'sunglasses', 'flowercrown', 'cape']) expect(files, id).toContain(id);
+    expect(ACCESSORY_MISSING).toEqual([]);
+  });
+  it('the gifts of level 4 are the six accessories, every resident gets one of them, and each is worn on its own place', () => {
+    expect([...GIFTS].sort()).toEqual(['bow', 'cape', 'flowercrown', 'glasses', 'scarf', 'sunglasses']);
+    for (const id of ['donut', 'icecream', 'watermelon', 'strawberry', 'cupcake', 'popcorn', 'banana']) expect(GIFTS).toContain(giftOf(id));
+    for (const g of GIFTS) { const a = accessoryById(g)!; expect(files).toContain(a.img); expect(['head', 'face', 'neck', 'back']).toContain(a.slot); }
+    expect(accessoryById('cape')!.behind).toBe(true);
+  });
+  it('one thing on each place: a new one takes the place of the old one, which goes back to the stock', () => {
+    const { w } = mk();
+    const id = w.residents[0].id;
+    friendsOf(w.save).owned.glasses = 1;
+    friendsOf(w.save).owned.sunglasses = 1;
+    expect(w.dress(0, 'glasses')).toBe(true);
+    expect(w.wearing(0)).toContain('glasses');
+    expect(w.dress(0, 'sunglasses')).toBe(true);
+    expect(w.wearing(0)).toContain('sunglasses');
+    expect(w.wearing(0)).not.toContain('glasses');
+    expect(w.owned().glasses).toBe(1);
+    expect(wearing(w.save, id)).toContain('sunglasses');
+    expect(w.dress(0, 'cape')).toBe(false);
+  });
+  it('the shop sells with stars, never takes hearts, and what is bought is kept in the save', () => {
+    const { w } = mk();
+    const hearts = w.hearts;
+    expect(w.buyAccessory('partyhat')).toBe('ok');
+    expect(w.owned().partyhat).toBe(1);
+    expect(w.buyAccessory('nothing')).toBe('unknown');
+    expect(w.hearts).toBe(hearts);
+    expect(friendsOf(JSON.parse(JSON.stringify(w.save))).owned.partyhat).toBe(1);
+    for (const shop of Object.values(SHOP)) for (const g of shop) { expect(files).toContain(g.id); expect(g.price).toBeGreaterThan(0); }
   });
 });

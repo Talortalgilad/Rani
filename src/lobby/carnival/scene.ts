@@ -88,6 +88,8 @@ export interface CarnivalHandle {
   trick(i: number, kind: 'spin' | 'jump2' | 'dance'): void;
   readonly info: { calls: number; residents: number; plots: number; cam: CamState };
   tapPlot(i: number): void;
+  /** the resident under a point of the screen (or null): where an accessory from the shop is dropped */
+  residentAt(x: number, y: number): number | null;
   /** a resident arrived (a new level): he appears with a hop */
   addResident(r: Resident): number;
   /** where a place is on the screen */
@@ -113,7 +115,7 @@ export async function startCarnival(o: CarnivalOpts): Promise<CarnivalHandle> {
     },
     { autoDowngrade: o.autoDowngrade, onFallback: o.onFallback },
   );
-  return { fadeIn: (ms) => handle.fadeIn(ms), dispose: () => handle.dispose(), home: () => api.home(), residentScreen: (i) => api.residentScreen(i), focus: (i) => api.focus(i), hold: (i, on) => api.hold(i, on), wave: (i) => api.wave(i), trick: (i, k) => api.trick(i, k), get info() { return api.info; }, tapPlot: (i) => api.tapPlot(i), addResident: (r) => api.addResident(r), slotScreen: (id) => api.slotScreen(id), lookAt: (x, z, d) => api.lookAt(x, z, d), calls: () => api.calls() };
+  return { fadeIn: (ms) => handle.fadeIn(ms), dispose: () => handle.dispose(), home: () => api.home(), residentScreen: (i) => api.residentScreen(i), focus: (i) => api.focus(i), hold: (i, on) => api.hold(i, on), wave: (i) => api.wave(i), trick: (i, k) => api.trick(i, k), residentAt: (x, y) => api.residentAt(x, y), get info() { return api.info; }, tapPlot: (i) => api.tapPlot(i), addResident: (r) => api.addResident(r), slotScreen: (id) => api.slotScreen(id), lookAt: (x, z, d) => api.lookAt(x, z, d), calls: () => api.calls() };
 }
 
 async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHandle | null)[]): Promise<{ scene: StageScene; api: CarnivalHandle }> {
@@ -771,7 +773,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
         const ac = ACCESSORIES.find((x) => x.id === w);
         if (!ac || shown + 1 >= RES_CAP - 1) continue;
         shown++;
-        resAtlas.set(shown, `acc:${w}`, a.x + tx + (w === 'balloons' ? 0.35 : 0), 0.62 + bob + jump + drop + ry + ac.dy * sz, rz + 0.02, ac.size * sz, flip);
+        resAtlas.set(shown, `acc:${w}`, a.x + tx + (w === 'balloons' ? 0.35 : 0), 0.62 + bob + jump + drop + ry + ac.dy * sz, rz + (ac.behind ? -0.02 : 0.02), ac.size * sz, flip);
       }
       m4.compose(new T.Vector3(a.x, 0.04, rz), shQ, new T.Vector3(1 - jump * 0.4, 1 - jump * 0.4, 1));
       shadowMesh.setMatrixAt(shadows++, m4);
@@ -895,6 +897,9 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     },
     trick(i, kind) {
       if (people[i]) people[i].trick = { kind, t: 1.6 };
+    },
+    residentAt(x, y) {
+      return residentAt(x, y);
     },
     addResident(r) {
       if (!imgs.has(r.id)) imgs.set(r.id, r.img);

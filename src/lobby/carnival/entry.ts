@@ -435,6 +435,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
             if (p) l.lookAt(p.x, p.z, 17);
           },
           trick: (i, k) => l.trick(i, k),
+          residentAt: (x, y) => l.residentAt(x, y),
           goTutor,
           newLesson,
           takeMe: (i) => {
