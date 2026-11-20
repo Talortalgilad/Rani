@@ -26,7 +26,7 @@ What is not in the repo is not drawn, not made up and not read by the voice of t
 | music for the parade | Friday's parade, "with music" | none: the rhythm is her taps, each with a small sound effect (the ones the app already has) |
 | a nest | the egg "in a nest" | none needed: the picture of the egg (`egg.webp`) already has its nest |
 | a recording of the chirp of a baby | the baby chirps | two high pops of the existing sound effects |
-| the nine texts of `voice/carnival-stage4-lines-to-record.csv` (cs_gift_done, cs_gift_decor, cs_gift_accessory, cs_album_title, cs_album_button, cs_album_empty, cs_stay_yes, cs_stay_later, cs_parade_tap) | the windows of the gift, the album and the guest, the bar of the parade | text only, nothing is said (never the voice of the phone) |
+| the four sentences of `voice/carnival-stage4-lines-to-record.csv` (cs_gift_done, cs_gift_decor, cs_gift_accessory, cs_album_empty) | the windows of the gift and the album | text only, nothing is said (never the voice of the phone). The buttons and titles of those windows ("המכתבים שלי", "האלבום שלי", "כן, תישאר!", "אולי מחר", the bar of the parade) are not meant to have a voice |
 Everything else of the stage is recorded and used (`cs_egg_found`, `cs_egg_wait`, `cs_egg_hatch`, `cs_baby_hello`, `cs_i_grew`, `cs_mail`, `cs_letter.0-2`, `cs_visitor`, `cs_visitor_stay`, `cs_daily_gift`, `cs_collected`, `cs_welcome_back`, `cs_parade`, `cs_good_night`, `cs_good_morning`, and the quests `qs_egg`, `qs_mail`, `qs_gift`, `qs_visitor`, `qs_parade`).
 
 ## Decisions of stage 4 (not in the spec, to check)

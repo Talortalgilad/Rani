@@ -302,9 +302,18 @@ describe('the call bubbles, the banners of the entry and the lines', () => {
     const csv = (await import('../../../voice/carnival-stage4-lines-to-record.csv?raw')).default;
     const dailySrc = (await import('./ui/dailyUi.ts?raw')).default;
     for (const row of csv.trim().split('\n').slice(1)) {
-      const text = /^[a-z_]+,"([^"]+)"/.exec(row)![1].replace(' 🏠', '').replace(' 🎺', '').replace('{שם האביזר}! ', '');
-      expect(dailySrc.includes(text.split('! ')[0]) || dailySrc.includes(text), text).toBe(true);
+      const text = /^[a-z_]+,"([^"]+)"/.exec(row)![1];
+      expect(dailySrc.includes(text), text).toBe(true);
       expect(he.has(/^([a-z_]+),/.exec(row)![1]), 'is not recorded yet: ' + row).toBe(false);
     }
+  });
+});
+
+describe('the four lines that are still to be recorded', () => {
+  it('buttons and titles have no voice: only the four sentences are in the list', async () => {
+    const csv = (await import('../../../voice/carnival-stage4-lines-to-record.csv?raw')).default;
+    expect(csv.trim().split('\n').slice(1).map((r) => r.split(',')[0])).toEqual(['cs_gift_done', 'cs_gift_decor', 'cs_gift_accessory', 'cs_album_empty']);
+    expect(csv).toContain('אביזר חדש! הוא מחכה בחנות.');
+    expect(csv).not.toContain('שם האביזר');
   });
 });

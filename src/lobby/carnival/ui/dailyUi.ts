@@ -121,7 +121,7 @@ export class DailyUI {
     let body = '';
     if (g.kind === 'hearts') body = `<div class="gf-big">❤️ ${g.n}</div>`;
     else if (g.kind === 'decor') body = `<img class="gf-img" src="${itemImg(g.id)}" alt=""><p>קישוט חינם! אפשר לבנות אותו בקרנבל.</p>`;
-    else body = `<img class="gf-img" src="${itemImg(g.id)}" alt=""><p>${esc(ACCESSORIES.find((a) => a.id === g.id)?.he ?? '')}! הוא מחכה בחנות, וגוררים אותו אל סקווישי.</p>`;
+    else body = `<img class="gf-img" src="${itemImg(g.id)}" alt=""><b class="gf-name">${esc(ACCESSORIES.find((a) => a.id === g.id)?.he ?? '')}</b><p>אביזר חדש! הוא מחכה בחנות.</p>`;
     this.ui.openSheet('cvw-dgift', `<img class="gf-box" src="${itemImg('giftbox')}" alt=""><h2>${esc(csText('cs_daily_gift'))}</h2>${body}`);
     say('cs_daily_gift');
     this.ui.paintHud();

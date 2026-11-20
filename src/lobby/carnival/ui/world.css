@@ -210,8 +210,9 @@ body.cv-sheet-open .cvw-thing, body.cv-sheet-open .cvw-parade { visibility: hidd
 @media (prefers-reduced-motion: reduce) { .cvw-thing.wait::after { animation: none; } .cvw-burst { display: none; } }
 
 /* the "call" bubbles of the world: soft, yellow-orange, small, with what waits (a gift, a letter, an egg); two at the most on the screen (the talks' bubbles take what is left) */
-.cvw-thing .call { position: absolute; top: -8px; inset-inline: 0; margin: 0 auto; width: 36px; height: 36px; border: 2px solid #fff; border-radius: 50%; background: linear-gradient(#ffe08a, #ffb454); font-size: 19px; line-height: 32px; text-align: center; box-shadow: 0 3px 8px rgba(120, 70, 0, .28); animation: cv-bounce .9s infinite; pointer-events: none; }
+.cvw-thing .call { position: absolute; top: -34px; inset-inline: 0; margin: 0 auto; width: 36px; height: 36px; border: 2px solid #fff; border-radius: 50%; background: linear-gradient(#ffe08a, #ffb454); font-size: 19px; line-height: 32px; text-align: center; box-shadow: 0 3px 8px rgba(120, 70, 0, .28); animation: cv-bounce .9s infinite; pointer-events: none; }
 .cvw-thing .call[hidden] { display: none; }
 .cvw-school .sc-new { width: 34px; height: 34px; border: 2px solid #fff; border-radius: 50%; background: linear-gradient(#ffe08a, #ffb454); font-size: 18px !important; line-height: 30px; text-align: center; box-shadow: 0 3px 8px rgba(120, 70, 0, .28); }
 .cvw-banner.top { top: 13%; }
 @media (prefers-reduced-motion: reduce) { .cvw-thing .call { animation: none; } }
+.cvw-dgift .gf-name { display: block; font-size: 22px; margin-top: 4px; }

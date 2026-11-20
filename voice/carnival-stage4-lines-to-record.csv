@@ -1,10 +1,5 @@
 id,text,where
 cs_gift_done,"המתנה של היום כבר אצלך. מחר תחכה עוד אחת!","toast when she taps the gift box after it was opened today"
 cs_gift_decor,"קישוט חינם! אפשר לבנות אותו בקרנבל.","the gift window, when the gift is a decoration"
-cs_gift_accessory,"{שם האביזר}! הוא מחכה בחנות, וגוררים אותו אל סקווישי.","the gift window, when the gift is an accessory (the name of the accessory is one of the ones in the shops)"
-cs_album_title,"המכתבים שלי","title of the album of letters"
-cs_album_button,"האלבום שלי","button under a letter"
+cs_gift_accessory,"אביזר חדש! הוא מחכה בחנות.","the gift window, when the gift is an accessory (its name is written beside its picture)"
 cs_album_empty,"עוד אין מכתבים. מחר יחכה כאן אחד!","the album when it has no letter"
-cs_stay_yes,"כן, תישאר! 🏠","button of the guest's question"
-cs_stay_later,"אולי מחר","button of the guest's question"
-cs_parade_tap,"המצעד! הקישי בקצב 🎺","the bar over the screen during the parade"
