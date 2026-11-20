@@ -71,8 +71,8 @@ def face_of(shape, alpha):
         y = int(round(y0 + h * 0.3))
         row = np.where(alpha[y])[0]
         return ((row.min() + row.max()) / 2, y, (row.max() - row.min()) / 2) if len(row) > 1 else (cx, y, w * 0.3)
-    at = {'cupcake': (cx, y0 + h * 0.5, w * 0.34), 'donut': (cx, y0 + h * 0.86, w * 0.17), 'icecream': (cx, y0 + h * 0.3, w * 0.34), 'cookie': (cx, cy, w * 0.34),
-          'lollipop': (cx, y0 + h * 0.33, w * 0.3), 'apple': (cx, cy + h * 0.08, w * 0.3), 'star': (cx, cy + h * 0.05, w * 0.26), 'flower': (cx, cy, w * 0.13), 'crown': (cx, y0 + h * 0.7, w * 0.26)}
+    at = {'cupcake': (cx, y0 + h * 0.5, w * 0.4), 'donut': (cx, y0 + h * 0.86, w * 0.25), 'icecream': (cx, y0 + h * 0.3, w * 0.4), 'cookie': (cx, cy, w * 0.4),
+          'lollipop': (cx, y0 + h * 0.33, w * 0.36), 'apple': (cx, cy + h * 0.08, w * 0.34), 'star': (cx, cy + h * 0.05, w * 0.26), 'flower': (cx, cy, w * 0.13), 'crown': (cx, y0 + h * 0.7, w * 0.26)}
     return at[shape]
 
 def analyse_shape(shape):

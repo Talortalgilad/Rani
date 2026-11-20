@@ -68,14 +68,13 @@ function goTutor(): void {
   }
   go({ name: 'gate', gameId: 'english' });
 }
-/** the building of the workshop: a tap comes in, straight to the orders (the workshop opens on the first one that waits) */
-function goWorkshop(): void {
+/** the island of the squishy workshop is the one entrance: a tap on it comes in through the gate like every game, and the workshop opens straight on the first order that waits */
+function openOrdersNext(): void {
   try {
     sessionStorage.setItem('sq-orders', '1');
   } catch {
     /* ignore */
   }
-  go({ name: 'gate', gameId: 'squishy' });
 }
 /** is there a new lesson of Lolly today? (light: read from the saved state) */
 function newLesson(): boolean {
@@ -331,7 +330,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       const l = await mod.startCarnival({
         world,
         plots: [
-          ...games.map((g) => ({ kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
+          ...games.map((g) => ({ id: g.id, kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
           ...comingSoon.map((c) => ({ kind: 'locked' as const, title: c.title, color: c.color })),
         ],
         residents: [...world.residents],
@@ -341,6 +340,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         onEnter: (i) => {
           if (!games[i]) return;
           sound.play('bell');
+          if (games[i].id === 'squishy') openOrdersNext();
           go({ name: 'gate', gameId: games[i].id });
         },
         onFallback: fallback,
@@ -460,7 +460,6 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           trick: (i, k) => l.trick(i, k),
           residentAt: (x, y) => l.residentAt(x, y),
           goTutor,
-          goWorkshop,
           workshopCount: () => workshopState().waiting,
           newLesson,
           takeMe: (i) => {

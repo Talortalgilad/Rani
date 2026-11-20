@@ -54,8 +54,8 @@ export function faceAnchor(id: string, map: Uint8ClampedArray, box: Loaded['box'
   const w = box.x1 - box.x0, h = box.y1 - box.y0;
   const cx = (box.x0 + box.x1) / 2, cy = (box.y0 + box.y1) / 2;
   const at: Record<string, [number, number, number]> = {
-    cupcake: [cx, box.y0 + h * 0.5, w * 0.34], donut: [cx, box.y0 + h * 0.86, w * 0.17], icecream: [cx, box.y0 + h * 0.3, w * 0.34], cookie: [cx, cy, w * 0.34],
-    lollipop: [cx, box.y0 + h * 0.33, w * 0.3], apple: [cx, cy + h * 0.08, w * 0.3], star: [cx, cy + h * 0.05, w * 0.26], flower: [cx, cy, w * 0.13], crown: [cx, box.y0 + h * 0.7, w * 0.26],
+    cupcake: [cx, box.y0 + h * 0.5, w * 0.4], donut: [cx, box.y0 + h * 0.86, w * 0.25], icecream: [cx, box.y0 + h * 0.3, w * 0.4], cookie: [cx, cy, w * 0.4],
+    lollipop: [cx, box.y0 + h * 0.33, w * 0.36], apple: [cx, cy + h * 0.08, w * 0.34], star: [cx, cy + h * 0.05, w * 0.26], flower: [cx, cy, w * 0.13], crown: [cx, box.y0 + h * 0.7, w * 0.26],
   };
   const a = at[id];
   return a ? { x: a[0], y: a[1], size: a[2] } : null;

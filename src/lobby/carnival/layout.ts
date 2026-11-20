@@ -32,5 +32,3 @@ export function minGap(ps: Plot[]): number {
 }
 /** the school of Lolly (SPEC-tutor.md 2): a small building outside the ring, on the grass; Lolly stands in front of it */
 export const SCHOOL = { x: -2.9, z: 3.05 };
-/** the building "the squishy workshop" (SPEC-squishy.md 3): on the grass at the other side, with the line of the ones who wait to order beside it */
-export const WORKSHOP = { x: 3.3, z: 3.3 };

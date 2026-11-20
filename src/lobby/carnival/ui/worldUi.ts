@@ -32,8 +32,7 @@ export interface WorldHost {
   trick?(i: number, kind: 'spin' | 'jump2' | 'dance'): void;
   /** the resident under a point of the screen (the shops of accessories: an accessory is dropped on him) */
   residentAt?(x: number, y: number): number | null;
-  /** the squishy workshop (the building): a tap comes in, straight to the orders; and how many orders wait (the number over it) */
-  goWorkshop?(): void;
+  /** how many orders wait at the squishy workshop (the number over its island; a tap on the island comes in straight to the orders) */
   workshopCount?(): number;
   /** the school of Lolly was tapped: her lessons (the page goes to the English game, straight to Lolly) */
   goTutor?(): void;
@@ -210,19 +209,13 @@ export class WorldUI {
 
   private workshopEl: HTMLElement | null = null;
   private workshopT = 0;
-  /** the squishy workshop (SPEC-squishy.md 3): the building is drawn in the scene; this is its tap (it comes in, straight to the orders) and the small number over it: how many orders wait */
+  /** the small number over the island of the squishy workshop (SPEC-squishy.md 3): how many orders wait. The island itself is the one entrance (the scene's tap on the plot). */
   private placeWorkshop(p: { x: number; y: number; behind: boolean; k: number }): void {
-    if (!this.h.goWorkshop) return;
+    if (!this.h.workshopCount) return;
     if (!this.workshopEl) {
-      const el = document.createElement('button');
-      el.type = 'button';
+      const el = document.createElement('div');
       el.className = 'cvw-workshop';
-      el.setAttribute('aria-label', 'סדנת הסקווישים');
       el.innerHTML = '<b class="wk-n"></b>';
-      el.addEventListener('click', () => {
-        sound.play('pop', 640);
-        this.h.goWorkshop?.();
-      });
       this.root.appendChild(el);
       this.workshopEl = el;
       this.workshopT = 0;
@@ -237,15 +230,7 @@ export class WorldUI {
     }
     const vis = !p.behind && p.x > 30 && p.x < window.innerWidth - 30 && p.y > 130 && p.y < window.innerHeight - 100;
     el.style.visibility = vis ? 'visible' : 'hidden';
-    if (vis) {
-      const k = Math.max(20, p.k), w = Math.round(1.9 * k);
-      if (el.dataset.w !== String(w)) {
-        el.dataset.w = String(w);
-        el.style.width = `${w}px`;
-        el.style.height = `${w}px`;
-      }
-      el.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y + 0.5 * k)}px) translate(-50%, -100%)`;
-    }
+    if (vis) el.style.transform = `translate(${Math.round(p.x + 0.9 * Math.max(20, p.k))}px, ${Math.round(p.y - 0.4 * Math.max(20, p.k))}px) translate(-50%, -100%)`;
   }
 
   /** the school of Lolly (SPEC-tutor.md 2): the building (its picture, when there is one) with Lolly outside; a ❗ over her when there is a new lesson. Nothing is drawn if the building has no picture yet. */
