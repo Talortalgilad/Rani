@@ -83,6 +83,6 @@ describe('the lines of the order check are recorded', () => {
   it('sq_order_shape (take 503) is connected: recorded, and said by the check when the shape is not the one that was ordered', () => {
     expect(he.has('sq_order_shape')).toBe(true);
     expect(gameSrc.includes("'sq_order_shape'")).toBe(true);
-    expect(WANTED.length).toBe(0);
+    expect(WANTED.map((w) => w.id).sort()).toEqual(['sq_cup_almost', 'sq_cup_drain']);
   });
 });
