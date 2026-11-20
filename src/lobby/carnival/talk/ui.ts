@@ -31,6 +31,8 @@ export interface TalkHost {
   alertDy?: number;
   /** a talk with this resident was answered (stage 4: the guest of the day then asks to stay) */
   onAnswered?(r: number): void;
+  /** how many "call" bubbles may show now (two at the most on the screen in all: the ones of the world take places first, the others wait in line) */
+  alertCap?(): number;
 }
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -110,14 +112,18 @@ export class Talks {
     }
     // never more than two (whatever happened before: a save, a switch of tier, a talk opened for a test)
     if (this.save.alerts.alerts.length > MAX_ALERTS) this.save.alerts.alerts.length = MAX_ALERTS;
+    const cap = this.host.alertCap?.() ?? MAX_ALERTS;
+    let shownN = 0;
     for (const al of this.save.alerts.alerts) {
+      const waiting = shownN >= cap;
+      if (!waiting) shownN++;
       let el = this.alertEls.get(al.r);
       if (!el) {
         const btn = document.createElement('button');
         btn.type = 'button';
         el = btn;
         el.className = 'cv-alert';
-        el.textContent = '❗';
+        el.textContent = '💬';
         el.setAttribute('aria-label', this.host.residents[al.r]?.name ?? '');
         const r = al.r;
         el.addEventListener('click', () => this.openTalk(r));
@@ -128,7 +134,7 @@ export class Talks {
       if (wt <= 0 && !busy) this.host.wave(al.r);
       this.waveT.set(al.r, wt <= 0 ? 2.6 : wt);
       const p = this.host.pos(al.r);
-      el.style.visibility = p && !busy ? 'visible' : 'hidden';
+      el.style.visibility = p && !busy && !waiting ? 'visible' : 'hidden';
       if (p) el.style.transform = `translate(${p.x}px, ${p.y + (this.host.alertDy ?? -34)}px) translate(-50%, -100%)`;
     }
     for (const [r, el] of [...this.alertEls]) if (!this.save.alerts.alerts.some((x) => x.r === r)) {

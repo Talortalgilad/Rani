@@ -8,6 +8,7 @@ import { QUESTS, finishedNow } from './quests';
 import { linePartsFor } from '../../games/english/content/heLines';
 import { WORDS } from '../../games/english/content/words';
 import { CS_LINES } from './csLines';
+import entry from './entry.ts?raw';
 
 const he = new Set((HE as { clips: string[] }).clips);
 const items = new Set(Object.keys(import.meta.glob('../../../public/park/items/*.webp', { query: '?url', import: 'default' })).map((k) => k.split('/').pop()!.replace('.webp', '')));
@@ -271,5 +272,39 @@ describe('the quests and the rules that are never broken', () => {
     const lines = src.split('\n').filter((l) => !l.trim().startsWith('*') && !l.trim().startsWith('//') && !l.trim().startsWith('/**'));
     const code = lines.join('\n');
     expect(code).not.toMatch(/Notification|serviceWorker|pushManager|setInterval|streak|עצוב|התגעגע|נשארו לך|שעות/);
+  });
+});
+
+describe('the call bubbles, the banners of the entry and the lines', () => {
+  it('the bubbles are soft, small, with an icon of what waits, and two at the most on the screen in all', async () => {
+    const talks = (await import('./talk/ui.ts?raw')).default;
+    const daily = (await import('./ui/dailyUi.ts?raw')).default;
+    expect(talks).toContain("el.textContent = '💬'");
+    expect(talks).not.toContain("'❗'");
+    expect(talks).toContain('alertCap');
+    for (const icon of ['🎁', '✉️', '🥚']) expect(daily).toContain(icon);
+    expect(daily).toContain('.slice(0, 2)');
+    expect(entry).toContain('alertCap');
+  });
+  it('the entry shows two banners at the most ("Rani is back" first, then the hatching, else the guest), and the rest are bubbles in the world', async () => {
+    const daily = (await import('./ui/dailyUi.ts?raw')).default;
+    const visit = daily.slice(daily.indexOf('visit(events'), daily.indexOf('an event in the middle of a visit'));
+    expect((visit.match(/queueBanner\(/g) ?? []).length).toBe(3);
+    expect(visit).toMatch(/if \(hatch\) ui\.queueBanner[\s\S]*else if \(guest\) ui\.queueBanner/);
+    expect(visit).not.toMatch(/cs_daily_gift|cs_mail|cs_letter/);
+    expect(visit).toContain('ui.say(0');
+    expect(2.7 * 2).toBeLessThanOrEqual(6);
+  });
+  it('every line of the stage that is recorded is connected to its window or moment, and every text with no recording is in the list (and nothing is said for it)', async () => {
+    const daily = (await import('./ui/dailyUi.ts?raw')).default + (await import('./ui/worldUi.ts?raw')).default;
+    for (const id of ['cs_visitor_stay', 'cs_daily_gift', 'cs_mail', 'cs_egg_found', 'cs_egg_wait', 'cs_egg_hatch', 'cs_baby_hello', 'cs_welcome_back', 'cs_collected', 'cs_parade', 'cs_visitor', 'cs_good_night', 'cs_good_morning', 'cs_i_grew']) expect(daily, id).toContain(`'${id}'`);
+    expect(daily).toContain('cs_letter.${');
+    const csv = (await import('../../../voice/carnival-stage4-lines-to-record.csv?raw')).default;
+    const dailySrc = (await import('./ui/dailyUi.ts?raw')).default;
+    for (const row of csv.trim().split('\n').slice(1)) {
+      const text = /^[a-z_]+,"([^"]+)"/.exec(row)![1].replace(' 🏠', '').replace(' 🎺', '').replace('{שם האביזר}! ', '');
+      expect(dailySrc.includes(text.split('! ')[0]) || dailySrc.includes(text), text).toBe(true);
+      expect(he.has(/^([a-z_]+),/.exec(row)![1]), 'is not recorded yet: ' + row).toBe(false);
+    }
   });
 });

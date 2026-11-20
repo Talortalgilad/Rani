@@ -434,7 +434,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         const layer = document.createElement('div');
         layer.className = 'cv-layer';
         screen.appendChild(layer);
-        const host: TalkHost = { layer, residents: world.residents, pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i), onAnswered: (r) => ui3?.daily.guestTalked(r) };
+        const host: TalkHost = { layer, residents: world.residents, pos: (i) => l.residentScreen(i), focus: (i) => l.focus(i), hold: (i, on) => l.hold(i, on), wave: (i) => l.wave(i), onAnswered: (r) => ui3?.daily.guestTalked(r), alertCap: () => Math.max(0, 2 - (ui3?.daily.shownCalls() ?? 0)) };
         // the talks of the strip stop, the carnival's own begin
         plainStop?.();
         plainStop = null;
@@ -470,7 +470,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           gamesBar: () => bar,
           alerts: () => talks?.save.alerts.alerts.map((a) => a.r) ?? [],
         });
-        ui3.handle(settled);
+        ui3.handle(settled.filter((e) => !DAILY_EVENTS.includes(e.type)));
+        ui3.daily.visit(settled.filter((e) => DAILY_EVENTS.includes(e.type)));
         // the egg that hatches: the camera comes to the nest to see it, and goes back after
         if (hatchIndex !== undefined) l.lookAt(NEST.x, NEST.z, 7);
         // the parade, when the parents' area asked for it (for testing)

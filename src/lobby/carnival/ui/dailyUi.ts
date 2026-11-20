@@ -20,9 +20,9 @@ export class DailyUI {
   private things = new Map<string, HTMLElement>();
   private parade: { el: HTMLElement; taps: number; t: number } | null = null;
   private stayAsked = false;
-  private care = { gift: false, mail: false };
-  private careT = 0;
   private dead = false;
+  /** the things that call her now (a bubble with what waits): two at the most on the screen in all */
+  private calls = new Set<string>();
   private timers: number[] = [];
   constructor(private ui: WorldUI) {}
   private get w() {
@@ -38,6 +38,11 @@ export class DailyUI {
       el = b;
       el.className = `cvw-thing cvw-${p.id}`;
       el.setAttribute('aria-label', p.id === 'nest' ? 'הביצה' : p.id === 'mailbox' ? 'תיבת הדואר' : 'מתנת היום');
+      const call = document.createElement('i');
+      call.className = 'call';
+      call.hidden = true;
+      call.textContent = p.id === 'giftbox' ? '🎁' : p.id === 'mailbox' ? '✉️' : '🥚';
+      el.appendChild(call);
       el.addEventListener('click', () => this.tap(p.id));
       this.ui.root.appendChild(el);
       this.things.set(p.id, el);
@@ -54,7 +59,9 @@ export class DailyUI {
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
     }
-    el.classList.toggle('wait', p.id === 'giftbox' ? w.giftBlink() : p.id === 'mailbox' ? w.mailBlink() : false);
+    const on2 = this.calls.has(p.id);
+    el.classList.toggle('wait', on2);
+    el.querySelector<HTMLElement>('.call')!.hidden = !on2;
     el.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y + 0.35 * k)}px) translate(-50%, -100%)`;
   }
   private tap(id: string): void {
@@ -68,7 +75,6 @@ export class DailyUI {
   dispose(): void {
     this.dead = true;
     this.timers.forEach((t) => window.clearTimeout(t));
-    window.clearTimeout(this.careT);
     for (const e of this.things.values()) e.remove();
     this.things.clear();
     this.endParade(false);
@@ -146,53 +152,45 @@ export class DailyUI {
     }, 2300));
   }
 
-  // ---------------------------------------------------------------- what the visit brings (the order of SPEC 4.8)
-  event(e: WorldEvent): void {
+  // ---------------------------------------------------------------- what the visit brings (SPEC 4.8)
+  /** the first minute: at the most two banners, 6 seconds together ("Rani is back!" first, then the most important thing: the hatching, and when there is none the guest); everything else
+   * (the gift, the letter, the morning or night greeting, the parade) is a bubble in the world, and she can touch the screen while a banner is up */
+  visit(events: WorldEvent[]): void {
     const ui = this.ui;
-    switch (e.type) {
-      case 'welcomeBack':
-        sound.play('bonus');
-        ui.queueBanner(`<b>${esc(csText('cs_welcome_back'))}</b>${e.hearts > 0 ? `<span>${esc(csText('cs_collected'))} ❤️ ${e.hearts}</span>` : ''}`, 'cs_welcome_back');
-        if (e.hearts > 0) window.setTimeout(() => say('cs_collected'), 3300);
-        ui.paintHud();
-        break;
-      case 'egg':
-        ui.queueBanner(`<b>${esc(csText('cs_egg_found'))}</b><img src="${itemImg('egg')}" alt=""><span>${esc(csText('cs_egg_wait'))}</span>`, 'cs_egg_found');
-        break;
-      case 'hatch':
-        ui.queueBanner(`<b>${esc(csText('cs_egg_hatch'))}</b><img src="${itemImg('egg_cracked')}" alt="">`, 'cs_egg_hatch');
-        break;
-      case 'guest':
-        ui.queueBanner(`<b>${esc(csText('cs_visitor'))}</b><img src="${esc(e.resident.img)}" alt=""><span>${esc(e.resident.name)}</span>`, 'cs_visitor');
-        break;
-      case 'giftWaiting':
-      case 'mailWaiting':
-        // the gift and the mail wait together: one banner (they blink gently in the plaza and over the mailbox, and nothing is lost if she does not open them)
-        this.care[e.type === 'giftWaiting' ? 'gift' : 'mail'] = true;
-        window.clearTimeout(this.careT);
-        this.careT = window.setTimeout(() => {
-          const c = this.care;
-          this.care = { gift: false, mail: false };
-          ui.queueBanner(`<b>${esc(csText(c.gift ? 'cs_daily_gift' : 'cs_mail'))}</b><span>${c.gift ? `<img src="${itemImg('giftbox')}" alt="" style="height:52px">` : ''}${c.mail ? `<img src="${itemImg('envelope')}" alt="" style="height:52px">` : ''}</span>`, c.gift ? 'cs_daily_gift' : 'cs_mail');
-          if (c.gift && c.mail) window.setTimeout(() => say('cs_mail'), 1700);
-        }, 0);
-        break;
-      case 'greet':
-        ui.queueBanner(`<b>${esc(csText(e.kind === 'night' ? 'cs_good_night' : 'cs_good_morning'))}</b><span>${e.kind === 'night' ? '🌙' : '☀️'}</span>`, e.kind === 'night' ? 'cs_good_night' : 'cs_good_morning');
-        break;
-      case 'paradeDay':
-        ui.queueBanner(`<b>${esc(csText('cs_parade'))}</b><span>🎺</span>`, 'cs_parade');
-        this.timers.push(window.setTimeout(() => !this.dead && this.startParade(), 3200));
-        break;
-      default:
-        break;
+    const back = events.find((e): e is Extract<WorldEvent, { type: 'welcomeBack' }> => e.type === 'welcomeBack');
+    const hatch = events.find((e): e is Extract<WorldEvent, { type: 'hatch' }> => e.type === 'hatch');
+    const guest = events.find((e): e is Extract<WorldEvent, { type: 'guest' }> => e.type === 'guest');
+    if (back) {
+      sound.play('bonus');
+      ui.queueBanner(`<b>${esc(csText('cs_welcome_back'))}</b>${back.hearts > 0 ? `<span>${esc(csText('cs_collected'))} ❤️ ${back.hearts}</span>` : ''}`, 'cs_welcome_back', 'top');
+      if (back.hearts > 0) this.timers.push(window.setTimeout(() => !this.dead && say('cs_collected'), 2500));
+      ui.paintHud();
     }
+    if (hatch) ui.queueBanner(`<b>${esc(csText('cs_egg_hatch'))}</b><img src="${itemImg('egg_cracked')}" alt="">`, 'cs_egg_hatch', 'top');
+    else if (guest) ui.queueBanner(`<b>${esc(csText('cs_visitor'))}</b><img src="${esc(guest.resident.img)}" alt=""><span>${esc(guest.resident.name)}</span>`, 'cs_visitor', 'top');
+    // the greeting and the parade: a bubble over a resident, after the banners
+    const greet = events.find((e): e is Extract<WorldEvent, { type: 'greet' }> => e.type === 'greet');
+    let at = back || hatch || guest ? 6500 : 1500;
+    if (greet) {
+      const id = greet.kind === 'night' ? 'cs_good_night' : 'cs_good_morning';
+      this.timers.push(window.setTimeout(() => !this.dead && ui.say(0, csText(id), id), at));
+      at += 3200;
+    }
+    if (events.some((e) => e.type === 'paradeDay')) {
+      this.timers.push(window.setTimeout(() => !this.dead && ui.say(0, csText('cs_parade'), 'cs_parade'), at));
+      this.timers.push(window.setTimeout(() => !this.dead && this.startParade(), at + 3600));
+    }
+    // the others (the gift, the mail, the egg, the guest's talk) call with their bubbles: nothing to show here
+  }
+  /** an event in the middle of a visit (an egg found at a level-up) */
+  event(e: WorldEvent): void {
+    if (e.type === 'egg') this.ui.queueBanner(`<b>${esc(csText('cs_egg_found'))}</b><img src="${itemImg('egg')}" alt=""><span>${esc(csText('cs_egg_wait'))}</span>`, 'cs_egg_found');
   }
   /** the baby came out of the egg: he says hello to the world (the recorded line) */
   hatched(i: number): void {
     this.ui.say(i, csText('cs_baby_hello'), 'cs_baby_hello');
     sound.play('pop', 1100);
-    window.setTimeout(() => sound.play('pop', 1250), 160);
+    this.timers.push(window.setTimeout(() => sound.play('pop', 1250), 160));
     this.ui.confetti(12);
   }
 
@@ -240,7 +238,15 @@ export class DailyUI {
     this.w.endParade(joined && p.taps >= 1);
     this.ui.confetti(10);
   }
+  /** how many call bubbles of the world are up (the talks' bubbles use what is left of the two) */
+  shownCalls(): number {
+    return this.calls.size;
+  }
   tick(dt: number): void {
+    // who calls: the gift, the letter, the egg (in this order); only two at once, the rest wait in line and come up when one is opened
+    const w = this.w;
+    const want = [w.giftBlink() ? 'giftbox' : '', w.mailBlink() ? 'mailbox' : '', w.eggs() > 0 && w.eggIsNew() ? 'nest' : ''].filter(Boolean).slice(0, 2);
+    if (want.length !== this.calls.size || want.some((x) => !this.calls.has(x))) this.calls = new Set(want);
     if (!this.parade) return;
     this.parade.t -= dt;
     if (this.parade.t <= 0) this.endParade(true);

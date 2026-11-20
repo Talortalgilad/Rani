@@ -74,7 +74,7 @@ export class WorldUI {
   /** build mode: the free places (and the locked ones, small) are shown. Off in the normal view, so the island stays clean. */
   private build = false;
   sheet: HTMLElement | null = null;
-  private banners: { html: string; line?: string }[] = [];
+  private banners: { html: string; line?: string; cls?: string }[] = [];
   private bannerOn = false;
   private moving: string | null = null;
   private dead = false;
@@ -215,7 +215,7 @@ export class WorldUI {
       el.className = 'cvw-school';
       el.setAttribute('aria-label', 'בית הספר של לולי');
       const b = import.meta.env.BASE_URL;
-      el.innerHTML = `<img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">❗</i>`;
+      el.innerHTML = `<img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">📚</i>`;
       el.addEventListener('click', () => {
         sound.play('pop', 640);
         this.h.goTutor?.();
@@ -549,8 +549,8 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- banners
-  queueBanner(html: string, line?: string): void {
-    this.banners.push({ html, line });
+  queueBanner(html: string, line?: string, cls = ''): void {
+    this.banners.push({ html, line, cls });
     if (!this.bannerOn) this.nextBanner();
   }
   private nextBanner(): void {
@@ -561,7 +561,7 @@ export class WorldUI {
     }
     this.bannerOn = true;
     const el = document.createElement('div');
-    el.className = 'cvw-banner';
+    el.className = `cvw-banner ${b.cls ?? ''}`;
     el.innerHTML = b.html;
     this.h.layer.appendChild(el);
     if (b.line) say(b.line);
