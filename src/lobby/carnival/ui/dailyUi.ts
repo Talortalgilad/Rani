@@ -20,6 +20,10 @@ export class DailyUI {
   private things = new Map<string, HTMLElement>();
   private parade: { el: HTMLElement; taps: number; t: number } | null = null;
   private stayAsked = false;
+  private care = { gift: false, mail: false };
+  private careT = 0;
+  private dead = false;
+  private timers: number[] = [];
   constructor(private ui: WorldUI) {}
   private get w() {
     return this.ui.h.world;
@@ -62,6 +66,9 @@ export class DailyUI {
     else this.openGift();
   }
   dispose(): void {
+    this.dead = true;
+    this.timers.forEach((t) => window.clearTimeout(t));
+    window.clearTimeout(this.careT);
     for (const e of this.things.values()) e.remove();
     this.things.clear();
     this.endParade(false);
@@ -120,7 +127,8 @@ export class DailyUI {
     const w = this.w;
     if (this.stayAsked || i !== w.guestIndex() || !w.guestTalked()) return;
     this.stayAsked = true;
-    window.setTimeout(() => {
+    this.timers.push(window.setTimeout(() => {
+      if (this.dead) return;
       const r = w.residents[i];
       this.ui.openSheet('cvw-stay', `<img class="st-img" src="${esc(r.img)}" alt=""><h2>${esc(r.name)}</h2><p class="st-q">${esc(csText('cs_visitor_stay'))}</p><div class="st-acts"><button type="button" class="st-yes">כן, תישאר! 🏠</button><button type="button" class="st-later">אולי מחר</button></div>`);
       say('cs_visitor_stay');
@@ -135,7 +143,7 @@ export class DailyUI {
         this.stayAsked = false;
       });
       this.ui.sheet?.querySelector('.st-later')?.addEventListener('click', () => (this.ui.closeSheet(), (this.stayAsked = false)));
-    }, 2300);
+    }, 2300));
   }
 
   // ---------------------------------------------------------------- what the visit brings (the order of SPEC 4.8)
@@ -144,8 +152,8 @@ export class DailyUI {
     switch (e.type) {
       case 'welcomeBack':
         sound.play('bonus');
-        ui.queueBanner(`<b>${esc(csText('cs_welcome_back'))}</b>`, 'cs_welcome_back');
-        if (e.hearts > 0) ui.queueBanner(`<b>${esc(csText('cs_collected'))}</b><span>❤️ ${e.hearts}</span>`, 'cs_collected');
+        ui.queueBanner(`<b>${esc(csText('cs_welcome_back'))}</b>${e.hearts > 0 ? `<span>${esc(csText('cs_collected'))} ❤️ ${e.hearts}</span>` : ''}`, 'cs_welcome_back');
+        if (e.hearts > 0) window.setTimeout(() => say('cs_collected'), 3300);
         ui.paintHud();
         break;
       case 'egg':
@@ -158,17 +166,23 @@ export class DailyUI {
         ui.queueBanner(`<b>${esc(csText('cs_visitor'))}</b><img src="${esc(e.resident.img)}" alt=""><span>${esc(e.resident.name)}</span>`, 'cs_visitor');
         break;
       case 'giftWaiting':
-        ui.queueBanner(`<b>${esc(csText('cs_daily_gift'))}</b><img src="${itemImg('giftbox')}" alt="">`, 'cs_daily_gift');
-        break;
       case 'mailWaiting':
-        ui.queueBanner(`<b>${esc(csText('cs_mail'))}</b><img src="${itemImg('envelope')}" alt="">`, 'cs_mail');
+        // the gift and the mail wait together: one banner (they blink gently in the plaza and over the mailbox, and nothing is lost if she does not open them)
+        this.care[e.type === 'giftWaiting' ? 'gift' : 'mail'] = true;
+        window.clearTimeout(this.careT);
+        this.careT = window.setTimeout(() => {
+          const c = this.care;
+          this.care = { gift: false, mail: false };
+          ui.queueBanner(`<b>${esc(csText(c.gift ? 'cs_daily_gift' : 'cs_mail'))}</b><span>${c.gift ? `<img src="${itemImg('giftbox')}" alt="" style="height:52px">` : ''}${c.mail ? `<img src="${itemImg('envelope')}" alt="" style="height:52px">` : ''}</span>`, c.gift ? 'cs_daily_gift' : 'cs_mail');
+          if (c.gift && c.mail) window.setTimeout(() => say('cs_mail'), 1700);
+        }, 0);
         break;
       case 'greet':
         ui.queueBanner(`<b>${esc(csText(e.kind === 'night' ? 'cs_good_night' : 'cs_good_morning'))}</b><span>${e.kind === 'night' ? '🌙' : '☀️'}</span>`, e.kind === 'night' ? 'cs_good_night' : 'cs_good_morning');
         break;
       case 'paradeDay':
         ui.queueBanner(`<b>${esc(csText('cs_parade'))}</b><span>🎺</span>`, 'cs_parade');
-        window.setTimeout(() => this.startParade(), 3200);
+        this.timers.push(window.setTimeout(() => !this.dead && this.startParade(), 3200));
         break;
       default:
         break;
@@ -185,7 +199,7 @@ export class DailyUI {
   // ---------------------------------------------------------------- the parade of Friday
   /** everybody walks in a line round the plaza with what they wear; she taps in the rhythm and confetti flies. It lasts a short while, and ends by itself. */
   startParade(): void {
-    if (this.parade || this.w.paradeOn()) return;
+    if (this.dead || this.parade || this.w.paradeOn()) return;
     const w = this.w;
     w.startParade();
     const el = document.createElement('div');

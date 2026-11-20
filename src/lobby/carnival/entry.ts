@@ -23,7 +23,7 @@ import { hasNewLesson } from '../../games/english/tutor/badge';
 import { dayNumber } from '../../games/english/engine/progress';
 import { lessonsByUnit, progressFromEnglish } from './unlocks';
 import { LESSONS } from '../../games/english/tutor/lessons';
-import { plots } from './layout';
+import { NEST, plots } from './layout';
 import { takeParadeRequest } from './testTools';
 
 const OLD_KEY = 'rani-lobby-old';
@@ -77,6 +77,7 @@ function newLesson(): boolean {
   }
 }
 
+const DAILY_EVENTS: string[] = ['welcomeBack', 'egg', 'hatch', 'guest', 'greet', 'mailWaiting', 'giftWaiting', 'paradeDay'];
 function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>; visit: number } {
   const save = loadSave();
   let t = 0;
@@ -226,7 +227,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       gamesBar: () => root.querySelector('.grid'),
       alerts: () => talks.save.alerts.alerts.map((a) => a.r),
     });
-    ui.handle(settled);
+    // (the reasons to come back are shown by the 3D carnival: this plain page is only the stand-in while it loads)
+    ui.handle(settled.filter((e) => !DAILY_EVENTS.includes(e.type)));
     btns.forEach((b, i) =>
       b.addEventListener('click', () => {
         b.classList.remove('hop');
@@ -321,7 +323,10 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         ],
         residents: [...world.residents],
         hatch: hatchIndex,
-        onHatched: (i) => ui3?.daily.hatched(i),
+        onHatched: (i) => {
+          ui3?.daily.hatched(i);
+          window.setTimeout(() => l.home(), 3200);
+        },
         autoDowngrade: pref === 'auto' && !pinnedTier(),
         onEnter: (i) => {
           if (!games[i]) return;
@@ -466,6 +471,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           alerts: () => talks?.save.alerts.alerts.map((a) => a.r) ?? [],
         });
         ui3.handle(settled);
+        // the egg that hatches: the camera comes to the nest to see it, and goes back after
+        if (hatchIndex !== undefined) l.lookAt(NEST.x, NEST.z, 7);
         // the parade, when the parents' area asked for it (for testing)
         if (takeParadeRequest()) window.setTimeout(() => ui3?.daily.startParade(), 1200);
         document.body.classList.add('lobby3d-on', 'carnival-on');
