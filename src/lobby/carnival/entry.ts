@@ -68,14 +68,6 @@ function goTutor(): void {
   }
   go({ name: 'gate', gameId: 'english' });
 }
-/** the island of the squishy workshop is the one entrance: a tap on it comes in through the gate like every game, and the workshop opens straight on the first order that waits */
-function openOrdersNext(): void {
-  try {
-    sessionStorage.setItem('sq-orders', '1');
-  } catch {
-    /* ignore */
-  }
-}
 /** is there a new lesson of Lolly today? (light: read from the saved state) */
 function newLesson(): boolean {
   try {
@@ -340,7 +332,6 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         onEnter: (i) => {
           if (!games[i]) return;
           sound.play('bell');
-          if (games[i].id === 'squishy') openOrdersNext();
           go({ name: 'gate', gameId: games[i].id });
         },
         onFallback: fallback,

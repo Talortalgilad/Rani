@@ -916,16 +916,6 @@ export function createWorkshop(ctx: GameContext): Workshop {
     onX();
   });
   menu();
-  // the building of the carnival: a tap on it comes straight to the orders (the first one that waits)
-  try {
-    if (sessionStorage.getItem('sq-orders') === '1') {
-      sessionStorage.removeItem('sq-orders');
-      const first = orderQueue(doneCtx())[0];
-      if (first && !store.draft) startOrder(first, inviterOf(0));
-    }
-  } catch {
-    /* ignore */
-  }
   if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__sqgame = { get store() { return store; }, get view() { return view; }, stepMold, stepSpoons, stepMix, stepPour, stepPaint, stepFace, stepSqueeze, stepFinish, shelf, menu };
   void OPEN_MOLDS;
   void STEP_ORDER;
