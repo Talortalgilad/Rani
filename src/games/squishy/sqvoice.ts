@@ -28,12 +28,4 @@ export async function sayEn(id: string): Promise<boolean> {
 export const sayNumber = (n: number): Promise<boolean> => (n >= 1 && n <= 10 ? sayEn(`number_${n}`) : Promise.resolve(false));
 
 /** the lines that the game wants and that are not recorded yet (voice/squishy-lines-to-record.csv): they are never said, and never read by the phone */
-export const WANTED: { id: string; lang: 'he' | 'en'; text: string; where: string }[] = [
-  { id: 'sq_free_decorate', lang: 'he', text: 'עכשיו קישוטים! הקישי על הסקווישי כדי להדביק.', where: 'the decorations (free mode): sq_decorate asks "how many do you need?", which is for the orders' },
-  { id: 'sq_free_spoons_full', lang: 'he', text: 'הקערה מלאה! עכשיו מערבבים.', where: 'the bowl is full (10 spoons)' },
-  { id: 'sq_free_finish', lang: 'he', text: 'איזה גימור תרצי? מבריק, נצנצים או מט.', where: 'the choice of the finish' },
-  { id: 'sq_free_stir_done', lang: 'he', text: 'התערבב! איזה צבע יפה.', where: 'the end of the stirring' },
-  { id: 'glitter', lang: 'en', text: 'Glitter', where: 'the finish: glitter (tap on the button)' },
-  { id: 'matte', lang: 'en', text: 'Matte', where: 'the finish: matte (tap on the button)' },
-  { id: 'glossy', lang: 'en', text: 'Glossy', where: 'the finish: glossy (tap on the button)' },
-];
+export const WANTED: { id: string; lang: 'he' | 'en'; text: string; where: string }[] = [];

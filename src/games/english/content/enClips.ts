@@ -1,5 +1,8 @@
 /** The English recordings by what the game says (written by scripts/import-takes.ts): letters and digits of the text only, lower case (a single letter keeps its case: "A" is the letter, "a" the word), to the id of the clip in public/english/voice/en. */
 export const EN_CLIPS: Record<string, string> = {
+ "glitter": "glitter",
+ "matte": "matte",
+ "glossy": "glossy",
  "1": "number_1",
  "2": "number_2",
  "3": "number_3",

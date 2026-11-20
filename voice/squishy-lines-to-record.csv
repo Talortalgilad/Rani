@@ -1,8 +1,1 @@
 id,lang,text,where
-sq_free_decorate,he,עכשיו קישוטים! הקישי על הסקווישי כדי להדביק.,"the decorations (free mode): sq_decorate asks ""how many do you need?"", which is for the orders"
-sq_free_spoons_full,he,הקערה מלאה! עכשיו מערבבים.,the bowl is full (10 spoons)
-sq_free_finish,he,"איזה גימור תרצי? מבריק, נצנצים או מט.",the choice of the finish
-sq_free_stir_done,he,התערבב! איזה צבע יפה.,the end of the stirring
-glitter,en,Glitter,the finish: glitter (tap on the button)
-matte,en,Matte,the finish: matte (tap on the button)
-glossy,en,Glossy,the finish: glossy (tap on the button)
