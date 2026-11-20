@@ -1,18 +1,16 @@
 /**
- * The coloured things of the lessons (`thing:<thing>:<color>`, SPEC-tutor.md section 4). ONLY pictures that are already in the repo are used (nothing is drawn here):
- *  - a thing that has a WHITE object in the repo (public/english/paint: ball, balloon, flower, star) is painted the way the colouring task of the English game paints it:
- *    the colour is multiplied over the white picture, so the light and the shade stay.
- *  - a thing that has no white object (apple, book, hat, kite) shows its real picture of the word on a tile of the colour, and is on the list of what is missing
- *    (THINGS_MISSING): a white picture of each is needed to paint it. No substitute is drawn.
+ * The coloured things of the lessons (`thing:<thing>:<color>`, SPEC-tutor.md section 4). All eight have a WHITE object (public/english/paint) and are painted the way the colouring task
+ * of the English game paints it: the colour is multiplied over the white picture, so the light and the shade stay. (apple, book, hat and kite were made from their pictures of the words:
+ * the saturation taken out and the light matched to the white objects, the shading kept.) A thing with no white object would show its picture on a tile of the colour (THINGS_MISSING).
  */
 import { imageUrl } from '../art/images';
 import { paintUrl, PAINT } from '../content/paint';
 import { colorById } from '../content/colors';
 
 /** the things that have a white object in the repo */
-export const PAINTABLE: string[] = ['balloon', 'ball', 'star', 'flower'].filter((t) => PAINT.some((p) => p.id === t));
+export const PAINTABLE: string[] = ['balloon', 'ball', 'star', 'flower', 'apple', 'book', 'hat', 'kite'].filter((t) => PAINT.some((p) => p.id === t));
 /** the things of the lessons that have no white object yet (the list of what is missing: pictures) */
-export const THINGS_MISSING: string[] = ['apple', 'book', 'hat', 'kite'];
+export const THINGS_MISSING: string[] = [];
 export const isPaintable = (thing: string): boolean => PAINTABLE.includes(thing);
 
 /** the html of a thing in a colour (`color`: an id of the six colours; null: not painted yet, white) */
