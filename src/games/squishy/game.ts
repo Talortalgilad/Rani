@@ -836,11 +836,11 @@ export function createWorkshop(ctx: GameContext): Workshop {
         // not yet: the water stays where it is (she presses again and it goes on); too much: a button drains one unit at a time
         if (r === 'toomuch') {
           void sayHe('sq_too_much');
-          hint.textContent = 'קצת יותר מדי, ננקז';
+          hint.textContent = 'קצת יותר מדי. בואי ננסה שוב.';
           drainBtn.classList.add('call');
         } else {
           void sayHe('sq_not_enough');
-          hint.textContent = 'כמעט! עוד קצת';
+          hint.textContent = 'עוד קצת!';
         }
       };
       tap.addEventListener('pointerup', up);
