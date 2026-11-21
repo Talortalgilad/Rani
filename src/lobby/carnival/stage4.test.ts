@@ -309,11 +309,19 @@ describe('the call bubbles, the banners of the entry and the lines', () => {
   });
 });
 
-describe('the four lines that are still to be recorded', () => {
-  it('buttons and titles have no voice: only the four sentences are in the list', async () => {
+describe('the four lines of take 427 are recorded and connected to their moment', () => {
+  it('nothing is left to record, and each of the four is said (and written) where it belongs, with no name of an accessory in it', async () => {
     const csv = (await import('../../../voice/carnival-stage4-lines-to-record.csv?raw')).default;
-    expect(csv.trim().split('\n').slice(1).map((r) => r.split(',')[0])).toEqual(['cs_gift_done', 'cs_gift_decor', 'cs_gift_accessory', 'cs_album_empty']);
-    expect(csv).toContain('אביזר חדש! הוא מחכה בחנות.');
-    expect(csv).not.toContain('שם האביזר');
+    expect(csv.trim().split('\n').slice(1)).toEqual([]);
+    const daily = (await import('./ui/dailyUi.ts?raw')).default;
+    for (const id of ['cs_gift_done', 'cs_gift_decor', 'cs_gift_accessory', 'cs_album_empty']) {
+      expect(he.has(id), id + ' has a clip').toBe(true);
+      expect(daily, id).toContain(id);
+    }
+    expect(daily).toMatch(/csText\('cs_gift_done'\)[\s\S]{0,40}say\('cs_gift_done'\)/);
+    expect(daily).toContain("say('cs_album_empty')");
+    expect(CS_LINES.find((l) => l.id === 'cs_gift_accessory')?.text).toBe('אביזר חדש! הוא מחכה בחנות.');
+    // the texts are no longer written in the window: they come from the one list that the voice also reads
+    expect(daily).not.toContain('אביזר חדש! הוא מחכה בחנות.');
   });
 });

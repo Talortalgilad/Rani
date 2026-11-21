@@ -1,5 +1,1 @@
 id,text,where
-cs_gift_done,"המתנה של היום כבר אצלך. מחר תחכה עוד אחת!","toast when she taps the gift box after it was opened today"
-cs_gift_decor,"קישוט חינם! אפשר לבנות אותו בקרנבל.","the gift window, when the gift is a decoration"
-cs_gift_accessory,"אביזר חדש! הוא מחכה בחנות.","the gift window, when the gift is an accessory (its name is written beside its picture)"
-cs_album_empty,"עוד אין מכתבים. מחר יחכה כאן אחד!","the album when it has no letter"

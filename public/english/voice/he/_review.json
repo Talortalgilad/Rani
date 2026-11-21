@@ -2144,89 +2144,89 @@
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_now_you_he",
   "text": "עכשיו את קודם! אמרי באנגלית, ואחר כך אני.",
-  "lang": "he",
   "take": 304,
   "dur": 3.17,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_self_check",
   "text": "אמרת כמו שאני אמרתי?",
-  "lang": "he",
   "take": 304,
   "dur": 1.58,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_challenge_intro",
   "text": "אתגר! שלוש שאלות קשות יותר. מוכנה?",
-  "lang": "he",
   "take": 304,
   "dur": 3.46,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "t_challenge_perfect",
   "text": "וואו! בלי אף טעות! קיבלת מדבקה מנצנצת!",
-  "lang": "he",
   "take": 304,
   "dur": 3.67,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "t_challenge_ok",
   "text": "כל הכבוד שניסית! בפעם הבאה ננסה שוב.",
-  "lang": "he",
   "take": 304,
   "dur": 3.34,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_now_you",
   "text": "Now you!",
-  "lang": "en",
   "take": 329,
   "dur": 0.94,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_challenge",
   "text": "Challenge time!",
-  "lang": "en",
   "take": 329,
   "dur": 1.61,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_perfect",
   "text": "Perfect!",
-  "lang": "en",
   "take": 329,
   "dur": 1.01,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_amazing",
   "text": "Amazing!",
-  "lang": "en",
   "take": 329,
   "dur": 1.39,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_listen_carefully",
   "text": "Listen carefully!",
-  "lang": "en",
   "take": 329,
   "dur": 1.87,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "t_what_do_you_see",
   "text": "What do you see?",
-  "lang": "en",
   "take": 329,
   "dur": 1.54,
   "flag": ""
@@ -2880,57 +2880,57 @@
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "sq_free_decorate",
   "text": "עכשיו קישוטים! הקישי על הסקווישי כדי להדביק.",
-  "lang": "he",
   "take": 502,
   "dur": 3.79,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "sq_free_spoons_full",
   "text": "הקערה מלאה! עכשיו מערבבים.",
-  "lang": "he",
   "take": 502,
   "dur": 2.98,
   "flag": "pause"
  },
  {
+  "lang": "he",
   "id": "sq_free_finish",
   "text": "איזה גימור תרצי? מבריק, נצנצים או מט.",
-  "lang": "he",
   "take": 502,
   "dur": 4.58,
   "flag": "pause,tight"
  },
  {
+  "lang": "he",
   "id": "sq_free_stir_done",
   "text": "התערבב! איזה צבע יפה.",
-  "lang": "he",
   "take": 502,
   "dur": 2.81,
   "flag": "tight"
  },
  {
+  "lang": "en",
   "id": "glitter",
   "text": "Glitter",
-  "lang": "en",
   "take": 523,
   "dur": 0.72,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "matte",
   "text": "Matte",
-  "lang": "en",
   "take": 523,
   "dur": 0.74,
   "flag": ""
  },
  {
+  "lang": "en",
   "id": "glossy",
   "text": "Glossy",
-  "lang": "en",
   "take": 523,
   "dur": 0.96,
   "flag": ""
@@ -4048,283 +4048,315 @@
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_pizza",
   "text": "פתחי דוכן פיצה",
-  "lang": "he",
   "take": 425,
   "dur": 1.56,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_name",
   "text": "הקישי על סקווישי ושמעי איך קוראים לו",
-  "lang": "he",
   "take": 425,
   "dur": 3.02,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_drink",
   "text": "פתחי דוכן שתייה",
-  "lang": "he",
   "take": 425,
   "dur": 1.42,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_play",
   "text": "שחקי באחד המשחקים",
-  "lang": "he",
   "take": 425,
   "dur": 1.87,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_lvl2",
   "text": "הגיעי לרמה 2",
-  "lang": "he",
   "take": 425,
   "dur": 1.87,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_talk",
   "text": "עני על שיחה של סקווישי",
-  "lang": "he",
   "take": 425,
   "dur": 2.04,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_ride",
   "text": "פתחי מתקן",
-  "lang": "he",
   "take": 425,
   "dur": 1.22,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_three",
   "text": "פתחי שלושה דוכנים",
-  "lang": "he",
   "take": 425,
   "dur": 1.56,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_lvl3",
   "text": "הגיעי לרמה 3",
-  "lang": "he",
   "take": 425,
   "dur": 1.85,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_five",
   "text": "פתחי חמישה דברים בקרנבל",
-  "lang": "he",
   "take": 425,
   "dur": 2.18,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_book",
   "text": "פתחי את ספר התושבים",
-  "lang": "he",
   "take": 425,
   "dur": 1.97,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_board",
   "text": "הציצי בלוח המשאלות",
-  "lang": "he",
   "take": 425,
   "dur": 2.14,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_rest",
   "text": "שימי ספסל בקרנבל",
-  "lang": "he",
   "take": 425,
   "dur": 1.9,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_decor",
   "text": "שימי קישוט בקרנבל",
-  "lang": "he",
   "take": 425,
   "dur": 2.02,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_three_games",
   "text": "שחקי בשלושה משחקים שונים היום",
-  "lang": "he",
   "take": 425,
   "dur": 2.74,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_ten",
   "text": "פתחי עשרה דברים בקרנבל",
-  "lang": "he",
   "take": 425,
   "dur": 2.33,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_lvl5",
   "text": "הגיעי לרמה 5",
-  "lang": "he",
   "take": 425,
   "dur": 1.75,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_lvl10",
   "text": "הגיעי לרמה 10",
-  "lang": "he",
   "take": 426,
   "dur": 2.21,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_friend",
   "text": "הגיעי לרמת חברות 2 עם סקווישי",
-  "lang": "he",
   "take": 426,
   "dur": 3.43,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_trick",
   "text": "הקישי על סקווישי וראי את הטריק שלו",
-  "lang": "he",
   "take": 426,
   "dur": 3.12,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_job",
   "text": "שימי סקווישי לעבוד בדוכן",
-  "lang": "he",
   "take": 426,
   "dur": 2.21,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_hat",
   "text": "הלבישי כובע לסקווישי",
-  "lang": "he",
   "take": 426,
   "dur": 1.99,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_remember",
   "text": "עני לסקווישי ששואל אם את זוכרת אותו",
-  "lang": "he",
   "take": 426,
   "dur": 2.95,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_party",
   "text": "בחרי מתנה ליום החגיגה",
-  "lang": "he",
   "take": 426,
   "dur": 2.38,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_egg",
   "text": "בואי מחר לראות את הביצה בוקעת",
-  "lang": "he",
   "take": 426,
   "dur": 2.64,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_mail",
   "text": "פתחי את תיבת הדואר",
-  "lang": "he",
   "take": 426,
   "dur": 1.54,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_gift",
   "text": "פתחי את מתנת היום",
-  "lang": "he",
   "take": 426,
   "dur": 1.68,
   "flag": "tight"
  },
  {
+  "lang": "he",
   "id": "qs_visitor",
   "text": "דברי עם אורח היום",
-  "lang": "he",
   "take": 426,
   "dur": 1.8,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_bell",
   "text": "עני על פעמון בדוכן",
-  "lang": "he",
   "take": 426,
   "dur": 1.87,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_lolly",
   "text": "עשי שיעור עם המורה לולי",
-  "lang": "he",
   "take": 426,
   "dur": 2.16,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_workshop",
   "text": "הכיני סקווישי בסדנה",
-  "lang": "he",
   "take": 426,
   "dur": 1.87,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_order",
   "text": "הכיני הזמנה בסדנה",
-  "lang": "he",
   "take": 426,
   "dur": 1.94,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_coaster",
   "text": "בני רכבת הרים",
-  "lang": "he",
   "take": 426,
   "dur": 1.73,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "qs_parade",
   "text": "בואי למצעד ביום שישי",
-  "lang": "he",
   "take": 426,
   "dur": 1.8,
   "flag": ""
  },
  {
+  "lang": "he",
   "id": "sq_order_shape",
   "text": "כמעט! הצורה לא מתאימה להזמנה. רוצה לתקן?",
-  "lang": "he",
   "take": 503,
   "dur": 3.96,
   "flag": ""
+ },
+ {
+  "id": "cs_gift_done",
+  "text": "המתנה של היום כבר אצלך. מחר תחכה עוד אחת!",
+  "lang": "he",
+  "take": 427,
+  "dur": 4.01,
+  "flag": "tight"
+ },
+ {
+  "id": "cs_gift_decor",
+  "text": "קישוט חינם! אפשר לבנות אותו בקרנבל.",
+  "lang": "he",
+  "take": 427,
+  "dur": 3.29,
+  "flag": "tight"
+ },
+ {
+  "id": "cs_gift_accessory",
+  "text": "אביזר חדש! הוא מחכה בחנות.",
+  "lang": "he",
+  "take": 427,
+  "dur": 2.78,
+  "flag": "tight"
+ },
+ {
+  "id": "cs_album_empty",
+  "text": "עוד אין מכתבים. מחר יחכה כאן אחד!",
+  "lang": "he",
+  "take": 427,
+  "dur": 3.14,
+  "flag": "tight"
  }
 ]

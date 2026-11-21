@@ -98,7 +98,8 @@ export class DailyUI {
   openAlbum(): void {
     const w = this.w;
     const ls = [...w.letters()].reverse();
-    const el = this.ui.openSheet('cvw-album', `<h2>המכתבים שלי</h2>${ls.length ? '' : '<p class="al-empty">עוד אין מכתבים. מחר יחכה כאן אחד!</p>'}<div class="al-grid">${ls
+    if (!ls.length) say('cs_album_empty');
+    const el = this.ui.openSheet('cvw-album', `<h2>המכתבים שלי</h2>${ls.length ? '' : `<p class="al-empty">${esc(csText('cs_album_empty'))}</p>`}<div class="al-grid">${ls
       .map((l, i) => `<button type="button" class="al-i" data-i="${i}"><span class="lt-frame"><img src="${imageUrl(l.pic)}" alt=""></span><small>${esc((w.residents.find((r) => r.id === l.from) ?? w.residents[0]).name)}</small></button>`)
       .join('')}</div>`);
     el.querySelectorAll<HTMLButtonElement>('.al-i').forEach((b) =>
@@ -114,17 +115,19 @@ export class DailyUI {
     const w = this.w;
     const g = w.openDailyGift();
     if (!g) {
-      this.ui.toast('המתנה של היום כבר אצלך. מחר תחכה עוד אחת!');
+      this.ui.toast(csText('cs_gift_done'));
+      say('cs_gift_done');
       return;
     }
     sound.play('fanfare');
     this.ui.confetti(14);
     let body = '';
     if (g.kind === 'hearts') body = `<div class="gf-big">❤️ ${g.n}</div>`;
-    else if (g.kind === 'decor') body = `<img class="gf-img" src="${itemImg(g.id)}" alt=""><p>קישוט חינם! אפשר לבנות אותו בקרנבל.</p>`;
-    else body = `<img class="gf-img" src="${itemImg(g.id)}" alt=""><b class="gf-name">${esc(ACCESSORIES.find((a) => a.id === g.id)?.he ?? '')}</b><p>אביזר חדש! הוא מחכה בחנות.</p>`;
+    else if (g.kind === 'decor') body = `<img class="gf-img" src="${itemImg(g.id)}" alt=""><p>${esc(csText('cs_gift_decor'))}</p>`;
+    else body = `<img class="gf-img" src="${itemImg(g.id)}" alt=""><b class="gf-name">${esc(ACCESSORIES.find((a) => a.id === g.id)?.he ?? '')}</b><p>${esc(csText('cs_gift_accessory'))}</p>`;
     this.ui.openSheet('cvw-dgift', `<img class="gf-box" src="${itemImg('giftbox')}" alt=""><h2>${esc(csText('cs_daily_gift'))}</h2>${body}`);
-    say('cs_daily_gift');
+    // the title, then (for a decoration or an accessory) what it is: one after the other through the one voice
+    void sayPieces([{ he: 'cs_daily_gift' }, ...(g.kind === 'decor' ? [{ he: 'cs_gift_decor' }] : g.kind === 'hearts' ? [] : [{ he: 'cs_gift_accessory' }])], { prio: 'tap' });
     this.ui.paintHud();
   }
 

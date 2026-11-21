@@ -1,4 +1,4 @@
-/** The Hebrew lines of the carnival of stage 2 (written by scripts/export-cs-lines.ts from voice-takes-carnival-3.json): id (the file name of the recording) and text. */
+/** The Hebrew lines of the carnival of stage 2 (written by scripts/export-cs-lines.ts from voice-takes-carnival-3.json; the four of take 427, voice-takes-carnival-5.json, are added by hand): id (the file name of the recording) and text. */
 export const CS_LINES: { id: string; text: string }[] = [
  {
   "id": "cs_wish_food",
@@ -283,5 +283,21 @@ export const CS_LINES: { id: string; text: string }[] = [
  {
   "id": "cs_party_thanks",
   "text": "איזו מתנה מושלמת! תודה!"
+ },
+ {
+  "id": "cs_gift_done",
+  "text": "המתנה של היום כבר אצלך. מחר תחכה עוד אחת!"
+ },
+ {
+  "id": "cs_gift_decor",
+  "text": "קישוט חינם! אפשר לבנות אותו בקרנבל."
+ },
+ {
+  "id": "cs_gift_accessory",
+  "text": "אביזר חדש! הוא מחכה בחנות."
+ },
+ {
+  "id": "cs_album_empty",
+  "text": "עוד אין מכתבים. מחר יחכה כאן אחד!"
  }
 ];
