@@ -91,26 +91,29 @@ describe('the one voice of the carnival', () => {
     expect(SPONT_GAP_MS).toBe(8000);
     expect(r.log.some((l) => l.startsWith('OVERLAP'))).toBe(false);
   });
-  it('a whole entry with 24 squishies, an egg, a letter, a gift and a guest: ten seconds of everything that wants to talk, and never two clips at once', async () => {
+  /** the whole entry: 24 squishies, an egg, a letter, a gift and a guest: ten seconds of everything that wants to talk */
+  async function entry(speak: (r: ReturnType<typeof rig>, name: string, dur: number, o: Parameters<VoiceQueue['request']>[1]) => void): Promise<ReturnType<typeof rig>> {
     const r = rig();
     r.q.begin();
     const rnd = ((): (() => number) => { let s = 7; return () => ((s = (s * 1103515245 + 12345) % 2147483648) / 2147483648); })();
-    let started = 0;
-    const ask = (name: string, dur: number, o: Parameters<VoiceQueue['request']>[1]): void => void r.q.request(() => { started++; return r.clip(name, dur)(); }, o);
-    // the banners of the entry: "Rani is back", the egg hatches (the guest comes when there is no egg)
-    ask('welcome-back', 1800, { prio: 'entry' });
-    ask('egg-hatch', 1600, { prio: 'entry' });
-    // the quest strip, the gift and the letter (bubbles of the world), a level-up banner
-    ask('quest', 1500, { prio: 'banner' });
-    ask('level-up', 1200, { prio: 'banner' });
+    // the banners of the entry: "Rani is back", the egg hatches, the guest comes; the quest strip and a level-up
+    speak(r, 'welcome-back', 1800, { prio: 'entry' });
+    speak(r, 'egg-hatch', 1600, { prio: 'entry' });
+    speak(r, 'guest', 1500, { prio: 'entry' });
+    speak(r, 'quest', 1500, { prio: 'banner' });
+    speak(r, 'level-up', 1200, { prio: 'banner' });
     for (let sec = 0; sec < 10; sec++) {
       // 24 squishies, each with something to say now and then: English sentences, wishes, small bubbles, the baby's hello, the guest asking to stay
-      for (let k = 0; k < 24; k++) if (rnd() < 0.18) ask(`s${k}@${sec}`, 900, { prio: 'resident', spont: true, onScreen: rnd() < 0.6 });
-      if (sec === 3) ask('baby-hello', 1000, { prio: 'resident', onScreen: true });
-      if (sec === 6) ask('guest-asks', 1200, { prio: 'resident', onScreen: true });
-      if (sec === 7) ask('tap-on-a-squishy', 1000, { prio: 'tap' });
+      for (let k = 0; k < 24; k++) if (rnd() < 0.18) speak(r, `s${k}@${sec}`, 900, { prio: 'resident', spont: true, onScreen: rnd() < 0.6 });
+      if (sec === 3) speak(r, 'baby-hello', 1000, { prio: 'resident', onScreen: true });
+      if (sec === 6) speak(r, 'guest-asks', 1200, { prio: 'resident', onScreen: true });
+      if (sec === 7) speak(r, 'tap-on-a-squishy', 1000, { prio: 'tap' });
       await r.advance(1000);
     }
+    return r;
+  }
+  it('a whole entry with 24 squishies, an egg, a letter, a gift and a guest: ten seconds of everything that wants to talk, and never two clips at once', async () => {
+    const r = await entry((rg, name, dur, o) => void rg.q.request(rg.clip(name, dur), o));
     expect(r.log.filter((l) => l.startsWith('OVERLAP'))).toEqual([]);
     // the log of the queue itself: every start comes after the end of the one before
     let open = 0;
@@ -120,12 +123,16 @@ describe('the one voice of the carnival', () => {
     }
     // in the first 5 seconds only the entry's banners (and nothing of the squishies)
     const early = r.log.filter((l) => /start/.test(l) && Number(l.split(' ')[0]) < QUIET_MS).map((l) => l.split(' ')[2]);
-    expect(early.every((n) => ['welcome-back', 'egg-hatch'].includes(n))).toBe(true);
+    expect(early.length).toBeGreaterThan(0);
+    expect(early.every((n) => ['welcome-back', 'egg-hatch', 'guest'].includes(n))).toBe(true);
     // and at most one spontaneous squishy every 8 seconds
     const spontStarts = r.log.filter((l) => /start s\d+@/.test(l)).map((l) => Number(l.split(' ')[0]));
     for (let i = 1; i < spontStarts.length; i++) expect(spontStarts[i] - spontStarts[i - 1]).toBeGreaterThanOrEqual(SPONT_GAP_MS);
-    expect(started).toBeGreaterThan(3);
     expect(r.q.stats.asked).toBeGreaterThan(r.q.stats.started);
+  });
+  it('the same entry WITHOUT the queue (every line plays the moment it is asked, as before) does have clips that overlap: the test above can fail', async () => {
+    const r = await entry((rg, name, dur) => void rg.clip(name, dur)());
+    expect(r.log.filter((l) => l.startsWith('OVERLAP')).length).toBeGreaterThan(5);
   });
   it('short effects never queue and at most three sound together', () => {
     resetEffects();
