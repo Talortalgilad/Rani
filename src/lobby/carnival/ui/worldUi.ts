@@ -33,6 +33,8 @@ export interface WorldHost {
   trick?(i: number, kind: 'spin' | 'jump2' | 'dance'): void;
   /** the resident under a point of the screen (the shops of accessories: an accessory is dropped on him) */
   residentAt?(x: number, y: number): number | null;
+  /** how many orders wait at the squishy workshop (the number over its island; a tap on the island comes in straight to the orders) */
+  workshopCount?(): number;
   /** the school of Lolly was tapped: her lessons (the page goes to the English game, straight to Lolly) */
   goTutor?(): void;
   /** is there a new lesson of Lolly today? (the ❗ at her school) */
@@ -181,6 +183,10 @@ export class WorldUI {
         this.placeSchool(p);
         continue;
       }
+      if (p.id === 'workshop') {
+        this.placeWorkshop(p);
+        continue;
+      }
       if (p.id === 'nest' || p.id === 'giftbox' || p.id === 'mailbox') {
         this.daily.place(p);
         continue;
@@ -212,6 +218,32 @@ export class WorldUI {
       el.style.visibility = vis ? 'visible' : 'hidden';
       if (vis) el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
     }
+  }
+
+  private workshopEl: HTMLElement | null = null;
+  private workshopT = 0;
+  /** the small number over the island of the squishy workshop (SPEC-squishy.md 3): how many orders wait. The island itself is the one entrance (the scene's tap on the plot). */
+  private placeWorkshop(p: { x: number; y: number; behind: boolean; k: number }): void {
+    if (!this.h.workshopCount) return;
+    if (!this.workshopEl) {
+      const el = document.createElement('div');
+      el.className = 'cvw-workshop';
+      el.innerHTML = '<b class="wk-n"></b>';
+      this.root.appendChild(el);
+      this.workshopEl = el;
+      this.workshopT = 0;
+    }
+    const el = this.workshopEl;
+    if (this.workshopT-- <= 0) {
+      this.workshopT = 600;
+      const n = this.h.workshopCount?.() ?? 0;
+      const b = el.querySelector<HTMLElement>('.wk-n')!;
+      b.textContent = n ? String(n) : '';
+      b.hidden = !n;
+    }
+    const vis = !p.behind && p.x > 30 && p.x < window.innerWidth - 30 && p.y > 130 && p.y < window.innerHeight - 100;
+    el.style.visibility = vis ? 'visible' : 'hidden';
+    if (vis) el.style.transform = `translate(${Math.round(p.x + 0.9 * Math.max(20, p.k))}px, ${Math.round(p.y - 0.4 * Math.max(20, p.k))}px) translate(-50%, -100%)`;
   }
 
   /** the school of Lolly (SPEC-tutor.md 2): the building (its picture, when there is one) with Lolly outside; a ❗ over her when there is a new lesson. Nothing is drawn if the building has no picture yet. */
@@ -518,7 +550,7 @@ export class WorldUI {
     const el = this.openSheet(
       'cvw-bookpage',
       `<h2>${esc(csText('cs_book'))}</h2><div class="list">${rows
-        .map(({ r, i, wish, call }) => `<button type="button" class="row" data-i="${i}"><img src="${esc(r.img)}" alt=""><span><b>${esc(r.name)}</b><small>${r.personality ? PERSONALITY_HE[r.personality] : ''} · ${LEVEL_NAME[friendLevel(friendsOf(w.save).hearts[r.id] ?? 0)]}</small></span><em>${call ? '❗' : wish ? WISH_ICON[wish.kind] : ''}</em></button>`)
+        .map(({ r, i, wish, call }) => `<button type="button" class="row" data-i="${i}"><img src="${esc(r.img)}" alt=""><span><b>${esc(r.name)}${r.mine ? ' <i class="mine-star" aria-hidden="true">★</i>' : ''}</b><small>${r.mine ? '<u class="mine-tag">הכנתי בעצמי</u> · ' : ''}${r.personality ? PERSONALITY_HE[r.personality] : ''} · ${LEVEL_NAME[friendLevel(friendsOf(w.save).hearts[r.id] ?? 0)]}</small></span><em>${call ? '❗' : wish ? WISH_ICON[wish.kind] : ''}</em></button>`)
         .join('')}${unknown.map((x) => `<div class="row ghost"><img src="${residentImg(x.id)}" alt=""><span><b>?</b></span></div>`).join('')}</div>`,
     );
     el.querySelectorAll<HTMLButtonElement>('.row[data-i]').forEach((b) =>
@@ -839,6 +871,7 @@ export class WorldUI {
     this.friends.dispose();
     this.schoolEl?.remove();
     this.daily.dispose();
+    this.workshopEl?.remove();
     this.closeSheet();
     this.root.remove();
     this.guideEl?.remove();

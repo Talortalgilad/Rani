@@ -54,7 +54,9 @@ export interface WorldDeps {
   companion: { name: string | null; buddy: string | null };
   /** the date (the party days) and what she did in Lolly's lessons and in the workshop (for the quests); both optional */
   now?(): Date;
-  external?(): { lolly: number; workshop: number };
+  external?(): { lolly: number; workshop: number; orders?: number };
+  /** the squishies that Rani made and sent from her shelf (at most 8): residents like the others */
+  mine?(): Resident[];
 }
 
 export class CarnivalWorld {
@@ -67,7 +69,7 @@ export class CarnivalWorld {
 
   constructor(readonly d: WorldDeps, seed = 7) {
     this.slots = makeSlots(d.plotCount);
-    this.residents = residents(d.companion.name, d.companion.buddy, d.save.arrived);
+    this.residents = [...residents(d.companion.name, d.companion.buddy, d.save.arrived), ...(d.mine?.() ?? [])];
     this.sim = new CarnivalSim({ slots: this.slots, plotFronts: d.plotFronts }, this.residents.map((r) => this.simOf(r)), seed);
     this.sim.setBuilt(d.save.built);
     this.lastHearts = d.save.hearts;
@@ -235,10 +237,12 @@ export class CarnivalWorld {
    * Who is on the screen: all, up to the limit of the tier. Beyond it some are "at home", and they change at every visit (`visit`): the resident of Rani (the first) is always out.
    */
   chooseHome(limit: number, visit: number, keep: number[] = []): void {
-    const n = this.residents.length - keep.length;
+    // the squishies that Rani made are always out (they are hers, and they are at most 8), and so are those in `keep`: the limit is for the others
+    const others = this.residents.map((r, i) => (r.mine || keep.includes(i) ? -1 : i)).filter((i) => i >= 0);
+    const n = others.length;
     const away = new Set<number>();
     if (n > limit) {
-      const order = Array.from({ length: this.residents.length - 1 }, (_, i) => i + 1).filter((i) => !keep.includes(i)).sort((a, b) => ((a * 7919 + visit * 104729) % 1009) - ((b * 7919 + visit * 104729) % 1009));
+      const order = others.slice(1).sort((a, b) => ((a * 7919 + visit * 104729) % 1009) - ((b * 7919 + visit * 104729) % 1009));
       order.slice(0, n - limit).forEach((i) => away.add(i));
     }
     this.sim.agents.forEach((_, i) => this.sim.setActive(i, !away.has(i)));
@@ -332,8 +336,8 @@ export class CarnivalWorld {
   questCtx(): QuestCtx {
     const c = this.d.save.quests.counts;
     const f = friendsOf(this.d.save);
-    const ex = this.d.external?.() ?? { lolly: 0, workshop: 0 };
-    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers, friend: maxFriendLevel(this.d.save), tricks: f.tricks, jobs: f.jobs, hats: f.hats, remembered: f.remembered, parties: f.parties, lolly: ex.lolly, workshop: ex.workshop, hatched: dailyOf(this.d.save).hatched, letters: dailyOf(this.d.save).letters.length, gifts: dailyOf(this.d.save).gifts, stayed: dailyOf(this.d.save).stayed, parades: dailyOf(this.d.save).parades };
+    const ex = this.d.external?.() ?? { lolly: 0, workshop: 0, orders: 0 };
+    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers, friend: maxFriendLevel(this.d.save), tricks: f.tricks, jobs: f.jobs, hats: f.hats, remembered: f.remembered, parties: f.parties, lolly: ex.lolly, workshop: ex.workshop, orders: ex.orders ?? 0, hatched: dailyOf(this.d.save).hatched, letters: dailyOf(this.d.save).letters.length, gifts: dailyOf(this.d.save).gifts, stayed: dailyOf(this.d.save).stayed, parades: dailyOf(this.d.save).parades };
   }
   count(key: 'taps' | 'rounds'): void {
     this.d.save.quests.counts[key] = (this.d.save.quests.counts[key] ?? 0) + 1;

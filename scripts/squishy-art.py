@@ -2,6 +2,7 @@
 
   python3 scripts/squishy-art.py cut     the 18 shapes -> public/squishy/shapes/<id>.webp, the 9 props -> public/squishy/props/<id>.webp
                                          (512 x 512 transparent WebP, rembg, same method as scripts/park-art.py), the background -> public/squishy/bg/workshop.webp
+  python3 scripts/squishy-art.py rim     the edges of the part maps cleaned (small pieces of a part that lie only in the outer band join the part around them: run after `parts`)
   python3 scripts/squishy-art.py parts   for every shape: the PART MAP and the SHADING MAP in one lossless picture, public/squishy/maps/<id>.png,
                                          the numbers of the parts in src/games/squishy/parts.json, and the contact sheet (assets/squishy-parts-contact.png)
                                          that shows every part in its own colour, with the number of the parts and a warning for a shape whose division is not clean.
@@ -375,6 +376,56 @@ def contact(cells):
     print('contact sheet: assets/squishy-parts-contact.png')
 
 
+def rim():
+    """Cleans the edges of the part maps (public/squishy/maps/<id>.png): a piece of a part that lies only in the outer band of the shape (not deeper than RIM_DEPTH pixels from the edge) and is small
+    (under RIM_AREA pixels) is the lighter rim of the picture, not a part (the pink dots under the cookie): it joins the part around it, and its shading and highlight are taken from the nearest pixels that stayed (they were worked out against the lighter part).
+      python3 scripts/squishy-art.py rim      (prints what it changed, and leaves a map alone when it has nothing to clean)"""
+    RIM_DEPTH, RIM_AREA = 14, 600
+    WIDER = {'cookie': (18, 700)}  # the cookie's pale underside breaks into pieces a little deeper than the others
+    for sid in sorted(f[:-4] for f in os.listdir('public/squishy/maps') if f.endswith('.png')):
+        a = np.array(Image.open(f'public/squishy/shapes/{sid}.webp').convert('RGBA'))[:, :, 3] > 128
+        m = np.array(Image.open(f'public/squishy/maps/{sid}.png').convert('RGB'))
+        part = m[:, :, 0].copy()
+        dist = ndi.distance_transform_edt(a)
+        depth_max, area_max = WIDER.get(sid, (RIM_DEPTH, RIM_AREA))
+        changed = []
+        moved = np.zeros_like(a)
+        for k in [int(v) for v in np.unique(part[a]) if v]:
+            lab, n = ndi.label(part == k)
+            for i in range(1, n + 1):
+                c = lab == i
+                area = int(c.sum())
+                depth = dist[c].max()
+                # a small piece in the outer band, or a long thin crescent along the edge (its area is many times its depth squared: a round chip or an ear is not)
+                if (area < area_max and depth <= depth_max) or (area < 4000 and depth <= 26 and area > 6 * depth * depth):
+                    ring = ndi.binary_dilation(c, iterations=3) & ~c & a & (part != 0)
+                    if ring.any():
+                        part[c] = np.bincount(part[ring]).argmax()
+                        moved |= c
+                        changed.append((k, area))
+        # the soft edge of the shape (alpha under the half) takes the part and the shading of the nearest pixel inside: a rim of another part there shows as pale dots
+        alpha_full = np.array(Image.open(f'public/squishy/shapes/{sid}.webp').convert('RGBA'))[:, :, 3]
+        soft = (alpha_full > 12) & ~a
+        if soft.any():
+            idx = ndi.distance_transform_edt(~a, return_distances=False, return_indices=True)
+            nearest = part[idx[0], idx[1]]
+            if (part[soft] != nearest[soft]).any():
+                part[soft] = nearest[soft]
+                for ch in (1, 2):
+                    m[:, :, ch][soft] = m[:, :, ch][idx[0][soft], idx[1][soft]]
+                changed.append((0, int(soft.sum())))
+        if changed:
+            m[:, :, 0] = part
+            # the shading and the highlight of those pixels were worked out against the other part (a lighter one: the pale rim): they take the values of the nearest pixels that did not move
+            if moved.any():
+                idx = ndi.distance_transform_edt(moved | ~a, return_distances=False, return_indices=True)
+                for ch in (1, 2):
+                    src = m[:, :, ch]
+                    src[moved] = src[idx[0][moved], idx[1][moved]]
+            Image.fromarray(m).save(f'public/squishy/maps/{sid}.png', optimize=True)
+            print(sid, 'rim pieces joined their neighbours:', changed)
+
+
 if __name__ == '__main__':
-    for step in sys.argv[1:] or ['cut', 'parts']:
-        {'cut': cut, 'parts': parts}[step]()
+    for step in sys.argv[1:] or ['cut', 'parts', 'rim']:
+        {'cut': cut, 'parts': parts, 'rim': rim}[step]()

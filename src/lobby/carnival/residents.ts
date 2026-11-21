@@ -21,12 +21,18 @@ export interface Resident {
   food?: string;
   /** the guest of the day: here for today, he stays when he asks and she says yes (stage 4) */
   guest?: boolean;
+  /** a squishy that Rani made herself (workshop stage 3): "I made it myself" in the book; the picture is drawn from her saved data, and his name has no recording (it is only written) */
+  mine?: boolean;
+  /** where the accessories sit on him: a key of anchors.json (the picture of a resident has its own; a squishy of Rani's has the one of its mold) */
+  anchor?: string;
 }
 
 /** The fixed details of the residents (residents.json). The companion that Rani named uses the row of Cheesy. */
 export interface ResidentInfo { id: string; he: string; en: string; personality: Personality; food: string; game: string; color: string; number: number; hobby: string; friend: string; partyDay: number }
 export const RESIDENT_INFO = INFO.residents as ResidentInfo[];
-export const infoOf = (id: string): ResidentInfo | undefined => RESIDENT_INFO.find((r) => r.id === (id === 'companion' ? 'cheesy' : id));
+/** the details of the squishies that Rani made (workshop stage 3): they are not in residents.json, they are made from what she chose (see mine.ts) */
+export const EXTRA_INFO = new Map<string, ResidentInfo>();
+export const infoOf = (id: string): ResidentInfo | undefined => EXTRA_INFO.get(id) ?? RESIDENT_INFO.find((r) => r.id === (id === 'companion' ? 'cheesy' : id));
 /** the games of residents.json, as the ids of the registry */
 export const GAME_ID: Record<string, string> = { bricks: 'brick-breaker', memory: 'memory', blocks: 'blocks', busjam: 'traffic', english: 'english' };
 /** the 18 new residents, in the order in which they come; the first six come with the levels of ARRIVAL_LEVELS */

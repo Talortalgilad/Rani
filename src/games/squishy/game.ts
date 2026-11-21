@@ -11,7 +11,7 @@ import { COLORS } from '../english/content/colors';
 import { CHEEKS, drawCheeks, drawEyes, drawMouth, EYES, MOUTHS } from './faces';
 import { JARS, MAX_SPOONS, mixSpoons, nearestColorId } from './mix';
 import { partAt, PALETTE, type RGB } from './paint';
-import { cleanName, DECORS, DOT_OF, FINISHES, FOODS, isOpen, loadStore, MAX_DECOR, newSquishy, OPEN_MOLDS, STEP_ORDER, type Decor, type DecorKind, type Draft, type Finish, type SquishyData, type StepId, type Store } from './save';
+import { MAX_CARNIVAL, MAX_TOYS, cleanName, DECORS, DOT_OF, FINISHES, FOODS, isOpen, loadStore, MAX_DECOR, newSquishy, OPEN_MOLDS, STEP_ORDER, type Decor, type DecorKind, type Draft, type Finish, type SquishyData, type StepId, type Store } from './save';
 import { fillColors } from './save';
 import { sayEn, sayHe, sayNumber } from './sqvoice';
 import { gameStore, update } from '../../storage';
@@ -19,7 +19,7 @@ import { activeLevel } from '../../math/adaptive';
 import { SQUISHIES, squishyUrl } from '../english/art/squishies';
 import type { Words } from '../english/engine/progress';
 import { CUP, answerAuto, answerGlows, drain, newCup, pourAuto, pourShows, release, rise, showsHand } from './measure';
-import { checkOrder, orderById, queue as orderQueue, reward, unlockedMolds, type Learned, type Order } from './orders';
+import { checkOrder, learnedFrom, orderById, queue as orderQueue, reward, unlockedMolds, type Learned, type Order } from './orders';
 import { makeRecipe, recipeColor, type Recipe } from './recipe';
 import { decorAt, drawDecor, drawSquishy, inside } from './squishy';
 import { loadShape, shapeInfo, SHAPES, SIZE, type Loaded } from './shapes';
@@ -47,9 +47,12 @@ export function createWorkshop(ctx: GameContext): Workshop {
   const body = root.querySelector<HTMLElement>('#sqb')!;
   const dots = root.querySelector<HTMLElement>('#sqd')!;
   let dead = false;
-  let store: Store = loadStore({ draft: ctx.load<unknown>('draft', null), shelf: ctx.load<unknown>('shelf', []), orders: ctx.load<unknown>('orders', null) });
+  let store: Store = loadStore({ draft: ctx.load<unknown>('draft', null), shelf: ctx.load<unknown>('shelf', []), orders: ctx.load<unknown>('orders', null), carnival: ctx.load<unknown>('carnival', []) });
   /** the order that was chosen and has no squishy yet (it is in the draft from the moment that a mold is chosen) */
   let pending: Order | null = null;
+  /** the squishy that ordered it (a picture of the English game): he carries the toy in the carnival */
+  let pendingInv = '';
+  const inviterOf = (k: number): string => SQUISHIES[(k * 5 + store.orders.done.length) % SQUISHIES.length].id;
   let view: SquishView | null = null;
   let loaded: Loaded | null = null;
   let onX: () => void = () => ctx.onExit();
@@ -59,6 +62,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
     ctx.save('draft', store.draft);
     ctx.save('shelf', store.shelf);
     ctx.save('orders', store.orders);
+    ctx.save('carnival', store.carnival);
   };
   const say = (id: string): void => void sayHe(id);
 
@@ -81,11 +85,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
     const words = en.load<Words>('words', {});
     const map = en.load<{ done: Record<number, number> }>('map', { done: {} });
     const all = en.load<boolean>('openAll', false);
-    const d4 = map.done[4] ?? 0;
-    const later = Object.entries(map.done).some(([w, n]) => Number(w) > 4 && n > 0) || d4 >= 5;
-    const nColors = all || later ? 6 : d4 >= 2 ? 6 : d4 >= 1 ? 3 : 0;
-    const known = COLORS.slice(0, nColors).map((c) => c.id);
-    return { word: (id) => all || words[id]?.seen === true, color: (id) => all || known.includes(id) };
+    return learnedFrom(words, map, all, COLORS.map((c) => c.id));
   }
   const doneCtx = (): { done: string[]; learned: Learned } => ({ done: store.orders.done, learned: learned() });
   function clear(cls = ''): HTMLElement {
@@ -142,7 +142,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
         <button type="button" class="sqg-big" id="mnew" data-say="sq_free_mode"><img src="${propUrl('bowl')}" alt="" draggable="false"><span>יצירה חופשית</span></button>
         <button type="button" class="sqg-big" id="mshelf" data-say="sq_shelf"><img src="${propUrl('shelf')}" alt="" draggable="false"><span>המדף שלי</span>${store.shelf.length ? `<b class="sqg-count">${store.shelf.length}</b>` : ''}</button>
       </div>
-      <div class="sqg-line" aria-label="הזמנות שמחכות">${waiting.map((o, k) => `<button type="button" class="sqg-wait" data-o="${o.id}" aria-label="הזמנה ${k + 1}"><img src="${squishyUrl(SQUISHIES[(k * 5 + store.orders.done.length) % SQUISHIES.length].id)}" alt="" draggable="false"><span aria-hidden="true">🔊</span></button>`).join('')}</div>`;
+      <div class="sqg-line" aria-label="הזמנות שמחכות">${waiting.map((o, k) => `<button type="button" class="sqg-wait" data-o="${o.id}" data-k="${k}" aria-label="הזמנה ${k + 1}"><img src="${squishyUrl(inviterOf(k))}" alt="" draggable="false"><span aria-hidden="true">🔊</span></button>`).join('')}</div>`;
     say('sq_title');
     // a tap on a button says its name (the recording); nothing reads itself
     b.querySelectorAll<HTMLElement>('[data-say]').forEach((el) => el.addEventListener('pointerdown', () => el.dataset.say && say(el.dataset.say)));
@@ -151,15 +151,16 @@ export function createWorkshop(ctx: GameContext): Workshop {
       if (store.draft) store.draft = null;
       stepMold();
     });
-    b.querySelector('#mord')!.addEventListener('click', () => (sound.play('pop', 640), startOrder(waiting[0])));
-    b.querySelectorAll<HTMLButtonElement>('.sqg-wait').forEach((w) => w.addEventListener('click', () => (sound.play('pop', 640), startOrder(waiting.find((o) => o.id === w.dataset.o)!))));
+    b.querySelector('#mord')!.addEventListener('click', () => (sound.play('pop', 640), startOrder(waiting[0], inviterOf(0))));
+    b.querySelectorAll<HTMLButtonElement>('.sqg-wait').forEach((w) => w.addEventListener('click', () => (sound.play('pop', 640), startOrder(waiting.find((o) => o.id === w.dataset.o)!, inviterOf(Number(w.dataset.k) || 0)))));
     b.querySelector('#mshelf')!.addEventListener('click', () => (sound.play('pop', 640), shelf()));
     b.querySelector('#mcont')?.addEventListener('click', () => (sound.play('pop', 640), resume()));
   }
 
   /** an order was chosen from the line: the orderer says it (the card shows the sentence), and the mold is chosen by what she heard */
-  function startOrder(o: Order): void {
+  function startOrder(o: Order, inviter = ''): void {
     pending = o;
+    pendingInv = inviter;
     store.draft = null;
     void sayHe('sq_new_order').then(() => sayOrder(o));
     stepMold();
@@ -204,7 +205,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
         }
         sound.play('bonus');
         const o = curOrder();
-        store.draft = { step: 'spoons', data: newSquishy(s), poured: false, squeezes: 0, ...(o ? { orderId: o.id, recipe: makeRecipe(activeLevel(), o.colors[0]) } : {}) };
+        store.draft = { step: 'spoons', data: newSquishy(s), poured: false, squeezes: 0, ...(o ? { orderId: o.id, ...(pendingInv ? { inviter: pendingInv } : {}), recipe: makeRecipe(activeLevel(), o.colors[0]) } : {}) };
         pending = null;
         persist();
         stepSpoons();
@@ -874,6 +875,8 @@ export function createWorkshop(ctx: GameContext): Workshop {
       const gain = reward(o, matched);
       store.orders.done.push(o.id);
       store.orders.hearts += gain.hearts;
+      // the squishy goes to the one who ordered it: he carries it in the carnival (the last MAX_TOYS are kept)
+      if (store.draft?.inviter) store.orders.toys = [...store.orders.toys.filter((t) => t.to !== store.draft!.inviter), { to: store.draft.inviter, data: structuredClone(d) }].slice(-MAX_TOYS);
       if (gain.stars) update((s) => void (s.stars += gain.stars));
       const prev = unlockedMolds(store.orders.done.length - 1).length, now = unlockedMolds(store.orders.done.length);
       store.draft = null;
@@ -927,7 +930,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'sqg-card';
-      card.innerHTML = `<span class="sqg-thumb"></span><b>${esc(d.name || 'ללא שם')}</b>`;
+      card.innerHTML = `<span class="sqg-thumb"></span><b>${esc(d.name || 'ללא שם')}</b>${store.carnival.includes(d.id) ? '<i class="sqg-incv" aria-label="בקרנבל">🎪</i>' : ''}`;
       sh.appendChild(card);
       void thumb(d, 112).then((c) => !dead && card.querySelector('.sqg-thumb')!.replaceChildren(c));
       card.addEventListener('click', () => (sound.play('pop', 640), detail(d)));
@@ -939,13 +942,24 @@ export function createWorkshop(ctx: GameContext): Workshop {
     setDots(0);
     onX = shelf;
     const b = clear('detail');
-    b.innerHTML = `<div class="sqg-stage" id="stage"></div><div class="sqg-panel"><div class="sqg-detailname"><b id="dn">${esc(d.name)}</b><button type="button" class="sqg-round" id="dedit" aria-label="שינוי שם">✏️</button></div><div class="sqg-actions"><button type="button" class="sqg-go" id="dback">⬅ חזרה למדף</button></div></div>`;
+    b.innerHTML = `<div class="sqg-stage" id="stage"></div><div class="sqg-panel"><div class="sqg-detailname"><b id="dn">${esc(d.name)}</b><button type="button" class="sqg-round" id="dedit" aria-label="שינוי שם">✏️</button></div><div class="sqg-actions"><button type="button" class="sqg-go" id="dcv">${store.carnival.includes(d.id) ? '↩ החזירי למדף' : '🎪 שלחי לקרנבל'}</button><button type="button" class="sqg-go alt" id="dback">⬅ חזרה למדף</button></div><p class="sqg-cvmsg" id="dmsg" role="status"></p></div>`;
     const stage = b.querySelector<HTMLElement>('#stage')!;
     void (async () => {
       const v = await showView(d, stage);
       v.setMode('squeeze');
     })();
     b.querySelector('#dback')!.addEventListener('click', () => shelf());
+    // "send to the carnival" / "back to the shelf": up to MAX_CARNIVAL live there at the same time (a squishy that is there stays on the shelf too)
+    b.querySelector('#dcv')!.addEventListener('click', () => {
+      sound.play('pop', 640);
+      if (store.carnival.includes(d.id)) store.carnival = store.carnival.filter((x) => x !== d.id);
+      else if (store.carnival.length >= MAX_CARNIVAL) {
+        b.querySelector<HTMLElement>('#dmsg')!.textContent = `בקרנבל יש כבר ${MAX_CARNIVAL} סקווישים שלך. החזירי אחד למדף כדי לשלוח עוד.`;
+        return;
+      } else store.carnival = [...store.carnival, d.id];
+      persist();
+      detail(d);
+    });
     b.querySelector('#dedit')!.addEventListener('click', () => {
       const dn = b.querySelector<HTMLElement>('.sqg-detailname')!;
       dn.innerHTML = `<input class="sqg-name" id="nn" maxlength="12" value="${esc(d.name)}" aria-label="שם"><button type="button" class="sqg-round" id="nok" aria-label="אישור">✔</button>`;

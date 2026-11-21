@@ -227,7 +227,7 @@ export class CarnivalSim {
       .map((s) => ({ s, load: this.queueOf(s.id).length }))
       .filter(({ s, load }) => load < (s.kind === 'ride' ? RIDE_QUEUE : STALL_QUEUE))
       // his favourite food first (the stall of it counts as much nearer), and the stall where his friend goes
-      .map(({ s, load }) => ({ s, load, cost: Math.hypot(s.front.x - a.x, s.front.z - a.z) + load * 2 - (a.food && FOOD_OF_ITEM[this.built.get(s.id) ?? ''] === a.food ? 6 : 0) - (s.id === prefer ? 8 : 0) }))
+      .map(({ s, load }) => ({ s, load, cost: Math.hypot(s.front.x - a.x, s.front.z - a.z) + load * 2 - (a.food && FOOD_OF_ITEM[this.built.get(s.id) ?? ''] === (a.food === 'lollipop' ? 'candy' : a.food) ? 6 : 0) - (s.id === prefer ? 8 : 0) }))
       .sort((p, q) => p.cost - q.cost);
     if (!open.length) return false;
     const { s } = open[0];

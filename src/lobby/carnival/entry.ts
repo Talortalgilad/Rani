@@ -26,6 +26,7 @@ import { lessonsByUnit, progressFromEnglish } from './unlocks';
 import { LESSONS } from '../../games/english/tutor/lessons';
 import { NEST, plots } from './layout';
 import { takeParadeRequest } from './testTools';
+import { flatPicture, mineOf, mineResident, readMine, toyHolders, workshopState, type MineData } from './mine';
 
 const OLD_KEY = 'rani-lobby-old';
 const SHOWN_KEY = 'rani-jar-shown';
@@ -79,7 +80,7 @@ function newLesson(): boolean {
 }
 
 const DAILY_EVENTS: string[] = ['welcomeBack', 'egg', 'hatch', 'guest', 'greet', 'mailWaiting', 'giftWaiting', 'paradeDay'];
-function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>; visit: number } {
+function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>; visit: number; mineData: MineData } {
   const save = loadSave();
   let t = 0;
   const persist = (): void => {
@@ -91,6 +92,7 @@ function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>;
   };
   const ps = plots(games.length + comingSoon.length);
   const en = getState().games.english as { buddy?: string | null; companion?: { name?: string } } | undefined;
+  const mineData = readMine();
   const world = new CarnivalWorld({
     save,
     persist,
@@ -105,9 +107,11 @@ function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>;
     companion: { name: en?.companion?.name ?? null, buddy: en?.buddy ?? null },
     // what she did in Lolly's lessons and in the workshop (for the quests)
     external: () => {
-      const g = getState().games as Record<string, { tutor?: { done?: unknown[] }; shelf?: unknown[] } | undefined>;
-      return { lolly: g.english?.tutor?.done?.length ?? 0, workshop: g.squishy?.shelf?.length ?? 0 };
+      const g = getState().games as Record<string, { tutor?: { done?: unknown[] }; shelf?: unknown[]; orders?: { done?: unknown[] } } | undefined>;
+      return { lolly: g.english?.tutor?.done?.length ?? 0, workshop: g.squishy?.shelf?.length ?? 0, orders: g.squishy?.orders?.done?.length ?? 0 };
     },
+    // the squishies that she made and sent to live here (the picture is drawn before the scene starts)
+    mine: () => mineOf(mineData).map(mineResident),
   });
   // a visit: the ones who were waiting for the rounds that she played, and who is "at home" this time
   let visit = 0;
@@ -117,7 +121,7 @@ function makeWorld(): { world: CarnivalWorld; save: ReturnType<typeof loadSave>;
   } catch {
     /* ignore */
   }
-  return Object.assign({ world, save }, { visit });
+  return Object.assign({ world, save }, { visit, mineData });
 }
 
 /** The games row at the bottom: a round icon for each game, one tap goes in. */
@@ -168,7 +172,7 @@ const expose = (o: Record<string, unknown>): void => void Object.assign(window a
 export function renderHomeCarnival(root: HTMLElement): () => void {
   if (wantsOldLobby()) return renderOldLobby(root);
   const pref = getState().settings.lobby;
-  const { world, save, visit } = makeWorld();
+  const { world, save, visit, mineData } = makeWorld();
   // the entry: the one voice of the carnival starts its quiet window (5 s: only the banner of the entry speaks, no squishy)
   voice.begin();
   const tierGuess = sessionTier(pref);
@@ -238,7 +242,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
         void b.offsetWidth;
         b.classList.add('hop');
         if (!talks.tapResident(i)) {
-          void sayLineQ('carnival_name', { prio: 'tap' }, world.residents[i].name);
+          // the name that Rani gave to a squishy of hers has no recording: it is only written, never said
+          if (!world.residents[i].mine) void sayLineQ('carnival_name', { prio: 'tap' }, world.residents[i].name);
           ui.residentTapped(i);
         }
       }),
@@ -312,6 +317,13 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
     try {
       const mod = await import('./scene');
       if (dead) return;
+      // the squishies that Rani made: each is drawn ONCE from its saved data (a flat picture, no squeeze mesh), before the scene starts; the toys the same
+      const byId = new Map(mineData.shelf.map((d) => [`sq_${d.id}`, d]));
+      await Promise.all(world.residents.filter((r) => r.mine).map(async (r) => { const d = byId.get(r.id); if (d) r.img = await flatPicture(d); }));
+      const holders = toyHolders(world.residents, mineData.toys);
+      const toys = await Promise.all([...holders].map(async ([index, t]) => ({ index, img: await flatPicture(t.data, 128) })));
+      const workshop = workshopState();
+      if (dead) return;
       const label = document.createElement('div');
       label.className = 'cv-label';
       let hideTimer = 0;
@@ -321,7 +333,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
       const l = await mod.startCarnival({
         world,
         plots: [
-          ...games.map((g) => ({ kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
+          ...games.map((g) => ({ id: g.id, kind: 'game' as const, title: g.title, icon: g.icon, color: g.color, lobbyIsland: g.lobbyIsland })),
           ...comingSoon.map((c) => ({ kind: 'locked' as const, title: c.title, color: c.color })),
         ],
         residents: [...world.residents],
@@ -330,6 +342,8 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           ui3?.daily.hatched(i);
           window.setTimeout(() => l.home(), 3200);
         },
+        toys,
+        workshop,
         autoDowngrade: pref === 'auto' && !pinnedTier(),
         onEnter: (i) => {
           if (!games[i]) return;
@@ -351,7 +365,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           // a baby chirps
           if (world.isBaby(world.residents.indexOf(r))) (sound.play('pop', 1150), window.setTimeout(() => sound.play('pop', 1300), 140));
           if (!again) {
-            void sayLineQ('carnival_name', { prio: 'tap' }, r.name);
+            if (!r.mine) void sayLineQ('carnival_name', { prio: 'tap' }, r.name);
             ui3?.residentTapped(world.residents.indexOf(r));
           }
         },
@@ -461,6 +475,7 @@ export function renderHomeCarnival(root: HTMLElement): () => void {
           trick: (i, k) => l.trick(i, k),
           residentAt: (x, y) => l.residentAt(x, y),
           goTutor,
+          workshopCount: () => workshopState().waiting,
           newLesson,
           takeMe: (i) => {
             l.focus(i);

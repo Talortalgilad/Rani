@@ -25,6 +25,8 @@ export interface QuestCtx {
   gifts?: number;
   stayed?: number;
   parades?: number;
+  /** the orders of the workshop that were done */
+  orders?: number;
 }
 export interface Quest { id: string; he: string; hearts: number; stars?: number; done(c: QuestCtx): boolean }
 
@@ -56,6 +58,7 @@ QUESTS.push(
   { id: 'party', he: LATER.qs_party, hearts: 6, stars: 1, done: (c) => (c.parties ?? 0) >= 1 },
   { id: 'lolly', he: LATER.qs_lolly, hearts: 5, stars: 1, done: (c) => (c.lolly ?? 0) >= 1 },
   { id: 'workshop', he: LATER.qs_workshop, hearts: 5, stars: 1, done: (c) => (c.workshop ?? 0) >= 1 },
+  { id: 'order', he: LATER.qs_order, hearts: 5, stars: 1, done: (c) => (c.orders ?? 0) >= 1 },
   { id: 'egg', he: LATER.qs_egg, hearts: 5, stars: 1, done: (c) => (c.hatched ?? 0) >= 1 },
   { id: 'mail', he: LATER.qs_mail, hearts: 4, done: (c) => (c.letters ?? 0) >= 1 },
   { id: 'gift', he: LATER.qs_gift, hearts: 4, done: (c) => (c.gifts ?? 0) >= 1 },

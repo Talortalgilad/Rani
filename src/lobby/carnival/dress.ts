@@ -5,7 +5,7 @@
  */
 import ANCHORS from './anchors.json';
 
-export interface Anchor { top: number; bottom: number; left: number; right: number; cx: number; eyeY: number; mouthY: number; neckY: number; neckW: number; eyeW: number; eyeGap: number; /** the width of the body at 51 heights (0, 0.02 ... 1) */ prof?: number[]; /** the top of the head when the body is higher than the head (the wings of the bee) */ headTop?: number }
+export interface Anchor { top: number; bottom: number; left: number; right: number; cx: number; eyeY: number; mouthY: number; neckY: number; neckW: number; eyeW: number; eyeGap: number; /** the width of the body at 51 heights (0, 0.02 ... 1) */ prof?: number[]; /** the top of the head when the body is higher than the head (the wings of the bee) */ headTop?: number; /** how much a squishy of Rani's mold is scaled to be as big as the residents */ fill?: number }
 /** the part of the picture of an accessory that is not transparent (fractions of its square) */
 export interface Box { t: number; b: number; l: number; r: number }
 export const ACC_BOX: Record<string, Box> = {
