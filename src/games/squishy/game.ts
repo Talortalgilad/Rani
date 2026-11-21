@@ -18,6 +18,7 @@ import { gameStore, update } from '../../storage';
 import { activeLevel } from '../../math/adaptive';
 import { SQUISHIES, squishyUrl } from '../english/art/squishies';
 import type { Words } from '../english/engine/progress';
+import { CUP, answerAuto, answerGlows, drain, newCup, pourAuto, pourShows, release, rise, showsHand } from './measure';
 import { checkOrder, orderById, queue as orderQueue, reward, unlockedMolds, type Learned, type Order } from './orders';
 import { makeRecipe, recipeColor, type Recipe } from './recipe';
 import { decorAt, drawDecor, drawSquishy, inside } from './squishy';
@@ -350,7 +351,7 @@ export function createWorkshop(ctx: GameContext): Workshop {
     const bowl = b.querySelector<HTMLElement>('#pbowl')!;
     const mold = b.querySelector<HTMLElement>('#pm')!;
     const lvl = b.querySelector<HTMLElement>('#plvl')!;
-    let sx = 0, sy = 0, ox = 0, oy = 0, drag = false, poured = false;
+    let sx = 0, sy = 0, ox = 0, oy = 0, drag = false, poured = false, misses = 0;
     bowl.addEventListener('pointerdown', (e) => { drag = true; sx = e.clientX - ox; sy = e.clientY - oy; try { bowl.setPointerCapture(e.pointerId); } catch { /* ignore */ } });
     bowl.addEventListener('pointermove', (e) => {
       if (!drag || poured) return;
@@ -362,8 +363,25 @@ export function createWorkshop(ctx: GameContext): Workshop {
       if (poured) return;
       const br = bowl.getBoundingClientRect(), mr = mold.getBoundingClientRect();
       const over = Math.abs(br.left + br.width / 2 - (mr.left + mr.width / 2)) < mr.width * 0.45 && br.bottom > mr.top && br.top < mr.bottom - mr.height * 0.35;
-      if (!over) return void ((ox = 0), (oy = 0), (bowl.style.transform = ''), (bowl.style.transition = 'transform .3s'), window.setTimeout(() => (bowl.style.transition = ''), 320));
+      if (!over) {
+        // a drop beside the mold: the bowl goes back and she tries again; after two the mold glows with an arrow, after three the bowl pours by itself (nothing is locked)
+        misses++;
+        if (pourAuto(misses)) {
+          ox += mr.left + mr.width / 2 - (br.left + br.width / 2);
+          oy += mr.top + mr.height * 0.3 - (br.top + br.height / 2);
+          bowl.style.transition = 'transform .5s';
+        } else {
+          ox = 0;
+          oy = 0;
+          bowl.style.transform = '';
+          bowl.style.transition = 'transform .3s';
+          window.setTimeout(() => (bowl.style.transition = ''), 320);
+          if (pourShows(misses)) mold.classList.add('help');
+          return;
+        }
+      }
       poured = true;
+      mold.classList.remove('help');
       bowl.style.transition = 'transform .5s';
       bowl.style.transform = `translate(${ox}px, ${oy}px) rotate(-55deg)`;
       sound.play('pop', 360);
@@ -635,8 +653,8 @@ export function createWorkshop(ctx: GameContext): Workshop {
       const inp = fp.querySelector<HTMLInputElement>('#nm')!;
       fp.querySelectorAll<HTMLButtonElement>('.sqg-ideas button').forEach((x) => x.addEventListener('click', () => ((inp.value = x.textContent!), sound.play('pop', 600))));
       const ok = (): void => {
-        const n = cleanName(inp.value);
-        if (!n) return void inp.focus();
+        // an empty name is never a lock: the first of the ideas is taken
+        const n = cleanName(inp.value) || NAME_IDEAS[0];
         d.name = n;
         persist();
         sound.play('bonus');
@@ -722,69 +740,119 @@ export function createWorkshop(ctx: GameContext): Workshop {
           }
         }),
       );
-      b.querySelectorAll<HTMLButtonElement>('.sqg-choices button').forEach((c) =>
+      // the answer: no penalty and nothing locked. A mistake counts the spoons aloud; after two the right one glows; after three it is chosen for her
+      let wrong = 0;
+      const right = (c: HTMLElement): void => {
+        c.classList.add('right');
+        void sayHe('sq_exact');
+        later(() => finish(want.map((x) => ({ id: x.id, n: x.n }))), 900);
+      };
+      const choices = [...b.querySelectorAll<HTMLButtonElement>('.sqg-choices button')];
+      choices.forEach((c) =>
         c.addEventListener('click', () => {
-          if (Number(c.dataset.c) === rec.total) {
-            c.classList.add('right');
-            void sayHe('sq_exact');
-            later(() => finish(want.map((x) => ({ id: x.id, n: x.n }))), 900);
-          } else {
-            // no penalty: the spoons are counted aloud one by one, and she tries again
-            c.classList.add('shake');
-            window.setTimeout(() => c.classList.remove('shake'), 400);
-            void sayHe('cv_almost');
-          }
+          if (Number(c.dataset.c) === rec.total) return right(c);
+          wrong++;
+          c.classList.add('shake');
+          window.setTimeout(() => c.classList.remove('shake'), 400);
+          void sayHe('cv_almost').then(async () => { for (let n = 1; n <= Math.min(10, rec.total); n++) { if (dead) return; await sayNumber(n); } });
+          const rc = choices.find((x) => Number(x.dataset.c) === rec.total)!;
+          if (answerGlows(wrong)) rc.classList.add('glow');
+          if (answerAuto(wrong)) later(() => right(rc), 1200);
         }),
       );
       return;
     }
-    // the measuring cup (and half and half): hold the tap, let go at the line
+    // the measuring cup (and half and half): hold the tap, let go at the line. The water rises slowly, too little keeps the water where it is, too much is drained a unit at a time, and
+    // there is no "wrong": after one mistake a hand shows the line, after two the water stops on the line by itself (measure.ts)
     const stages = rec.kind === 'cup' ? [{ id: rec.color, line: rec.line }] : [{ id: rec.color, line: 5 }, { id: 'white', line: 5 }];
+    const STEP = rec.kind === 'half' ? 0.5 : 1;
     let k = 0;
     const stage = (): void => {
       const st = stages[k];
+      const cup = newCup(st.line);
       b.innerHTML = `<div class="sqg-want"><span class="sqg-chip"><i style="background:${css(jarOf(st.id))}"></i><b>${rec.kind === 'cup' ? st.line : '½'}</b></span>${stages.length > 1 ? `<em>${k + 1}/${stages.length}</em>` : ''}</div>
-        <div class="sqg-cup" id="cup"><div class="liq" id="liq" style="background:${css(jarOf(st.id))}"></div>${Array.from({ length: 10 }, (_, i) => `<u class="tick ${i + 1 === st.line ? 'goal' : ''}" style="bottom:${(i + 1) * 9.4}%"><span>${i + 1}</span></u>`).join('')}</div>
-        <button type="button" class="sqg-tap" id="tap" aria-label="ברז">🚰</button><p class="sqg-hint" id="hint"></p>`;
+        <div class="sqg-cupbox"><div class="sqg-cup" id="cup"><div class="liq" id="liq" style="background:${css(jarOf(st.id))}"></div>${Array.from({ length: 10 }, (_, i) => `<u class="tick ${i + 1 === st.line ? 'goal' : ''}" style="bottom:${(i + 1) * 9.4}%"><span>${i + 1}</span></u>`).join('')}</div>
+        <b class="sqg-goalnum" style="bottom:calc(${st.line * 9.4}% + 6px)">${rec.kind === 'cup' ? st.line : '½'}</b><i class="sqg-hand" id="hand" hidden>👈</i></div>
+        <div class="sqg-cupacts"><button type="button" class="sqg-tap" id="tap" aria-label="ברז">🚰</button><button type="button" class="sqg-drain" id="drain" aria-label="ניקוז" hidden>⬇ ננקז</button></div><p class="sqg-hint" id="hint" role="status"></p>`;
       const liq = b.querySelector<HTMLElement>('#liq')!;
+      const goal = b.querySelector<HTMLElement>('.tick.goal')!;
       const hint = b.querySelector<HTMLElement>('#hint')!;
-      let lvl = 0, hold = false, raf = 0, last = 0, held = 0, done = false;
-      const draw = (): void => void (liq.style.height = `${lvl * 9.4}%`);
+      const hand = b.querySelector<HTMLElement>('#hand')!;
+      const drainBtn = b.querySelector<HTMLButtonElement>('#drain')!;
+      let hold = false, raf = 0, last = 0, done = false, lit = false;
+      const draw = (): void => {
+        liq.style.height = `${cup.lvl * 9.4}%`;
+        // the line lights up when the water is on it (a small sound and a buzz, once each time it arrives)
+        const on = Math.abs(cup.lvl - cup.goal) <= CUP.TOL;
+        goal.classList.toggle('hit', on);
+        if (on && !lit) { sound.play('pop', 880); try { navigator.vibrate?.(20); } catch { /* ignore */ } }
+        lit = on;
+        drainBtn.hidden = cup.lvl < 0.5;
+        hand.hidden = !showsHand(cup);
+        if (showsHand(cup)) hand.style.bottom = `calc(${st.line * 9.4}% - 14px)`;
+      };
+      const finishStage = (): void => {
+        done = true;
+        cup.lvl = cup.goal;
+        draw();
+        goal.classList.add('hit');
+        sound.play('bonus');
+        void sayHe('sq_exact');
+        hint.textContent = 'בדיוק!';
+        later(() => (++k < stages.length ? stage() : finish(rec.kind === 'cup' ? [{ id: rec.color, n: 3 }] : [{ id: rec.color, n: 1 }, { id: 'white', n: 1 }])), 1000);
+      };
       const loop = (t: number): void => {
         raf = requestAnimationFrame(loop);
         const dt = Math.min(0.05, (t - last) / 1000);
         last = t;
-        if (hold) { lvl = Math.min(10, lvl + dt * 2.2); held += dt; draw(); }
+        if (!hold || done) return;
+        const stopped = rise(cup, dt);
+        draw();
+        // after two mistakes the water stops by itself on the line, even if she goes on pressing
+        if (stopped) {
+          hold = false;
+          cancelAnimationFrame(raf);
+          finishStage();
+        }
       };
-      timers.push(0);
       const tap = b.querySelector<HTMLElement>('#tap')!;
-      tap.addEventListener('pointerdown', (e) => { if (done) return; hold = true; held = 0; last = performance.now(); try { tap.setPointerCapture(e.pointerId); } catch { /* ignore */ } cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); });
+      tap.addEventListener('pointerdown', (e) => {
+        if (done) return;
+        hold = true;
+        hint.textContent = '';
+        last = performance.now();
+        try { tap.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(loop);
+      });
       const up = (): void => {
         if (!hold || done) return;
         hold = false;
         cancelAnimationFrame(raf);
-        if (Math.abs(lvl - st.line) <= 0.35) {
-          done = true;
-          lvl = st.line;
-          draw();
-          sound.play('bonus');
-          void sayHe('sq_exact');
-          later(() => (++k < stages.length ? stage() : finish(rec.kind === 'cup' ? [{ id: rec.color, n: 3 }] : [{ id: rec.color, n: 1 }, { id: 'white', n: 1 }])), 1000);
-        } else if (lvl > st.line) {
-          // too much: a little is poured out and she tries again (no penalty)
+        const r = release(cup, STEP);
+        draw();
+        if (r === 'ok') return finishStage();
+        // not yet: the water stays where it is (she presses again and it goes on); too much: a button drains one unit at a time
+        if (r === 'toomuch') {
           void sayHe('sq_too_much');
-          hint.textContent = 'קצת יותר מדי';
-          const to = Math.max(0, st.line - 2);
-          const t0 = performance.now(), from = lvl;
-          const drain = (t: number): void => { const u = Math.min(1, (t - t0) / 700); lvl = from + (to - from) * u; draw(); if (u < 1) requestAnimationFrame(drain); };
-          requestAnimationFrame(drain);
-        } else if (held > 0.25) {
+          hint.textContent = 'קצת יותר מדי. בואי ננסה שוב.';
+          drainBtn.classList.add('call');
+        } else {
           void sayHe('sq_not_enough');
           hint.textContent = 'עוד קצת!';
         }
       };
       tap.addEventListener('pointerup', up);
       tap.addEventListener('pointercancel', up);
+      drainBtn.addEventListener('click', () => {
+        if (done) return;
+        sound.play('pop', 360);
+        drain(cup);
+        drainBtn.classList.remove('call');
+        hint.textContent = cup.lvl > cup.goal + CUP.TOL ? 'עוד אחד למטה' : '';
+        draw();
+      });
+      draw();
     };
     stage();
   }

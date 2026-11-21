@@ -152,3 +152,23 @@ body.lobby3d-on .sq-game button, body.lobby3d-on .sq-game input, body.lobby3d-on
 .sqg-msg { text-align: center; font-size: 22px; font-weight: 800; min-height: 60px; padding: 8px; }
 .sqg-msg .newmold { width: 56px; vertical-align: middle; }
 .sqg-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; padding: 6px; }
+
+/* the measuring cup: a line that is easy to see, a number next to it, a hand that shows it after a mistake, a drain button; nothing blinks */
+.sqg-cupbox { position: relative; width: 190px; margin: 8px auto; }
+.sqg-cupbox .sqg-cup { margin: 0 auto; }
+.sqg-cup .tick.goal { border-top: 7px solid #e0457b; z-index: 2; }
+.sqg-cup .tick.goal span { font-size: 22px; font-weight: 900; color: #b5154f; }
+.sqg-cup .tick.goal.hit { border-top-color: #28c76f; box-shadow: 0 0 14px 5px rgba(60, 220, 120, .75); }
+.sqg-goalnum { position: absolute; right: calc(50% + 74px); font-size: 34px; font-weight: 900; color: #b5154f; line-height: 1; text-shadow: 0 2px 0 #fff; }
+.sqg-hand { position: absolute; left: calc(50% + 68px); font-style: normal; font-size: 34px; transform: translateY(0); animation: sqg-hand 2.4s ease-in-out infinite; pointer-events: none; }
+.sqg-hand[hidden] { display: none; }
+@keyframes sqg-hand { 50% { transform: translateX(-10px); } }
+.sqg-cupacts { display: flex; gap: 14px; justify-content: center; align-items: center; }
+.sqg-drain { min-width: 84px; min-height: 64px; border: 4px solid #fff; border-radius: 32px; background: #ffe1ec; color: #7a3a5a; font: 800 20px inherit; font-family: inherit; box-shadow: 0 4px 0 rgba(150, 90, 120, .3); }
+.sqg-drain[hidden] { display: none; }
+.sqg-drain.call { background: #ffb3cd; }
+.sqg-choices button.glow { background: #c8f5d3; box-shadow: 0 0 14px 5px rgba(60, 220, 120, .6); }
+.sqg-pourtray.help { box-shadow: 0 0 18px 8px rgba(60, 220, 120, .6); border-radius: 24px; }
+.sqg-pourtray.help::after { content: '⬇'; position: absolute; top: -34px; inset-inline: 0; text-align: center; font-size: 30px; animation: sqg-hand 2.4s ease-in-out infinite; }
+.sqg-pourtray { position: relative; }
+@media (prefers-reduced-motion: reduce) { .sqg-hand, .sqg-pourtray.help::after { animation: none; } }
