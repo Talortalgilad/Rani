@@ -56,5 +56,20 @@
    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3GoKR6aCVCM3Z5BPj6MXdVeYzsp/hf_20261115_162320_9026bf1d-2f50-4cbe-bcd7-16694bc540ea.png",
    "aspect": "9:16"
   }
- ]
+ ],
+ "backs": {
+  "file": "sheet-40-squishy-backs.png",
+  "note": "OPTIONAL (the runner game): the nine animals seen from BEHIND, 3x3, the same order as the animals sheet, the same colours for the same parts. python3 scripts/squishy-art.py back partsback",
+  "order": [
+   "cat",
+   "dog",
+   "rabbit",
+   "fish",
+   "bird",
+   "lion",
+   "monkey",
+   "elephant",
+   "giraffe"
+  ]
+ }
 }

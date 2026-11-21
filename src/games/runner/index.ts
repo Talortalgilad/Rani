@@ -4,7 +4,7 @@ import { activeLevel, recordAnswer } from '../../math/adaptive';
 import { createGenerator, type Question } from '../../math/generator';
 import { getState } from '../../storage';
 import type { GameContext, GameModule } from '../types';
-import { drawRunner } from './cat';
+import { drawRunner } from './character';
 import { createRun, gateCount, jump, move, step, type Run } from './engine';
 import { Painter, makeSprites } from './render';
 import { DEFAULT_TUNING, SLIDERS, cleanTuning, type Tuning } from './tuning';
@@ -42,7 +42,11 @@ class Chase {
   private dpr = 1;
   private dprSet = false;
   private slowFrames = 0;
-  private state: 'ready' | 'run' | 'end' = 'ready';
+  private state: 'ready' | 'count' | 'run' | 'end' = 'ready';
+  private countT = 0;
+  private countEl!: HTMLElement;
+  private shownCount = -1;
+  private disp = 0;
   private paused = false;
   private dead = false;
   private banked = 0;
@@ -54,7 +58,6 @@ class Chase {
   private panel!: HTMLElement;
   private reduced = false;
   private shownGate = -1;
-  private shownStars = -1;
   private qOn = false;
   /** for the tests of the browser (dev only): what the screen recognised, how fast it drew, a player who plays by itself */
   gestures: Gesture[] = [];
@@ -78,6 +81,15 @@ class Chase {
     this.size();
     this.ro = new ResizeObserver(() => this.size());
     this.ro.observe(this.root);
+    // a star that has flown to the counter is counted there, and the counter jumps
+    this.painter.onArrive = (n) => {
+      this.disp += n;
+      this.starsEl.textContent = String(this.disp);
+      const pill = this.starsEl.parentElement!;
+      pill.classList.remove('bump');
+      void pill.offsetWidth;
+      if (!this.reduced) pill.classList.add('bump');
+    };
     this.show('ready');
     this.raf = requestAnimationFrame((t) => this.loop(t));
   }
@@ -102,6 +114,7 @@ class Chase {
       </div>
       <div class="rn-q"></div>
       <div class="rn-msg"></div>
+      <div class="rn-count"></div>
       <div class="rn-panel" hidden></div>
       <div class="rn-overlay"></div>`;
     r.insertBefore(this.canvas, r.firstChild);
@@ -110,6 +123,7 @@ class Chase {
     this.qEl = r.querySelector('.rn-q')!;
     this.starsEl = r.querySelector('.rn-stars b')!;
     this.msgEl = r.querySelector('.rn-msg')!;
+    this.countEl = r.querySelector('.rn-count')!;
     this.overlay = r.querySelector('.rn-overlay')!;
     this.panel = r.querySelector('.rn-panel')!;
     r.querySelector('.rn-x')!.addEventListener('click', () => this.exit());
@@ -216,10 +230,10 @@ class Chase {
   }
 
   // ---------------------------------------------------------------- the screens
-  private show(s: 'ready' | 'run' | 'end'): void {
+  private show(s: 'ready' | 'count' | 'run' | 'end'): void {
     this.state = s;
     const o = this.overlay;
-    o.hidden = s === 'run';
+    o.hidden = s === 'run' || s === 'count';
     if (s === 'ready') {
       o.innerHTML = `<div class="rn-card"><h2>מרדף הבלונים</h2><p>שובי העורב חטף את הבלונים!</p><p>החליקי ימינה ושמאלה, הקישי כדי לקפוץ.</p><button type="button" class="rn-btn" data-go>יאללה!</button></div>`;
       o.querySelector('[data-go]')!.addEventListener('click', () => this.begin());
@@ -232,16 +246,21 @@ class Chase {
     }
   }
 
+  /** "3, 2, 1" while the squishy warms up, then the run */
   private begin(): void {
-    this.state = 'run';
-    this.overlay.hidden = true;
+    this.show('count');
     this.paused = false;
     this.last = 0;
+    this.countT = 0;
+    this.shownCount = -1;
   }
   private again(): void {
     this.bank();
     this.run = this.newRun();
     this.banked = 0;
+    this.disp = 0;
+    this.starsEl.textContent = '0';
+    this.painter.fx.clear();
     this.shownGate = -1;
     this.qEl.classList.remove('on');
     this.begin();
@@ -277,6 +296,21 @@ class Chase {
     if (this.frames.length > 400) this.frames.shift();
     this.time += dt;
     const r = this.run;
+    if (this.state === 'count' && !this.paused) {
+      this.countT += dt;
+      const n = 3 - Math.floor(this.countT / 0.75);
+      if (n !== this.shownCount) {
+        this.shownCount = n;
+        this.countEl.textContent = n > 0 ? String(n) : '';
+        this.countEl.classList.remove('on');
+        void this.countEl.offsetWidth;
+        if (n > 0) this.countEl.classList.add('on');
+      }
+      if (n <= 0) {
+        this.countEl.textContent = '';
+        this.show('run');
+      }
+    }
     if (this.state === 'run' && !this.paused) {
       this.brain?.(r, dt);
       step(r, dt);
@@ -290,18 +324,22 @@ class Chase {
     this.hud();
     this.painter.flash = Math.max(0, this.painter.flash - dt * 2.5);
     this.g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    this.painter.draw(r, this.W, this.H, this.time, this.reduced);
+    this.painter.draw(r, this.W, this.H, this.time, this.reduced, dt, this.state === 'count');
   }
 
-  /** a phone that cannot keep 50 frames a second gets a coarser picture (the canvas is smaller, the screen stretches it): 1.25x, then 1x */
+  /** a phone that cannot keep 50 frames a second gets fewer particles first, then a coarser picture (the canvas is smaller, the screen stretches it): 1.25x, then 1x */
   private adapt(dt: number): void {
     if (dt <= 0 || this.state !== 'run') return;
     this.slowFrames = dt > 0.019 ? this.slowFrames + 1 : Math.max(0, this.slowFrames - 1);
-    if (this.slowFrames >= 15 && this.dpr > 1) {
+    if (this.slowFrames >= 15) {
       this.slowFrames = 0;
-      this.dprSet = true;
-      this.dpr = Math.max(1, this.dpr - 0.25);
-      this.size();
+      // first the particles go (1, then half, then none), then the sharpness
+      if (this.painter.fx.q > 0) this.painter.fx.q = this.painter.fx.q > 0.5 ? 0.5 : 0;
+      else if (this.dpr > 1) {
+        this.dprSet = true;
+        this.dpr = Math.max(1, this.dpr - 0.25);
+        this.size();
+      }
     }
   }
 
@@ -309,6 +347,7 @@ class Chase {
     const r = this.run;
     const s = this.c.sound;
     for (const e of r.events) {
+      this.painter.event(e, r, this.reduced);
       switch (e.t) {
         case 'jump': s.play('jump'); break;
         case 'land': s.play('land'); break;
@@ -351,10 +390,6 @@ class Chase {
   /** the exercise on the top of the screen: from the moment the gate comes into view until a moment after it */
   private hud(): void {
     const r = this.run;
-    if (r.stars !== this.shownStars) {
-      this.shownStars = r.stars;
-      this.starsEl.textContent = String(r.stars);
-    }
     const g = r.nextGate;
     const idx = g ? r.gates.indexOf(g) : -1;
     const show = !!g && g.prepared && !!r.ex;
@@ -374,7 +409,7 @@ class Chase {
 
   // ---------------------------------------------------------------- the module's side
   pause(): void {
-    if (this.state === 'run') {
+    if (this.state === 'run' || this.state === 'count') {
       this.state = 'ready';
       this.show('ready');
       this.overlay.querySelector('h2')!.textContent = 'מחכים לך';

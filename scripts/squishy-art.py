@@ -3,6 +3,11 @@
   python3 scripts/squishy-art.py cut     the 18 shapes -> public/squishy/shapes/<id>.webp, the 9 props -> public/squishy/props/<id>.webp
                                          (512 x 512 transparent WebP, rembg, same method as scripts/park-art.py), the background -> public/squishy/bg/workshop.webp
   python3 scripts/squishy-art.py rim     the edges of the part maps cleaned (small pieces of a part that lie only in the outer band join the part around them: run after `parts`)
+  python3 scripts/squishy-art.py back    the animals seen from behind (an optional sheet 'backs' of squishy-art.json: nine animals, the same order as the front sheet)
+                                         -> public/squishy/shapes/<id>-back.webp
+  python3 scripts/squishy-art.py partsback  the part map of every back picture -> public/squishy/maps/<id>-back.png. The parts are not found again: the colours of the parts of the
+                                         FRONT picture (parts.json, `colors`) are the same on the back, and every pixel goes to the nearest of them (so part 3 is the same part
+                                         on both sides, and the colours that Rani paints are the same on both). Run after `parts`.
   python3 scripts/squishy-art.py parts   for every shape: the PART MAP and the SHADING MAP in one lossless picture, public/squishy/maps/<id>.png,
                                          the numbers of the parts in src/games/squishy/parts.json, and the contact sheet (assets/squishy-parts-contact.png)
                                          that shows every part in its own colour, with the number of the parts and a warning for a shape whose division is not clean.
@@ -426,6 +431,64 @@ def rim():
             print(sid, 'rim pieces joined their neighbours:', changed)
 
 
+
+def back():
+    """the sheet of the animals from behind: the same cut as the front"""
+    sh = DATA.get('backs')
+    if not sh:
+        print('no "backs" in squishy-art.json')
+        return
+    spec = importlib.util.spec_from_file_location('art', os.path.join(os.path.dirname(__file__), 'english-art.py'))
+    art = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(art)
+    from rembg import new_session
+    session = new_session('u2net')
+    img = Image.open(RAW + sh['file']).convert('RGB')
+    objs = art.find_objects(np.array(img), len(sh['order']), 3, None)
+    assert len(objs) == len(sh['order']), (sh['file'], len(objs))
+    for box, name in zip(objs, sh['order']):
+        cut_shape(art, name, img, box, session).save(f'public/squishy/shapes/{name}-back.webp', 'WEBP', quality=90, method=6, exact=True)
+    print(sh['file'], len(objs), flush=True)
+
+
+def parts_back(shapes_dir='public/squishy/shapes', maps_dir='public/squishy/maps', parts_json='src/games/squishy/parts.json'):
+    info = json.load(open(parts_json))
+    for name, m in info.items():
+        path = f'{shapes_dir}/{name}-back.webp'
+        if not os.path.exists(path):
+            continue
+        rgba = np.array(Image.open(path).convert('RGBA'))
+        ov = OVERRIDE.get(name, {})
+        lw = ov.get('lw', LW)
+        a = rgba[:, :, 3]
+        lab = rgb2lab(rgba[:, :, :3].astype(float) / 255)
+        inner = ndi.binary_erosion(a > 200, iterations=3)
+        ref = rgb2lab(np.array(m['colors'], dtype=float)[None] / 255)[0] * np.array([lw, 1, 1])
+        f = np.dstack([lab[:, :, 0] * lw, lab[:, :, 1], lab[:, :, 2]])
+        full = np.argmin(((f.reshape(-1, 1, 3) - ref[None]) ** 2).sum(-1), axis=1).reshape(a.shape) + 1
+        full[~inner] = 0
+        n = len(m['colors'])
+        full, _, n = refine(full, lab, a, inner, n, ov.get('island', ISLAND), ov.get('protect', ()))
+        L = lab[:, :, 0]
+        shade = np.zeros(L.shape)
+        spec = np.zeros(L.shape)
+        for p in range(1, n + 1):
+            mk = full == p
+            if not mk.any():
+                continue
+            r0 = max(float(np.median(L[mk])), 8.0)
+            shade[mk] = np.clip(L[mk] / r0, 0.25, 2.0)
+            hi = r0 + 0.45 * (100 - r0)
+            spec[mk] = np.clip((L[mk] - hi) / max(100 - hi, 1), 0, 1)
+        core = ndi.binary_erosion(a > 200, iterations=4)
+        near = ndi.distance_transform_edt(~core, return_distances=False, return_indices=True)
+        edge = (a > 0) & ~core
+        shade[edge] = shade[near[0][edge], near[1][edge]]
+        spec[edge] = spec[near[0][edge], near[1][edge]]
+        Image.fromarray(np.dstack([full.astype(np.uint8), np.clip(shade * 100, 0, 255).astype(np.uint8), (spec * 255).astype(np.uint8)]), 'RGB').save(f'{maps_dir}/{name}-back.png', optimize=True)
+        print(f"{name}-back  {n} parts, areas {[int((full == p).sum()) for p in range(1, n + 1)]}", flush=True)
+
+
 if __name__ == '__main__':
-    for step in sys.argv[1:] or ['cut', 'parts', 'rim']:
-        {'cut': cut, 'parts': parts, 'rim': rim}[step]()
+    for step in sys.argv[1:] or ['cut', 'parts', 'rim']:  # `back` and `partsback` are separate (they need the sheet of the backs)
+        {'cut': cut, 'parts': parts, 'rim': rim, 'back': back, 'partsback': parts_back}[step]()

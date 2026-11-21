@@ -20,13 +20,19 @@ const HIT_TIME = 1.0;
 const SQUISH_TIME = 0.45;
 const BOOST_TIME = 2;
 const BOOST = 1.6;
+/** the speed comes back to the usual one over this many seconds (after a gate, right or wrong, and after a hit): never all at once */
+export const RECOVER_T = 1.5;
+/** after a right gate: the push, then this many seconds more with no obstacle at all */
+export const CALM_T = 2;
+export { BOOST, BOOST_TIME };
 const POWER_TIME = 8;
 /** correct gates that are enough to catch Shovi */
 export const NEEDED = 3;
 
 export type Kind = 'low' | 'high';
 export interface Obstacle { z: number; lane: number; kind: Kind; done: boolean }
-export interface Star { z: number; lane: number; air: boolean; got: boolean }
+/** `pull` (0..1): how far the star has flown to her, when the push (or the magnet) draws it */
+export interface Star { z: number; lane: number; air: boolean; got: boolean; pull: number }
 export interface Gate {
   z: number;
   /** the number on each lane: three different real answers, one of them right */
@@ -40,6 +46,8 @@ export interface Gate {
   choice: number;
   reveal: number;
   ok: boolean;
+  /** the road after the gate with no obstacle (units) */
+  calm: number;
 }
 /** `q` is what the gate shows (a comparison gets a third number and "who is the biggest"); `orig` is what the engine of the gate gave, and what goes back to it */
 export interface Exercise { q: Question; orig: Question; attempts: number }
@@ -74,6 +82,9 @@ export interface Run {
   magnetT: number;
   shieldT: number;
   speedNow: number;
+  /** the two parts of the speed, each eased: the slow one (a gate in front, a hit) and the push; the speed is speed x slowF x boostF */
+  slowF: number;
+  boostF: number;
   stars: number;
   hits: number;
   correct: number;
@@ -107,14 +118,37 @@ function connected(prev: number[], row: Row): boolean {
   return free.length > 0 && prev.some((a) => free.some((b) => Math.abs(a - b) <= 1));
 }
 
+/**
+ * How far she goes after a right gate in the push and the 2 s after it, with the real speed (the slow part comes back over RECOVER_T, the push goes down over RECOVER_T):
+ * the obstacles of the road start after it, so that nothing comes at her while she is fast.
+ */
+export function pushDistance(t: Tuning): number {
+  let slow = t.gateSlow;
+  let boost = 1;
+  let z = 0;
+  const dt = 1 / 120;
+  for (let time = 0; time < BOOST_TIME + CALM_T; time += dt) {
+    const boostOn = time < BOOST_TIME;
+    slow = Math.min(1, slow + dt * easeRate(t));
+    boost = boostOn ? Math.min(BOOST, boost + dt * 3) : Math.max(1, boost - (dt * (BOOST - 1)) / RECOVER_T);
+    z += t.speed * slow * boost * dt;
+  }
+  return z;
+}
+/** how fast the slow part comes back: from the speed in front of a gate to the full one in RECOVER_T */
+const easeRate = (t: Tuning): number => (1 - Math.min(t.gateSlow, HIT_SLOW)) / RECOVER_T;
+
 export function createRun(o: RunOpts): Run {
   // the panel moves these live (the gap between the gates is read here, once)
   const tune = o.tuning;
   const v = tune.speed;
   const n = gateCount(tune.gateGap);
   const gates: Gate[] = [];
-  for (let k = 0; k < n; k++) gates.push({ z: v * tune.gateGap * (k + 0.8), nums: [0, 0, 0], correct: 1, prepared: false, help: false, resolved: false, choice: 1, reveal: 0, ok: false });
+  for (let k = 0; k < n; k++) gates.push({ z: v * tune.gateGap * (k + 0.75), nums: [0, 0, 0], correct: 1, prepared: false, help: false, resolved: false, choice: 1, reveal: 0, ok: false, calm: 0 });
   const finishZ = gates[n - 1].z + v * 2.5;
+  // after a gate: the push and 2 s more with no obstacle at all (and a trail of stars as the prize)
+  const calm = pushDistance(tune) * 1.05;
+  for (const gt of gates) gt.calm = calm;
   const obstacles: Obstacle[] = [];
   const starsList: Star[] = [];
   // the road between the gates: rows of obstacles, never all three lanes, always a way through; none for 3 s in front of a gate
@@ -122,9 +156,9 @@ export function createRun(o: RunOpts): Run {
   let z = v * 3.2;
   let sinceStars = 0;
   while (z < finishZ - v * 1.5) {
-    const gate = gates.find((g) => z > g.z - v * CLEAR_T && z < g.z + v * 1);
+    const gate = gates.find((g) => z > g.z - v * CLEAR_T && z < g.z + g.calm);
     if (gate) {
-      z = gate.z + v * 1;
+      z = gate.z + gate.calm;
       prevFree = [-1, 0, 1]; // after a gate she can be on any lane
       continue;
     }
@@ -145,7 +179,7 @@ export function createRun(o: RunOpts): Run {
     for (const b of row.blocks) {
       obstacles.push({ z, lane: b.lane, kind: b.kind, done: false });
       // an arc of stars over a low obstacle
-      if (b.kind === 'low' && o.rng() < 0.6) for (let i = -1; i <= 1; i++) starsList.push({ z: z + i * 0.9, lane: b.lane, air: true, got: false });
+      if (b.kind === 'low' && o.rng() < 0.6) for (let i = -1; i <= 1; i++) starsList.push({ z: z + i * 0.9, lane: b.lane, air: true, got: false, pull: 0 });
     }
     prevFree = [-1, 0, 1].filter((l) => !row.blocks.some((b) => b.lane === l && b.kind === 'high'));
     sinceStars++;
@@ -154,16 +188,20 @@ export function createRun(o: RunOpts): Run {
       const free = [-1, 0, 1].filter((l) => !row.blocks.some((b) => b.lane === l));
       if (free.length) {
         const lane = pick(o.rng, free);
-        for (let i = 0; i < 5; i++) starsList.push({ z: z + 2 + i * 1.1, lane, air: false, got: false });
+        for (let i = 0; i < 5; i++) starsList.push({ z: z + 2 + i * 1.1, lane, air: false, got: false, pull: 0 });
         sinceStars = 0;
       }
     }
     z += v * (1.3 + o.rng() * 0.9);
   }
+  // the prize of a right gate: a wave of stars over the calm road (the push draws them in by itself)
+  for (const gt of gates) {
+    for (let d = 2; d < gt.calm - 1; d += 2.2) starsList.push({ z: gt.z + d, lane: Math.round(Math.sin(d * 0.45)), air: false, got: false, pull: 0 });
+  }
   obstacles.sort((a, b) => a.z - b.z);
   starsList.sort((a, b) => a.z - b.z);
   return {
-    o, tune, t: 0, z: 0, x: 0, target: 0, h: 0, jt: -1, jumpBuffer: 0, slowT: 0, squishT: 0, boostT: 0, magnetT: 0, shieldT: 0, speedNow: 0,
+    o, tune, t: 0, z: 0, x: 0, target: 0, h: 0, jt: -1, jumpBuffer: 0, slowT: 0, squishT: 0, boostT: 0, magnetT: 0, shieldT: 0, speedNow: 0, slowF: 1, boostF: 1,
     stars: 0, hits: 0, correct: 0, wrong: 0, gatesDone: 0, obstacles, starsList, gates, finishZ, phase: 'run', finishT: 0, caught: false, ex: null, events: [], nextGate: gates[0],
   };
 }
@@ -261,16 +299,19 @@ export function step(r: Run, dt: number): void {
   r.magnetT = Math.max(0, r.magnetT - dt);
   r.shieldT = Math.max(0, r.shieldT - dt);
 
-  // the speed: slower in front of a gate, after a hit; faster after a right gate
+  // the speed: slower in front of a gate and after a hit (down at once, up over RECOVER_T), faster in the push (up quickly, down over RECOVER_T)
   const g = r.nextGate;
-  let f = 1;
+  let zone = 1;
   if (r.phase === 'run' && g) {
-    const zone = T.speed * SLOW_T;
-    const into = (r.z - (g.z - zone)) / zone;
-    if (into > 0 && into < 1.15) f = lerp(1, T.gateSlow, Math.min(1, into * 2));
+    const len = T.speed * SLOW_T;
+    const into = (r.z - (g.z - len)) / len;
+    if (into > 0 && into < 1.15) zone = lerp(1, T.gateSlow, Math.min(1, into * 2));
   }
-  if (r.slowT > 0) f *= HIT_SLOW;
-  if (r.boostT > 0) f *= BOOST;
+  const slowTarget = Math.min(zone, r.slowT > 0 ? HIT_SLOW : 1);
+  r.slowF = slowTarget < r.slowF ? slowTarget : Math.min(slowTarget, r.slowF + dt * easeRate(T));
+  const boostTarget = r.boostT > 0 ? BOOST : 1;
+  r.boostF = boostTarget > r.boostF ? Math.min(boostTarget, r.boostF + dt * 3) : Math.max(boostTarget, r.boostF - (dt * (BOOST - 1)) / RECOVER_T);
+  let f = r.slowF * r.boostF;
   if (r.phase === 'finish') f = Math.max(0, 1 - r.finishT / 2.6) * 0.8;
   r.speedNow = T.speed * f;
   r.z += r.speedNow * dt;
@@ -288,7 +329,6 @@ export function step(r: Run, dt: number): void {
   for (const gg of r.gates) if (gg.resolved) gg.reveal = Math.max(0, gg.reveal - dt);
 
   // obstacles and stars at her feet
-  const lane = Math.round(r.x);
   for (const ob of r.obstacles) {
     if (ob.z > r.z + 1) break;
     if (ob.done || ob.z < r.z - 0.35) continue;
@@ -307,12 +347,33 @@ export function step(r: Run, dt: number): void {
       }
     }
   }
+  // the push (and the magnet) draw the stars in by themselves: they fly to her and are hers when they arrive
+  const reach = r.boostT > 0 ? 24 : r.magnetT > 0 ? 9 : 0;
   for (const s of r.starsList) {
-    if (s.z > r.z + 3) break;
-    if (s.got || s.z < r.z - 0.6) continue;
+    if (s.got) continue;
+    if (s.z > r.z + (reach || 3)) break;
+    if (s.z < r.z - 0.6 && s.pull === 0) continue;
+    if (reach && s.z > r.z - 0.6) {
+      s.pull = Math.min(1, s.pull + dt * (r.boostT > 0 ? 2.4 : 3));
+      if (s.pull >= 1) {
+        s.got = true;
+        r.stars++;
+        r.events.push({ t: 'star' });
+      }
+      continue;
+    }
+    if (s.pull > 0) {
+      // the push is over: it still arrives
+      s.pull = Math.min(1, s.pull + dt * 3);
+      if (s.pull >= 1) {
+        s.got = true;
+        r.stars++;
+        r.events.push({ t: 'star' });
+      }
+      continue;
+    }
     const near = Math.abs(s.z - r.z) < 0.5 && Math.abs(s.lane - r.x) < 0.6 && (s.air ? r.h > 0.3 : r.h < 0.7);
-    const pulled = r.magnetT > 0 && Math.abs(s.z - r.z) < 2.2 && Math.abs(s.lane - lane) <= 1;
-    if (near || pulled) {
+    if (near) {
       s.got = true;
       r.stars++;
       r.events.push({ t: 'star' });

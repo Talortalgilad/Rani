@@ -14,7 +14,7 @@ export interface Tuning {
   gateGap: number;
 }
 
-export const DEFAULT_TUNING: Tuning = { speed: 9, jumpHeight: 1.0, jumpTime: 0.7, laneTime: 0.16, gateSlow: 0.5, gateGap: 15 };
+export const DEFAULT_TUNING: Tuning = { speed: 9, jumpHeight: 1.0, jumpTime: 0.7, laneTime: 0.16, gateSlow: 0.5, gateGap: 14.5 };
 
 export interface Slider { key: keyof Tuning; label: string; min: number; max: number; step: number }
 export const SLIDERS: Slider[] = [

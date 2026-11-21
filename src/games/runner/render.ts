@@ -2,7 +2,8 @@
  * The picture of the chase: Canvas 2D with a made-up perspective. The road is a trapezoid, and every thing is a sprite (made once, in `makeSprites`) whose size comes from its distance.
  * Nothing is made in a frame: the lists, the sprites and the colours are all made before.
  */
-import { LOW_H, VIEW, type Gate, type Run } from './engine';
+import { LOW_H, VIEW, type Gate, type Run, type RunEvent } from './engine';
+import { Fx, K } from './fx';
 
 /** the camera: the focal length (units), where the horizon is, and where her feet stand (shares of the height) */
 const F = 6.5;
@@ -16,6 +17,10 @@ export interface Sprites {
   star: HTMLCanvasElement;
   shovi: HTMLCanvasElement;
   bunch: HTMLCanvasElement;
+  /** Shovi looking back over his shoulder (a plain shape for now) */
+  shoviLook: HTMLCanvasElement;
+  /** the things that pass by the side of the road: places that are ready for the drawings of the side decorations (stage 1) */
+  decor: HTMLCanvasElement[];
   /** the cat from behind (no face) and from the front */
   back: HTMLCanvasElement | null;
   front: HTMLCanvasElement | null;
@@ -112,7 +117,60 @@ export function makeSprites(): Sprites {
     b.ellipse(x, y, 17, 21, 0, 0, 7);
     b.fill();
   }
-  return { crate, pillar, star, shovi, bunch, back: null, front: null };
+  // Shovi looking back: the head turned, one big eye and the beak to the side
+  const [shoviLook, w2] = mk(128, 128);
+  w2.drawImage(shovi, 0, 0);
+  w2.fillStyle = '#4b3a8c';
+  w2.beginPath();
+  w2.arc(70, 42, 25, 0, 7);
+  w2.fill();
+  w2.fillStyle = '#ff8a1f';
+  w2.beginPath();
+  w2.moveTo(88, 36);
+  w2.lineTo(112, 46);
+  w2.lineTo(88, 54);
+  w2.closePath();
+  w2.fill();
+  w2.fillStyle = '#fff';
+  w2.beginPath();
+  w2.arc(80, 38, 8, 0, 7);
+  w2.fill();
+  w2.fillStyle = '#222';
+  w2.beginPath();
+  w2.arc(83, 38, 4, 0, 7);
+  w2.fill();
+
+  // three places for decorations: a round bush, a lollipop tree and a lamp (plain shapes)
+  const [bush, d1] = mk(96, 96);
+  d1.fillStyle = '#3fae5a';
+  d1.beginPath();
+  d1.ellipse(48, 62, 40, 30, 0, 0, 7);
+  d1.fill();
+  d1.fillStyle = '#ff7aa8';
+  for (const [x, y] of [[30, 56], [52, 44], [66, 66]]) {
+    d1.beginPath();
+    d1.arc(x, y, 7, 0, 7);
+    d1.fill();
+  }
+  const [tree, d2] = mk(96, 160);
+  d2.fillStyle = '#b5703a';
+  d2.fillRect(42, 70, 12, 86);
+  d2.fillStyle = '#f15bb5';
+  d2.beginPath();
+  d2.arc(48, 50, 40, 0, 7);
+  d2.fill();
+  d2.fillStyle = '#ffd23f';
+  d2.beginPath();
+  d2.arc(48, 50, 22, 0, 7);
+  d2.fill();
+  const [lamp, d3] = mk(64, 160);
+  d3.fillStyle = '#7b4fc9';
+  d3.fillRect(28, 30, 8, 126);
+  d3.fillStyle = '#ffe66d';
+  d3.beginPath();
+  d3.arc(32, 22, 18, 0, 7);
+  d3.fill();
+  return { crate, pillar, star, shovi, bunch, shoviLook, decor: [bush, tree, lamp], back: null, front: null };
 }
 
 /** the sky and the far hills: made again when the size changes */
@@ -140,16 +198,41 @@ export function makeBackground(w: number, h: number): HTMLCanvasElement {
   return c;
 }
 
+/** a light fog on the horizon: it hides the far end of the road, drawn over the road (before the things near her) */
+export function makeFog(w: number, h: number): HTMLCanvasElement {
+  const bh = Math.round(h * 0.16);
+  const [c, g] = mk(w, bh);
+  const grad = g.createLinearGradient(0, 0, 0, bh);
+  grad.addColorStop(0, 'rgba(235,248,255,0)');
+  grad.addColorStop(0.45, 'rgba(235,248,255,.7)');
+  grad.addColorStop(1, 'rgba(235,248,255,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, w, bh);
+  return c;
+}
+
 interface Item { z: number; kind: 0 | 1 | 2 | 3; i: number }
 
 export class Painter {
   readonly sp: Sprites;
   private bg: HTMLCanvasElement | null = null;
   private bgKey = '';
+  private fog: HTMLCanvasElement | null = null;
   private items: Item[] = [];
   private nItems = 0;
   /** shake and flash of the last events, set by the screen */
   flash = 0;
+  /** the particles; their quality is set by the screen */
+  readonly fx = new Fx();
+  /** a callback when a star that flew to the counter arrives */
+  onArrive: ((n: number) => void) | null = null;
+  private W = 360;
+  private H = 740;
+  private dizzy = 0;
+  private landSquash = 0;
+  private runPhase = 0;
+  private trailT = 0;
+  private lean = 0;
   private cam = 0;
   private camT = 0;
   constructor(private g: CanvasRenderingContext2D, sprites: Sprites) {
@@ -161,12 +244,32 @@ export class Painter {
     return F / (F + Math.max(-F * 0.8, d));
   }
 
-  draw(r: Run, W: number, H: number, time: number, reduced: boolean): void {
+  /** what happened in a step of the run, for the effects (the screen calls it before `draw`) */
+  event(e: RunEvent, r: Run, reduced: boolean): void {
+    const x = this.W / 2 + (r.x - this.cam) * this.W * LANE_FRAC;
+    const yF = this.H * FEET;
+    const hC = this.H * 0.18;
+    if (e.t === 'land') {
+      this.landSquash = 0.18;
+      if (!reduced) for (let i = this.fx.amount(7); i > 0; i--) this.fx.spawn(K.dust, x + (Math.random() - 0.5) * hC * 0.5, yF, (Math.random() - 0.5) * 140, -20 - Math.random() * 30, 0.45, 7 + Math.random() * 5);
+    } else if (e.t === 'star') {
+      if (reduced || !this.onArrive) this.onArrive?.(1);
+      else this.fx.spawn(K.fly, x, yF - hC * 0.6, 0, 0, 0.55, 30, 0, this.W / 2, 36);
+    } else if (e.t === 'gate' && e.ok && !reduced) this.fx.celebrate(this.W / 2, this.H * 0.46, Math.random);
+    else if (e.t === 'hit' && !e.shielded && !reduced) this.dizzy = 1;
+  }
+
+  draw(r: Run, W: number, H: number, time: number, reduced: boolean, dt = 0, warm = false): void {
     const g = this.g;
+    this.W = W;
+    this.H = H;
     const key = `${W}x${H}`;
     if (key !== this.bgKey || !this.bg) {
       this.bg = makeBackground(W, H);
+      this.fog = makeFog(W, H);
       this.bgKey = key;
+      this.W = W;
+      this.H = H;
     }
     g.drawImage(this.bg, 0, 0);
     const yH = H * HORIZON;
@@ -219,6 +322,18 @@ export class Painter {
       g.moveTo(xAt(l, VIEW), yAt(VIEW));
       g.lineTo(xAt(l, -F * 0.8), yAt(-F * 0.8));
       g.stroke();
+    }
+    // places for the decorations of the side of the road (plain shapes now), going by
+    for (let k = 0; k * 6 - (r.z % 6) < VIEW; k++) {
+      const d = k * 6 - (r.z % 6);
+      if (d < -F * 0.5) continue;
+      const n = Math.floor((r.z + d) / 6 + 0.5);
+      const side = n % 2 === 0 ? -1 : 1;
+      const sprite = this.sp.decor[((n % 3) + 3) % 3];
+      const sc = this.p(d);
+      const w = laneW * 0.75 * sc;
+      const h = (w * sprite.height) / sprite.width;
+      g.drawImage(sprite, xAt(side * (2.6 + (((n * 7) % 3) * 0.35)), d) - w / 2, yAt(d) - h, w, h);
     }
     // the edges: a pole every few units
     for (let k = 0; k * 4 - (r.z % 4) < VIEW; k++) {
@@ -309,8 +424,28 @@ export class Painter {
       }
     }
 
-    this.player(r, W, H, laneW, yF, camX, time, reduced);
+    // a light fog on the horizon, over the far end of the road
+    if (this.fog) g.drawImage(this.fog, 0, yAt(VIEW) - this.fog.height * 0.5);
+    // the lines of speed in the push: they come out of the horizon toward the edges of the screen
+    if (r.boostT > 0 && !reduced) {
+      g.strokeStyle = 'rgba(255,255,255,.55)';
+      g.lineWidth = 3;
+      g.beginPath();
+      for (let i = 0; i < 14; i++) {
+        const a = (i / 14) * 6.2832 + 0.2;
+        const u = (time * 2.6 + i * 0.37) % 1;
+        const r0 = W * (0.2 + u * 0.55);
+        g.moveTo(cx + Math.cos(a) * r0, yH * 1.45 + Math.sin(a) * r0 * 1.3);
+        g.lineTo(cx + Math.cos(a) * (r0 + W * 0.16), yH * 1.45 + Math.sin(a) * (r0 + W * 0.16) * 1.3);
+      }
+      g.stroke();
+    }
+    this.player(r, W, H, laneW, yF, camX, time, reduced, dt, warm);
     this.labels(r, W, H, laneW, camX, time);
+    this.fx.update(dt);
+    this.fx.draw(g, this.sp.star);
+    const arrived = this.fx.takeArrivals();
+    if (arrived > 0) this.onArrive?.(arrived);
     if (this.flash > 0) {
       g.fillStyle = `rgba(255,255,255,${Math.min(0.55, this.flash)})`;
       g.fillRect(0, 0, W, H);
@@ -431,21 +566,33 @@ export class Painter {
       g.drawImage(this.sp.bunch, x + w * 0.25, y - w * 1.3 + (r.finishT - 1.2) * 20 * sc, w * 0.8, w * 0.8);
       return;
     }
-    g.drawImage(this.sp.shovi, x - w / 2, y - w + bob, w, w);
-    g.drawImage(this.sp.bunch, x - w * 0.4, y - w * 1.55 + bob, w * 0.8, w * 0.8);
+    // he sways as he runs, and every few seconds he looks back over his shoulder; the balloons sway more, and a little behind
+    const peek = r.phase === 'run' && time % 4.4 > 3.7;
+    g.save();
+    g.translate(x, y + bob);
+    g.rotate(Math.sin(time * 4.5) * 0.07);
+    g.drawImage(peek ? this.sp.shoviLook : this.sp.shovi, -w / 2, -w, w, w);
+    g.restore();
+    g.save();
+    g.translate(x, y - w * 0.95 + bob);
+    g.rotate(Math.sin(time * 3.1 - 0.8) * 0.16);
+    g.drawImage(this.sp.bunch, -w * 0.4, -w * 0.6, w * 0.8, w * 0.8);
+    g.restore();
   }
 
-  private player(r: Run, W: number, H: number, laneW: number, yF: number, camX: number, time: number, reduced: boolean): void {
+  private player(r: Run, W: number, H: number, laneW: number, yF: number, camX: number, time: number, reduced: boolean, dt: number, warm: boolean): void {
     const g = this.g;
-    const hC = H * 0.2;
+    const hC = H * 0.18;
     const x = W / 2 + (r.x - camX) * laneW;
     const celebrating = r.phase !== 'run';
     const img = celebrating && r.finishT > 0.9 ? this.sp.front : this.sp.back;
+    const T = r.tune;
     const lift = r.h * hC * 1.25;
-    // shadow
-    g.fillStyle = 'rgba(0,0,0,.22)';
+    const hiShare = Math.min(1, r.h / Math.max(0.1, T.jumpHeight));
+    // shadow: smaller and paler the higher she is
+    g.fillStyle = `rgba(0,0,0,${(0.24 - 0.12 * hiShare).toFixed(3)})`;
     g.beginPath();
-    g.ellipse(x, yF + 4, hC * 0.38 * (1 - Math.min(0.5, r.h * 0.4)), hC * 0.09, 0, 0, 7);
+    g.ellipse(x, yF + 4, hC * 0.38 * (1 - 0.4 * hiShare), hC * 0.09 * (1 - 0.4 * hiShare), 0, 0, 7);
     g.fill();
     if (!img) {
       g.fillStyle = '#ff9a3c';
@@ -453,20 +600,69 @@ export class Painter {
       g.fill();
       return;
     }
-    // a squash after a hit: wide and flat, then back
+    this.dizzy = Math.max(0, this.dizzy - dt);
+    this.landSquash = Math.max(0, this.landSquash - dt);
     let sx = 1;
     let sy = 1;
-    if (r.squishT > 0) {
-      const u = r.squishT / 0.45;
-      sy = 1 - 0.45 * Math.sin(u * Math.PI);
-      sx = 1 + 0.35 * Math.sin(u * Math.PI);
-    } else if (!reduced && r.jt < 0 && r.speedNow > 0.1) {
-      sy = 1 + 0.03 * Math.sin(time * 18);
+    let hop = 0;
+    let tilt = 0;
+    const moving = !warm && r.phase === 'run' && r.speedNow > 0.1;
+    if (!reduced) {
+      if (moving || warm) this.runPhase += dt * (warm ? 11 : Math.max(3, r.speedNow * 1.2));
+      // the lean toward the lane that she goes to
+      const want = warm ? 0 : (r.target - r.x) * 0.24;
+      this.lean += (want - this.lean) * Math.min(1, dt * 14);
+      tilt = this.lean;
+      const b = Math.abs(Math.sin(this.runPhase));
+      if (r.squishT > 0) {
+        // a squash after a hit: wide and flat, then back
+        const u = r.squishT / 0.45;
+        sy = 1 - 0.45 * Math.sin(u * Math.PI);
+        sx = 1 + 0.35 * Math.sin(u * Math.PI);
+      } else if (r.jt >= 0) {
+        // stretched in the jump (more going up)
+        const rising = r.jt / T.jumpTime < 0.5;
+        sy = rising ? 1.18 : 1.07;
+        sx = 1 / Math.sqrt(sy);
+      } else if (this.landSquash > 0) {
+        const k = this.landSquash / 0.18;
+        sy = 1 - 0.22 * k;
+        sx = 1 + 0.18 * k;
+      } else if (moving || warm) {
+        // the steps: up and a little stretched in the air of a step, a little squashed on the foot
+        hop = b * hC * (warm ? 0.16 : 0.05);
+        sy = 0.95 + 0.1 * b + (warm ? 0.04 : 0);
+        sx = 1.04 - 0.06 * b;
+      }
+      if (celebrating && r.finishT > 1) hop = Math.abs(Math.sin(time * 6)) * hC * 0.25;
+    } else if (r.squishT > 0) {
+      sy = 0.7;
+      sx = 1.15;
     }
-    const hop = celebrating && r.finishT > 1 && !reduced ? Math.abs(Math.sin(time * 6)) * hC * 0.25 : 0;
     const asp = img.width / img.height;
     const h = hC * sy;
     const w = hC * asp * sx;
-    g.drawImage(img, x - w / 2, yF - lift - hop - h, w, h);
+    g.save();
+    g.translate(x, yF - lift - hop);
+    if (tilt) g.rotate(tilt);
+    g.drawImage(img, -w / 2, -h, w, h);
+    g.restore();
+    // the sparks behind her, one after the other
+    if (!reduced && moving && this.fx.q > 0) {
+      this.trailT -= dt;
+      if (this.trailT <= 0) {
+        this.trailT = 0.05;
+        for (let i = this.fx.amount(2); i > 0; i--) this.fx.spawn(K.spark, x + (Math.random() - 0.5) * hC * 0.5, yF - lift - hC * 0.15, (Math.random() - 0.5) * 40, 70 + Math.random() * 60, 0.5, 3 + Math.random() * 2.5, Math.random() < 0.3 ? 1 : 0);
+      }
+    }
+    // stars that turn above her head after a hit
+    if (this.dizzy > 0) {
+      const cy = yF - lift - hop - h - 2;
+      for (let i = 0; i < 3; i++) {
+        const a = time * 8 + i * 2.094;
+        const sz = 20;
+        g.drawImage(this.sp.star, x + Math.cos(a) * hC * 0.3 - sz / 2, cy + Math.sin(a) * hC * 0.07 - sz / 2, sz, sz);
+      }
+    }
   }
 }

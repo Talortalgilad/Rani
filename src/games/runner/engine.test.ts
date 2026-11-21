@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGenerator, type Question } from '../../math/generator';
-import { CLEAR_T, SLOW_T, createRun, gateCount, jump, move, simulate, step, threeChoices, type Run } from './engine';
+import { BOOST, BOOST_TIME, CALM_T, CLEAR_T, RECOVER_T, SLOW_T, VIEW, pushDistance, createRun, gateCount, jump, move, simulate, step, threeChoices, type Run } from './engine';
 import { DEFAULT_TUNING, cleanTuning, type Tuning } from './tuning';
 
 const seeded = (s: number) => () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -137,6 +137,84 @@ describe('the wrong answers', () => {
         expect(new Set(real).size).toBe(3);
         for (const n of real) expect(n).toBeGreaterThanOrEqual(0);
       }
+    }
+  });
+});
+
+describe('leaving a gate', () => {
+  it('no obstacle at all in the push and the 2 s after it (measured with the real speed of a right gate), for every setting of the speed and the slow-down', () => {
+    for (const speed of [6, 9, 12, 16]) {
+      for (const gateSlow of [0.25, 0.5, 1]) {
+        for (let seed = 1; seed <= 6; seed++) {
+          const { run } = make(seed, { speed, gateSlow });
+          const crossed: { z0: number; t0: number }[] = [];
+          const marks: { zEnd: number }[] = [];
+          let k = 0;
+          simulate(run, (r) => {
+            const g = r.gates[k];
+            if (g && g.resolved) {
+              crossed.push({ z0: g.z, t0: r.t });
+              marks.push({ zEnd: -1 });
+              k++;
+            }
+            // a player who goes through the right lane
+            gateBrain(true)(r);
+            // the distance that she goes in BOOST_TIME + CALM_T after the crossing
+            for (let i = 0; i < crossed.length; i++) if (marks[i].zEnd < 0 && r.t >= crossed[i].t0 + BOOST_TIME + CALM_T) marks[i].zEnd = r.z;
+          });
+          for (let i = 0; i < run.gates.length; i++) {
+            const g = run.gates[i];
+            const end = marks[i]?.zEnd > 0 ? marks[i].zEnd : g.z + g.calm;
+            // the road is clear to the end of the real distance (the one that was measured), not only to the number that was planned
+            expect(run.obstacles.some((o) => o.z > g.z && o.z < end - 0.5), `speed ${speed} slow ${gateSlow} gate ${i}`).toBe(false);
+            expect(g.calm).toBeGreaterThanOrEqual(pushDistance(run.tune));
+          }
+        }
+      }
+    }
+    expect(CALM_T).toBe(2);
+    expect(BOOST_TIME).toBe(2);
+  });
+  it('the speed comes back to the usual one slowly: after a wrong gate it rises by at most half the speed over 1.5 s, and after the push it falls the same way (a slow-down in front of a gate is allowed to be quick)', () => {
+    for (const right of [true, false]) {
+      const { run } = make(4);
+      let prev = 0;
+      let rise = 0;
+      let fall = 0;
+      simulate(run, (r, dt) => {
+        gateBrain(right)(r);
+        if (r.gatesDone > 0 && r.phase === 'run' && prev > 0 && r.slowT === 0) {
+          const d = (r.speedNow - prev) / dt / r.tune.speed;
+          // the rise of the push itself (0.2 s) is quick on purpose
+          if (r.boostT === 0 && r.boostF <= 1.0001) rise = Math.max(rise, d);
+          if (r.boostT === 0 && r.boostF > 1.001) fall = Math.max(fall, -d);
+        }
+        prev = r.speedNow;
+      });
+      expect(rise).toBeLessThanOrEqual((1 - 0.5) / RECOVER_T + 0.05);
+      expect(fall).toBeLessThanOrEqual((BOOST - 1) / RECOVER_T + 0.1);
+    }
+  });
+  it('the push draws all the stars on the road to her by themselves', () => {
+    const { run } = make(2);
+    let got = 0;
+    simulate(run, (r) => {
+      gateBrain(true)(r);
+      if (r.boostT > 0 && got === 0) got = -r.stars - 1;
+      if (r.boostT > 0 && r.boostT < 0.05 && got < 0) got = r.stars + got + 1 + 1;
+    });
+    // the wave of stars of a right gate (about 14 on the road) is mostly hers: far more than the stars of a run without the push
+    const idle = make(2).run;
+    simulate(idle, () => undefined);
+    expect(run.stars).toBeGreaterThan(idle.stars);
+    expect(run.stars).toBeGreaterThanOrEqual(run.gates.length * 8);
+  });
+  it('nothing appears closer than 1.2 s of reaction at the fastest speed of the panel (with the push)', () => {
+    expect(VIEW / (16 * BOOST)).toBeGreaterThanOrEqual(1.2);
+    // and the first obstacle of the run is 3 s away at the start
+    for (let seed = 1; seed <= 20; seed++) {
+      const { run } = make(seed);
+      expect(run.obstacles[0].z / run.tune.speed).toBeGreaterThanOrEqual(3);
     }
   });
 });

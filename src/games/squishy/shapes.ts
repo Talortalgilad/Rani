@@ -61,8 +61,23 @@ export function faceAnchor(id: string, map: Uint8ClampedArray, box: Loaded['box'
   return a ? { x: a[0], y: a[1], size: a[2] } : null;
 }
 
-export async function loadShape(id: string): Promise<Loaded> {
-  const [shape, maps] = await Promise.all([loadImage(`${base()}squishy/shapes/${id}.webp`), loadImage(`${base()}squishy/maps/${id}.png`)]);
+/**
+ * The picture of a shape seen from behind (an optional second picture of an animal: `shapes/<id>-back.webp` and its own part map `maps/<id>-back.png`, both made by scripts/squishy-art.py
+ * with the same colours for the same parts). Null when it is not there: the nine sweets are the same from behind, and use the front picture with no face.
+ */
+const backs = new Map<string, Promise<Loaded | null>>();
+export function loadBackShape(id: string): Promise<Loaded | null> {
+  let p = backs.get(id);
+  if (!p) {
+    p = loadShape(id, true).catch(() => null);
+    backs.set(id, p);
+  }
+  return p;
+}
+
+export async function loadShape(id: string, back = false): Promise<Loaded> {
+  const name = back ? `${id}-back` : id;
+  const [shape, maps] = await Promise.all([loadImage(`${base()}squishy/shapes/${name}.webp`), loadImage(`${base()}squishy/maps/${name}.png`)]);
   const alpha = pixels(shape);
   const map = new Uint8ClampedArray(pixels(maps));
   let x0 = SIZE, y0 = SIZE, x1 = 0, y1 = 0;
@@ -78,5 +93,5 @@ export async function loadShape(id: string): Promise<Loaded> {
   let bx0 = SIZE, bx1 = 0;
   for (let y = Math.round(y1 - (y1 - y0) * 0.26); y <= y1; y++) for (let x = 0; x < SIZE; x++) if (alpha[(y * SIZE + x) * 4 + 3] > 120) (bx0 = Math.min(bx0, x)), (bx1 = Math.max(bx1, x));
   const foot = bx1 > bx0 ? { x0: bx0, x1: bx1 } : { x0, x1 };
-  return { id, map, box, foot, face: faceAnchor(id, map, box) };
+  return { id, map, box, foot, face: back ? null : faceAnchor(id, map, box) };
 }
