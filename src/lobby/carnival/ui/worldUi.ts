@@ -158,6 +158,13 @@ export class WorldUI {
     this.buildBtn.classList.toggle('on', on);
     this.root.classList.toggle('building', on);
     this.slotState.clear();
+    document.body.classList.toggle('cv-building', on);
+    if (on) {
+      // nothing mid-animation stays: the sheet, the banners (shown and waiting) go at once
+      this.closeSheet();
+      this.banners.length = 0;
+      this.h.layer.querySelectorAll('.cvw-banner').forEach((e) => e.remove());
+    }
   }
   get building(): boolean {
     return this.build;
@@ -541,6 +548,12 @@ export class WorldUI {
     this.guideEl.className = 'cvw-guide';
     this.guideEl.innerHTML = `<b>${esc(csText('cs_first_free'))}</b><span>${esc(csText('cs_pick_place'))}</span>`;
     this.h.layer.appendChild(this.guideEl);
+    // one tap anywhere and it is gone
+    const off = (): void => {
+      document.removeEventListener('pointerdown', off, true);
+      this.hideGuide();
+    };
+    window.setTimeout(() => !this.dead && document.addEventListener('pointerdown', off, true), 600);
     window.setTimeout(() => !this.dead && this.guide && (say('cs_first_free'), window.setTimeout(() => this.guide && say('cs_pick_place'), 2600)), 1500);
   }
   private hideGuide(): void {
@@ -822,6 +835,7 @@ export class WorldUI {
 
   dispose(): void {
     this.dead = true;
+    document.body.classList.remove('cv-building');
     this.friends.dispose();
     this.schoolEl?.remove();
     this.daily.dispose();
