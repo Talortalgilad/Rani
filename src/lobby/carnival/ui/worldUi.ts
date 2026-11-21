@@ -17,6 +17,7 @@ import { PERSONALITY_HE, SUGGEST_LINE, WISH_ICON, WISH_LINE, fillers, type WishT
 import type { CarnivalWorld, WorldEvent } from '../world';
 import { CS_LINES } from '../csLines';
 import { FriendUI, LEVEL_NAME } from './friendUi';
+import { DailyUI } from './dailyUi';
 import { ACCESSORIES, SHOP, canWear, friendLevel, friendsOf } from '../friends';
 
 export interface WorldHost {
@@ -59,7 +60,7 @@ export function orderPieces(item: Item): { id: string; text: string }[] {
 }
 
 export class WorldUI {
-  private root: HTMLElement;
+  root: HTMLElement;
   private slotEls = new Map<string, HTMLButtonElement>();
   private slotState = new Map<string, string>();
   private wishEls = new Map<number, HTMLElement>();
@@ -72,12 +73,13 @@ export class WorldUI {
   private buildBtn: HTMLButtonElement;
   /** build mode: the free places (and the locked ones, small) are shown. Off in the normal view, so the island stays clean. */
   private build = false;
-  private sheet: HTMLElement | null = null;
-  private banners: { html: string; line?: string; prio?: Prio }[] = [];
+  sheet: HTMLElement | null = null;
+  private banners: { html: string; line?: string; cls?: string; prio?: Prio }[] = [];
   private bannerOn = false;
   private moving: string | null = null;
   private dead = false;
   readonly friends = new FriendUI(this);
+  readonly daily = new DailyUI(this);
   private schoolEl: HTMLElement | null = null;
   private schoolNew = false;
   private schoolT = 0;
@@ -131,7 +133,7 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- the hud
-  private paintHud(): void {
+  paintHud(): void {
     const w = this.h.world;
     const q = w.quest;
     const key = `${q?.id}|${w.level}|${Math.round(w.levelProgress * 20)}`;
@@ -172,6 +174,10 @@ export class WorldUI {
         this.placeSchool(p);
         continue;
       }
+      if (p.id === 'nest' || p.id === 'giftbox' || p.id === 'mailbox') {
+        this.daily.place(p);
+        continue;
+      }
       const s = w.slot(p.id);
       if (!s) continue;
       let el = this.slotEls.get(p.id);
@@ -209,7 +215,7 @@ export class WorldUI {
       el.className = 'cvw-school';
       el.setAttribute('aria-label', 'בית הספר של לולי');
       const b = import.meta.env.BASE_URL;
-      el.innerHTML = `<img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">❗</i>`;
+      el.innerHTML = `<img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">📚</i>`;
       el.addEventListener('click', () => {
         sound.play('pop', 640);
         this.h.goTutor?.();
@@ -543,9 +549,9 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- banners
-  /** `prio`: 'entry' for the banner of the entry (it speaks first), 'banner' for the others */
-  queueBanner(html: string, line?: string, prio: Prio = 'banner'): void {
-    this.banners.push({ html, line, prio });
+  /** `cls`: 'top' puts it at the top of the screen; `prio`: 'entry' for the banner of the entry (it speaks first), 'banner' for the others */
+  queueBanner(html: string, line?: string, cls = '', prio: Prio = 'banner'): void {
+    this.banners.push({ html, line, cls, prio });
     if (!this.bannerOn) this.nextBanner();
   }
   private nextBanner(): void {
@@ -556,7 +562,7 @@ export class WorldUI {
     }
     this.bannerOn = true;
     const el = document.createElement('div');
-    el.className = 'cvw-banner';
+    el.className = `cvw-banner ${b.cls ?? ''}`;
     el.innerHTML = b.html;
     this.h.layer.appendChild(el);
     if (b.line) say(b.line, b.prio ?? 'banner');
@@ -621,6 +627,16 @@ export class WorldUI {
           this.h.addResident?.(e.resident);
           this.queueBanner(`<b>${esc(csText('cs_new_resident'))}</b><img src="${esc(e.resident.img)}" alt=""><span>${esc(e.resident.name)}</span>`, 'cs_new_resident');
           break;
+        case 'welcomeBack':
+        case 'egg':
+        case 'hatch':
+        case 'guest':
+        case 'greet':
+        case 'mailWaiting':
+        case 'giftWaiting':
+        case 'paradeDay':
+          this.daily.event(e);
+          break;
         case 'quest':
           sound.play('bonus');
           this.queueBanner(`<b>${esc(csText('cs_quest_done'))}</b><span>❤️ ${e.quest.hearts}${e.quest.stars ? ' ⭐ ' + e.quest.stars : ''}</span>`, 'cs_quest_done');
@@ -629,6 +645,8 @@ export class WorldUI {
           sound.play('bonus');
           const r = w.residents[e.r];
           this.queueBanner(`<b>${esc(csText(e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up'))}</b><img src="${esc(r.img)}" alt=""><span>${esc(r.name)} · ${LEVEL_NAME[e.level]}</span>`, e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up');
+          // a baby that grew (80 % at level 2, 100 % at level 3): "look how big I got!"
+          if (w.isBaby(e.r) && (e.level === 2 || e.level === 3)) window.setTimeout(() => this.say(e.r, csText('cs_i_grew'), 'cs_i_grew'), 3000);
           break;
         }
         case 'unlocked':
@@ -646,6 +664,12 @@ export class WorldUI {
   private near(r: number): boolean {
     const p = this.h.pos(r);
     return !!p && nearCentre(p.x, p.y, this.screenW, this.screenH);
+  }
+  /** a bubble over a resident (stage 4: the baby says hello) */
+  say(r: number, text: string, line: string | null, prio: Prio = 'resident'): void {
+    this.sayBubble(r, text, line);
+    // (his own line through the one voice: after the banners, only when he is on the screen, and never in the first 5 seconds)
+    if (line) void sayLineQ(line, { prio, onScreen: !!this.h.pos(r) });
   }
   private sayBubble(r: number, text: string, line: string | null, lang: 'he' | 'en' = 'he'): void {
     const p = this.h.pos(r);
@@ -727,6 +751,7 @@ export class WorldUI {
     }
     this.paintHud();
     this.friends.tick(dt, !!this.sheet);
+    this.daily.tick(dt);
     this.schoolT -= dt;
     if (this.schoolEl && this.schoolT <= 0) {
       this.schoolT = 30;
@@ -799,6 +824,7 @@ export class WorldUI {
     this.dead = true;
     this.friends.dispose();
     this.schoolEl?.remove();
+    this.daily.dispose();
     this.closeSheet();
     this.root.remove();
     this.guideEl?.remove();

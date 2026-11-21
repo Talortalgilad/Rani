@@ -19,7 +19,7 @@ import type { LobbyIslandHandle } from '../../games/types';
 import { bake, staticMeshes } from './bake';
 import { drawFlagpole } from './flagpole';
 import { clampDist, clampTarget, eye, fitDist, FOV, groundPerPx, isTap, PITCH, type CamState } from './camera';
-import { ISLAND_R, PATH_W, PLAZA_R, PLOT_PAD, PLOT_R, RING_R, SCHOOL, ZS, plots } from './layout';
+import { GIFTBOX, ISLAND_R, MAILBOX, NEST, PATH_W, PLAZA_R, PLOT_PAD, PLOT_R, RING_R, SCHOOL, ZS, plots } from './layout';
 import { NEW_RESIDENTS, type Resident } from './residents';
 import { rng } from './walk';
 import { Atlas } from './atlas';
@@ -45,6 +45,13 @@ export interface WorldView {
   wearing?(i: number): string[];
   wearingCached?(i: number): string[];
   setFollow?(p: { x: number; z: number } | null): void;
+  /** stage 4: the eggs in the nest, the gift and the mail of the day (they blink while they wait), the size of a baby, the clock of the carnival, and where a baby is put when he hatches */
+  eggs?(): number;
+  giftBlink?(): boolean;
+  mailBlink?(): boolean;
+  growth?(i: number): number;
+  now?(): Date;
+  placeAt?(i: number, x: number, z: number): void;
 }
 
 export interface CarnivalOpts {
@@ -55,6 +62,9 @@ export interface CarnivalOpts {
   onSlots?(slots: { id: string; x: number; y: number; behind: boolean; k: number }[]): void;
   plots: PlotSpec[];
   residents: Resident[];
+  /** the baby who hatches on this visit: the egg shakes and cracks, then he comes out (his index among the residents) */
+  hatch?: number;
+  onHatched?(index: number): void;
   autoDowngrade: boolean;
   /** a game was tapped (a tap, never a drag) and its hop is over */
   onEnter(index: number): void;
@@ -135,7 +145,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   const keep = <X extends { dispose(): void }>(x: X): X => (owned.push(x), x);
 
   // ---- light and sky of the hour
-  const now = new Date();
+  const now = o.world.now?.() ?? new Date();
   const sky = skyFor(now);
   const night = isNight(now) || now.getHours() >= 19;
   // at night the sky is deep blue, the light is low and blue, and the lamps are lit
@@ -508,11 +518,19 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
   o.residents.forEach((r) => addPerson(r));
 
   // ---- what is built: one more atlas (the stalls, the rides, the decorations, the board of wishes), and the board in the plaza
-  const itemKeys = [...ITEMS.map((i) => i.id), 'woodsign', 'lollyschool'];
+  const itemKeys = [...ITEMS.map((i) => i.id), 'woodsign', 'lollyschool', 'egg', 'egg_cracked', 'mailbox', 'giftbox', 'envelope'];
   const itemAtlas = keep(new Atlas({ keys: itemKeys, urlOf: (k) => itemUrl(k), cell: 192, capacity: 64, tint: night ? '#8a8fc8' : '#ffffff' }, facing));
   scene.add(itemAtlas.mesh);
   const BOARD = { x: 1.9, z: 2.6, size: 1.5 };
   const SCHOOL_SIZE = 1.9;
+  // the baby that hatches on this visit stays hidden until his egg has cracked
+  const hidden = new Set<number>(o.hatch !== undefined ? [o.hatch] : []);
+  let hatchT = -1;
+  let pendingStart = 1.4;
+  // while the egg hatches everybody stands still (nobody walks in front of it)
+  if (o.hatch !== undefined) o.world.agents().forEach((_, k) => o.world.hold(k, true));
+  const DIM = new T.Color(0.62, 0.62, 0.7);
+  const FULL = new T.Color(1, 1, 1);
   const itemSize = (id: string): number => {
     const it = ITEMS.find((x) => x.id === id);
     return !it ? 1.5 : it.slot === 'ride' ? 2.7 : it.slot === 'stall' ? 1.9 : id === 'hotairballoon' ? 2.8 : id === 'entrancearch' ? 2.6 : 1.5;
@@ -748,7 +766,7 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     camF.set(0, 0, 1).applyQuaternion(camera.quaternion);
     people.forEach((p, i) => {
       const a = ag[i];
-      if (!a || !a.active) return;
+      if (!a || !a.active || hidden.has(i)) return;
       if (p.tapped > 0) {
         p.tapped -= dt;
         if (p.tapped <= 0) {
@@ -777,7 +795,8 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
       const rz = ride ? a.z + 0.7 : a.z;
       const ry = ride ? 0.45 : 0;
       p.sp.position.set(a.x, 0.58 + bob + jump + drop + ry, rz);
-      const sz = (ride ? 0.85 : 1.15) * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0));
+      // (a baby hatched from an egg is small, and grows with the friendship: 60 %, 80 %, 100 %)
+      const sz = (ride ? 0.85 : 1.15) * (o.world.growth?.(i) ?? 1) * (1 + (a.walking && !reduced ? Math.sin(time * 18 + p.phase) * 0.03 : 0));
       resAtlas.set(shown, p.r.id, a.x + tx, 0.62 + bob + jump + drop + ry, rz, sz, flip);
       // what he wears: cells of the same atlas, over his head (no draw call of its own)
       for (const w of o.world.wearingCached?.(i) ?? o.world.wearing?.(i) ?? []) {
@@ -816,11 +835,39 @@ async function createScene(env: SceneEnv, o: CarnivalOpts, minis: (LobbyIslandHa
     }
     // the school of Lolly stands on the island like a stall (the same size), and the page only puts Lolly beside it and the tap on it
     itemAtlas.set(bi++, 'lollyschool', SCHOOL.x, SCHOOL_SIZE * 0.48 + 0.08, SCHOOL.z, SCHOOL_SIZE);
+    // stage 4: the egg in the nest (it shakes and cracks when it hatches), the mailbox with a letter over it while one waits, and the gift of the day that blinks while it waits
+    const nEggs = o.world.eggs?.() ?? 0;
+    if (hidden.size) {
+      // the egg of this visit: it waits a moment while the scene fades in, then shakes, cracks, and the baby comes out
+      if (hatchT < 0) {
+        pendingStart -= dt;
+        if (pendingStart <= 0) hatchT = 0;
+      } else hatchT += dt;
+      const crack = hatchT > 1.6;
+      const sh = hatchT > 0 && !crack ? Math.sin(hatchT * 38) * 0.05 * Math.min(1, hatchT / 1.2) : 0;
+      itemAtlas.set(bi++, crack ? 'egg_cracked' : 'egg', NEST.x + sh, 0.4 + (crack ? Math.abs(Math.sin((hatchT - 1.6) * 9)) * 0.08 : 0), NEST.z, 0.8 * (1 + (crack ? (hatchT - 1.6) * 0.3 : 0)));
+      if (hatchT > 2.4) {
+        o.world.agents().forEach((_, k) => o.world.hold(k, false));
+        for (const i of [...hidden]) {
+          hidden.delete(i);
+          o.world.placeAt?.(i, NEST.x + 0.25, NEST.z + 0.7);
+          if (people[i]) people[i].hop = 1;
+          o.onHatched?.(i);
+        }
+      }
+    } else if (nEggs > 0) {
+      // the eggs that sleep (one or two in the nest)
+      for (let e = 0; e < Math.min(2, nEggs); e++) itemAtlas.set(bi++, 'egg', NEST.x + e * 0.62, 0.34 + (reduced ? 0 : Math.sin(time * 1.6 + e) * 0.02), NEST.z + e * 0.1, 0.7);
+    }
+    itemAtlas.set(bi++, 'mailbox', MAILBOX.x, 0.55, MAILBOX.z, 1.1);
+    if (o.world.mailBlink?.()) itemAtlas.set(bi++, 'envelope', MAILBOX.x + 0.05, 1.35 + (reduced ? 0 : Math.sin(time * 2.2) * 0.07), MAILBOX.z + 0.05, 0.5);
+    const giftWaits = o.world.giftBlink?.() ?? false;
+    itemAtlas.set(bi++, 'giftbox', GIFTBOX.x, 0.42 + (giftWaits && !reduced ? Math.abs(Math.sin(time * 2.4)) * 0.08 : 0), GIFTBOX.z, 0.85, 1, giftWaits ? FULL : DIM);
     itemAtlas.set(bi++, 'woodsign', BOARD.x, BOARD.size * 0.5 + 0.05, BOARD.z, BOARD.size);
     itemAtlas.commit(bi);
     o.onLabelMove?.(labelOf !== null ? screenOf(people[labelOf].sp.position.clone().add(new T.Vector3(0, 0.75, 0))) : null);
     if (o.onSlots) {
-      o.onSlots([...o.world.slots.map((s) => ({ id: s.id, x: s.x, z: s.z })), { id: 'lollyschool', ...SCHOOL }].map((s) => {
+      o.onSlots([...o.world.slots.map((s) => ({ id: s.id, x: s.x, z: s.z })), { id: 'lollyschool', ...SCHOOL }, { id: 'nest', ...NEST }, { id: 'giftbox', ...GIFTBOX }, { id: 'mailbox', ...MAILBOX }].map((s) => {
         const v = new T.Vector3(s.x, 1.0, s.z);
         const sc = screenOf(v);
         // k: how many pixels one unit of the island is at this place (the school and Lolly are drawn by it)

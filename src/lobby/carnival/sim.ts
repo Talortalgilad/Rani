@@ -38,6 +38,8 @@ export interface Agent {
   active: boolean;
   /** standing still (tapped) */
   held: boolean;
+  /** a baby (hatched from an egg): small steps */
+  baby?: boolean;
 }
 export type SimEvent =
   | { type: 'wish'; r: number; wish: Wish }
@@ -248,8 +250,51 @@ export class CarnivalSim {
     return true;
   }
 
+  /** the parade of Friday: everybody walks round the plaza in a line, at the same pace (null: no parade) */
+  parade: { t: number } | null = null;
+  setBaby(i: number, on: boolean): void {
+    if (this.agents[i]) this.agents[i].baby = on;
+  }
+  /** the places of the parade: in a ring round the plaza, every one a step behind the one before */
+  private paradeStep(dt: number): void {
+    const p = this.parade!;
+    p.t += dt;
+    const on = this.agents.filter((a) => a.active);
+    const n = Math.max(1, on.length);
+    on.forEach((a, k) => {
+      const ang = p.t * 0.45 + (k / n) * Math.PI * 2;
+      const nx = Math.cos(ang) * 2.7, nz = Math.sin(ang) * 2.7 + 0.4;
+      a.face = nx - a.x > 0.001 ? 1 : nx - a.x < -0.001 ? -1 : a.face;
+      a.x = nx;
+      a.z = nz;
+      a.walking = true;
+      a.mode = 'wander';
+      a.wish = null;
+      a.held = false;
+    });
+  }
+  /** puts one somewhere (a baby in front of the nest) */
+  placeAt(i: number, x: number, z: number): void {
+    const a = this.agents[i];
+    if (!a) return;
+    a.x = x;
+    a.z = z;
+    a.walker.setAt(x, z, nearestNode(this.graph, x, z));
+  }
+  /** the parade ends: they go on from where they stand */
+  endParade(): void {
+    this.parade = null;
+    this.agents.forEach((a) => {
+      a.walking = false;
+      a.walker.setAt(a.x, a.z, nearestNode(this.graph, a.x, a.z));
+    });
+  }
   update(dt: number): SimEvent[] {
     const ev: SimEvent[] = [];
+    if (this.parade) {
+      this.paradeStep(dt);
+      return ev;
+    }
     this.agents.forEach((a, r) => {
       if (!a.active) return;
       if (a.mode === 'working') {
@@ -287,7 +332,7 @@ export class CarnivalSim {
         a.walking = true;
         a.walker.setAt(a.x, a.z, nearestNode(this.graph, a.x, a.z));
       } else if (a.mode === 'wander') {
-        a.walker.update(dt);
+        a.walker.update(a.baby ? dt * 0.7 : dt);
         a.x = a.walker.x;
         a.z = a.walker.z;
         a.face = a.walker.face;

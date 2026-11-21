@@ -19,6 +19,8 @@ export interface Resident {
   game?: string;
   /** his favourite food (a word id) */
   food?: string;
+  /** the guest of the day: here for today, he stays when he asks and she says yes (stage 4) */
+  guest?: boolean;
 }
 
 /** The fixed details of the residents (residents.json). The companion that Rani named uses the row of Cheesy. */
