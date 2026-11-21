@@ -28,7 +28,4 @@ export async function sayEn(id: string): Promise<boolean> {
 export const sayNumber = (n: number): Promise<boolean> => (n >= 1 && n <= 10 ? sayEn(`number_${n}`) : Promise.resolve(false));
 
 /** the lines that the game wants and that are not recorded yet (voice/squishy-lines-to-record.csv): they are never said, and never read by the phone */
-export const WANTED: { id: string; lang: 'he' | 'en'; text: string; where: string }[] = [
-  { id: 'sq_cup_almost', lang: 'he', text: 'כמעט! עוד קצת', where: 'the measuring cup: let go under the line (until it is recorded the recording "עוד קצת!" (sq_not_enough) is played)' },
-  { id: 'sq_cup_drain', lang: 'he', text: 'קצת יותר מדי, ננקז', where: 'the measuring cup: let go over the line, the drain button (until it is recorded "קצת יותר מדי. בואי ננסה שוב." (sq_too_much) is played)' },
-];
+export const WANTED: { id: string; lang: 'he' | 'en'; text: string; where: string }[] = [];
