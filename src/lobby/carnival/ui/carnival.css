@@ -28,8 +28,11 @@
 .cv-layer > * { pointer-events: auto; }
 .cv-chat { position: fixed; left: 0; top: 0; z-index: 7; max-width: 60vw; background: #fff; color: #5a3320; font-weight: 800; font-size: 16px; padding: 3px 12px; border-radius: 14px; box-shadow: 0 3px 8px rgba(0, 0, 0, .25); opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
 .cv-chat.on { opacity: 1; }
-.cv-alert { position: fixed; left: 0; top: 0; z-index: 7; width: 46px; height: 46px; border: 3px solid #fff; border-radius: 50%; background: linear-gradient(#ff7b8a, #ff3b5c); color: #fff; font-size: 24px; display: grid; place-items: center; padding: 0; box-shadow: 0 4px 10px rgba(0, 0, 0, .3); animation: cv-bounce .9s infinite; will-change: transform; }
-@keyframes cv-bounce { 50% { margin-top: -8px; } }
+.cv-alert { position: fixed; left: 0; top: 0; z-index: 7; width: 38px; height: 38px; border: 2px solid #fff; border-radius: 50%; background: linear-gradient(#ffe08a, #ffb454); color: #7a4a10; font-size: 19px; display: grid; place-items: center; padding: 0; box-shadow: 0 3px 8px rgba(120, 70, 0, .28); animation: cv-bounce 7.8s ease-in-out infinite; will-change: transform; }
+/* attention: two hops, then 6 s of rest (1.8 s + 6 s = 7.8 s) */
+@keyframes cv-bounce { 0%, 11.5%, 23.1%, 100% { margin-top: 0; } 5.8%, 17.3% { margin-top: -8px; } }
+/* attention: two beats of size, then 6 s of rest (1.2 s + 6 s = 7.2 s); `scale` is its own property, so it never fights the transform that places the element */
+@keyframes cv-twice { 0%, 8.3%, 16.7%, 100% { scale: 1; } 4.2%, 12.5% { scale: var(--amp, 1.08); } }
 .cv-hearts { position: fixed; z-index: 7; top: calc(150px + env(safe-area-inset-top)); inset-inline-start: 14px; background: rgba(255, 255, 255, .9); color: #b3123b; font-weight: 800; font-size: 20px; padding: 2px 12px; border-radius: 16px; box-shadow: 0 2px 6px rgba(0, 0, 0, .2); pointer-events: auto; }
 .cv-talk { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; background: rgba(60, 30, 110, .78); pointer-events: auto; padding: calc(10px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom)); overflow: hidden; }
 .cv-x { position: absolute; z-index: 2; top: calc(8px + env(safe-area-inset-top)); inset-inline-start: 10px; width: 52px; height: 52px; border: 0; border-radius: 50%; background: #fff; color: #7a2a5e; font-size: 26px; font-weight: 800; box-shadow: 0 3px 8px rgba(0, 0, 0, .3); flex: none; }
@@ -53,9 +56,8 @@
 .cv-opt { min-width: 84px; min-height: 76px; border: 0; border-radius: 22px; background: linear-gradient(#5aa9ff, #2563e6); color: #fff; font-family: inherit; font-weight: 800; font-size: 34px; padding: 4px 16px; box-shadow: 0 5px 0 #1a3fa8, 0 8px 12px rgba(20, 30, 70, .3); touch-action: manipulation; display: grid; place-items: center; }
 .cv-opt:active { transform: translateY(3px); }
 .cv-opt.shake { animation: cv-shake .4s; }
-.cv-opt.show { background: linear-gradient(#7ad7a0, #2aa86a); box-shadow: 0 5px 0 #1a7a4a, 0 0 18px #fff; animation: cv-pulse .8s infinite; }
+.cv-opt.show { background: linear-gradient(#7ad7a0, #2aa86a); box-shadow: 0 5px 0 #1a7a4a, 0 0 18px #fff; animation: cv-twice 7.2s ease-in-out infinite; }
 @keyframes cv-shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
-@keyframes cv-pulse { 50% { transform: scale(1.08); } }
 .cv-opt.cvpic { padding: 4px; background: #fff; box-shadow: 0 5px 0 #b9a8d9; min-width: 96px; min-height: 96px; }
 .cv-opt.cvpic img { width: 88px; height: 88px; object-fit: contain; }
 .cv-opt.word { font-size: 26px; background: linear-gradient(#ffb84d, #f08a14); box-shadow: 0 5px 0 #b05f08; }
@@ -81,10 +83,10 @@
 @media (prefers-reduced-motion: reduce) { .cv-alert, .cv-who img, .cv-talk.happy .cv-who img, .cv-opt.show, .cv-opt.shake { animation: none; } }
 
 .cv-opt.word.sel { box-shadow: 0 5px 0 #b05f08, 0 0 0 5px #fff, 0 0 18px #ffd23f; transform: scale(1.06); }
-.cv-opt.word.blink { animation: cv-blink .5s infinite; }
-@keyframes cv-blink { 50% { filter: brightness(1.5); transform: scale(1.1); } }
+.cv-opt.word.blink { animation: cv-twice 7.2s ease-in-out infinite; --amp: 1.1; }
 .cv-opt.choose { min-height: 56px; font-size: 28px; }
 @media (prefers-reduced-motion: reduce) { .cv-opt.word.blink { animation: none; filter: brightness(1.4); } }
+@media (prefers-reduced-motion: reduce) { .cv-who img { animation: none; } }
 .cv-game img, .cv-sign img { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; }
 .carnival-on .lolly-btn { top: auto; bottom: calc(112px + env(safe-area-inset-bottom)); inset-inline-end: 12px; inset-inline-start: auto; width: 56px; height: 56px; z-index: 5; }
 

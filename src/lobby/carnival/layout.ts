@@ -32,3 +32,7 @@ export function minGap(ps: Plot[]): number {
 }
 /** the school of Lolly (SPEC-tutor.md 2): a small building outside the ring, on the grass; Lolly stands in front of it */
 export const SCHOOL = { x: -2.9, z: 3.05 };
+/** stage 4 (SPEC-carnival.md 4.7): the nest with the egg and the gift of the day in the plaza, the mailbox next to it */
+export const NEST = { x: -1.5, z: 1.3 };
+export const GIFTBOX = { x: 1.5, z: 1.3 };
+export const MAILBOX = { x: 0.1, z: 3.0 };

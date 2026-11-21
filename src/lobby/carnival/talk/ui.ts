@@ -29,6 +29,10 @@ export interface TalkHost {
   wave(i: number): void;
   /** where the "!" bubble sits against the place of the head: up (the default, -34) or lower, on the card of a strip */
   alertDy?: number;
+  /** a talk with this resident was answered (stage 4: the guest of the day then asks to stay) */
+  onAnswered?(r: number): void;
+  /** how many "call" bubbles may show now (two at the most on the screen in all: the ones of the world take places first, the others wait in line) */
+  alertCap?(): number;
 }
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -103,19 +107,23 @@ export class Talks {
     if (a) {
       this.host.wave(a.r);
       const p = this.host.pos(a.r);
-      if (p && nearCentre(p.x, p.y, w, h)) void say([{ he: 'cv_rani' }]);
+      if (p && nearCentre(p.x, p.y, w, h)) void say([{ he: 'cv_rani' }], { prio: 'resident', spont: true, onScreen: true });
       this.persist(true);
     }
     // never more than two (whatever happened before: a save, a switch of tier, a talk opened for a test)
     if (this.save.alerts.alerts.length > MAX_ALERTS) this.save.alerts.alerts.length = MAX_ALERTS;
+    const cap = this.host.alertCap?.() ?? MAX_ALERTS;
+    let shownN = 0;
     for (const al of this.save.alerts.alerts) {
+      const waiting = shownN >= cap;
+      if (!waiting) shownN++;
       let el = this.alertEls.get(al.r);
       if (!el) {
         const btn = document.createElement('button');
         btn.type = 'button';
         el = btn;
         el.className = 'cv-alert';
-        el.textContent = '❗';
+        el.textContent = '💬';
         el.setAttribute('aria-label', this.host.residents[al.r]?.name ?? '');
         const r = al.r;
         el.addEventListener('click', () => this.openTalk(r));
@@ -126,7 +134,7 @@ export class Talks {
       if (wt <= 0 && !busy) this.host.wave(al.r);
       this.waveT.set(al.r, wt <= 0 ? 2.6 : wt);
       const p = this.host.pos(al.r);
-      el.style.visibility = p && !busy ? 'visible' : 'hidden';
+      el.style.visibility = p && !busy && !waiting ? 'visible' : 'hidden';
       if (p) el.style.transform = `translate(${p.x}px, ${p.y + (this.host.alertDy ?? -34)}px) translate(-50%, -100%)`;
     }
     for (const [r, el] of [...this.alertEls]) if (!this.save.alerts.alerts.some((x) => x.r === r)) {
@@ -159,7 +167,7 @@ export class Talks {
         this.placeChat(p0);
         this.chatEl.classList.add('on');
         // the sound only when he is near the middle of the screen
-        if (nearCentre(p0.x, p0.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ enc: { id: c.chat.enId ?? 'hello', text: c.chat.en! } }]);
+        if (nearCentre(p0.x, p0.y, w, h)) void say(c.chat.he ? [{ he: c.chat.he }] : [{ enc: { id: c.chat.enId ?? 'hello', text: c.chat.en! } }], { prio: 'resident', spont: true, onScreen: true });
       }
     } else if (!busy) {
       this.chatT -= dt;
@@ -447,6 +455,7 @@ export class Talks {
     sv.retry = sv.retry.filter((k) => k !== t.kind);
     sv.count += 1;
     answered(sv.alerts, r);
+    this.host.onAnswered?.(r);
     if (sv.answers % 5 === 0) update((s) => void (s.stars += 1));
     if (SUBJECT[t.kind] === 'math') recordAnswer(MATH_TYPE[t.kind], first ? 1 : 2);
     this.persist(true);

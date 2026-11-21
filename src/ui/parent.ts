@@ -8,6 +8,7 @@ import { bindEnglishParent, englishParentHtml } from '../games/english/ui/parent
 import { bindTutorParent, tutorParentHtml } from '../games/english/tutor/parent';
 import { bindPhotosCard, photosCardHtml } from '../games/memory/ui/photosAdmin';
 import { bindVoiceReview, voiceReviewCardHtml } from './voiceReview';
+import { bindCarnivalTest, carnivalTestHtml } from '../lobby/carnival/testTools';
 import { getState, resetProgress, update, type AppState, type QuestionType } from '../storage';
 
 const AVATARS = ['🦄', '🐱', '🐶', '🐰', '🦊', '🐼'];
@@ -161,6 +162,7 @@ export function renderParent(root: HTMLElement): () => void {
 
       ${photosCardHtml()}
       ${voiceReviewCardHtml()}
+      ${carnivalTestHtml()}
 
       <section class="p-card">
         <h2>ניסוי: סדנת הסקווישים</h2>
@@ -257,6 +259,7 @@ export function renderParent(root: HTMLElement): () => void {
     bindTutorParent(root, settings);
     void bindPhotosCard(root);
     bindVoiceReview(root);
+    bindCarnivalTest(root);
     root.querySelector('#done')!.addEventListener('click', () => go({ name: 'home' }));
     root.querySelector('#squishy-lab')?.addEventListener('click', () => {
       // the one door of the prototype (main.ts lets only this one in)

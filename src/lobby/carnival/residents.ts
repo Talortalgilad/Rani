@@ -19,6 +19,8 @@ export interface Resident {
   game?: string;
   /** his favourite food (a word id) */
   food?: string;
+  /** the guest of the day: here for today, he stays when he asks and she says yes (stage 4) */
+  guest?: boolean;
   /** a squishy that Rani made herself (workshop stage 3): "I made it myself" in the book; the picture is drawn from her saved data, and his name has no recording (it is only written) */
   mine?: boolean;
   /** where the accessories sit on him: a key of anchors.json (the picture of a resident has its own; a squishy of Rani's has the one of its mold) */

@@ -5,18 +5,19 @@
  */
 import { sound } from '../../../sound';
 import { getState } from '../../../storage';
-import { sayLine } from '../../../games/english/content/heLines';
-import { speakEn } from '../../../games/english/voice';
+
 import { ITEMS, KIND_ICON, KIND_LABEL, itemById, itemImg, type Item, type ItemKind, type WishKind } from '../catalog';
 import { MAX_LEVEL } from '../level';
 import { RESIDENT_INFO, arrivalOrder, type Resident } from '../residents';
 import { needed } from '../unlocks';
 import { nearCentre } from '../talk/alerts';
-import { speakClip } from '../talk/speak';
+import { say as sayPieces, sayLineQ, speakEnQ } from '../talk/speak';
+import type { Prio } from '../voice';
 import { PERSONALITY_HE, SUGGEST_LINE, WISH_ICON, WISH_LINE, fillers, type WishType } from '../wishes';
 import type { CarnivalWorld, WorldEvent } from '../world';
 import { CS_LINES } from '../csLines';
 import { FriendUI, LEVEL_NAME } from './friendUi';
+import { DailyUI } from './dailyUi';
 import { ACCESSORIES, SHOP, canWear, friendLevel, friendsOf } from '../friends';
 
 export interface WorldHost {
@@ -50,7 +51,7 @@ export interface WorldHost {
 
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 const csText = (id: string): string => CS_LINES.find((l) => l.id === id)?.text ?? '';
-const say = (id: string): void => void sayLine(id);
+const say = (id: string, prio: Prio = 'tap'): void => void sayLineQ(id, { prio });
 const BUILD_QUESTS = ['pizza', 'drink', 'ride', 'three', 'five'];
 const WISH_KINDS: ItemKind[] = ['food', 'drink', 'fun', 'rest', 'shop', 'decor'];
 
@@ -61,7 +62,7 @@ export function orderPieces(item: Item): { id: string; text: string }[] {
 }
 
 export class WorldUI {
-  private root: HTMLElement;
+  root: HTMLElement;
   private slotEls = new Map<string, HTMLButtonElement>();
   private slotState = new Map<string, string>();
   private wishEls = new Map<number, HTMLElement>();
@@ -74,12 +75,13 @@ export class WorldUI {
   private buildBtn: HTMLButtonElement;
   /** build mode: the free places (and the locked ones, small) are shown. Off in the normal view, so the island stays clean. */
   private build = false;
-  private sheet: HTMLElement | null = null;
-  private banners: { html: string; line?: string }[] = [];
+  sheet: HTMLElement | null = null;
+  private banners: { html: string; line?: string; cls?: string; prio?: Prio }[] = [];
   private bannerOn = false;
   private moving: string | null = null;
   private dead = false;
   readonly friends = new FriendUI(this);
+  readonly daily = new DailyUI(this);
   private schoolEl: HTMLElement | null = null;
   private schoolNew = false;
   private schoolT = 0;
@@ -101,7 +103,7 @@ export class WorldUI {
     this.questEl.className = 'cvw-quest';
     this.questEl.addEventListener('click', () => {
       const q = this.h.world.quest;
-      if (q) say(`qs_${q.id}`);
+      if (q) say(`qs_${q.id}`, 'banner');
       // a quest that is about opening something turns the build mode on by itself
       if (q && BUILD_QUESTS.includes(q.id)) this.setBuild(true);
     });
@@ -133,7 +135,7 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- the hud
-  private paintHud(): void {
+  paintHud(): void {
     const w = this.h.world;
     const q = w.quest;
     const key = `${q?.id}|${w.level}|${Math.round(w.levelProgress * 20)}`;
@@ -158,6 +160,13 @@ export class WorldUI {
     this.buildBtn.classList.toggle('on', on);
     this.root.classList.toggle('building', on);
     this.slotState.clear();
+    document.body.classList.toggle('cv-building', on);
+    if (on) {
+      // nothing mid-animation stays: the sheet, the banners (shown and waiting) go at once
+      this.closeSheet();
+      this.banners.length = 0;
+      this.h.layer.querySelectorAll('.cvw-banner').forEach((e) => e.remove());
+    }
   }
   get building(): boolean {
     return this.build;
@@ -176,6 +185,10 @@ export class WorldUI {
       }
       if (p.id === 'workshop') {
         this.placeWorkshop(p);
+        continue;
+      }
+      if (p.id === 'nest' || p.id === 'giftbox' || p.id === 'mailbox') {
+        this.daily.place(p);
         continue;
       }
       const s = w.slot(p.id);
@@ -241,7 +254,7 @@ export class WorldUI {
       el.className = 'cvw-school';
       el.setAttribute('aria-label', 'בית הספר של לולי');
       const b = import.meta.env.BASE_URL;
-      el.innerHTML = `<img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">❗</i>`;
+      el.innerHTML = `<img class="sc-l" src="${b}english/tutor/lolly_happy.webp" alt="" draggable="false"><i class="sc-new" aria-hidden="true">📚</i>`;
       el.addEventListener('click', () => {
         sound.play('pop', 640);
         this.h.goTutor?.();
@@ -567,6 +580,12 @@ export class WorldUI {
     this.guideEl.className = 'cvw-guide';
     this.guideEl.innerHTML = `<b>${esc(csText('cs_first_free'))}</b><span>${esc(csText('cs_pick_place'))}</span>`;
     this.h.layer.appendChild(this.guideEl);
+    // one tap anywhere and it is gone
+    const off = (): void => {
+      document.removeEventListener('pointerdown', off, true);
+      this.hideGuide();
+    };
+    window.setTimeout(() => !this.dead && document.addEventListener('pointerdown', off, true), 600);
     window.setTimeout(() => !this.dead && this.guide && (say('cs_first_free'), window.setTimeout(() => this.guide && say('cs_pick_place'), 2600)), 1500);
   }
   private hideGuide(): void {
@@ -575,8 +594,9 @@ export class WorldUI {
   }
 
   // ---------------------------------------------------------------- banners
-  queueBanner(html: string, line?: string): void {
-    this.banners.push({ html, line });
+  /** `cls`: 'top' puts it at the top of the screen; `prio`: 'entry' for the banner of the entry (it speaks first), 'banner' for the others */
+  queueBanner(html: string, line?: string, cls = '', prio: Prio = 'banner'): void {
+    this.banners.push({ html, line, cls, prio });
     if (!this.bannerOn) this.nextBanner();
   }
   private nextBanner(): void {
@@ -587,10 +607,10 @@ export class WorldUI {
     }
     this.bannerOn = true;
     const el = document.createElement('div');
-    el.className = 'cvw-banner';
+    el.className = `cvw-banner ${b.cls ?? ''}`;
     el.innerHTML = b.html;
     this.h.layer.appendChild(el);
-    if (b.line) say(b.line);
+    if (b.line) say(b.line, b.prio ?? 'banner');
     window.setTimeout(() => {
       el.remove();
       this.nextBanner();
@@ -625,7 +645,8 @@ export class WorldUI {
           if (item) {
             const parts = orderPieces(item);
             this.sayBubble(e.r, parts.map((p) => p.text).join(' '), null, 'en');
-            if (this.near(e.r)) void (async () => { for (const p of parts) await speakClip(p.id, p.text); })();
+            // his English order is his own talk: one every 8 s at the most, only when he is on the screen, thrown away when there is no room
+            void sayPieces(parts.map((p) => ({ enc: p })), { prio: 'resident', spont: true, onScreen: this.near(e.r) });
           }
           break;
         }
@@ -651,6 +672,16 @@ export class WorldUI {
           this.h.addResident?.(e.resident);
           this.queueBanner(`<b>${esc(csText('cs_new_resident'))}</b><img src="${esc(e.resident.img)}" alt=""><span>${esc(e.resident.name)}</span>`, 'cs_new_resident');
           break;
+        case 'welcomeBack':
+        case 'egg':
+        case 'hatch':
+        case 'guest':
+        case 'greet':
+        case 'mailWaiting':
+        case 'giftWaiting':
+        case 'paradeDay':
+          this.daily.event(e);
+          break;
         case 'quest':
           sound.play('bonus');
           this.queueBanner(`<b>${esc(csText('cs_quest_done'))}</b><span>❤️ ${e.quest.hearts}${e.quest.stars ? ' ⭐ ' + e.quest.stars : ''}</span>`, 'cs_quest_done');
@@ -659,6 +690,8 @@ export class WorldUI {
           sound.play('bonus');
           const r = w.residents[e.r];
           this.queueBanner(`<b>${esc(csText(e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up'))}</b><img src="${esc(r.img)}" alt=""><span>${esc(r.name)} · ${LEVEL_NAME[e.level]}</span>`, e.level >= 5 ? 'cs_best_friend' : 'cs_friend_up');
+          // a baby that grew (80 % at level 2, 100 % at level 3): "look how big I got!"
+          if (w.isBaby(e.r) && (e.level === 2 || e.level === 3)) window.setTimeout(() => this.say(e.r, csText('cs_i_grew'), 'cs_i_grew'), 3000);
           break;
         }
         case 'unlocked':
@@ -676,6 +709,12 @@ export class WorldUI {
   private near(r: number): boolean {
     const p = this.h.pos(r);
     return !!p && nearCentre(p.x, p.y, this.screenW, this.screenH);
+  }
+  /** a bubble over a resident (stage 4: the baby says hello) */
+  say(r: number, text: string, line: string | null, prio: Prio = 'resident'): void {
+    this.sayBubble(r, text, line);
+    // (his own line through the one voice: after the banners, only when he is on the screen, and never in the first 5 seconds)
+    if (line) void sayLineQ(line, { prio, onScreen: !!this.h.pos(r) });
   }
   private sayBubble(r: number, text: string, line: string | null, lang: 'he' | 'en' = 'he'): void {
     const p = this.h.pos(r);
@@ -738,7 +777,7 @@ export class WorldUI {
     // the word in English, for what he wants to eat (only a word that she already learned)
     const info = RESIDENT_INFO.find((x) => x.id === (w.residents[i]?.id === 'companion' ? 'cheesy' : w.residents[i]?.id));
     const words = (getState().games.english as { words?: Record<string, { seen?: boolean }> } | undefined)?.words ?? {};
-    if (wish.kind === 'food' && info && words[info.food]?.seen) window.setTimeout(() => void speakEn(info.food), 1500);
+    if (wish.kind === 'food' && info && words[info.food]?.seen) window.setTimeout(() => void speakEnQ(info.food, { prio: 'tap' }), 1500);
     const built = Object.values(w.save.built).map((id) => itemById(id)!).filter(Boolean);
     if (wish.kind !== 'play' && fillers(wish, built).length === 0) window.setTimeout(() => this.sayBubble(i, csText(SUGGEST_LINE[wish.kind]), SUGGEST_LINE[wish.kind]), 2400);
   }
@@ -757,6 +796,7 @@ export class WorldUI {
     }
     this.paintHud();
     this.friends.tick(dt, !!this.sheet);
+    this.daily.tick(dt);
     this.schoolT -= dt;
     if (this.schoolEl && this.schoolT <= 0) {
       this.schoolT = 30;
@@ -806,7 +846,7 @@ export class WorldUI {
         s.shown = true;
         s.el.style.visibility = 'visible';
         s.el.style.transform = `translate(${r.x + r.w / 2}px, ${p.y - 30}px) translate(-50%, -100%)`;
-        if (s.line && this.near(s.r)) say(s.line);
+        if (s.line && this.near(s.r)) void sayLineQ(s.line, { prio: 'resident', spont: true, onScreen: true });
       }
       s.ttl -= dt;
       if (p) {
@@ -827,8 +867,10 @@ export class WorldUI {
 
   dispose(): void {
     this.dead = true;
+    document.body.classList.remove('cv-building');
     this.friends.dispose();
     this.schoolEl?.remove();
+    this.daily.dispose();
     this.workshopEl?.remove();
     this.closeSheet();
     this.root.remove();
@@ -843,6 +885,6 @@ const residentImg = (id: string): string => `${import.meta.env.BASE_URL}park/squ
 /** the sign of a stall in English, said (the recording of the word or the voice of the phone) */
 function sayEn(item: Item, force = false): void {
   void force;
-  void speakEn(item.en.toLowerCase());
+  void speakEnQ(item.en.toLowerCase(), { prio: 'tap' });
 }
 export { arrivalOrder };

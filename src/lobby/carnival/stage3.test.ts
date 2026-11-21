@@ -227,8 +227,8 @@ describe('what he does: the favourite food first, a friend beside him', () => {
 });
 
 describe('the quests of stage 3 and the pictures', () => {
-  it('nine quests follow the first ten, each with the sentence of quests-later.json, and they are done by what the world counts', () => {
-    expect(QUESTS.slice(10).map((q) => q.id)).toEqual(['friend', 'trick', 'job', 'hat', 'remember', 'party', 'lolly', 'workshop', 'order']);
+  it('fourteen quests follow the first ten, each with the sentence of quests-later.json, and they are done by what the world counts', () => {
+    expect(QUESTS.slice(10).map((q) => q.id)).toEqual(['friend', 'trick', 'job', 'hat', 'remember', 'party', 'lolly', 'workshop', 'order', 'egg', 'mail', 'gift', 'visitor', 'parade']);
     const base = { built: {}, level: 1, taps: 0, rounds: 0, answers: 0 };
     const done10 = QUESTS.slice(0, 10).map((q) => q.id);
     expect(finishedNow(done10, { ...base, friend: 2, tricks: 1 }).map((q) => q.id)).toEqual(['friend', 'trick']);

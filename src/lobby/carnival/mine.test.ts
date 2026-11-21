@@ -72,7 +72,7 @@ describe('the squishies that Rani made live in the carnival (workshop stage 3)',
     expect(MAX_TOYS).toBe(8);
   });
   it('the name that she gave is never said: the two places that say a name skip the ones she made, and nothing reads it with the voice of the phone', () => {
-    expect(entrySrc).toMatch(/if \(!world\.residents\[i\]\.mine\) void sayLine\('carnival_name'/);
-    expect(entrySrc).toMatch(/if \(!r\.mine\) void sayLine\('carnival_name'/);
+    expect(entrySrc).toMatch(/if \(!world\.residents\[i\]\.mine\) void sayLineQ\('carnival_name'/);
+    expect(entrySrc).toMatch(/if \(!r\.mine\) void sayLineQ\('carnival_name'/);
   });
 });

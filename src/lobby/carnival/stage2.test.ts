@@ -310,7 +310,7 @@ describe('hearts, levels, arrivals and quests', () => {
     expect(new Set(w.save.arrived).size).toBe(6);
   });
   it('the quests come in order, each gives its hearts (and sometimes stars), and one that was done before its turn counts at once', () => {
-    expect(QUESTS.length).toBe(19);
+    expect(QUESTS.length).toBe(24);
     expect(activeQuest([])?.id).toBe('pizza');
     const base = { built: {} as Record<string, string>, level: 1, taps: 0, rounds: 0, answers: 0 };
     expect(finishedNow([], base)).toEqual([]);

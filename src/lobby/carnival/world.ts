@@ -11,6 +11,7 @@ import { activeQuest, finishedNow, type Quest, type QuestCtx } from './quests';
 import { isItemOpen, type Progress } from './unlocks';
 import type { CarnivalSave } from './talk/state';
 import type { Personality } from './wishes';
+import { clockOf, collectedFor, dailyOf, dayKey, daysBetween, eggAtLevel, giftFor, greetingAt, growthOf, guestFor, hatchable, isFriday, letterFor, nextNewcomer, type Gift, type Letter } from './daily';
 import { addFriendship, canWear, friendLevel, friendOf, friendsOf, giftOf, isPartyDay, levelOfResident, maxFriendLevel, partyKey, priceOf, putOn, trickOf, wearing, type Trick } from './friends';
 
 export type WorldEvent =
@@ -22,7 +23,16 @@ export type WorldEvent =
   | { type: 'built'; slot: string; item: string }
   | { type: 'removed'; slot: string; item: string }
   | { type: 'unlocked'; items: string[] }
-  | { type: 'friendUp'; r: number; level: number };
+  | { type: 'friendUp'; r: number; level: number }
+  /** stage 4 (SPEC-carnival.md 4.7): the reasons to come back */
+  | { type: 'welcomeBack'; hearts: number; days: number }
+  | { type: 'egg'; level: number }
+  | { type: 'hatch'; resident: Resident; index: number }
+  | { type: 'guest'; resident: Resident; index: number }
+  | { type: 'greet'; kind: 'morning' | 'night' }
+  | { type: 'mailWaiting' }
+  | { type: 'giftWaiting' }
+  | { type: 'paradeDay' };
 
 export type Buy = { ok: true } | { ok: false; reason: 'stars' | 'locked' | 'level' | 'taken' | 'unknown' };
 
@@ -103,8 +113,9 @@ export class CarnivalWorld {
     }
     return this.wearCache[i] ?? [];
   }
+  /** the clock of the carnival: the real one plus the days that the parents' area skipped (for testing) */
   now(): Date {
-    return this.d.now?.() ?? new Date();
+    return clockOf(this.d.now?.() ?? new Date(), dailyOf(this.d.save).skip);
   }
   levelOf(i: number): number {
     const r = this.residents[i];
@@ -225,9 +236,9 @@ export class CarnivalWorld {
   /**
    * Who is on the screen: all, up to the limit of the tier. Beyond it some are "at home", and they change at every visit (`visit`): the resident of Rani (the first) is always out.
    */
-  chooseHome(limit: number, visit: number): void {
-    // the squishies that Rani made are always out (they are hers, and they are at most 8): the limit is for the others
-    const others = this.residents.map((r, i) => (r.mine ? -1 : i)).filter((i) => i >= 0);
+  chooseHome(limit: number, visit: number, keep: number[] = []): void {
+    // the squishies that Rani made are always out (they are hers, and they are at most 8), and so are those in `keep`: the limit is for the others
+    const others = this.residents.map((r, i) => (r.mine || keep.includes(i) ? -1 : i)).filter((i) => i >= 0);
     const n = others.length;
     const away = new Set<number>();
     if (n > limit) {
@@ -274,7 +285,7 @@ export class CarnivalWorld {
   canBuy(item: Item): 'ok' | 'stars' | 'locked' | 'place' {
     if (!isItemOpen(item, this.d.progress())) return 'locked';
     if (this.freeSlot(item.slot) === null) return 'place';
-    return this.d.stars() >= item.price ? 'ok' : 'stars';
+    return this.d.stars() >= item.price || dailyOf(this.d.save).freeDecor.includes(item.id) ? 'ok' : 'stars';
   }
   build(slotId: string, itemId: string): Buy {
     const slot = this.slot(slotId);
@@ -283,8 +294,12 @@ export class CarnivalWorld {
     if (!this.isSlotOpen(slot)) return { ok: false, reason: 'level' };
     if (this.d.save.built[slotId]) return { ok: false, reason: 'taken' };
     if (!isItemOpen(item, this.d.progress())) return { ok: false, reason: 'locked' };
-    if (this.d.stars() < item.price) return { ok: false, reason: 'stars' };
-    this.d.spend(item.price);
+    // a decoration from the gift of the day is built for free (once)
+    const dd = dailyOf(this.d.save);
+    const free = dd.freeDecor.indexOf(itemId);
+    if (free < 0 && this.d.stars() < item.price) return { ok: false, reason: 'stars' };
+    if (free >= 0) (dd.freeDecor.splice(free, 1), dd.freeBuilt.push(slotId));
+    else this.d.spend(item.price);
     this.d.save.built[slotId] = itemId;
     this.sim.setBuilt(this.d.save.built);
     this.d.persist();
@@ -296,7 +311,10 @@ export class CarnivalWorld {
     const item = this.itemAt(slotId);
     if (!item) return false;
     delete this.d.save.built[slotId];
-    this.d.give(item.price);
+    const dd = dailyOf(this.d.save);
+    const fb = dd.freeBuilt.indexOf(slotId);
+    if (fb >= 0) dd.freeBuilt.splice(fb, 1);
+    else this.d.give(item.price);
     this.sim.setBuilt(this.d.save.built);
     this.d.persist();
     this.pending.push({ type: 'removed', slot: slotId, item: item.id });
@@ -319,7 +337,7 @@ export class CarnivalWorld {
     const c = this.d.save.quests.counts;
     const f = friendsOf(this.d.save);
     const ex = this.d.external?.() ?? { lolly: 0, workshop: 0, orders: 0 };
-    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers, friend: maxFriendLevel(this.d.save), tricks: f.tricks, jobs: f.jobs, hats: f.hats, remembered: f.remembered, parties: f.parties, lolly: ex.lolly, workshop: ex.workshop, orders: ex.orders ?? 0 };
+    return { built: this.d.save.built, level: this.level, taps: c.taps ?? 0, rounds: c.rounds ?? 0, answers: this.d.save.answers, friend: maxFriendLevel(this.d.save), tricks: f.tricks, jobs: f.jobs, hats: f.hats, remembered: f.remembered, parties: f.parties, lolly: ex.lolly, workshop: ex.workshop, orders: ex.orders ?? 0, hatched: dailyOf(this.d.save).hatched, letters: dailyOf(this.d.save).letters.length, gifts: dailyOf(this.d.save).gifts, stayed: dailyOf(this.d.save).stayed, parades: dailyOf(this.d.save).parades };
   }
   count(key: 'taps' | 'rounds'): void {
     this.d.save.quests.counts[key] = (this.d.save.quests.counts[key] ?? 0) + 1;
@@ -357,9 +375,193 @@ export class CarnivalWorld {
   /** Runs the carnival for `dt` seconds. Returns what happened, for the page to show. */
   tick(dt: number): WorldEvent[] {
     if ((this.wearAge += dt) > 0.5) this.wearStale = true;
+    if ((this.growAge += dt) > 0.5) (this.growStale = true), this.refreshBlink();
     const out: WorldEvent[] = [...this.pending.splice(0), ...this.applyHearts(this.sim.update(dt))];
     out.push(...this.checkProgress());
     return out;
+  }
+
+  // ---------------------------------------------------------------- reasons to come back (SPEC-carnival.md 4.7)
+  /** a resident of the carnival from the list of newcomers (a baby from an egg, or the guest): added to the world and the sim */
+  private addNewcomer(id: string, guest: boolean): { resident: Resident; index: number } {
+    const all = residents(this.d.companion.name, this.d.companion.buddy, [...this.d.save.arrived.filter((x) => x !== id), id]);
+    const r = { ...all[all.length - 1], ...(guest ? { guest: true } : {}) };
+    this.residents.push(r);
+    this.sim.add(this.simOf(r));
+    return { resident: r, index: this.residents.length - 1 };
+  }
+  /** the first minute of a visit, in the order of SPEC 4.8: she is welcomed (and the hearts that were collected), the egg that slept hatches, the gift and the mail wait, the guest comes in. A visit on the same day does nothing twice. */
+  beginVisit(): WorldEvent[] {
+    const out: WorldEvent[] = [];
+    const s = this.d.save, d = dailyOf(s), now = this.now(), day = dayKey(now);
+    // 1. back after a day or more: the squishies collected hearts for her (a few for each day, with a ceiling: nothing is lost by staying away, nothing is said about the days)
+    const away = daysBetween(d.lastDay, day);
+    if (d.lastDay && away >= 1 && d.collectedDay !== day) {
+      const n = collectedFor(away);
+      d.collectedDay = day;
+      s.hearts += n;
+      out.push({ type: 'welcomeBack', hearts: n, days: away });
+    }
+    // 2. the egg that slept one night hatches (one for each day she comes): a baby from the album
+    const egg = hatchable(d, day);
+    if (egg && !s.arrived.includes(egg.id)) {
+      d.eggs = d.eggs.filter((e) => e !== egg);
+      const n = this.addNewcomer(egg.id, false);
+      s.arrived.push(egg.id);
+      d.baby.push(egg.id);
+      d.hatched++;
+      this.sim.setBaby(n.index, true);
+      out.push({ type: 'hatch', resident: n.resident, index: n.index });
+    }
+    // 3. the gift of the day and the mail wait (they blink gently; nothing is lost by not opening them)
+    if (this.giftReady()) out.push({ type: 'giftWaiting' });
+    if (this.mailReady()) out.push({ type: 'mailWaiting' });
+    // 4. the guest of the day comes in (the same one all day; one who did not stay may come again another day)
+    const gid = guestFor(s.arrived, d, day);
+    if (gid && !s.arrived.includes(gid)) {
+      if (!d.guest || d.guest.day !== day) d.guest = { day, id: gid, talked: false, stayed: false };
+      const n = this.addNewcomer(gid, true);
+      out.push({ type: 'guest', resident: n.resident, index: n.index });
+    }
+    // morning and night, and the parade of Friday
+    const g = greetingAt(now);
+    if (g) out.push({ type: 'greet', kind: g });
+    if (isFriday(now) && d.paradeDay !== day) out.push({ type: 'paradeDay' });
+    d.lastDay = day;
+    this.wearStale = true;
+    this.refreshBlink();
+    this.d.persist();
+    out.push(...this.checkProgress());
+    return out;
+  }
+  get daily() {
+    return dailyOf(this.d.save);
+  }
+  /** the eggs that sleep in the nest, and whether the one in front was found today (it hatches on another day) */
+  eggs(): number {
+    return dailyOf(this.d.save).eggs.length;
+  }
+  eggIsNew(): boolean {
+    const d = dailyOf(this.d.save);
+    return d.eggs.length > 0 && d.eggs[0].found === dayKey(this.now());
+  }
+  /** the guest of the day (the index of the resident), while he has not stayed */
+  guestIndex(): number {
+    const g = dailyOf(this.d.save).guest;
+    return g && !g.stayed && g.day === dayKey(this.now()) ? this.residents.findIndex((r) => r.guest && r.id === g.id) : -1;
+  }
+  /** one talk with the guest was answered: now he asks if he can stay */
+  guestTalked(): boolean {
+    const g = dailyOf(this.d.save).guest;
+    if (!g || g.stayed) return false;
+    g.talked = true;
+    this.d.persist();
+    return true;
+  }
+  /** "yes": he stays (he is one of the residents for good) */
+  stayGuest(): number {
+    const s = this.d.save, d = dailyOf(s);
+    const g = d.guest;
+    const i = this.guestIndex();
+    if (!g || i < 0) return -1;
+    g.stayed = true;
+    if (!s.arrived.includes(g.id)) s.arrived.push(g.id);
+    this.residents[i] = { ...this.residents[i], guest: false };
+    d.stayed++;
+    this.d.persist();
+    return i;
+  }
+  /** what the scene and the page ask in every frame (the gift and the mail blink while they wait): worked out again every half second, not in every frame */
+  private blinkG = true;
+  private blinkM = true;
+  giftBlink(): boolean {
+    return this.blinkG;
+  }
+  mailBlink(): boolean {
+    return this.blinkM;
+  }
+  private refreshBlink(): void {
+    this.blinkG = this.giftReady();
+    this.blinkM = this.mailReady();
+  }
+  giftReady(): boolean {
+    return dailyOf(this.d.save).giftDay !== dayKey(this.now());
+  }
+  mailReady(): boolean {
+    return dailyOf(this.d.save).mailDay !== dayKey(this.now());
+  }
+  /** the letter of the day (once a day): it is saved in the album */
+  openMail(): Letter | null {
+    const d = dailyOf(this.d.save), day = dayKey(this.now());
+    if (d.mailDay === day) return null;
+    const from = this.residents.filter((r) => !r.guest).map((r) => r.id);
+    const l = letterFor(day, from.length ? from : ['companion']);
+    d.letters = [...d.letters, l].slice(-80);
+    d.mailDay = day;
+    this.refreshBlink();
+    this.d.persist();
+    return l;
+  }
+  letters(): Letter[] {
+    return dailyOf(this.d.save).letters;
+  }
+  /** the gift of the day (once a day; one box, it does not pile up and it does not go away): hearts, a decoration that is built for free, or an accessory for the stock */
+  openDailyGift(): Gift | null {
+    const s = this.d.save, d = dailyOf(s), day = dayKey(this.now());
+    if (d.giftDay === day) return null;
+    const decor = ITEMS.filter((i) => i.kind === 'decor' && i.price <= 6 && isItemOpen(i, this.d.progress())).map((i) => i.id);
+    const g = giftFor(day, decor);
+    if (g.kind === 'hearts') s.hearts += g.n;
+    else if (g.kind === 'decor') d.freeDecor.push(g.id);
+    else friendsOf(s).owned[g.id] = (friendsOf(s).owned[g.id] ?? 0) + 1;
+    d.giftDay = day;
+    d.gifts++;
+    this.refreshBlink();
+    this.d.persist();
+    return g;
+  }
+  /** is it Friday and did she not join the parade today? */
+  paradeReady(): boolean {
+    const now = this.now();
+    return isFriday(now) && dailyOf(this.d.save).paradeDay !== dayKey(now);
+  }
+  paradeOn(): boolean {
+    return this.sim.parade !== null;
+  }
+  startParade(): void {
+    this.sim.parade = { t: 0 };
+    this.wearStale = true;
+  }
+  /** the parade is over (she tapped to the rhythm: it counts for today) */
+  endParade(joined: boolean): void {
+    this.sim.endParade();
+    if (joined) {
+      const d = dailyOf(this.d.save);
+      d.paradeDay = dayKey(this.now());
+      d.parades++;
+      this.d.persist();
+    }
+  }
+  /** puts a resident somewhere (the baby that hatches is put in front of the nest) */
+  placeAt(i: number, x: number, z: number): void {
+    this.sim.placeAt(i, x, z);
+  }
+  /** the size of a baby (60 %, 80 % at friendship level 2, 100 % at level 3); the others are 1. Worked out again only when something changes. */
+  private growCache: number[] = [];
+  private growStale = true;
+  private growAge = 0;
+  growth(i: number): number {
+    if (this.growStale || this.growCache.length !== this.residents.length) {
+      const baby = new Set(dailyOf(this.d.save).baby);
+      this.growCache = this.residents.map((r) => (baby.has(r.id) ? growthOf(levelOfResident(this.d.save, r.id)) : 1));
+      this.growStale = false;
+      this.growAge = 0;
+    }
+    return this.growCache[i] ?? 1;
+  }
+  isBaby(i: number): boolean {
+    const r = this.residents[i];
+    return !!r && dailyOf(this.d.save).baby.includes(r.id);
   }
 
   /** The level (hearts can come from the talks too), the arrivals, the quests, the new items of the word journey. */
@@ -368,6 +570,16 @@ export class CarnivalWorld {
     const s = this.d.save;
     for (const level of levelsGained(this.lastHearts, s.hearts)) {
       out.push({ type: 'levelUp', level });
+      // every second level brings an egg to the nest (once for each level): it sleeps one night
+      const dly = dailyOf(s);
+      if (eggAtLevel(level) && !dly.eggLevels.includes(level)) {
+        const id = nextNewcomer(s.arrived, dly, dayKey(this.now()));
+        if (id) {
+          dly.eggs.push({ id, found: dayKey(this.now()) });
+          dly.eggLevels.push(level);
+          out.push({ type: 'egg', level });
+        }
+      }
       const opened = this.slots.filter((x) => x.level === level).length;
       if (opened) out.push({ type: 'newPlace', level, count: opened });
     }

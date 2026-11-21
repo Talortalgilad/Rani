@@ -68,9 +68,22 @@ function melody(freqs: number[]): void {
   [freqs[0], freqs[0] * 1.25, freqs[0] * 1.5, freqs[0] * 2].forEach((f) => tone(f, t, 0.6, 'triangle', 0.2));
 }
 
+/** Short effects never queue, but at most three sound at the same time (the ones that came in the last half second): the others are dropped. */
+const recent: number[] = [];
+export const EFFECT_WINDOW_MS = 500;
+export const MAX_EFFECTS = 3;
+export function effectSlot(now = Date.now()): boolean {
+  while (recent.length && now - recent[0] > EFFECT_WINDOW_MS) recent.shift();
+  if (recent.length >= MAX_EFFECTS) return false;
+  recent.push(now);
+  return true;
+}
+export const resetEffects = (): void => void (recent.length = 0);
+
 export const sound: SoundApi = {
   play(name, pitch) {
     if (!getState().settings.sound) return;
+    if (!effectSlot()) return;
     try {
       if (!ac || ac.state !== 'running') unlockAudio();
       if (!ac) return;
