@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGenerator, type Question } from '../../math/generator';
-import { CLEAR_T, SLOW_T, createRun, gateCount, jump, move, simulate, step, type Run } from './engine';
+import { CLEAR_T, SLOW_T, createRun, gateCount, jump, move, simulate, step, threeChoices, type Run } from './engine';
 import { DEFAULT_TUNING, cleanTuning, type Tuning } from './tuning';
 
 const seeded = (s: number) => () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -17,7 +17,7 @@ function make(seed = 1, tune: Partial<Tuning> = {}, level = 2) {
 const gateBrain = (right: boolean) => (r: Run, _dt?: number): void => {
   const g = r.nextGate;
   if (!g || !g.prepared || g.z - r.z > 14) return;
-  const want = right ? g.correct - 1 : [0, 1, 2].filter((i) => i !== g.correct && g.nums[i] !== null)[0] - 1;
+  const want = right ? g.correct - 1 : [0, 1, 2].filter((i) => i !== g.correct && true)[0] - 1;
   if (r.target < want) move(r, 1);
   else if (r.target > want) move(r, -1);
 };
@@ -132,13 +132,59 @@ describe('the wrong answers', () => {
       simulate(run, () => undefined, 1 / 30, 200);
       // the numbers were set when each gate came into view
       for (const g of run.gates) {
-        const real = g.nums.filter((n): n is number => n !== null);
-        expect(new Set(real).size).toBe(real.length);
+        const real = g.nums;
+        expect(real).toHaveLength(3);
+        expect(new Set(real).size).toBe(3);
         for (const n of real) expect(n).toBeGreaterThanOrEqual(0);
-        expect(real.length).toBeGreaterThanOrEqual(2);
-        expect(g.nums[g.correct]).not.toBeNull();
       }
     }
+  });
+});
+
+describe('every lane is a real answer', () => {
+  it('no lane is closed or empty: in every exercise of every type and level the three lanes hold three different numbers, one of them right, so that no lane is a mistake that she did not choose', () => {
+    const types = ['count', 'add', 'sub', 'missing', 'compare', 'sequence', 'bonds10'] as const;
+    for (let level = 1; level <= 5; level++) {
+      for (const type of types) {
+        const gen = createGenerator(seeded(level * 31 + type.length));
+        for (let i = 0; i < 80; i++) {
+          const q = gen.next(level, [type]);
+          const three = threeChoices(q);
+          expect(three.choices, `${type} L${level}`).toHaveLength(3);
+          expect(new Set(three.choices).size).toBe(3);
+          expect(three.choices.every((n) => Number.isInteger(n) && n >= 0)).toBe(true);
+          expect(three.choices.filter((n) => n === q.answer)).toHaveLength(1);
+        }
+      }
+    }
+  });
+  it('a comparison asks "who is the biggest" (or "the smallest") of three numbers, and the right one is really the biggest (the smallest)', () => {
+    let big = 0;
+    let small = 0;
+    for (let level = 1; level <= 5; level++) {
+      const gen = createGenerator(seeded(level + 700));
+      for (let i = 0; i < 200; i++) {
+        const q = gen.next(level, ['compare']);
+        const t = threeChoices(q);
+        const biggest = q.text.includes('גדול');
+        expect(t.text).toBe(biggest ? 'מי הכי גדול?' : 'מי הכי קטן?');
+        expect(t.answer).toBe(biggest ? Math.max(...t.choices) : Math.min(...t.choices));
+        // the third number is close to the answer and is not the answer
+        const third = t.choices.filter((n) => !q.choices.includes(n));
+        expect(third).toHaveLength(1);
+        expect(third[0]).not.toBe(q.answer);
+        if (biggest) big++;
+        else small++;
+      }
+    }
+    expect(big).toBeGreaterThan(0);
+    expect(small).toBeGreaterThan(0);
+  });
+  it('the result goes back to the engine as the exercise that it gave (not the made-up one)', () => {
+    const { run, solved } = make(7, {}, 1);
+    simulate(run, goodBrain(true));
+    for (const s of solved) expect(s.q.choices.length).toBeLessThanOrEqual(3);
+    expect(solved.length).toBe(run.gates.length);
   });
 });
 

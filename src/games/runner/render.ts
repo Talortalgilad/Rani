@@ -150,6 +150,8 @@ export class Painter {
   private nItems = 0;
   /** shake and flash of the last events, set by the screen */
   flash = 0;
+  private cam = 0;
+  private camT = 0;
   constructor(private g: CanvasRenderingContext2D, sprites: Sprites) {
     this.sp = sprites;
   }
@@ -171,7 +173,12 @@ export class Painter {
     const yF = H * FEET;
     const cx = W / 2;
     const laneW = W * LANE_FRAC;
-    const camX = r.x * 0.45;
+    // the camera follows her a little; while a gate shows its answers it settles in the middle, so that every lane (and its label) is whole on the screen
+    const gateOn = !!r.nextGate && r.nextGate.prepared && r.phase === 'run';
+    const dtc = Math.min(0.1, Math.max(0, time - this.camT));
+    this.camT = time;
+    this.cam += ((gateOn ? 0 : r.x * 0.45) - this.cam) * Math.min(1, dtc * 6);
+    const camX = this.cam;
     const yAt = (d: number): number => yH + (yF - yH) * this.p(d);
     const xAt = (lane: number, d: number): number => cx + (lane - camX) * laneW * this.p(d);
 
@@ -302,7 +309,8 @@ export class Painter {
       }
     }
 
-    this.player(r, W, H, laneW, yF, time, reduced);
+    this.player(r, W, H, laneW, yF, camX, time, reduced);
+    this.labels(r, W, H, laneW, camX, time);
     if (this.flash > 0) {
       g.fillStyle = `rgba(255,255,255,${Math.min(0.55, this.flash)})`;
       g.fillRect(0, 0, W, H);
@@ -312,6 +320,35 @@ export class Painter {
       g.font = `${Math.round(W * 0.07)}px system-ui, sans-serif`;
       g.textAlign = 'left';
       g.fillText((r.magnetT > 0 ? '🧲' : '') + (r.shieldT > 0 ? '🛡️' : ''), 12, H - 14);
+    }
+  }
+
+  /**
+   * The three answers again, big, over their lanes, at one fixed height above the cat: from the moment that the exercise shows until the gate is crossed
+   * (the numbers on the gate itself stay, small when it is far). The number is 44 px high at the least, on a 360 px wide screen too.
+   */
+  private labels(r: Run, W: number, H: number, laneW: number, camX: number, time: number): void {
+    const gt = r.nextGate;
+    if (!gt || !gt.prepared || gt.resolved || r.phase !== 'run') return;
+    const g = this.g;
+    const w = Math.min(laneW * 0.88, 100);
+    const h = 64;
+    const y = H * 0.46;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.font = '800 44px Rubik, system-ui, sans-serif';
+    for (let i = 0; i < 3; i++) {
+      const x = W / 2 + (i - 1 - camX) * laneW;
+      const glow = gt.help && i === gt.correct;
+      const pulse = glow ? 0.5 + 0.5 * Math.sin(time * 8) : 0;
+      g.fillStyle = glow ? `rgb(255,${220 - Math.round(pulse * 40)},70)` : 'rgba(255,255,255,.95)';
+      g.strokeStyle = glow ? '#ff8a1f' : '#7b4fc9';
+      g.lineWidth = 4;
+      rr(g, x - w / 2, y - h / 2, w, h, 18);
+      g.fill();
+      g.stroke();
+      g.fillStyle = '#4a2a8a';
+      g.fillText(String(gt.nums[i]), x, y + 2);
     }
   }
 
@@ -367,14 +404,14 @@ export class Painter {
       const x = xAt(i - 1, d);
       const glow = (gt.help && !gt.resolved && i === gt.correct) || (gt.reveal > 0 && i === gt.correct);
       const pulse = glow ? 0.65 + 0.35 * Math.sin(time * 8) : 0;
-      g.fillStyle = n === null ? '#9a9aa8' : glow ? `rgb(${255},${210 - Math.round(pulse * 30)},${63})` : '#ffffff';
+      g.fillStyle = glow ? `rgb(${255},${210 - Math.round(pulse * 30)},${63})` : '#ffffff';
       g.strokeStyle = glow ? '#ff8a1f' : '#7b4fc9';
       g.lineWidth = Math.max(2, 5 * sc);
       rr(g, x - w / 2, top + 12 * sc + 6 * sc, w, h, 12 * sc);
       g.fill();
       g.stroke();
-      g.fillStyle = n === null ? '#6b6b7a' : '#4a2a8a';
-      g.fillText(n === null ? '✖' : String(n), x, top + 12 * sc + 6 * sc + h / 2 + 1);
+      g.fillStyle = '#4a2a8a';
+      g.fillText(String(n), x, top + 12 * sc + 6 * sc + h / 2 + 1);
     }
     // a gate that she went through in the right lane is lit
     if (gt.resolved && gt.ok) {
@@ -398,10 +435,9 @@ export class Painter {
     g.drawImage(this.sp.bunch, x - w * 0.4, y - w * 1.55 + bob, w * 0.8, w * 0.8);
   }
 
-  private player(r: Run, W: number, H: number, laneW: number, yF: number, time: number, reduced: boolean): void {
+  private player(r: Run, W: number, H: number, laneW: number, yF: number, camX: number, time: number, reduced: boolean): void {
     const g = this.g;
     const hC = H * 0.2;
-    const camX = r.x * 0.45;
     const x = W / 2 + (r.x - camX) * laneW;
     const celebrating = r.phase !== 'run';
     const img = celebrating && r.finishT > 0.9 ? this.sp.front : this.sp.back;

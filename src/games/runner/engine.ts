@@ -29,8 +29,8 @@ export interface Obstacle { z: number; lane: number; kind: Kind; done: boolean }
 export interface Star { z: number; lane: number; air: boolean; got: boolean }
 export interface Gate {
   z: number;
-  /** the number on each lane (null: a closed sign, no answer there) */
-  nums: (number | null)[];
+  /** the number on each lane: three different real answers, one of them right */
+  nums: number[];
   correct: number;
   prepared: boolean;
   /** the correct lane shines from far (two mistakes on this exercise) */
@@ -41,7 +41,8 @@ export interface Gate {
   reveal: number;
   ok: boolean;
 }
-export interface Exercise { q: Question; attempts: number }
+/** `q` is what the gate shows (a comparison gets a third number and "who is the biggest"); `orig` is what the engine of the gate gave, and what goes back to it */
+export interface Exercise { q: Question; orig: Question; attempts: number }
 export type RunEvent =
   | { t: 'jump' } | { t: 'land' } | { t: 'lane' } | { t: 'star' } | { t: 'hit'; shielded: boolean }
   | { t: 'gate'; ok: boolean; bonus: 'magnet' | 'shield' | null } | { t: 'finish'; caught: boolean };
@@ -112,7 +113,7 @@ export function createRun(o: RunOpts): Run {
   const v = tune.speed;
   const n = gateCount(tune.gateGap);
   const gates: Gate[] = [];
-  for (let k = 0; k < n; k++) gates.push({ z: v * tune.gateGap * (k + 0.8), nums: [null, null, null], correct: 1, prepared: false, help: false, resolved: false, choice: 1, reveal: 0, ok: false });
+  for (let k = 0; k < n; k++) gates.push({ z: v * tune.gateGap * (k + 0.8), nums: [0, 0, 0], correct: 1, prepared: false, help: false, resolved: false, choice: 1, reveal: 0, ok: false });
   const finishZ = gates[n - 1].z + v * 2.5;
   const obstacles: Obstacle[] = [];
   const starsList: Star[] = [];
@@ -184,13 +185,41 @@ export function jump(r: Run): void {
   } else r.jumpBuffer = 0.12;
 }
 
+/**
+ * Every lane of a gate holds a real answer, so that no lane is a mistake that she did not choose. The engine of the gate may give two numbers (a comparison) or fewer than three
+ * different ones: the exercise is made into one with three. A comparison "which is bigger" becomes "who is the biggest" (or "the smallest") and gets a third number that is not the answer
+ * (smaller than it for "biggest", bigger than it for "smallest", close to it, and not the other number).
+ */
+export function threeChoices(q: Question): Question {
+  const have = [...new Set(q.choices)];
+  if (have.length >= 3) return q.choices.length === 3 ? q : { ...q, choices: have.slice(0, 3) };
+  const out = [...have];
+  let text = q.text;
+  if (q.type === 'compare') {
+    const biggest = q.text.includes('גדול');
+    text = biggest ? 'מי הכי גדול?' : 'מי הכי קטן?';
+    for (let k = 1; k <= 12 && out.length < 3; k++) {
+      const c = q.answer + (biggest ? -k : k);
+      if (c >= 0 && !out.includes(c)) out.push(c);
+    }
+  }
+  for (const k of [1, -1, 2, -2, 3, -3, 4, 5]) {
+    if (out.length >= 3) break;
+    const c = q.answer + k;
+    if (c >= 0 && !out.includes(c)) out.push(c);
+  }
+  return { ...q, text, choices: out };
+}
+
 /** the numbers on the three lanes: the answer and its close wrong answers in a new order (two choices: the third lane is closed) */
 function prepare(r: Run, g: Gate): void {
   g.prepared = true;
-  if (!r.ex) r.ex = { q: r.o.next(), attempts: 0 };
+  if (!r.ex) {
+    const orig = r.o.next();
+    r.ex = { q: threeChoices(orig), orig, attempts: 0 };
+  }
   const q = r.ex.q;
-  const nums: (number | null)[] = [...q.choices.slice(0, 3)];
-  while (nums.length < 3) nums.push(null);
+  const nums: number[] = [...q.choices];
   // a new order each time (the same exercise comes back after a mistake, but not on the same lane)
   for (let i = 2; i > 0; i--) {
     const j = Math.floor(r.o.rng() * (i + 1));
@@ -295,7 +324,7 @@ export function step(r: Run, dt: number): void {
     r.caught = r.correct >= NEEDED;
     // an exercise that was never solved still tells the engine what happened
     if (r.ex) {
-      r.o.solved(r.ex.q, Math.max(2, r.ex.attempts + 1));
+      r.o.solved(r.ex.orig, Math.max(2, r.ex.attempts + 1));
       r.ex = null;
     }
     r.events.push({ t: 'finish', caught: r.caught });
@@ -312,7 +341,7 @@ function cross(r: Run, g: Gate): void {
   if (g.ok) {
     r.correct++;
     ex.attempts++;
-    r.o.solved(ex.q, ex.attempts);
+    r.o.solved(ex.orig, ex.attempts);
     r.ex = null;
     r.boostT = BOOST_TIME;
     if (r.o.rng() < 0.4) {
