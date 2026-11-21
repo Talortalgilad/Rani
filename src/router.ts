@@ -4,14 +4,16 @@ export type Route =
   | { name: 'game'; gameId: string }
   | { name: 'parent' }
   /** the prototype of the squishy workshop (stage 0): entered from the parents area only */
-  | { name: 'squishy' };
+  | { name: 'squishy' }
+  /** the chase of the balloons (stage 0): entered from the parents area, or with `?runner` in the address */
+  | { name: 'runner' };
 
 type Handler = (route: Route) => void;
 
 let handler: Handler | null = null;
 
 function toHash(r: Route): string {
-  return r.name === 'home' ? '#/' : r.name === 'parent' ? '#/parent' : r.name === 'squishy' ? '#/squishy' : `#/${r.name}/${encodeURIComponent(r.gameId)}`;
+  return r.name === 'home' ? '#/' : r.name === 'parent' ? '#/parent' : r.name === 'squishy' ? '#/squishy' : r.name === 'runner' ? '#/runner' : `#/${r.name}/${encodeURIComponent(r.gameId)}`;
 }
 
 function parse(hash: string): Route {
@@ -20,6 +22,7 @@ function parse(hash: string): Route {
   if ((name === 'gate' || name === 'game') && gameId) return { name, gameId };
   if (name === 'parent') return { name: 'parent' };
   if (name === 'squishy') return { name: 'squishy' };
+  if (name === 'runner') return { name: 'runner' };
   return { name: 'home' };
 }
 

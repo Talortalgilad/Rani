@@ -170,6 +170,12 @@ export function renderParent(root: HTMLElement): () => void {
         <button class="btn alt" id="squishy-lab">🧪 פתיחת הניסוי</button>
       </section>
 
+      <section class="p-card">
+        <h2>ניסוי: מרדף הבלונים</h2>
+        <div class="p-sub">אב-טיפוס זמני (שלב 0): ריצה בשלושה מסלולים, שערי חשבון ושובי העורב. בלי ציורים ובלי הקלטות.</div>
+        <button class="btn alt" id="runner-lab">🎈 פתיחת הניסוי</button>
+      </section>
+
       <section class="p-card danger">
         <h2>איפוס התקדמות</h2>
         ${
@@ -261,6 +267,14 @@ export function renderParent(root: HTMLElement): () => void {
     bindVoiceReview(root);
     bindCarnivalTest(root);
     root.querySelector('#done')!.addEventListener('click', () => go({ name: 'home' }));
+    root.querySelector('#runner-lab')?.addEventListener('click', () => {
+      try {
+        sessionStorage.setItem('runner-lab', '1');
+      } catch {
+        /* ignore */
+      }
+      go({ name: 'runner' });
+    });
     root.querySelector('#squishy-lab')?.addEventListener('click', () => {
       // the one door of the prototype (main.ts lets only this one in)
       try {

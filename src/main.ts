@@ -34,13 +34,13 @@ function teardown(): void {
   cleanup = null;
 }
 
-function mountGame(gameId: string): void {
-  const game = games.find((g) => g.id === gameId);
+function mountGame(gameId: string, own?: GameModule): void {
+  const game = own ?? games.find((g) => g.id === gameId);
   if (!game) return go({ name: 'home' }, { replace: true });
   // No route reaches a game without a round granted by the gate.
   // The one exception: a round paused less than 10 minutes ago resumes (paused) after a reload.
   let resuming = false;
-  if (!startRound(gameId)) {
+  if (!own && !startRound(gameId)) {
     if (!hasFreshSession(gameId)) return go({ name: 'gate', gameId }, { replace: true });
     resuming = true;
   }
@@ -56,6 +56,7 @@ function mountGame(gameId: string): void {
     onExit: () => go({ name: 'home' }),
     onRoundEnd: (r) => {
       if (r.stars > 0) update((s) => (s.stars += r.stars));
+      if (own) return;
       // the carnival gives the hearts of the ones who waited for this game when she gets back
       try {
         const cs = loadCarnivalSave();
@@ -66,7 +67,7 @@ function mountGame(gameId: string): void {
       }
     },
     requestRound: (start) => {
-      if (startRound(game.id)) start();
+      if (own || startRound(game.id)) start();
       else go({ name: 'gate', gameId: game.id });
     },
     sound,
@@ -77,6 +78,15 @@ function mountGame(gameId: string): void {
 }
 
 if (import.meta.env.DEV) (window as unknown as { __grantPass?: (id: string) => void }).__grantPass = grantPass; // for the browser tests: a pass without the gate
+// `?runner` in the address opens the prototype of the chase of the balloons (stage 0) and cleans the address
+if (/[?&]runner(?:[=&]|$)/.test(location.search)) {
+  try {
+    sessionStorage.setItem('runner-lab', '1');
+  } catch {
+    /* ignore */
+  }
+  history.replaceState(null, '', `${location.pathname}#/runner`);
+}
 let current: Route = { name: 'home' };
 // a new version of the app switches in only in the lobby
 const updateCheck = initUpdate(() => current.name);
@@ -132,6 +142,24 @@ onRoute((route: Route) => {
       cleanup = () => {
         gone = true;
         stop?.();
+      };
+      break;
+    }
+    case 'runner': {
+      // the chase of the balloons (stage 0): only through its door in the parents area, or `?runner`
+      let ok = false;
+      try {
+        ok = sessionStorage.getItem('runner-lab') === '1';
+      } catch {
+        /* ignore */
+      }
+      if (!ok) return go({ name: 'home' }, { replace: true });
+      let gone = false;
+      void import('./games/runner').then((m) => {
+        if (!gone) mountGame('runner', m.default);
+      });
+      cleanup = () => {
+        gone = true;
       };
       break;
     }

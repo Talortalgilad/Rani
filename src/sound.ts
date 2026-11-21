@@ -13,6 +13,8 @@ export type SoundName =
   // block puzzle: a block lands, a block bursts (pitch rises with every block), a combo arpeggio, a streak step (pitch), a new tray, a clean board, a soft happy tune for a full board
   // squishy workshop: a soft low sound at a squeeze (pitch in Hz: the deeper the press, the lower), and a small pop when it is back in shape
   | 'squish' | 'unsquish'
+  // the chase of the balloons: a step (does not count in the cap of the effects), a jump, a landing, a star (pitch rises), a right gate, a squash
+  | 'step' | 'jump' | 'land' | 'star' | 'gate' | 'squash'
   | 'thock' | 'blast' | 'arpeggio' | 'streak' | 'trayin' | 'fanfare' | 'gentle';
 
 export interface SoundApi {
@@ -83,7 +85,7 @@ export const resetEffects = (): void => void (recent.length = 0);
 export const sound: SoundApi = {
   play(name, pitch) {
     if (!getState().settings.sound) return;
-    if (!effectSlot()) return;
+    if (name !== 'step' && !effectSlot()) return;
     try {
       if (!ac || ac.state !== 'running') unlockAudio();
       if (!ac) return;
@@ -108,6 +110,28 @@ export const sound: SoundApi = {
           tone(f * 2, 0.01, 0.04, 'triangle', 0.05);
           break;
         }
+        case 'step':
+          tone(pitch ?? 150, 0, 0.05, 'sine', 0.07, 100);
+          break;
+        case 'jump':
+          tone(300, 0, 0.16, 'sine', 0.2, 620);
+          break;
+        case 'land':
+          tone(190, 0, 0.08, 'sine', 0.2, 110);
+          break;
+        case 'star': {
+          const f = pitch ?? 880;
+          tone(f, 0, 0.09, 'triangle', 0.2, f * 1.3);
+          tone(f * 1.5, 0.05, 0.1, 'sine', 0.1);
+          break;
+        }
+        case 'gate':
+          notes([523.25, 659.25, 783.99, 1046.5], 0.07, 0.18, 'triangle', 0.26);
+          break;
+        case 'squash':
+          tone(260, 0, 0.22, 'sine', 0.3, 110);
+          tone(130, 0, 0.18, 'triangle', 0.14, 80);
+          break;
         case 'flip':
           tone(900, 0, 0.07, 'triangle', 0.16, 500);
           tone(1800, 0, 0.03, 'sine', 0.05);
