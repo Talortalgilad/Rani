@@ -4,8 +4,7 @@
  * which only ever gives something). Five levels open: 1 the name, 2 the first details and a trick, 3 a job in a stall (the chef's hat), 4 a gift, 5 a crown and he follows the camera.
  * Everything is kept in `save.extra.friends`, so an older save is read as it is and a later stage can add to it.
  */
-import RES from './residents.json';
-import type { ResidentInfo } from './residents';
+import { infoOf, type ResidentInfo } from './residents';
 import type { CarnivalSave } from './talk/state';
 
 /** the hearts that a resident must give for each level (level 1 is where everybody starts) */
@@ -28,7 +27,7 @@ export const shownDetails = (level: number): Detail[] => DETAILS.filter((d) => l
 
 export type Trick = 'spin' | 'jump2' | 'dance';
 export const TRICKS: Trick[] = ['spin', 'jump2', 'dance'];
-const row = (id: string): ResidentInfo | undefined => (RES.residents as ResidentInfo[]).find((r) => r.id === (id === 'companion' ? 'cheesy' : id));
+const row = (id: string): ResidentInfo | undefined => infoOf(id);
 export const trickOf = (id: string): Trick => TRICKS[[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % 3];
 /** the friend of a resident (the ids of the residents of the carnival; the companion is Cheesy) */
 export const friendOf = (id: string): string | null => {
@@ -66,6 +65,8 @@ export const accessoryById = (id: string): Accessory | undefined => ACCESSORIES.
 export const GIFTS = ['glasses', 'scarf', 'bow', 'sunglasses', 'flowercrown', 'cape'];
 /** what a resident cannot wear: the cupcake has his face at the bottom of the picture, with no neck and no room for a scarf or a cape (the rest he wears) */
 export const CANNOT_WEAR: Record<string, string[]> = { cupcake: ['scarf', 'cape'] };
+/** the same for the squishies that Rani made, by their mold (the donut has his face on the lower part of the ring: no room under the mouth for a scarf) */
+export const SHAPE_CANNOT_WEAR: Record<string, string[]> = { donut: ['scarf'] };
 export const canWear = (rid: string, acc: string): boolean => !CANNOT_WEAR[rid]?.includes(acc);
 export const giftOf = (id: string): string => {
   const ok = GIFTS.filter((g) => canWear(id, g));

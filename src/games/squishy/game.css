@@ -152,6 +152,9 @@ body.lobby3d-on .sq-game button, body.lobby3d-on .sq-game input, body.lobby3d-on
 .sqg-msg { text-align: center; font-size: 22px; font-weight: 800; min-height: 60px; padding: 8px; }
 .sqg-msg .newmold { width: 56px; vertical-align: middle; }
 .sqg-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; padding: 6px; }
+.sqg-card { position: relative; }
+.sqg-incv { position: absolute; top: 4px; inset-inline-end: 6px; font-style: normal; font-size: 20px; }
+.sqg-cvmsg { margin: 4px 0 0; min-height: 22px; text-align: center; font-weight: 800; color: #7a3a5a; font-size: 16px; }
 
 /* the measuring cup: a line that is easy to see, a number next to it, a hand that shows it after a mistake, a drain button; nothing blinks */
 .sqg-cupbox { position: relative; width: 190px; margin: 8px auto; }

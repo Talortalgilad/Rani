@@ -19,6 +19,8 @@ export interface QuestCtx {
   parties?: number;
   lolly?: number;
   workshop?: number;
+  /** the orders of the workshop that were done */
+  orders?: number;
 }
 export interface Quest { id: string; he: string; hearts: number; stars?: number; done(c: QuestCtx): boolean }
 
@@ -50,6 +52,7 @@ QUESTS.push(
   { id: 'party', he: LATER.qs_party, hearts: 6, stars: 1, done: (c) => (c.parties ?? 0) >= 1 },
   { id: 'lolly', he: LATER.qs_lolly, hearts: 5, stars: 1, done: (c) => (c.lolly ?? 0) >= 1 },
   { id: 'workshop', he: LATER.qs_workshop, hearts: 5, stars: 1, done: (c) => (c.workshop ?? 0) >= 1 },
+  { id: 'order', he: LATER.qs_order, hearts: 5, stars: 1, done: (c) => (c.orders ?? 0) >= 1 },
 );
 export const questById = (id: string): Quest | undefined => QUESTS.find((q) => q.id === id);
 /** the quest that is active: the first that is not done (null when all ten are done) */
